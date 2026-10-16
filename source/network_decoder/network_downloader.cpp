@@ -157,6 +157,23 @@ static std::string remove_url_parameter(const std::string &url, const std::strin
 
 #define LOG_THREAD_STR "net/dl"
 void NetworkStreamDownloader::downloader_thread() {
+	// Called when a block download failed. Retries with exponential backoff and alternates the range method
+	// (query parameter <-> Range header) because some failures only affect one of them. The stream is declared dead
+	// only after NetworkStream::RETRY_CNT_MAX consecutive failures.
+	auto register_failure = [&](NetworkStream *stream, const std::string &reason) {
+		logger.error(LOG_THREAD_STR, "block download failed (" + reason + ")");
+		if (stream->retry_cnt_left > 0) {
+			stream->retry_cnt_left--;
+			stream->use_header_range = !stream->use_header_range;
+			int attempt = NetworkStream::RETRY_CNT_MAX - stream->retry_cnt_left; // 1, 2, 3, ...
+			int delay_ms = std::min(250 << std::min(attempt - 1, 4), 3000);
+			for (int waited = 0; waited < delay_ms && !thread_exit_requested && !stream->quit_request; waited += 50) {
+				usleep(50000);
+			}
+		} else {
+			stream->error = true;
+		}
+	};
 	while (!thread_exit_requested) {
 		size_t cur_stream_index =
 		    (size_t)-1; // the index of the stream on which we will perform a download in this loop
@@ -308,13 +325,10 @@ void NetworkStreamDownloader::downloader_thread() {
 
 			auto &session_list = cur_stream->session_list ? *cur_stream->session_list : thread_network_session_list;
 			// length not sure -> use Range header to get the size (slower)
-			auto result =
-			    cur_stream->len == 0
-			        ? session_list.perform(HttpRequest::GET(
-			              cur_stream->url,
-			              {{"Range", "bytes=" + std::to_string(start) + "-" + std::to_string(end - 1)}}))
-			        : session_list.perform(HttpRequest::GET(
-			              cur_stream->url + "&range=" + std::to_string(start) + "-" + std::to_string(end - 1), {}));
+			const std::string range_value = std::to_string(start) + "-" + std::to_string(end - 1);
+			auto result = (cur_stream->len == 0 || cur_stream->use_header_range)
+			                  ? session_list.perform(HttpRequest::GET(cur_stream->url, {{"Range", "bytes=" + range_value}}))
+			                  : session_list.perform(HttpRequest::GET(cur_stream->url + "&range=" + range_value, {}));
 			if (result.redirected_url != "") {
 				cur_stream->url = remove_url_parameter(result.redirected_url, "range");
 			}
@@ -342,28 +356,24 @@ void NetworkStreamDownloader::downloader_thread() {
 					}
 				}
 				if (cur_stream->ready && result.data.size() != expected_len) {
-					logger.error(LOG_THREAD_STR, "size discrepancy : " + std::to_string(expected_len) + " -> " +
+					register_failure(cur_stream, "size discrepancy : " + std::to_string(expected_len) + " -> " +
 					                                 std::to_string(result.data.size()));
-					if (cur_stream->retry_cnt_left) {
-						cur_stream->retry_cnt_left--;
-					} else {
-						cur_stream->error = true;
-					}
 					continue;
 				}
 				cur_stream->retry_cnt_left = NetworkStream::RETRY_CNT_MAX;
 				cur_stream->set_data(block_reading, std::move(result.data)); // data isn't accessed further down so we can move it
 				cur_stream->ready = true;
 			} else if (!result.fail) {
-				logger.error("net/dl", "stream returned: " + std::to_string(result.status_code));
-				cur_stream->error = true;
-			} else {
-				logger.error("net/dl", "access failed : " + result.error);
-				if (cur_stream->retry_cnt_left) {
-					cur_stream->retry_cnt_left--;
+				int code = result.status_code;
+				// 403/408/429/5xx are frequently transient with googlevideo -> retry; anything else is fatal
+				if (code == 403 || code == 408 || code == 429 || code >= 500) {
+					register_failure(cur_stream, "http " + std::to_string(code));
 				} else {
+					logger.error("net/dl", "stream returned: " + std::to_string(code));
 					cur_stream->error = true;
 				}
+			} else {
+				register_failure(cur_stream, "access failed : " + result.error);
 			}
 		}
 	}

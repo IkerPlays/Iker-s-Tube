@@ -11,7 +11,7 @@ struct NetworkStream {
 	static constexpr u64 BLOCK_SIZE = 0x40000; // 256 KiB
 	static constexpr u64 NEW3DS_MAX_CACHE_BLOCKS = 12 * 1000 * 1000 / BLOCK_SIZE;
 	static constexpr u64 OLD3DS_MAX_CACHE_BLOCKS = 4 * 1000 * 1000 / BLOCK_SIZE;
-	static constexpr int RETRY_CNT_MAX = 1;
+	static constexpr int RETRY_CNT_MAX = 8; // consecutive failures tolerated before the stream is declared dead
 	static u64 get_block_num(u64 size) { return (size + BLOCK_SIZE - 1) / BLOCK_SIZE; }
 
 	std::string url;
@@ -28,6 +28,7 @@ struct NetworkStream {
 	volatile bool quit_request = false;
 	volatile bool error = false;
 	volatile int retry_cnt_left = RETRY_CNT_MAX;
+	volatile bool use_header_range = false; // alternate between '&range=' query and 'Range:' header on retries
 	volatile u64 read_head = 0;
 	const char *volatile network_waiting_status = NULL;
 	bool disable_interrupt = false;

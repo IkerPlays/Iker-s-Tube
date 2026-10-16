@@ -54,12 +54,12 @@ TIME := $(shell date +"%Y-%m-%d %H:%M:%S %Z")
 APP_VER					:= 84
 APP_TITLE				:= Iker's Tube
 APP_DESCRIPTION				:= Cliente de YouTube para 3DS
-APP_AUTHOR				:= Iker (basado en FourthTube)
+APP_AUTHOR				:= IkerPlays
 PRODUCT_CODE				:= CTR-IKT
 UNIQUE_ID				:= 0xF1A02
 
 BANNER_AUDIO				:= resource/banner.wav
-BANNER_IMAGE				:= resource/banner.cgfx
+BANNER_IMAGE				:= resource/banner.png
 ICON        				:= resource/icon.png
 RSF_PATH				:= resource/app.rsf
 

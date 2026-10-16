@@ -138,6 +138,12 @@ void NetworkSessionList::curl_add_request(const HttpRequest &request, NetworkRes
 	memset(curl_errbuf, 0, CURL_ERROR_SIZE);
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_errbuf);
 	curl_easy_setopt(curl, CURLOPT_PIPEWAIT, 1L);
+	// Don't let a dead connection block the downloader forever : abort if nothing connects within 15 s or if the
+	// transfer drops below 1 KB/s for 20 s (the caller then retries).
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 15L);
+	curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);
+	curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 20L);
+	curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 	// curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res->data);

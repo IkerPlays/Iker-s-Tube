@@ -13,14 +13,15 @@ bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
 
-const std::vector<std::string> app_description_lines = {"A work-in-progress homebrew YouTube client", "for the 3DS"};
+const std::vector<std::string> app_description_lines = {"Cliente de YouTube homebrew para 3DS", "hecho por IkerPlays"};
 const std::vector<std::string> story_lines = {
-    "ThirdTube stopped working",
-    "then we, as the former ThirdTube",
-    "now FourthTube community, took action.",
+    "Iker's Tube es un fork de FourthTube",
+    "(que viene de ThirdTube), con mejoras",
+    "de descarga, reintentos y nuevo diseno.",
 };
 
 const std::vector<std::pair<std::string, std::vector<std::string>>> credits = {
+    {"IkerPlays", {"Iker's Tube : new icon and banner,", "download retries, client fallback"}},
     {"NCP 3.0", {"fixing the app"}},
     {"Smu1zel", {"fixing the app"}},
     {"5GBurrito", {"minor contributions"}},
