@@ -5,6 +5,7 @@ extern bool var_need_refresh;
 extern bool var_update_available;
 extern const char *volatile var_update_banner; // status of an automatic/manual update shown in the menu (NULL : none)
 extern int var_show_devbuilds; // 1 : also offer devbuilds (a build that is itself a devbuild always sees them)
+extern u64 var_sleep_timer_end; // osGetTime() at which the playback pauses (0 : no timer)
 extern double var_av_sync_ms; // > 0 : show the video earlier (compensates the display latency), < 0 : later // set by the background updater when a newer release exists
 extern bool var_allow_send_app_info;
 extern bool var_hide_pointer;

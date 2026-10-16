@@ -7,6 +7,7 @@
 #include "scenes/video_player.hpp"
 #include "util/play_queue.hpp"
 #include "data_io/favorites.hpp"
+#include "data_io/resume_position.hpp"
 #include "scenes/home.hpp"
 #include "ui/overlay.hpp"
 #include "ui/ui.hpp"
@@ -57,6 +58,7 @@ volatile bool audio_only_mode = false;
 volatile bool video_skip_drawing = false; // for performance reason, enabled when opening keyboard
 volatile int video_p_value = 360;
 volatile double seek_at_init_request = -1;
+static char vid_resume_id[16] = {0}; // id of the playing video, readable from the converter thread without a lock
 double vid_time[2][320];
 double vid_copy_time[2] = {
     0,
@@ -435,6 +437,19 @@ debug_info_view =
 	                 ->set_on_release([](BarView &view) {
 	view.fix_close_values(0.97, 1.0, 1.03);
 	network_decoder.set_pitch(view.get_value());
+	                 }),
+	             (new BarView(0, 0, 260, 30)) // sleep timer
+	                 ->set_values(0, 120, 0)
+	                 ->set_title([](const BarView &view) {
+	u64 now = osGetTime();
+	if (var_sleep_timer_end > now) {
+		return std::string("Sleep timer : ") + std::to_string((var_sleep_timer_end - now) / 60000 + 1) + " min";
+	}
+	return std::string("Sleep timer : off");
+	                 })
+	                 ->set_on_release([](BarView &view) {
+	int minutes = (int)std::round(view.get_value());
+	var_sleep_timer_end = minutes > 0 ? osGetTime() + (u64)minutes * 60000ULL : 0;
 	                 }),
 	             (new TextView(SMALL_MARGIN * 2, 0, 100, 20))
 	                 ->set_text([]() {
@@ -1418,6 +1433,8 @@ debug_info_view =
 	    }
 	    playing_video_info = tmp_video_info;
 	    video_info_cache[url] = tmp_video_info;
+	    strncpy(vid_resume_id, tmp_video_info.id.c_str(), sizeof(vid_resume_id) - 1);
+	    vid_resume_id[sizeof(vid_resume_id) - 1] = 0;
 
 	    vid_change_video_request = true;
 	    if (network_decoder.ready) {
@@ -1849,6 +1866,18 @@ debug_info_view =
     }
 
     bool video_is_playing() {
+	    if (var_sleep_timer_end && osGetTime() >= var_sleep_timer_end) { // sleep timer : pause the playback
+		    var_sleep_timer_end = 0;
+		    small_resource_lock.lock();
+		    if (vid_play_request && !vid_pausing) {
+			    if (!vid_pausing_seek) {
+				    Util_speaker_pause(0);
+			    }
+			    vid_pausing = true;
+		    }
+		    small_resource_lock.unlock();
+		    var_need_refresh = true;
+	    }
 	    if (!vid_play_request && vid_pausing_seek) {
 		    small_resource_lock.lock();
 		    vid_pausing_seek = false;
@@ -2169,6 +2198,13 @@ debug_info_view =
 				    }
 			    }
 
+			    if (vid_play_request && seek_at_init_request < 0 && !playing_video_info.is_livestream) {
+				    // continue where the video was left
+				    double resume_pos = resume_get(playing_video_info.id);
+				    if (resume_pos > 0 && vid_duration - resume_pos > 15) {
+					    seek_at_init_request = resume_pos;
+				    }
+			    }
 			    if (seek_at_init_request >= 0) {
 				    vid_seek_request = true;
 				    vid_seek_pos = seek_at_init_request;
@@ -2230,6 +2266,8 @@ debug_info_view =
 					    bool break_flag = false;
 					    if (!eof_reached) { // the first time it reaches EOF
 						    small_resource_lock.lock();
+						    resume_set(playing_video_info.id, 0, 0); // watched until the end : next time from the start
+						    resume_save();
 						    std::string queued_url;
 						    if (var_loop_mode == false && play_queue_pop(queued_url)) {
 							    // something was queued by the user : play it before any autoplay suggestion
@@ -2458,6 +2496,16 @@ debug_info_view =
 						    }
 					    }
 					    vid_current_pos = pts;
+
+					    {   // remember the position every 10 s so the video can be continued later
+						    static u64 last_resume_save = 0;
+						    u64 now = osGetTime();
+						    if (now - last_resume_save > 10000 && vid_duration > 60 && vid_resume_id[0]) {
+							    last_resume_save = now;
+							    resume_set(std::string(vid_resume_id), pts, vid_duration);
+							    resume_save();
+						    }
+					    }
 
 					    osTickCounterUpdate(&counter0);
 					    osTickCounterUpdate(&counter1);
