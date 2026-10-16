@@ -16,8 +16,12 @@ jobs:
         run: |
           apt-get update
           apt-get install -y git make cmake g++ gcc python3 python3-pil
-          dkp-pacman -Sy --noconfirm 3ds-dev 3ds-mpg123 3ds-libvorbisidec 3ds-libogg || \
-            pacman -Sy --noconfirm 3ds-dev 3ds-mpg123 3ds-libvorbisidec 3ds-libogg
+          for i in 1 2 3 4 5 6; do
+            dkp-pacman -Sy --noconfirm --needed 3ds-dev 3ds-mpg123 3ds-libvorbisidec 3ds-libogg && break
+            echo "Reintento $i en $((i*10))s..."; sleep $((i*10))
+          done
+          test -f /opt/devkitpro/portlibs/3ds/include/mpg123.h
+          test -f /opt/devkitpro/libctru/include/3ds.h
 
       - name: Compilar makerom y bannertool
         run: |
