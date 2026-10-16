@@ -40,7 +40,7 @@ static u32 button_background(const View &view) {
 	return COLOR_GRAY(darkness);
 }
 
-static TextView *make_option(const std::string &text, std::function<void()> action) {
+static View *make_option(const std::string &text, std::function<void()> action) {
 	return (new TextView(0, 0, 180, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 	    ->set_text(text)
 	    ->set_x_alignment(TextView::XAlign::CENTER)
