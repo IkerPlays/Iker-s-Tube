@@ -3,6 +3,7 @@
 bool var_connect_test_success = false;
 bool var_need_refresh = true;
 bool var_update_available = false;
+double var_av_sync_ms = 60;
 bool var_allow_send_app_info = false;
 bool var_hide_pointer = false;
 bool var_night_mode = true;

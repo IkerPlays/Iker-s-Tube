@@ -351,7 +351,7 @@ static void update_worker_thread_func(void *) {
 		}
 		if (update_state == UpdateState::INSTALLING) {
 			std::string error = install_update(session_list);
-			if (error == "") update_state = UpdateState::SUCCEEDED_INSTALLING;
+			if (error == "") update_state = UpdateState::SUCCEEDED_INSTALLING, var_update_available = false, var_need_refresh = true;
 			else {
 				resource_lock.lock();
 				update_error_message = error;
@@ -694,6 +694,16 @@ void Sem_init(void) {
 							char ratio_str[16];
 							snprintf(ratio_str, 16, "%.2f", var_forward_buffer_ratio);
 							return LOCALIZED(FORWARD_BUFFER_RATIO) + " : " + ratio_str;
+						})
+						->set_on_release([] (const BarView &view) { misc_tasks_request(TASK_SAVE_SETTINGS); }),
+
+					// Audio/video sync offset
+					(new BarView(0, 0, 320, 40))
+						->set_values_sync(-300, 300, &var_av_sync_ms)
+						->set_title([] (const BarView &view) {
+							char ms_str[24];
+							snprintf(ms_str, 24, "%+d ms", (int) var_av_sync_ms);
+							return std::string("Sincronia audio/video : ") + ms_str;
 						})
 						->set_on_release([] (const BarView &view) { misc_tasks_request(TASK_SAVE_SETTINGS); })
 				}),

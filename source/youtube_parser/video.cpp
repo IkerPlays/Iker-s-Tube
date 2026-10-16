@@ -11,6 +11,8 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
+volatile bool youtube_load_cancel = false;
+
 static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res) {
 	res.playability_status = player_response["playabilityStatus"]["status"].string_value();
 	res.playability_reason = player_response["playabilityStatus"]["reason"].string_value();
@@ -111,6 +113,13 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 			}
 		}
 	}
+
+	// no streams (the caller may retry with another client) or a newer request is waiting : skip the captions request
+	if (!res.is_playable() || youtube_load_cancel) {
+		return true;
+	}
+	res.caption_base_languages.clear(); // extract_player_data() can run several times (client fallback)
+	res.caption_translation_languages.clear();
 
 	std::string captions_content;
 	std::map<std::string, std::string> caption_headers;
@@ -562,8 +571,13 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 
 	std::string playlist_id = youtube_get_playlist_id_by_url(url);
 
+	youtube_load_cancel = false;
 	std::string video_content;
 	std::string visitor_data = extractVisitorData();
+	if (youtube_load_cancel) {
+		res.error = "cancelled";
+		return res;
+	}
 
 	// Use Android VR client when authenticated, regardless of var_player_response setting
 	bool use_android_vr = OAuth::is_authenticated();
@@ -663,6 +677,10 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 			}
 		}
 
+		if (youtube_load_cancel) {
+			res.error = "cancelled";
+			return res;
+		}
 		// Fallback: If Android VR with auth returns UNPLAYABLE, retry with unauthenticated Android
 		if (use_android_vr && res.playability_status == "UNPLAYABLE") {
 			debug_info("Fallback to unauthenticated Android Client");
@@ -698,6 +716,10 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 			static const int fallback_order[3] = {1, 2, 0};
 			for (int client : fallback_order) {
 				if (client == var_player_response) continue;
+				if (youtube_load_cancel) {
+					res.error = "cancelled";
+					return res;
+				}
 				debug_info("Trying fallback player client " + std::to_string(client));
 				std::map<std::string, std::string> empty_headers;
 				auto fb = http_post_json(get_innertube_api_url("player"),

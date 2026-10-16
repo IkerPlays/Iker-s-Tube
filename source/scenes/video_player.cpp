@@ -940,6 +940,16 @@ debug_info_view =
 		    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 		    tmp_video_info = youtube_load_video_page(url);
 		    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
+
+		    // the user asked for another video while this one was loading : drop this result, the new request is queued
+		    small_resource_lock.lock();
+		    bool stale = tmp_video_info.error == "cancelled" || (is_to_play && cur_playing_url != url) ||
+		                 (is_to_display && cur_displaying_url != url);
+		    small_resource_lock.unlock();
+		    if (stale) {
+			    logger.info("player/load-v", "stale/cancelled load dropped : " + url);
+			    return;
+		    }
 	    }
 
 	    if (is_to_display) {
@@ -1764,6 +1774,10 @@ debug_info_view =
     // should be called while `small_resource_lock` is locked
     static void send_change_video_request_wo_lock(std::string url, bool update_player, bool update_view,
                                                   bool force_load) {
+	    // a page load that is already running would delay the new request until it finishes : tell it to give up
+	    if (is_async_task_running(load_video_page) == 2) {
+		    youtube_load_cancel = true;
+	    }
 	    remove_all_async_tasks_with_type(load_video_page);
 	    remove_all_async_tasks_with_type(load_more_suggestions);
 	    remove_all_async_tasks_with_type(load_more_comments);
@@ -2409,12 +2423,13 @@ debug_info_view =
 
 					    // sync with sound
 					    double cur_sound_pos = Util_speaker_get_current_timestamp(0, vid_sample_rate);
+					    const double av_lead = var_av_sync_ms / 1000.0; // user adjustable A/V offset (Settings)
 					    if (cur_sound_pos >= 0) { // if sound is not playing, probably because the video is lagging
 						                          // behind, draw immediately
-						    while (pts - cur_sound_pos > 0.003 && vid_play_request && !vid_seek_request &&
+						    while (pts - cur_sound_pos - av_lead > 0.003 && vid_play_request && !vid_seek_request &&
 						           !vid_change_video_request) {
 							    double sleep_microseconds =
-							        std::min(0.1, (pts - cur_sound_pos - 0.0015) / network_decoder.get_tempo()) *
+							        std::min(0.1, (pts - cur_sound_pos - av_lead - 0.0015) / network_decoder.get_tempo()) *
 							        1000000;
 							    usleep(sleep_microseconds);
 							    cur_sound_pos = Util_speaker_get_current_timestamp(0, vid_sample_rate);
@@ -2667,6 +2682,15 @@ debug_info_view =
 				    pos = std::max<double>(0, pos);
 				    pos = std::min<double>(vid_duration, pos);
 				    send_seek_request(pos);
+			    }
+		    } else if (key.p_r) {
+			    std::string queued_url;
+			    if (play_queue_pop(queued_url)) { // R : next video of the queue
+				    send_change_video_request(queued_url, true, false, false);
+			    }
+		    } else if (key.p_l) { // L : restart
+			    if (network_decoder.ready) {
+				    send_seek_request(0);
 			    }
 		    } else if (key.p_zr || key.p_zl) {
 			    if (network_decoder.ready) {

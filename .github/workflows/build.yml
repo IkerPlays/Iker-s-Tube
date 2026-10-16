@@ -60,6 +60,8 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: IkersTube
@@ -70,8 +72,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build.outputs.version }}
         run: |
+          {
+            echo "# Iker's Tube ${VERSION}"
+            echo
+            cat RELEASE_NOTES.md
+            echo
+            echo "---"
+            echo "<sub>Build automático · versión **${VERSION}** · commit \`${GITHUB_SHA::7}\`</sub>"
+          } > notes.md
           gh release delete devbuild --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
           gh release create devbuild dist/IkersTube.cia dist/IkersTube.3dsx \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "Iker's Tube $VERSION (devbuild)" \
-            --notes "Build automatico $VERSION del commit $GITHUB_SHA. Instala el .cia con FBI o deja que la app se actualice sola desde Ajustes."
+            --notes-file notes.md
