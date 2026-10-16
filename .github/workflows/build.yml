@@ -16,8 +16,8 @@ jobs:
         run: |
           apt-get update
           apt-get install -y git make cmake g++ gcc python3 python3-pil
-          dkp-pacman -Sy --noconfirm 3ds-mpg123 3ds-libvorbisidec 3ds-libogg || \
-            pacman -Sy --noconfirm 3ds-mpg123 3ds-libvorbisidec 3ds-libogg
+          dkp-pacman -Sy --noconfirm 3ds-dev 3ds-mpg123 3ds-libvorbisidec 3ds-libogg || \
+            pacman -Sy --noconfirm 3ds-dev 3ds-mpg123 3ds-libvorbisidec 3ds-libogg
 
       - name: Compilar makerom y bannertool
         run: |
