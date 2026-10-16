@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write # needed to publish the "devbuild" release
 
+# a newer push cancels the older run, so the devbuild release always comes from the latest commit
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest

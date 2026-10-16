@@ -7,6 +7,7 @@ enum class SceneType {
 	CHANNEL,
 	ABOUT,
 	HISTORY,
+	LIBRARY,
 	HOME,
 	// used for intent
 	NO_CHANGE,

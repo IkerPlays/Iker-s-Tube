@@ -2,6 +2,7 @@
 #include "variables.hpp"
 #include "headers.hpp"
 #include "ui/ui.hpp"
+#include "util/play_queue.hpp"
 
 #define ICON_LINE_HEIGHT 3
 #define ICON_LINE_Y_MARGIN 4
@@ -15,6 +16,7 @@ struct Content {
 	enum class Type {
 		SEARCH,
 		HISTORY,
+		LIBRARY,
 		HOME,
 		EXIT,
 		SETTINGS,
@@ -129,6 +131,11 @@ void update_overlay_menu(Hid_info *key) {
 	if (global_current_scene != SceneType::SEARCH) {
 		contents.push_back({LOCALIZED(GOTO_SEARCH), Content::Type::SEARCH});
 	}
+	if (global_current_scene != SceneType::LIBRARY) {
+		int queued = play_queue_size();
+		contents.push_back({queued ? "Biblioteca (" + std::to_string(queued) + ")" : std::string("Biblioteca"),
+		                    Content::Type::LIBRARY});
+	}
 	if (global_current_scene != SceneType::HISTORY) {
 		contents.push_back({LOCALIZED(WATCH_HISTORY), Content::Type::HISTORY});
 	}
@@ -188,6 +195,9 @@ void update_overlay_menu(Hid_info *key) {
 					global_intent.arg = "";
 				} else if (contents[id].type == Content::Type::SETTINGS) {
 					global_intent.next_scene = SceneType::SETTINGS;
+					global_intent.arg = "";
+				} else if (contents[id].type == Content::Type::LIBRARY) {
+					global_intent.next_scene = SceneType::LIBRARY;
 					global_intent.arg = "";
 				} else if (contents[id].type == Content::Type::HISTORY) {
 					global_intent.next_scene = SceneType::HISTORY;

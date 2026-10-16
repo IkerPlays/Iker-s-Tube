@@ -1,5 +1,7 @@
 ## ✨ Novedades
 
+- **Biblioteca** — nueva pantalla en el menú ☰ con tu **cola** (reordena con pulsación larga: *Subir / Bajar / Quitar*, o *Vaciar cola*) y tus **favoritos**, guardados en la tarjeta SD.
+- **Botón Favorito** dentro de cada vídeo para guardarlo y verlo más tarde.
 - **Cola de reproducción** — mantén pulsado cualquier vídeo (inicio, búsqueda, canal, sugeridos) para añadirlo; verás su posición **#1, #2…**. Al acabar el actual suena la cola antes que cualquier sugerencia. Con **R** saltas al siguiente de la cola y con **L** reinicias el vídeo.
 - **Búfer inteligente en ventana deslizante** — descarga por delante, guarda en la tarjeta SD y libera lo que queda atrás. Se acabaron los cortes al minuto.
 - **Autoactualización integrada** — punto rojo en ☰ y aviso *Actualización disponible* cuando hay una versión nueva.

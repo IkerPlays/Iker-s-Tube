@@ -6,6 +6,7 @@
 
 #include "scenes/video_player.hpp"
 #include "util/play_queue.hpp"
+#include "data_io/favorites.hpp"
 #include "scenes/home.hpp"
 #include "ui/overlay.hpp"
 #include "ui/ui.hpp"
@@ -1099,7 +1100,7 @@ debug_info_view =
 				    main_tab_views.insert(main_tab_views.end(), add_views.begin(), add_views.end());
 			    }
 			    {
-				    TextView *play_button = (new TextView(0, 0, 160 - SMALL_MARGIN, 20));
+				    TextView *play_button = (new TextView(0, 0, 100, 20));
 				    play_button
 				        ->set_text((std::function<std::string()>)[]() {
 					        return cur_video_info.id == playing_video_info.id ? LOCALIZED(PLAYING) : LOCALIZED(PLAY);
@@ -1122,7 +1123,25 @@ debug_info_view =
 					    play_button->set_get_background_color([](const View &) { return LIGHT1_BACK_COLOR; });
 					    logger.info("video_player", "Video is not playable: " + tmp_video_info.playability_reason);
 				    }
-				    TextView *reload_button = (new TextView(0, 0, 160 - SMALL_MARGIN, 20));
+				    TextView *reload_button = (new TextView(0, 0, 100, 20));
+				    TextView *favorite_button = (new TextView(0, 0, 100, 20));
+				    favorite_button
+				        ->set_text((std::function<std::string()>)[]() {
+					        return favorites_contains(cur_video_info.id) ? std::string("Quitar fav") : std::string("+ Favorito");
+				        })
+				        ->set_x_alignment(TextView::XAlign::CENTER)
+				        ->set_get_background_color(View::STANDARD_BACKGROUND)
+				        ->set_on_view_released([](View &) {
+					        if (cur_video_info.id != "" && cur_video_info.title != "") {
+						        FavoriteVideo fav;
+						        fav.id = cur_video_info.id;
+						        fav.title = cur_video_info.title;
+						        fav.author = cur_video_info.author.name;
+						        fav.length_text = Util_convert_seconds_to_time((double)cur_video_info.duration_ms / 1000);
+						        favorites_toggle(fav);
+						        var_need_refresh = true;
+					        }
+				        });
 				    reload_button->set_text((std::function<std::string()>)[]() { return LOCALIZED(RELOAD); })
 				        ->set_x_alignment(TextView::XAlign::CENTER)
 				        ->set_get_background_color(View::STANDARD_BACKGROUND)
@@ -1135,7 +1154,7 @@ debug_info_view =
 
 				    main_tab_views.push_back(
 				        (new HorizontalListView(0, 0, 20))
-				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)), play_button, reload_button}));
+				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)), play_button, reload_button, favorite_button}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 			    }

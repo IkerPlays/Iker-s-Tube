@@ -56,3 +56,30 @@ void play_queue_clear() {
 	queue.clear();
 	queue_lock.unlock();
 }
+
+bool play_queue_get(int index, std::string &url, std::string &title) {
+	bool res = false;
+	queue_lock.lock();
+	if (index >= 0 && index < (int)queue.size()) {
+		url = queue[index].first;
+		title = queue[index].second;
+		res = true;
+	}
+	queue_lock.unlock();
+	return res;
+}
+void play_queue_remove_at(int index) {
+	queue_lock.lock();
+	if (index >= 0 && index < (int)queue.size()) {
+		queue.erase(queue.begin() + index);
+	}
+	queue_lock.unlock();
+}
+void play_queue_move(int index, int delta) {
+	queue_lock.lock();
+	int other = index + delta;
+	if (index >= 0 && index < (int)queue.size() && other >= 0 && other < (int)queue.size()) {
+		std::swap(queue[index], queue[other]);
+	}
+	queue_lock.unlock();
+}
