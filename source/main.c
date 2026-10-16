@@ -69,7 +69,8 @@ static bool decOpen(const char *path) {
 		return true;
 	}
 	if (hasExt(path, ".ogg")) {
-		if (ov_fopen((char *)path, &dec.vf) < 0) return false;
+		FILE *of = fopen(path, "rb"); if (!of) return false;
+		if (ov_open(of, &dec.vf, NULL, 0) < 0) { fclose(of); return false; }
 		vorbis_info *vi = ov_info(&dec.vf, -1);
 		if (!vi || vi->channels < 1 || vi->channels > 2) { ov_clear(&dec.vf); return false; }
 		dec.type = DEC_OGG; dec.rate = (int)vi->rate; dec.ch = vi->channels;
@@ -370,7 +371,8 @@ static void drawBottom(void) {
 	if (hdr[0]) txt(hdr, 6, 26, 0.45f, CACC, 40);
 	int n = listCount();
 	if (sel >= n) sel = n ? n - 1 : 0;
-	if (sel < scroll) scroll = sel; if (sel >= scroll + ROWS) scroll = sel - ROWS + 1;
+	if (sel < scroll) scroll = sel;
+	if (sel >= scroll + ROWS) scroll = sel - ROWS + 1;
 	for (int r = 0; r < ROWS && scroll + r < n; r++) {
 		int i = scroll + r; float y = 42 + r * ROW_H;
 		if (i == sel) C2D_DrawRectSolid(0, y, 0, 320, ROW_H - 1, CSEL);
