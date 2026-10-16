@@ -15,7 +15,7 @@ APP_AUTHOR  := Iker
 APP_ICON    := $(CURDIR)/meta/icon.png
 
 ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
-CFLAGS   := -g -Wall -O2 -mword-relocations -ffunction-sections $(ARCH) -D__3DS__ -std=gnu11
+CFLAGS   := -g -Wall -O2 -mword-relocations -ffunction-sections $(ARCH) -D__3DS__ -std=gnu11 $(INCLUDE)
 ASFLAGS  := -g $(ARCH)
 LDFLAGS   = -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 LIBS     := -lcitro2d -lcitro3d -lmpg123 -lvorbisidec -logg -lctru -lm
