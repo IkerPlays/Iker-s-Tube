@@ -14,8 +14,11 @@
 #include "network_decoder/thumbnail_loader.hpp"
 #include "network_decoder/network_io.hpp"
 #include "util/async_task.hpp"
+#include "data_io/search_history.hpp"
 
 #define SEARCH_BOX_MARGIN 4
+#define SEARCH_ROW_HEIGHT 25
+#define FILTER_ROW_HEIGHT 20
 
 #define URL_BUTTON_WIDTH 60
 
@@ -95,7 +98,7 @@ std::string clicked_url;
 TextView *toast_view = (new TextView((320 - 150) / 2, 190, 150, DEFAULT_FONT_INTERVAL + SMALL_MARGIN));
 int toast_view_visible_frames_left = 0;
 
-const int RESULT_Y_LOW = 25;
+const int RESULT_Y_LOW = SEARCH_ROW_HEIGHT + FILTER_ROW_HEIGHT; // search row + filter row
 int RESULT_Y_HIGH = 240; // changes according to whether the video playing bar is drawn or not
 
 VerticalListView *main_view;
@@ -119,12 +122,71 @@ View *Search_get_search_bar_view() { return top_bar_view; }
 static void load_search_results(void *);
 static void load_more_search_results(void *);
 
+// search filters : the button below the search box cycles through them ("params" of the search request)
+static const struct {
+	const char *name;
+	const char *params;
+} search_filters[] = {{"Todos", ""},
+                      {"Solo videos", "EgIQAQ=="},
+                      {"Hoy", "EgQIAhAB"},
+                      {"Esta semana", "EgQIAxAB"},
+                      {"Este mes", "EgQIBBAB"},
+                      {"Cortos (< 4 min)", "EgQQARgB"},
+                      {"Largos (> 20 min)", "EgQQARgD"}};
+static int search_filter_index = 0;
+static bool history_clear_request = false;
+
+// starts a search. Must be called while resource_lock is held (from the update of this scene)
+static void start_search(const std::string &word) {
+	cur_search_word = word;
+	double search_box_width = 320 - SEARCH_BOX_MARGIN * 3 - URL_BUTTON_WIDTH;
+	search_box_view->set_text(truncate_search_text_for_display(word, search_box_width, 0.5));
+	search_box_view->set_get_text_color([]() { return DEFAULT_TEXT_COLOR; });
+	search_history_add(word);
+	remove_all_async_tasks_with_type(load_search_results);
+	remove_all_async_tasks_with_type(load_more_search_results);
+	queue_async_task(load_search_results, NULL);
+	var_need_refresh = true;
+}
+
+// before the first search the result list shows the recent searches (tap one to search it again)
+static void show_search_history() {
+	if (!result_list_view || search_done || is_async_task_running(load_search_results) || result_list_view->views.size()) {
+		return;
+	}
+	auto words = search_history_get();
+	if (!words.size()) {
+		return;
+	}
+	result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+	                                      ->set_text("Búsquedas recientes")
+	                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+	                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+	for (auto &word : words) {
+		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+		                                      ->set_text(truncate_search_text_for_display(word, 300, 0.55))
+		                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+		                                      ->set_y_alignment(TextView::YAlign::CENTER)
+		                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                                      ->set_on_view_released([word](View &) { start_search(word); }));
+	}
+	result_list_view->views.push_back((new TextView(0, 0, 320, 24))
+	                                      ->set_text("Borrar historial")
+	                                      ->set_x_alignment(TextView::XAlign::CENTER)
+	                                      ->set_y_alignment(TextView::YAlign::CENTER)
+	                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                                      ->set_on_view_released([](View &) {
+		                                      history_clear_request = true; // done after the update : the views can't be deleted while they are being updated
+		                                      var_need_refresh = true;
+	                                      }));
+}
+
 void Search_init(void) {
 	logger.info("search/init", "Initializing...");
 	Result_with_string result;
 
 	search_box_view = (new TextView(0, SEARCH_BOX_MARGIN, 320 - SEARCH_BOX_MARGIN * 3 - URL_BUTTON_WIDTH,
-	                                RESULT_Y_LOW - SEARCH_BOX_MARGIN * 2 - 1));
+	                                SEARCH_ROW_HEIGHT - SEARCH_BOX_MARGIN * 2 - 1));
 	search_box_view->set_text_offset(0, -1);
 	search_box_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(SEARCH_HINT); });
 	search_box_view->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; });
@@ -135,7 +197,7 @@ void Search_init(void) {
 		}
 	});
 
-	url_button_view = (new TextView(0, SEARCH_BOX_MARGIN, URL_BUTTON_WIDTH, RESULT_Y_LOW - SEARCH_BOX_MARGIN * 2 - 1));
+	url_button_view = (new TextView(0, SEARCH_BOX_MARGIN, URL_BUTTON_WIDTH, SEARCH_ROW_HEIGHT - SEARCH_BOX_MARGIN * 2 - 1));
 	url_button_view->set_text_offset(0, -1);
 	url_button_view->set_x_alignment(TextView::XAlign::CENTER);
 	url_button_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(URL); });
@@ -152,13 +214,32 @@ void Search_init(void) {
 	toast_view->set_get_background_color([](const View &) { return 0x50000000; });
 	toast_view->set_get_text_color([]() { return (u32)-1; });
 
-	top_bar_view->set_views({(new HorizontalListView(0, 0, RESULT_Y_LOW - 1))
-	                             ->set_views({new EmptyView(0, 0, SEARCH_BOX_MARGIN, RESULT_Y_LOW - 1), search_box_view,
-	                                          new EmptyView(0, 0, SEARCH_BOX_MARGIN, RESULT_Y_LOW - 1), url_button_view,
-	                                          new EmptyView(0, 0, SEARCH_BOX_MARGIN, RESULT_Y_LOW - 1)})
+	top_bar_view->set_views({(new HorizontalListView(0, 0, SEARCH_ROW_HEIGHT - 1))
+	                             ->set_views({new EmptyView(0, 0, SEARCH_BOX_MARGIN, SEARCH_ROW_HEIGHT - 1), search_box_view,
+	                                          new EmptyView(0, 0, SEARCH_BOX_MARGIN, SEARCH_ROW_HEIGHT - 1), url_button_view,
+	                                          new EmptyView(0, 0, SEARCH_BOX_MARGIN, SEARCH_ROW_HEIGHT - 1)})
 	                             ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
 	                         (new RuleView(0, 0, 320, 1))
 	                             ->set_get_color([]() { return 0xFF000000; }) // always black
+	                             ->set_margin(0),
+	                         (new TextView(0, 0, 320, FILTER_ROW_HEIGHT - 1))
+	                             ->set_text((std::function<std::string()>)[]() {
+		                             return std::string("Filtro: ") + search_filters[search_filter_index].name;
+	                             })
+	                             ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+	                             ->set_x_alignment(TextView::XAlign::CENTER)
+	                             ->set_y_alignment(TextView::YAlign::CENTER)
+	                             ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; })
+	                             ->set_on_view_released([](View &) {
+		                             search_filter_index = (search_filter_index + 1) % (sizeof(search_filters) / sizeof(search_filters[0]));
+		                             youtube_search_filter_params = search_filters[search_filter_index].params;
+		                             if (cur_search_word != "" && !is_async_task_running(load_search_results)) {
+			                             start_search(cur_search_word); // search again with the new filter
+		                             }
+		                             var_need_refresh = true;
+	                             }),
+	                         (new RuleView(0, 0, 320, 1))
+	                             ->set_get_color([]() { return 0xFF000000; })
 	                             ->set_margin(0)});
 
 	result_view =
@@ -200,6 +281,9 @@ void Search_suspend(void) { thread_suspend = true; }
 void Search_resume(std::string arg) {
 	(void)arg;
 	overlay_menu_on_resume();
+	resource_lock.lock();
+	show_search_history();
+	resource_lock.unlock();
 
 	thread_suspend = false;
 	var_need_refresh = true;
@@ -406,6 +490,7 @@ bool Search_show_search_keyboard() {
 
 		if (button_pressed == SWKBD_BUTTON_RIGHT) {
 			cur_search_word = search_word;
+			search_history_add(search_word);
 			// Truncate text to fit in search box and display
 			double search_box_width = 320 - SEARCH_BOX_MARGIN * 3 - URL_BUTTON_WIDTH;
 			std::string display_text = truncate_search_text_for_display(search_word, search_box_width, 0.5);
@@ -521,6 +606,12 @@ void Search_draw(void) {
 
 		resource_lock.lock();
 		main_view->update(key);
+		if (history_clear_request) {
+			history_clear_request = false;
+			search_history_clear();
+			result_list_view->recursive_delete_subviews();
+			var_need_refresh = true;
+		}
 		if (clicked_url != "") {
 			global_intent.next_scene = clicked_is_channel ? SceneType::CHANNEL : SceneType::VIDEO_PLAYER;
 			global_intent.arg = clicked_url;

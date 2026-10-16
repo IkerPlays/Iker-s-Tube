@@ -2,6 +2,8 @@
 #include "internal_common.hpp"
 #include "parser.hpp"
 
+std::string youtube_search_filter_params;
+
 static bool parse_searched_item(RJson content, std::vector<YouTubeSuccinctItem> &res) {
 	bool success = true;
 
@@ -112,7 +114,11 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 
 	std::string post_content =
 	    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00"}}, "query": ")" +
-	    query_word + "\"}";
+	    query_word + "\"";
+	if (youtube_search_filter_params.size()) {
+		post_content += ", \"params\": \"" + youtube_search_filter_params + "\"";
+	}
+	post_content += "}";
 	post_content = std::regex_replace(post_content, std::regex("%0"), language_code);
 	post_content = std::regex_replace(post_content, std::regex("%1"), country_code);
 
