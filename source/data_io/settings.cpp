@@ -66,10 +66,12 @@ void load_settings() {
 	var_community_image_size =
 	    std::min(COMMUNITY_IMAGE_SIZE_MAX,
 	             std::max(COMMUNITY_IMAGE_SIZE_MIN, load_int("community_image_size", COMMUNITY_IMAGE_SIZE_DEFAULT)));
-	var_autoplay_level = std::min(2, std::max(0, load_int("autoplay_level", 2)));
+	var_autoplay_level = std::min(2, std::max(0, load_int("autoplay_level_v2", 1)));
 	var_loop_mode = std::min(2, std::max(0, load_int("loop_mode", 0)));
 	var_video_quality = std::min(480, std::max(0, load_int("video_quality", var_is_new3ds ? 360 : 144)));
 	var_forward_buffer_ratio = std::max(0.1, std::min(1.0, load_double("forward_buffer_ratio", 0.8)));
+	var_av_sync_ms = std::max(-300.0, std::min(300.0, load_double("av_sync_ms", 60.0)));
+	var_show_devbuilds = load_int("show_devbuilds", 0) ? 1 : 0;
 	var_history_enabled = load_int("history_enabled", 1);
 	var_video_show_debug_info = load_int("video_show_debug_info", 0);
 	var_player_response = load_int("player_response", 1); // (Beta 24.1, switch to Android VR for now)
@@ -115,10 +117,12 @@ void save_settings() {
 	add_int("dark_theme", var_night_mode);
 	add_int("disable_pull_to_refresh", var_disable_pull_to_refresh);
 	add_int("community_image_size", var_community_image_size);
-	add_int("autoplay_level", var_autoplay_level);
+	add_int("autoplay_level_v2", var_autoplay_level);
 	add_int("loop_mode", var_loop_mode);
 	add_int("video_quality", var_video_quality);
 	add_double("forward_buffer_ratio", var_forward_buffer_ratio);
+	add_double("av_sync_ms", var_av_sync_ms);
+	add_int("show_devbuilds", var_show_devbuilds);
 	add_int("history_enabled", var_history_enabled);
 	add_int("video_show_debug_info", var_video_show_debug_info);
 	add_int("player_response", var_player_response);

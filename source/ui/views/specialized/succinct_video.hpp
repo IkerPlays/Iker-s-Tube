@@ -4,6 +4,7 @@
 #include "network_decoder/thumbnail_loader.hpp"
 #include "ui/ui_common.hpp"
 #include "../view.hpp"
+#include "util/play_queue.hpp"
 
 #define VIDEO_LIST_THUMBNAIL_HEIGHT 54
 #define VIDEO_LIST_THUMBNAIL_WIDTH 96
@@ -25,6 +26,8 @@ struct SuccinctVideoView : public FixedSizeView {
 	std::string thumbnail_url;
 
 	bool is_playlist = false;
+	std::string queue_url; // set for videos that can be added to the play queue
+	mutable int thumbnail_fade = 0; // frames since the thumbnail appeared (fade-in animation)
 
 	SuccinctVideoView(double x0, double y0, double width, double height)
 	    : View(x0, y0), FixedSizeView(x0, y0, width, height) {}
@@ -46,6 +49,16 @@ struct SuccinctVideoView : public FixedSizeView {
 		this->thumbnail_url = thumbnail_url;
 		return this;
 	}
+	// long press : add to (or remove from) the "play next" queue
+	SuccinctVideoView *set_queue_item(const std::string &url, const std::string &title) {
+		this->queue_url = url;
+		add_on_long_hold(35, [url, title](View &view) {
+			play_queue_toggle(url, title);
+			view.reset_holding_status(); // the release must not open the video
+			var_need_refresh = true;
+		});
+		return this;
+	}
 	SuccinctVideoView *set_is_playlist(bool is_playlist) {
 		this->is_playlist = is_playlist;
 		return this;
@@ -53,7 +66,26 @@ struct SuccinctVideoView : public FixedSizeView {
 	float get_title_width() const { return x1 - x0 - (get_thumbnail_width() + 3); }
 
 	void draw_() const override {
-		thumbnail_draw(thumbnail_handle, x0, y0, get_thumbnail_width(), get_thumbnail_height());
+		if (thumbnail_draw(thumbnail_handle, x0, y0, get_thumbnail_width(), get_thumbnail_height())) {
+			// fade-in : a cover with the background color that gets more transparent each frame
+			const int FADE_FRAMES = 10;
+			if (thumbnail_fade < FADE_FRAMES) {
+				u32 alpha = 0xFF * (FADE_FRAMES - thumbnail_fade) / FADE_FRAMES;
+				Draw_texture(var_square_image[0], (alpha << 24) | (DEFAULT_BACK_COLOR & 0x00FFFFFF), x0, y0,
+				             get_thumbnail_width(), get_thumbnail_height());
+				thumbnail_fade++;
+				var_need_refresh = true;
+			}
+		}
+		if (queue_url.size()) {
+			int pos = play_queue_position(queue_url);
+			if (pos) {
+				std::string text = "#" + std::to_string(pos);
+				float w = Draw_get_width(text, 0.45) + 6;
+				Draw_texture(var_square_image[0], 0xE03B3BE6, x0, y0, w, 12);
+				Draw(text, x0 + 3, y0 - 1, 0.45, 0.45, (u32)-1);
+			}
+		}
 		if (bottom_right_overlay.size()) {
 			float overlay_width = Draw_get_width(bottom_right_overlay, DURATION_FONT_SIZE);
 			Draw_texture(var_square_image[0], 0xBB000000, x0 + get_thumbnail_width() - overlay_width - 2,

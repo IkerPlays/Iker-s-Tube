@@ -2,6 +2,7 @@
 #include "variables.hpp"
 #include "headers.hpp"
 #include "ui/ui.hpp"
+#include "util/play_queue.hpp"
 
 #define ICON_LINE_HEIGHT 3
 #define ICON_LINE_Y_MARGIN 4
@@ -15,6 +16,7 @@ struct Content {
 	enum class Type {
 		SEARCH,
 		HISTORY,
+		LIBRARY,
 		HOME,
 		EXIT,
 		SETTINGS,
@@ -35,6 +37,7 @@ static bool is_menu_drawn() { return menu_status == OPEN || menu_status == CONFI
 static int menu_icon_x = 320 - OVERLAY_MENU_ICON_SIZE;
 static int menu_icon_y;
 
+static float menu_anim = 0; // 0 : closed, 1 : fully open (slide-in animation)
 static int last_touch_x = -1;
 static int last_touch_y = -1;
 static bool holding_touch = false;
@@ -78,20 +81,31 @@ void draw_overlay_menu(int y) {
 		Draw_texture(var_square_image[0], menu_icon_line_color, x, y, width, ICON_LINE_HEIGHT);
 	}
 
-	if (var_update_available) { // red dot : an update is available
+	if (var_update_available || var_update_banner) { // red dot : an update is available / news about an update
 		Draw_texture(var_square_image[0], DEF_DRAW_RED, menu_icon_x + OVERLAY_MENU_ICON_SIZE - 10, menu_icon_y + 2, 8, 8);
 	}
 
-	if (is_menu_drawn()) {
+	// ease the menu in/out (entries slide in from the right edge)
+	float anim_target = is_menu_drawn() ? 1 : 0;
+	menu_anim += (anim_target - menu_anim) * 0.4f;
+	if (std::abs(anim_target - menu_anim) < 0.02f) {
+		menu_anim = anim_target;
+	} else {
+		var_need_refresh = true; // keep redrawing until the animation ends
+	}
+	if (menu_anim > 0) {
 		int y_base = menu_icon_y - contents.size() * CONTENT_HEIGHT;
+		int slide = (int)((1 - menu_anim) * CONTENT_WIDTH);
 		for (int i = 0; i < (int)contents.size(); i++) {
 			color = holding_touch && content_at(last_touch_x, last_touch_y) == i
 			            ? menu_content_background_color_selected
 			            : menu_content_background_color;
-			Draw_texture(var_square_image[0], color, 320 - CONTENT_WIDTH, y_base + i * CONTENT_HEIGHT, CONTENT_WIDTH,
+			Draw_texture(var_square_image[0], color, 320 - CONTENT_WIDTH + slide, y_base + i * CONTENT_HEIGHT,
+			             CONTENT_WIDTH, CONTENT_HEIGHT);
+			Draw_texture(var_square_image[0], COLOR_ACCENT, 320 - CONTENT_WIDTH + slide, y_base + i * CONTENT_HEIGHT, 2,
 			             CONTENT_HEIGHT);
 			int string_width = Draw_get_width(contents[i].string, 0.5);
-			int string_x = 320 - CONTENT_WIDTH + (CONTENT_WIDTH - string_width) / 2;
+			int string_x = 320 - CONTENT_WIDTH + slide + (CONTENT_WIDTH - string_width) / 2;
 			Draw(contents[i].string, string_x, y_base + i * CONTENT_HEIGHT + 5, 0.5, 0.5, menu_content_string_color);
 		}
 	}
@@ -107,7 +121,9 @@ void update_overlay_menu(Hid_info *key) {
 		prev_scene = global_current_scene;
 	}
 	contents.clear();
-	if (var_update_available && global_current_scene != SceneType::SETTINGS) {
+	if (var_update_banner && global_current_scene != SceneType::SETTINGS) {
+		contents.push_back({var_update_banner, Content::Type::SETTINGS}); // "Actualizando..." / "Actualizado: reinicia la app"
+	} else if (var_update_available && global_current_scene != SceneType::SETTINGS) {
 		// takes the user straight to Settings where the "Update" button is
 		contents.push_back({LOCALIZED(UPDATES_AVAILABLE), Content::Type::SETTINGS});
 	}
@@ -116,6 +132,11 @@ void update_overlay_menu(Hid_info *key) {
 	}
 	if (global_current_scene != SceneType::SEARCH) {
 		contents.push_back({LOCALIZED(GOTO_SEARCH), Content::Type::SEARCH});
+	}
+	if (global_current_scene != SceneType::LIBRARY) {
+		int queued = play_queue_size();
+		contents.push_back({queued ? "Biblioteca (" + std::to_string(queued) + ")" : std::string("Biblioteca"),
+		                    Content::Type::LIBRARY});
 	}
 	if (global_current_scene != SceneType::HISTORY) {
 		contents.push_back({LOCALIZED(WATCH_HISTORY), Content::Type::HISTORY});
@@ -176,6 +197,9 @@ void update_overlay_menu(Hid_info *key) {
 					global_intent.arg = "";
 				} else if (contents[id].type == Content::Type::SETTINGS) {
 					global_intent.next_scene = SceneType::SETTINGS;
+					global_intent.arg = "";
+				} else if (contents[id].type == Content::Type::LIBRARY) {
+					global_intent.next_scene = SceneType::LIBRARY;
 					global_intent.arg = "";
 				} else if (contents[id].type == Content::Type::HISTORY) {
 					global_intent.next_scene = SceneType::HISTORY;

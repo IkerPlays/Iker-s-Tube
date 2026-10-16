@@ -32,8 +32,10 @@
 #define DEFAULT_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xFF) : COLOR_GRAY(0x00))
 #define LIGHT0_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xCC) : COLOR_GRAY(0x33))
 #define LIGHT1_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xA0) : COLOR_GRAY(0x77))
-#define DEFAULT_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x00) : COLOR_GRAY(0xFF))
-#define LIGHT0_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x22) : COLOR_GRAY(0xDD))
-#define LIGHT1_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x50) : COLOR_GRAY(0xAA))
-#define LIGHT2_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x70) : COLOR_GRAY(0x77))
-#define LIGHT3_BACK_COLOR (var_night_mode ? COLOR_GRAY(0xA0) : COLOR_GRAY(0x33))
+// Iker's Tube palette : slightly blue dark theme, red accent (colors are ABGR)
+#define COLOR_ACCENT 0xFF4B4BFF
+#define DEFAULT_BACK_COLOR (var_night_mode ? 0xFF181212 : COLOR_GRAY(0xFF))
+#define LIGHT0_BACK_COLOR (var_night_mode ? 0xFF281E1E : COLOR_GRAY(0xEE))
+#define LIGHT1_BACK_COLOR (var_night_mode ? 0xFF403030 : COLOR_GRAY(0xD0))
+#define LIGHT2_BACK_COLOR (var_night_mode ? 0xFF2A2058 : COLOR_GRAY(0xB8))
+#define LIGHT3_BACK_COLOR COLOR_ACCENT

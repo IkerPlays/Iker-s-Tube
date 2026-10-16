@@ -6,6 +6,7 @@
 #include "scenes/about.hpp"
 #include "scenes/setting_menu.hpp"
 #include "scenes/watch_history.hpp"
+#include "scenes/library.hpp"
 #include "scenes/home.hpp"
 #include "network_decoder/network_io.hpp"
 #include "network_decoder/thumbnail_loader.hpp"
@@ -150,6 +151,8 @@ void Menu_init(void) {
 	About_suspend();
 	History_init();
 	History_suspend();
+	Library_init();
+	Library_suspend();
 	Search_init();
 	Search_suspend();
 	// add here
@@ -179,6 +182,7 @@ void Menu_exit(void) {
 	Sem_exit();
 	About_exit();
 	History_exit();
+	Library_exit();
 	Home_exit();
 	// add here
 
@@ -285,6 +289,8 @@ bool Menu_main(void) {
 		Sem_draw();
 	} else if (global_current_scene == SceneType::ABOUT) {
 		About_draw();
+	} else if (global_current_scene == SceneType::LIBRARY) {
+		Library_draw();
 	} else if (global_current_scene == SceneType::HISTORY) {
 		History_draw();
 	} else if (global_current_scene == SceneType::HOME) {
@@ -303,6 +309,8 @@ bool Menu_main(void) {
 			Sem_suspend();
 		} else if (global_current_scene == SceneType::ABOUT) {
 			About_suspend();
+		} else if (global_current_scene == SceneType::LIBRARY) {
+			Library_suspend();
 		} else if (global_current_scene == SceneType::HISTORY) {
 			History_suspend();
 		} else if (global_current_scene == SceneType::HOME) {
@@ -356,6 +364,8 @@ bool Menu_main(void) {
 			Sem_resume(arg);
 		} else if (global_current_scene == SceneType::ABOUT) {
 			About_resume(arg);
+		} else if (global_current_scene == SceneType::LIBRARY) {
+			Library_resume(arg);
 		} else if (global_current_scene == SceneType::HISTORY) {
 			History_resume(arg);
 		} else if (global_current_scene == SceneType::HOME) {

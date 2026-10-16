@@ -273,6 +273,8 @@ std::string youtube_get_video_id_by_url(const std::string &url);
 std::string youtube_get_playlist_id_by_url(const std::string &url);
 std::string youtube_get_video_thumbnail_url_by_id(const std::string &id);
 std::string youtube_get_video_url_by_id(const std::string &id);
+// set to true to make a running youtube_load_video_page() give up at its next checkpoint (a newer request is waiting)
+extern volatile bool youtube_load_cancel;
 std::string get_video_id_from_thumbnail_url(const std::string &url);
 std::string convert_webp_thumbnail_to_jpg(const std::string &url);
 bool youtube_is_valid_video_id(const std::string &id);

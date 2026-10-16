@@ -5,6 +5,9 @@
 #include <regex>
 
 #include "scenes/video_player.hpp"
+#include "util/play_queue.hpp"
+#include "data_io/favorites.hpp"
+#include "data_io/resume_position.hpp"
 #include "scenes/home.hpp"
 #include "ui/overlay.hpp"
 #include "ui/ui.hpp"
@@ -55,6 +58,7 @@ volatile bool audio_only_mode = false;
 volatile bool video_skip_drawing = false; // for performance reason, enabled when opening keyboard
 volatile int video_p_value = 360;
 volatile double seek_at_init_request = -1;
+static char vid_resume_id[16] = {0}; // id of the playing video, readable from the converter thread without a lock
 double vid_time[2][320];
 double vid_copy_time[2] = {
     0,
@@ -434,6 +438,19 @@ debug_info_view =
 	view.fix_close_values(0.97, 1.0, 1.03);
 	network_decoder.set_pitch(view.get_value());
 	                 }),
+	             (new BarView(0, 0, 260, 30)) // sleep timer
+	                 ->set_values(0, 120, 0)
+	                 ->set_title([](const BarView &view) {
+	u64 now = osGetTime();
+	if (var_sleep_timer_end > now) {
+		return std::string("Sleep timer : ") + std::to_string((var_sleep_timer_end - now) / 60000 + 1) + " min";
+	}
+	return std::string("Sleep timer : off");
+	                 })
+	                 ->set_on_release([](BarView &view) {
+	int minutes = (int)std::round(view.get_value());
+	var_sleep_timer_end = minutes > 0 ? osGetTime() + (u64)minutes * 60000ULL : 0;
+	                 }),
 	             (new TextView(SMALL_MARGIN * 2, 0, 100, 20))
 	                 ->set_text([]() {
 	return LOCALIZED(OPEN_EQUALIZER); })
@@ -780,6 +797,7 @@ debug_info_view =
 	    if (item.type == YouTubeSuccinctItem::VIDEO) {
 		    cur_view->set_auxiliary_lines({item.video.author});
 		    cur_view->set_bottom_right_overlay(item.video.duration_text);
+		    cur_view->set_queue_item(item.get_url(), item.get_name());
 	    } else if (item.type == YouTubeSuccinctItem::PLAYLIST) {
 		    cur_view->set_auxiliary_lines({item.playlist.video_count_str});
 	    }
@@ -938,6 +956,16 @@ debug_info_view =
 		    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 		    tmp_video_info = youtube_load_video_page(url);
 		    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
+
+		    // the user asked for another video while this one was loading : drop this result, the new request is queued
+		    small_resource_lock.lock();
+		    bool stale = tmp_video_info.error == "cancelled" || (is_to_play && cur_playing_url != url) ||
+		                 (is_to_display && cur_displaying_url != url);
+		    small_resource_lock.unlock();
+		    if (stale) {
+			    logger.info("player/load-v", "stale/cancelled load dropped : " + url);
+			    return;
+		    }
 	    }
 
 	    if (is_to_display) {
@@ -1087,7 +1115,7 @@ debug_info_view =
 				    main_tab_views.insert(main_tab_views.end(), add_views.begin(), add_views.end());
 			    }
 			    {
-				    TextView *play_button = (new TextView(0, 0, 160 - SMALL_MARGIN, 20));
+				    TextView *play_button = (new TextView(0, 0, 100, 20));
 				    play_button
 				        ->set_text((std::function<std::string()>)[]() {
 					        return cur_video_info.id == playing_video_info.id ? LOCALIZED(PLAYING) : LOCALIZED(PLAY);
@@ -1110,7 +1138,25 @@ debug_info_view =
 					    play_button->set_get_background_color([](const View &) { return LIGHT1_BACK_COLOR; });
 					    logger.info("video_player", "Video is not playable: " + tmp_video_info.playability_reason);
 				    }
-				    TextView *reload_button = (new TextView(0, 0, 160 - SMALL_MARGIN, 20));
+				    TextView *reload_button = (new TextView(0, 0, 100, 20));
+				    TextView *favorite_button = (new TextView(0, 0, 100, 20));
+				    favorite_button
+				        ->set_text((std::function<std::string()>)[]() {
+					        return favorites_contains(cur_video_info.id) ? std::string("Quitar fav") : std::string("+ Favorito");
+				        })
+				        ->set_x_alignment(TextView::XAlign::CENTER)
+				        ->set_get_background_color(View::STANDARD_BACKGROUND)
+				        ->set_on_view_released([](View &) {
+					        if (cur_video_info.id != "" && cur_video_info.title != "") {
+						        FavoriteVideo fav;
+						        fav.id = cur_video_info.id;
+						        fav.title = cur_video_info.title;
+						        fav.author = cur_video_info.author.name;
+						        fav.length_text = Util_convert_seconds_to_time((double)cur_video_info.duration_ms / 1000);
+						        favorites_toggle(fav);
+						        var_need_refresh = true;
+					        }
+				        });
 				    reload_button->set_text((std::function<std::string()>)[]() { return LOCALIZED(RELOAD); })
 				        ->set_x_alignment(TextView::XAlign::CENTER)
 				        ->set_get_background_color(View::STANDARD_BACKGROUND)
@@ -1123,7 +1169,7 @@ debug_info_view =
 
 				    main_tab_views.push_back(
 				        (new HorizontalListView(0, 0, 20))
-				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)), play_button, reload_button}));
+				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)), play_button, reload_button, favorite_button}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 			    }
@@ -1387,6 +1433,8 @@ debug_info_view =
 	    }
 	    playing_video_info = tmp_video_info;
 	    video_info_cache[url] = tmp_video_info;
+	    strncpy(vid_resume_id, tmp_video_info.id.c_str(), sizeof(vid_resume_id) - 1);
+	    vid_resume_id[sizeof(vid_resume_id) - 1] = 0;
 
 	    vid_change_video_request = true;
 	    if (network_decoder.ready) {
@@ -1762,6 +1810,10 @@ debug_info_view =
     // should be called while `small_resource_lock` is locked
     static void send_change_video_request_wo_lock(std::string url, bool update_player, bool update_view,
                                                   bool force_load) {
+	    // a page load that is already running would delay the new request until it finishes : tell it to give up
+	    if (is_async_task_running(load_video_page) == 2) {
+		    youtube_load_cancel = true;
+	    }
 	    remove_all_async_tasks_with_type(load_video_page);
 	    remove_all_async_tasks_with_type(load_more_suggestions);
 	    remove_all_async_tasks_with_type(load_more_comments);
@@ -1814,6 +1866,18 @@ debug_info_view =
     }
 
     bool video_is_playing() {
+	    if (var_sleep_timer_end && osGetTime() >= var_sleep_timer_end) { // sleep timer : pause the playback
+		    var_sleep_timer_end = 0;
+		    small_resource_lock.lock();
+		    if (vid_play_request && !vid_pausing) {
+			    if (!vid_pausing_seek) {
+				    Util_speaker_pause(0);
+			    }
+			    vid_pausing = true;
+		    }
+		    small_resource_lock.unlock();
+		    var_need_refresh = true;
+	    }
 	    if (!vid_play_request && vid_pausing_seek) {
 		    small_resource_lock.lock();
 		    vid_pausing_seek = false;
@@ -2134,6 +2198,13 @@ debug_info_view =
 				    }
 			    }
 
+			    if (vid_play_request && seek_at_init_request < 0 && !playing_video_info.is_livestream) {
+				    // continue where the video was left
+				    double resume_pos = resume_get(playing_video_info.id);
+				    if (resume_pos > 0 && vid_duration - resume_pos > 15) {
+					    seek_at_init_request = resume_pos;
+				    }
+			    }
 			    if (seek_at_init_request >= 0) {
 				    vid_seek_request = true;
 				    vid_seek_pos = seek_at_init_request;
@@ -2195,7 +2266,14 @@ debug_info_view =
 					    bool break_flag = false;
 					    if (!eof_reached) { // the first time it reaches EOF
 						    small_resource_lock.lock();
-						    if (var_loop_mode == false) {
+						    resume_set(playing_video_info.id, 0, 0); // watched until the end : next time from the start
+						    resume_save();
+						    std::string queued_url;
+						    if (var_loop_mode == false && play_queue_pop(queued_url)) {
+							    // something was queued by the user : play it before any autoplay suggestion
+							    send_change_video_request_wo_lock(queued_url, true, false, false);
+							    break_flag = true;
+						    } else if (var_loop_mode == false) {
 							    if ((var_autoplay_level == 2 && playing_video_info.has_next_video()) ||
 							        (var_autoplay_level == 1 && playing_video_info.has_next_video_in_playlist())) {
 
@@ -2402,12 +2480,13 @@ debug_info_view =
 
 					    // sync with sound
 					    double cur_sound_pos = Util_speaker_get_current_timestamp(0, vid_sample_rate);
+					    const double av_lead = var_av_sync_ms / 1000.0; // user adjustable A/V offset (Settings)
 					    if (cur_sound_pos >= 0) { // if sound is not playing, probably because the video is lagging
 						                          // behind, draw immediately
-						    while (pts - cur_sound_pos > 0.003 && vid_play_request && !vid_seek_request &&
+						    while (pts - cur_sound_pos - av_lead > 0.003 && vid_play_request && !vid_seek_request &&
 						           !vid_change_video_request) {
 							    double sleep_microseconds =
-							        std::min(0.1, (pts - cur_sound_pos - 0.0015) / network_decoder.get_tempo()) *
+							        std::min(0.1, (pts - cur_sound_pos - av_lead - 0.0015) / network_decoder.get_tempo()) *
 							        1000000;
 							    usleep(sleep_microseconds);
 							    cur_sound_pos = Util_speaker_get_current_timestamp(0, vid_sample_rate);
@@ -2417,6 +2496,16 @@ debug_info_view =
 						    }
 					    }
 					    vid_current_pos = pts;
+
+					    {   // remember the position every 10 s so the video can be continued later
+						    static u64 last_resume_save = 0;
+						    u64 now = osGetTime();
+						    if (now - last_resume_save > 10000 && vid_duration > 60 && vid_resume_id[0]) {
+							    last_resume_save = now;
+							    resume_set(std::string(vid_resume_id), pts, vid_duration);
+							    resume_save();
+						    }
+					    }
 
 					    osTickCounterUpdate(&counter0);
 					    osTickCounterUpdate(&counter1);
@@ -2660,6 +2749,15 @@ debug_info_view =
 				    pos = std::max<double>(0, pos);
 				    pos = std::min<double>(vid_duration, pos);
 				    send_seek_request(pos);
+			    }
+		    } else if (key.p_r) {
+			    std::string queued_url;
+			    if (play_queue_pop(queued_url)) { // R : next video of the queue
+				    send_change_video_request(queued_url, true, false, false);
+			    }
+		    } else if (key.p_l) { // L : restart
+			    if (network_decoder.ready) {
+				    send_seek_request(0);
 			    }
 		    } else if (key.p_zr || key.p_zl) {
 			    if (network_decoder.ready) {

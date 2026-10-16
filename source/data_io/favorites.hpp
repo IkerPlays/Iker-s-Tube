@@ -1,0 +1,17 @@
+#pragma once
+#include <string>
+#include <vector>
+
+struct FavoriteVideo {
+	std::string id;
+	std::string title;
+	std::string author;
+	std::string length_text;
+};
+
+// "Favorites / watch later" list, stored in sdmc:/3ds/IkersTube/favorites.txt (one tab-separated video per line)
+void favorites_load();
+bool favorites_contains(const std::string &video_id);
+bool favorites_toggle(const FavoriteVideo &video); // returns true if it was added
+void favorites_remove(const std::string &video_id);
+std::vector<FavoriteVideo> favorites_get();

@@ -8,6 +8,7 @@
 #include "data_io/history.hpp"
 #include "util/misc_tasks.hpp"
 #include "scenes/setting_menu.hpp"
+#include "util/app_version.hpp"
 #include "scenes/home.hpp"
 #include "scenes/video_player.hpp"
 #include "ui/overlay.hpp"
@@ -112,6 +113,7 @@ namespace Settings {
 	static std::string update_url_cia;
 	static std::string update_url_3dsx;
 	static std::string next_version_str;
+	static std::string installed_version_str; // installed during this session : needs a restart, don't offer it again
 	static Mutex resource_lock;
 	static std::string install_progress_str;
 	
@@ -222,52 +224,56 @@ static void update_worker_thread_func(void *) {
 					logger.error("updater", "failed to parse json : " + error);
 					new_error_message = "failed to parse json : " + error;
 				} else {
-					// /releases (not /releases/latest) also lists pre-releases such as the CI "devbuild".
-					// Pick the newest release (stable or dev build) that has both a .cia and a .3dsx.
+					// /releases (not /releases/latest) also lists pre-releases, which is how devbuilds are published.
+					//  - a newer STABLE release (not flagged "pre-release") is installed automatically
+					//  - a newer devbuild is only offered (red dot + Update button) : the player decides
 					auto has_suffix = [] (const std::string &str, const std::string &suffix) {
 						return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 					};
-					auto first_number_seq = [] (const std::string &str) {
-						std::vector<int> res;
-						size_t head = 0;
-						while (head < str.size()) {
-							while (head < str.size() && !isdigit(str[head])) head++;
-							if (head >= str.size()) break;
-							int cur = 0;
-							while (head < str.size() && isdigit(str[head])) cur = cur * 10 + str[head++] - '0';
-							res.push_back(cur);
+					AppVersion cur_version = app_version_parse(DEF_CURRENT_APP_VER);
+					bool allow_dev = cur_version.is_dev || var_show_devbuilds;
+					RJson best_stable, best_dev;
+					AppVersion best_stable_v, best_dev_v;
+					std::string best_stable_str, best_dev_str;
+					for (auto item : result_json.array_items()) {
+						if (item["draft"].bool_value()) continue;
+						bool has_cia = false, has_3dsx = false;
+						for (auto asset : item["assets"].array_items()) {
+							auto asset_url = asset["browser_download_url"].string_value();
+							if (has_suffix(asset_url, ".cia")) has_cia = true;
+							if (has_suffix(asset_url, ".3dsx")) has_3dsx = true;
 						}
-						return res;
-					};
-					std::string best_version_str;
-					{
-						RJson best;
-						std::vector<int> best_seq;
-						for (auto item : result_json.array_items()) {
-							if (item["draft"].bool_value()) continue;
-							bool has_cia = false, has_3dsx = false;
-							for (auto asset : item["assets"].array_items()) {
-								auto asset_url = asset["browser_download_url"].string_value();
-								if (has_suffix(asset_url, ".cia")) has_cia = true;
-								if (has_suffix(asset_url, ".3dsx")) has_3dsx = true;
-							}
-							if (!has_cia || !has_3dsx) continue;
-							// version = digits in the tag, or in the release name when the tag has none ("devbuild")
-							std::string version_str = item["tag_name"].string_value();
-							auto seq = first_number_seq(version_str);
-							if (seq.empty()) {
-								version_str = item["name"].string_value();
-								seq = first_number_seq(version_str);
-							}
-							if (seq.empty()) continue;
-							if (!best.is_valid() || best_seq < seq) {
-								best = item;
-								best_seq = seq;
-								best_version_str = version_str;
-							}
+						if (!has_cia || !has_3dsx) continue;
+						std::string version_str = item["tag_name"].string_value();
+						AppVersion v = app_version_parse(version_str);
+						if (!v.valid) {
+							version_str = item["name"].string_value();
+							v = app_version_parse(version_str);
 						}
-						if (best.is_valid()) result_json = best;
+						if (!v.valid) continue;
+						bool is_pre = item["prerelease"].bool_value(); // the GitHub flag decides what is a devbuild
+						v.is_dev = is_pre;
+						if (!is_pre) v.dev = 0;
+						if (is_pre) {
+							if (!best_dev.is_valid() || app_version_compare(v, best_dev_v) > 0) best_dev = item, best_dev_v = v, best_dev_str = version_str;
+						} else {
+							if (!best_stable.is_valid() || app_version_compare(v, best_stable_v) > 0) best_stable = item, best_stable_v = v, best_stable_str = version_str;
+						}
 					}
+					RJson chosen;
+					std::string best_version_str;
+					bool update_available = false, auto_install = false;
+					if (best_stable.is_valid() && app_version_compare(best_stable_v, cur_version) > 0) {
+						chosen = best_stable, best_version_str = best_stable_str, update_available = true, auto_install = true;
+					} else if (allow_dev && best_dev.is_valid() && app_version_compare(best_dev_v, cur_version) > 0) {
+						chosen = best_dev, best_version_str = best_dev_str, update_available = true;
+					} else if (best_stable.is_valid() && !cur_version.is_dev) {
+						chosen = best_stable, best_version_str = best_stable_str; // up to date : show the notes of the latest release
+					} else if (best_dev.is_valid()) {
+						chosen = best_dev, best_version_str = best_dev_str;
+					}
+					if (update_available && best_version_str == installed_version_str) update_available = auto_install = false;
+					if (chosen.is_valid()) result_json = chosen;
 					update_url_3dsx = update_url_cia;
 					for (auto item : result_json["assets"].array_items()) {
 						auto url = item["browser_download_url"].string_value();
@@ -277,23 +283,32 @@ static void update_worker_thread_func(void *) {
 					if (update_url_cia == "") new_error_message = "could not find .cia url";
 					if (update_url_3dsx == "") new_error_message = "could not find .3dsx url";
 					if (update_url_cia != "" && update_url_3dsx != "") {
-						// lexicographically compare the sequence of version numbers ([0, 4, 1] if v0.4.1)
-						auto version_str_to_vector = [] (const std::string &str) {
-							size_t head = 0;
-							std::vector<int> res;
-							while (head < str.size()) {
-								while (head < str.size() && !isdigit(str[head])) head++;
-								if (head >= str.size()) break;
-								int cur = 0;
-								while (head < str.size() && isdigit(str[head])) cur = cur * 10 + str[head++] - '0';
-								res.push_back(cur);
-							}
-							return res;
-						};
-						auto new_version_seq = version_str_to_vector(best_version_str);
-						auto cur_version_seq = version_str_to_vector(DEF_CURRENT_APP_VER);
-						bool update_available = cur_version_seq < new_version_seq;
 						std::string release_notes = result_json["body"].string_value();
+						{ // the notes are written in Markdown with emoji for GitHub : make them readable on the 3DS font
+							std::string clean, raw = release_notes;
+							for (size_t i = 0; i < raw.size(); i++) {
+								unsigned char c = raw[i];
+								if (c < 0x80) {
+									if (c != '*' && c != '`' && c != '#' && c != '\r') clean += (char) c;
+								} else {
+									size_t len = c >= 0xF0 ? 4 : c >= 0xE0 ? 3 : 2;
+									if (len == 2) { // accented letters are fine
+										clean.append(raw, i, 2);
+									} else if (c == 0xE2 && i + 2 < raw.size() && raw[i + 1] == (char) 0x80 &&
+									           (raw[i + 2] == (char) 0x93 || raw[i + 2] == (char) 0x94)) {
+										clean += '-'; // en/em dash
+									}
+									i += len - 1; // emoji and symbols the font can't draw are dropped
+								}
+							}
+							std::istringstream clean_lines(clean);
+							std::string kept, l;
+							while (std::getline(clean_lines, l)) {
+								if (l.rfind("<sub>", 0) == 0 || l.rfind("---", 0) == 0) continue;
+								kept += l + "\n";
+							}
+							release_notes = kept;
+						}
 						std::istringstream lines(release_notes);
 						std::ostringstream wrapped;
 						std::string line;
@@ -339,9 +354,15 @@ static void update_worker_thread_func(void *) {
 						var_update_available = update_available;
 						var_need_refresh = true;
 						check_success = true;
+						static bool auto_install_tried = false; // never loop : one automatic attempt per session
+						if (update_available && auto_install && !auto_install_tried) {
+							auto_install_tried = true;
+							var_update_banner = "Actualizando...";
+							update_state = UpdateState::INSTALLING;
+						}
 					}
 				}
-			} else new_error_message = "http returned " + std::to_string(result.status_code);
+			} else new_error_message = result.status_code == 404 ? "http 404 : repo privado o sin releases" : "http returned " + std::to_string(result.status_code);
 			if (!check_success) update_state = UpdateState::FAILED_CHECKING;
 			if (new_error_message != "") {
 				resource_lock.lock();
@@ -351,8 +372,12 @@ static void update_worker_thread_func(void *) {
 		}
 		if (update_state == UpdateState::INSTALLING) {
 			std::string error = install_update(session_list);
-			if (error == "") update_state = UpdateState::SUCCEEDED_INSTALLING;
-			else {
+			if (error == "") {
+				update_state = UpdateState::SUCCEEDED_INSTALLING, var_update_available = false, var_need_refresh = true;
+				var_update_banner = "Actualizado: reinicia la app";
+				installed_version_str = next_version_str; // not offered again before the restart
+			} else {
+				var_update_banner = "Error al actualizar";
 				resource_lock.lock();
 				update_error_message = error;
 				resource_lock.unlock();
@@ -695,6 +720,16 @@ void Sem_init(void) {
 							snprintf(ratio_str, 16, "%.2f", var_forward_buffer_ratio);
 							return LOCALIZED(FORWARD_BUFFER_RATIO) + " : " + ratio_str;
 						})
+						->set_on_release([] (const BarView &view) { misc_tasks_request(TASK_SAVE_SETTINGS); }),
+
+					// Audio/video sync offset
+					(new BarView(0, 0, 320, 40))
+						->set_values_sync(-300, 300, &var_av_sync_ms)
+						->set_title([] (const BarView &view) {
+							char ms_str[24];
+							snprintf(ms_str, 24, "%+d ms", (int) var_av_sync_ms);
+							return std::string("Sincronia audio/video : ") + ms_str;
+						})
 						->set_on_release([] (const BarView &view) { misc_tasks_request(TASK_SAVE_SETTINGS); })
 				}),
 			// Tab #3 : Data
@@ -818,6 +853,20 @@ void Sem_init(void) {
 						}),
 					(new RuleView(0, 6, 320, 1))
 					    ->set_get_background_color([] (const View &) {return DEFAULT_BACK_COLOR; }),
+					// Offer devbuilds (test builds) : stable releases are always installed automatically
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_show_devbuilds)
+						->set_title([](const SelectorView &) { return std::string("Ofrecer devbuilds (pruebas)"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_show_devbuilds != view.selected_button) {
+								var_show_devbuilds = view.selected_button;
+								update_state = UpdateState::CHECKING_UPDATES; // check again with the new setting
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					    release_notes_view,
 					(new EmptyView(0, 0, 320, DEFAULT_FONT_INTERVAL))
 				}),
