@@ -16,7 +16,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y git make cmake g++ gcc python3 python3-pil
-          test -f /opt/devkitpro/portlibs/3ds/include/mpg123.h
+          find /opt/devkitpro/portlibs -name mpg123.h -o -name ivorbisfile.h | grep .
           test -f /opt/devkitpro/libctru/include/3ds.h
 
       - name: Compilar makerom y bannertool
