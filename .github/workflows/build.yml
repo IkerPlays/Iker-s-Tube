@@ -1,0 +1,55 @@
+name: Build 3DSX + CIA
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar librerias 3DS y herramientas
+        run: |
+          apt-get update
+          apt-get install -y git make g++ gcc python3 python3-pil
+          dkp-pacman -Sy --noconfirm 3ds-mpg123 3ds-libvorbisidec 3ds-libogg || \
+            pacman -Sy --noconfirm 3ds-mpg123 3ds-libvorbisidec 3ds-libogg
+
+      - name: Compilar makerom y bannertool
+        run: |
+          git clone --depth 1 https://github.com/3DSGuy/Project_CTR.git /tmp/ctr
+          make -C /tmp/ctr/makerom deps
+          make -C /tmp/ctr/makerom -j"$(nproc)"
+          cp /tmp/ctr/makerom/bin/makerom /usr/local/bin/
+          git clone --depth 1 --recursive https://github.com/Steveice10/bannertool.git /tmp/bannertool
+          make -C /tmp/bannertool -j"$(nproc)"
+          cp /tmp/bannertool/output/linux-x86_64/bannertool /usr/local/bin/
+
+      - name: Generar iconos y banner
+        run: python3 tools/gen_assets.py meta
+
+      - name: Compilar .3dsx
+        run: make
+
+      - name: Crear .cia
+        run: |
+          bannertool makebanner -i meta/banner.png -a meta/banner.wav -o build/banner.bnr
+          bannertool makesmdh -s "Iker's Music 3DS" -l "Reproductor de musica con playlists" -p "Iker" -i meta/icon.png -o build/icon.icn
+          makerom -f cia -o IkersMusic3DS.cia -elf IkersMusic3DS.elf -rsf meta/app.rsf \
+            -target t -exefslogo -icon build/icon.icn -banner build/banner.bnr \
+            -major 1 -minor 0 -micro 0 \
+            -DAPP_TITLE="Iker's Music 3DS" -DAPP_PRODUCT_CODE="CTR-P-IKMU" -DAPP_UNIQUE_ID="0xF1A01" \
+            -DAPP_SYSTEM_MODE="64MB" -DAPP_SYSTEM_MODE_EXT="Legacy" -DAPP_CATEGORY="Application" \
+            -DAPP_USE_ON_SD="true" -DAPP_MEMORY_TYPE="Application" -DAPP_CPU_SPEED="268MHz" \
+            -DAPP_ENABLE_L2_CACHE="false" -DAPP_ENCRYPTED="false"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IkersMusic3DS
+          path: |
+            IkersMusic3DS.cia
+            IkersMusic3DS.3dsx
