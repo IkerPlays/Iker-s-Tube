@@ -592,6 +592,7 @@ static SuccinctVideoView *convert_video_to_view(const YouTubeVideoSuccinct &vide
 	res->set_title_lines(truncate_str(video.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
 	res->set_auxiliary_lines({video.views_str, video.publish_date});
 	res->set_bottom_right_overlay(video.duration_text);
+	res->set_queue_item(video.url, video.title);
 	res->set_thumbnail_url(video.thumbnail_url);
 	res->set_get_background_color(View::STANDARD_BACKGROUND);
 	res->set_on_view_released([video](View &view) {
@@ -801,6 +802,7 @@ static void load_subscription_feed(void *) {
 			cur_view->set_thumbnail_url(video.thumbnail_url);
 			cur_view->set_auxiliary_lines({video.publish_date, video.views_str});
 			cur_view->set_bottom_right_overlay(video.duration_text);
+			cur_view->set_queue_item(video.url, video.title);
 			cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
 			cur_view->set_on_view_released([video](View &view) {
 				clicked_url = video.url;

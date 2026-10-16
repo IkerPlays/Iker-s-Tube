@@ -66,7 +66,7 @@ void load_settings() {
 	var_community_image_size =
 	    std::min(COMMUNITY_IMAGE_SIZE_MAX,
 	             std::max(COMMUNITY_IMAGE_SIZE_MIN, load_int("community_image_size", COMMUNITY_IMAGE_SIZE_DEFAULT)));
-	var_autoplay_level = std::min(2, std::max(0, load_int("autoplay_level", 2)));
+	var_autoplay_level = std::min(2, std::max(0, load_int("autoplay_level_v2", 1)));
 	var_loop_mode = std::min(2, std::max(0, load_int("loop_mode", 0)));
 	var_video_quality = std::min(480, std::max(0, load_int("video_quality", var_is_new3ds ? 360 : 144)));
 	var_forward_buffer_ratio = std::max(0.1, std::min(1.0, load_double("forward_buffer_ratio", 0.8)));
@@ -115,7 +115,7 @@ void save_settings() {
 	add_int("dark_theme", var_night_mode);
 	add_int("disable_pull_to_refresh", var_disable_pull_to_refresh);
 	add_int("community_image_size", var_community_image_size);
-	add_int("autoplay_level", var_autoplay_level);
+	add_int("autoplay_level_v2", var_autoplay_level);
 	add_int("loop_mode", var_loop_mode);
 	add_int("video_quality", var_video_quality);
 	add_double("forward_buffer_ratio", var_forward_buffer_ratio);

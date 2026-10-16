@@ -53,8 +53,8 @@ TIME := $(shell date +"%Y-%m-%d %H:%M:%S %Z")
 #---------------------------------------------------------------------------------
 APP_VER					:= 84
 APP_TITLE				:= Iker's Tube
-APP_DESCRIPTION				:= Cliente de YouTube para 3DS
-APP_AUTHOR				:= IkerPlays
+APP_DESCRIPTION				:= Iker's Tube
+APP_AUTHOR				:= Iker's Tube
 PRODUCT_CODE				:= CTR-IKT
 UNIQUE_ID				:= 0xF1A02
 

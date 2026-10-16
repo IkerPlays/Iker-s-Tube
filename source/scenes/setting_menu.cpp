@@ -341,7 +341,7 @@ static void update_worker_thread_func(void *) {
 						check_success = true;
 					}
 				}
-			} else new_error_message = "http returned " + std::to_string(result.status_code);
+			} else new_error_message = result.status_code == 404 ? "http 404 : repo privado o sin releases" : "http returned " + std::to_string(result.status_code);
 			if (!check_success) update_state = UpdateState::FAILED_CHECKING;
 			if (new_error_message != "") {
 				resource_lock.lock();

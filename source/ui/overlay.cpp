@@ -35,6 +35,7 @@ static bool is_menu_drawn() { return menu_status == OPEN || menu_status == CONFI
 static int menu_icon_x = 320 - OVERLAY_MENU_ICON_SIZE;
 static int menu_icon_y;
 
+static float menu_anim = 0; // 0 : closed, 1 : fully open (slide-in animation)
 static int last_touch_x = -1;
 static int last_touch_y = -1;
 static bool holding_touch = false;
@@ -82,16 +83,27 @@ void draw_overlay_menu(int y) {
 		Draw_texture(var_square_image[0], DEF_DRAW_RED, menu_icon_x + OVERLAY_MENU_ICON_SIZE - 10, menu_icon_y + 2, 8, 8);
 	}
 
-	if (is_menu_drawn()) {
+	// ease the menu in/out (entries slide in from the right edge)
+	float anim_target = is_menu_drawn() ? 1 : 0;
+	menu_anim += (anim_target - menu_anim) * 0.4f;
+	if (std::abs(anim_target - menu_anim) < 0.02f) {
+		menu_anim = anim_target;
+	} else {
+		var_need_refresh = true; // keep redrawing until the animation ends
+	}
+	if (menu_anim > 0) {
 		int y_base = menu_icon_y - contents.size() * CONTENT_HEIGHT;
+		int slide = (int)((1 - menu_anim) * CONTENT_WIDTH);
 		for (int i = 0; i < (int)contents.size(); i++) {
 			color = holding_touch && content_at(last_touch_x, last_touch_y) == i
 			            ? menu_content_background_color_selected
 			            : menu_content_background_color;
-			Draw_texture(var_square_image[0], color, 320 - CONTENT_WIDTH, y_base + i * CONTENT_HEIGHT, CONTENT_WIDTH,
+			Draw_texture(var_square_image[0], color, 320 - CONTENT_WIDTH + slide, y_base + i * CONTENT_HEIGHT,
+			             CONTENT_WIDTH, CONTENT_HEIGHT);
+			Draw_texture(var_square_image[0], COLOR_ACCENT, 320 - CONTENT_WIDTH + slide, y_base + i * CONTENT_HEIGHT, 2,
 			             CONTENT_HEIGHT);
 			int string_width = Draw_get_width(contents[i].string, 0.5);
-			int string_x = 320 - CONTENT_WIDTH + (CONTENT_WIDTH - string_width) / 2;
+			int string_x = 320 - CONTENT_WIDTH + slide + (CONTENT_WIDTH - string_width) / 2;
 			Draw(contents[i].string, string_x, y_base + i * CONTENT_HEIGHT + 5, 0.5, 0.5, menu_content_string_color);
 		}
 	}

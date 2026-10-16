@@ -13,7 +13,7 @@ bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
 
-const std::vector<std::string> app_description_lines = {"Cliente de YouTube homebrew para 3DS", "hecho por IkerPlays"};
+const std::vector<std::string> app_description_lines = {"Iker's Tube"};
 const std::vector<std::string> story_lines = {
     "Iker's Tube es un fork de FourthTube",
     "(que viene de ThirdTube), con mejoras",

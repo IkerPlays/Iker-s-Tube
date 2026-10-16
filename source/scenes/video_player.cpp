@@ -5,6 +5,7 @@
 #include <regex>
 
 #include "scenes/video_player.hpp"
+#include "util/play_queue.hpp"
 #include "scenes/home.hpp"
 #include "ui/overlay.hpp"
 #include "ui/ui.hpp"
@@ -780,6 +781,7 @@ debug_info_view =
 	    if (item.type == YouTubeSuccinctItem::VIDEO) {
 		    cur_view->set_auxiliary_lines({item.video.author});
 		    cur_view->set_bottom_right_overlay(item.video.duration_text);
+		    cur_view->set_queue_item(item.get_url(), item.get_name());
 	    } else if (item.type == YouTubeSuccinctItem::PLAYLIST) {
 		    cur_view->set_auxiliary_lines({item.playlist.video_count_str});
 	    }
@@ -2195,7 +2197,12 @@ debug_info_view =
 					    bool break_flag = false;
 					    if (!eof_reached) { // the first time it reaches EOF
 						    small_resource_lock.lock();
-						    if (var_loop_mode == false) {
+						    std::string queued_url;
+						    if (var_loop_mode == false && play_queue_pop(queued_url)) {
+							    // something was queued by the user : play it before any autoplay suggestion
+							    send_change_video_request_wo_lock(queued_url, true, false, false);
+							    break_flag = true;
+						    } else if (var_loop_mode == false) {
 							    if ((var_autoplay_level == 2 && playing_video_info.has_next_video()) ||
 							        (var_autoplay_level == 1 && playing_video_info.has_next_video_in_playlist())) {
 

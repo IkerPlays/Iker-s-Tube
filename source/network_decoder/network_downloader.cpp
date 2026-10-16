@@ -3,6 +3,8 @@
 #include "network_io.hpp"
 
 #include <malloc.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 // The cache is much bigger on New 3DS than the original 12 MB so that the video can buffer minutes ahead, but we
 // fall back to the original size whenever the heap is running low so that we never run out of memory.
@@ -23,6 +25,144 @@ static u64 get_max_cache_blocks() {
 // NetworkStream implementation
 // --------------------------------
 
+#define DISK_CACHE_DIR "sdmc:/3ds/IkersTube/cache/"
+
+// RAM cache size (in blocks) of a stream. When the SD tier is active only the data close to the read head needs to
+// live in RAM, so this stays small whatever the buffer size is.
+static u64 get_ram_cache_blocks(const NetworkStream *stream) {
+	if (stream->disk_active()) {
+		return (var_is_new3ds ? 8 * 1000 * 1000 : 4 * 1000 * 1000) / NetworkStream::BLOCK_SIZE;
+	}
+	return MAX_CACHE_BLOCKS;
+}
+
+static void disk_cache_remove_stale_files() {
+	DIR *dir = opendir(DISK_CACHE_DIR);
+	if (!dir) {
+		return;
+	}
+	while (struct dirent *entry = readdir(dir)) {
+		std::string name = entry->d_name;
+		if (name.size() > 4 && name.substr(name.size() - 4) == ".tmp") {
+			remove((DISK_CACHE_DIR + name).c_str());
+		}
+	}
+	closedir(dir);
+}
+
+// opens the temporary cache file of the stream (only once). Never called with a lock held.
+static void disk_open(NetworkStream *stream) {
+	static bool cleaned = false;
+	static int counter = 0;
+	stream->disk_tried = true;
+	mkdir("sdmc:/3ds", 0777);
+	mkdir("sdmc:/3ds/IkersTube", 0777);
+	mkdir("sdmc:/3ds/IkersTube/cache", 0777);
+	if (!cleaned) { // leftovers of a previous run that crashed
+		cleaned = true;
+		disk_cache_remove_stale_files();
+	}
+	stream->disk_path = std::string(DISK_CACHE_DIR) + "s" + std::to_string(counter++) + ".tmp";
+	stream->disk_file = fopen(stream->disk_path.c_str(), "w+b");
+	if (!stream->disk_file) {
+		logger.warning("net/dl", "could not open the disk cache, using RAM only");
+	}
+}
+
+NetworkStream::~NetworkStream() {
+	if (disk_file) {
+		fclose(disk_file);
+		disk_file = NULL;
+		remove(disk_path.c_str());
+	}
+}
+
+bool NetworkStream::has_block(u64 block) {
+	downloaded_data_lock.lock();
+	bool res = downloaded_data.count(block) || disk_slots.count(block);
+	downloaded_data_lock.unlock();
+	return res;
+}
+
+// writes a block to the SD card tier (best effort : on any failure the block simply stays RAM-only)
+static void disk_store(NetworkStream *stream, u64 block, const std::vector<u8> &data) {
+	if (stream->whole_download || stream->disk_write_disabled || !data.size() || data.size() > NetworkStream::BLOCK_SIZE) {
+		return;
+	}
+	if (!stream->disk_file && !stream->disk_tried) {
+		disk_open(stream);
+	}
+	if (!stream->disk_file) {
+		return;
+	}
+	// reserve a slot
+	u32 slot;
+	stream->downloaded_data_lock.lock();
+	if (stream->disk_slots.count(block)) {
+		stream->downloaded_data_lock.unlock();
+		return;
+	}
+	if (stream->free_slots.size()) {
+		slot = stream->free_slots.back();
+		stream->free_slots.pop_back();
+	} else if (stream->next_slot < NetworkStream::DISK_MAX_SLOTS) {
+		slot = stream->next_slot++;
+	} else {
+		stream->downloaded_data_lock.unlock();
+		return; // window full : keep it in RAM only
+	}
+	stream->downloaded_data_lock.unlock();
+
+	// write it (nobody can read this slot yet because it is not registered in disk_slots)
+	bool ok = false;
+	stream->disk_lock.lock();
+	if (fseek(stream->disk_file, (long)(slot * NetworkStream::BLOCK_SIZE), SEEK_SET) == 0) {
+		ok = fwrite(data.data(), 1, data.size(), stream->disk_file) == data.size();
+		if (ok) {
+			ok = fflush(stream->disk_file) == 0;
+		}
+	}
+	stream->disk_lock.unlock();
+
+	stream->downloaded_data_lock.lock();
+	if (ok) {
+		stream->disk_slots[block] = slot;
+	} else {
+		stream->free_slots.push_back(slot);
+		stream->disk_write_disabled = true; // SD card full or removed : stop using it
+		logger.warning("net/dl", "disk cache write failed, falling back to RAM only");
+	}
+	stream->downloaded_data_lock.unlock();
+}
+
+void NetworkStream::prune_behind(u64 read_head_block) {
+	if (read_head_block <= DISK_BEHIND_BLOCKS + 1) {
+		return;
+	}
+	u64 limit = read_head_block - DISK_BEHIND_BLOCKS; // blocks < limit are not needed anymore (except block 0)
+	downloaded_data_lock.lock();
+	for (auto itr = disk_slots.begin(); itr != disk_slots.end();) {
+		if (itr->first != 0 && itr->first < limit) {
+			free_slots.push_back(itr->second);
+			itr = disk_slots.erase(itr);
+		} else if (itr->first >= limit) {
+			break;
+		} else {
+			itr++;
+		}
+	}
+	for (auto itr = downloaded_data.begin(); itr != downloaded_data.end();) {
+		if (itr->first != 0 && itr->first < limit) {
+			itr = downloaded_data.erase(itr);
+		} else if (itr->first >= limit) {
+			break;
+		} else {
+			itr++;
+		}
+	}
+	downloaded_data_lock.unlock();
+}
+
 bool NetworkStream::is_data_available(u64 start, u64 size) {
 	if (!ready) {
 		return false;
@@ -37,7 +177,7 @@ bool NetworkStream::is_data_available(u64 start, u64 size) {
 	bool res = true;
 	downloaded_data_lock.lock();
 	for (u64 block = start_block; block <= end_block; block++) {
-		if (!downloaded_data.count(block)) {
+		if (!downloaded_data.count(block) && !disk_slots.count(block)) {
 			res = false;
 			break;
 		}
@@ -56,28 +196,53 @@ std::vector<u8> NetworkStream::get_data(u64 start, u64 size) {
 	u64 start_block = start / BLOCK_SIZE;
 	u64 end_block = end / BLOCK_SIZE;
 	std::vector<u8> res;
+	res.reserve(size);
 
-	downloaded_data_lock.lock();
-	auto itr = downloaded_data.find(start_block);
-	my_assert(itr != downloaded_data.end());
 	for (u64 block = start_block; block <= end_block; block++) {
-		my_assert(itr->first == block);
 		u64 cur_l = std::max(start, block * BLOCK_SIZE) - block * BLOCK_SIZE;
 		u64 cur_r = std::min(end + 1, (block + 1) * BLOCK_SIZE) - block * BLOCK_SIZE;
-		res.insert(res.end(), itr->second.begin() + cur_l, itr->second.begin() + cur_r);
-		itr++;
+		// the lock is held while reading from the SD card so that the slot can't be recycled under our feet
+		downloaded_data_lock.lock();
+		auto itr = downloaded_data.find(block);
+		if (itr != downloaded_data.end()) {
+			res.insert(res.end(), itr->second.begin() + cur_l, itr->second.begin() + cur_r);
+			downloaded_data_lock.unlock();
+			continue;
+		}
+		auto slot_itr = disk_slots.find(block);
+		bool ok = false;
+		if (slot_itr != disk_slots.end() && disk_file) {
+			size_t old_size = res.size();
+			res.resize(old_size + (cur_r - cur_l));
+			disk_lock.lock();
+			if (fseek(disk_file, (long)(slot_itr->second * BLOCK_SIZE + cur_l), SEEK_SET) == 0) {
+				ok = fread(&res[old_size], 1, cur_r - cur_l, disk_file) == cur_r - cur_l;
+			}
+			disk_lock.unlock();
+			if (!ok) {
+				res.resize(old_size);
+			}
+		}
+		downloaded_data_lock.unlock();
+		if (!ok) {
+			break; // data vanished (should not happen) : return what we have, the caller treats it as a short read
+		}
 	}
-	downloaded_data_lock.unlock();
 	return res;
 }
 
 void NetworkStream::set_data(u64 block, std::vector<u8> data) {
+	// the SD tier is written first (outside of any lock held by readers for long)
+	disk_store(this, block, data);
+
 	downloaded_data_lock.lock();
 
 	// if you move it, it doesn't perform a copy which means you will never get a std::bad_alloc which used to happen before
 	downloaded_data[block] = std::move(data);
 
-	if (downloaded_data.size() > MAX_CACHE_BLOCKS) { // ensure it doesn't cache too much and run out of memory
+	// ensure it doesn't cache too much and run out of memory. Evicted blocks are still on the SD card when it is active.
+	u64 ram_limit = get_ram_cache_blocks(this);
+	while (downloaded_data.size() > ram_limit && downloaded_data.size() > 1) {
 		u64 read_head_block = read_head / BLOCK_SIZE;
 		if (std::next(downloaded_data.begin())->first < read_head_block) {
 			downloaded_data.erase(std::next(downloaded_data.begin()));
@@ -89,32 +254,36 @@ void NetworkStream::set_data(u64 block, std::vector<u8> data) {
 }
 double NetworkStream::get_download_percentage() {
 	downloaded_data_lock.lock();
-	double res = (double)downloaded_data.size() * BLOCK_SIZE / len * 100;
+	size_t count = disk_slots.size();
+	for (auto &kv : downloaded_data) {
+		if (!disk_slots.count(kv.first)) {
+			count++;
+		}
+	}
+	double res = len ? (double)count * BLOCK_SIZE / len * 100 : 0;
 	downloaded_data_lock.unlock();
 	return res;
 }
 std::vector<double> NetworkStream::get_buffering_progress_bar(int res_len) {
 	downloaded_data_lock.lock();
 	std::vector<double> res(res_len);
-	auto itr = downloaded_data.begin();
+	if (!len) {
+		downloaded_data_lock.unlock();
+		return res;
+	}
 	for (int i = 0; i < res_len; i++) {
 		u64 l = (u64)len * i / res_len;
 		u64 r = std::min<u64>(len, len * (i + 1) / res_len);
-		while (itr != downloaded_data.end()) {
-			u64 il = itr->first * BLOCK_SIZE;
-			u64 ir = std::min((itr->first + 1) * BLOCK_SIZE, len);
-			if (ir <= l) {
-				itr++;
-			} else if (il >= r) {
-				break;
-			} else {
-				res[i] += std::min(ir, r) - std::max(il, l);
-				if (ir >= r) {
-					break;
-				} else {
-					itr++;
-				}
+		if (r <= l) {
+			continue;
+		}
+		for (u64 block = l / BLOCK_SIZE; block <= (r - 1) / BLOCK_SIZE; block++) {
+			if (!downloaded_data.count(block) && !disk_slots.count(block)) {
+				continue;
 			}
+			u64 il = block * BLOCK_SIZE;
+			u64 ir = std::min((block + 1) * BLOCK_SIZE, len);
+			res[i] += std::min(ir, r) - std::max(il, l);
 		}
 		res[i] /= r - l;
 		res[i] *= 100;
@@ -225,12 +394,19 @@ void NetworkStreamDownloader::downloader_thread() {
 				continue; // its entire content should already be downloaded
 			}
 
+			// sliding window : with the SD tier we keep ~25 MB ahead of the read head and drop what is far behind;
+			// without it we are limited by the RAM cache
 			int forward_buffer_block_num =
-			    std::max<int>(2, (MAX_CACHE_BLOCKS - 1) * var_forward_buffer_ratio); // block #0 is always kept
+			    streams[i]->disk_active()
+			        ? std::max<int>(2, NetworkStream::DISK_FORWARD_BLOCKS * var_forward_buffer_ratio)
+			        : std::max<int>(2, (MAX_CACHE_BLOCKS - 1) * var_forward_buffer_ratio); // block #0 is always kept
 			u64 read_head_block = read_heads[i] / BLOCK_SIZE;
+			if (streams[i]->ready) {
+				streams[i]->prune_behind(read_head_block);
+			}
 			u64 first_not_downloaded_block = read_head_block;
 			while (first_not_downloaded_block < streams[i]->block_num &&
-			       streams[i]->downloaded_data.count(first_not_downloaded_block)) {
+			       streams[i]->has_block(first_not_downloaded_block)) {
 				first_not_downloaded_block++;
 				if (first_not_downloaded_block == read_head_block + forward_buffer_block_num) {
 					break;
@@ -320,7 +496,7 @@ void NetworkStreamDownloader::downloader_thread() {
 		} else {
 			u64 block_reading = read_heads[cur_stream_index] / BLOCK_SIZE;
 			if (cur_stream->ready) {
-				while (block_reading < cur_stream->block_num && cur_stream->downloaded_data.count(block_reading)) {
+				while (block_reading < cur_stream->block_num && cur_stream->has_block(block_reading)) {
 					block_reading++;
 				}
 				if (block_reading == cur_stream->block_num) { // something unexpected happened

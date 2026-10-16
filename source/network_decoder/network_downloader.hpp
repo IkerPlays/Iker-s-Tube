@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <map>
+#include <set>
+#include <cstdio>
 #include <string>
 #include <3ds.h>
 #include "system/libctru_wrapper.hpp"
@@ -12,6 +14,11 @@ struct NetworkStream {
 	static constexpr u64 NEW3DS_MAX_CACHE_BLOCKS = 32 * 1000 * 1000 / BLOCK_SIZE;       // ~2-3 min of 360p video
 	static constexpr u64 NEW3DS_SAFE_CACHE_BLOCKS = 12 * 1000 * 1000 / BLOCK_SIZE; // used when RAM runs low
 	static constexpr u64 OLD3DS_MAX_CACHE_BLOCKS = 4 * 1000 * 1000 / BLOCK_SIZE;
+	// SD card tier : blocks are also written to a temporary file so that the buffer can reach tens of MB without
+	// using RAM. It works as a sliding window : data far behind the read head is dropped, data ahead keeps loading.
+	static constexpr u64 DISK_FORWARD_BLOCKS = 25 * 1000 * 1000 / BLOCK_SIZE; // ~25 MB ahead of the read head
+	static constexpr u64 DISK_BEHIND_BLOCKS = 8;                              // ~2 MB kept behind (small rewinds)
+	static constexpr u64 DISK_MAX_SLOTS = DISK_FORWARD_BLOCKS + DISK_BEHIND_BLOCKS + 40;
 	static constexpr int RETRY_CNT_MAX = 8; // consecutive failures tolerated before the stream is declared dead
 	static u64 get_block_num(u64 size) { return (size + BLOCK_SIZE - 1) / BLOCK_SIZE; }
 
@@ -45,6 +52,21 @@ struct NetworkStream {
 	NetworkStream(std::string url, int64_t len, bool whole_download, NetworkSessionList *session_list)
 	    : url(url), len(len < 0 ? 0 : len), block_num(get_block_num(this->len)), whole_download(whole_download),
 	      session_list(session_list) {}
+
+	// disk tier state. disk_slots/free_slots/next_slot are guarded by downloaded_data_lock, file I/O by disk_lock
+	// (lock order : downloaded_data_lock -> disk_lock).
+	FILE *disk_file = NULL;
+	bool disk_tried = false;
+	volatile bool disk_write_disabled = false;
+	Mutex disk_lock;
+	std::map<u64, u32> disk_slots; // block -> slot index in the file
+	std::vector<u32> free_slots;
+	u32 next_slot = 0;
+	std::string disk_path;
+	~NetworkStream();
+	bool disk_active() const { return disk_file != NULL && !disk_write_disabled; }
+	bool has_block(u64 block); // in RAM or on the SD card
+	void prune_behind(u64 read_head_block); // drop blocks far behind the read head (keeps block 0)
 
 	double get_download_percentage();
 	std::vector<double> get_buffering_progress_bar(int res_len);
