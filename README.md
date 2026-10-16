@@ -1,44 +1,149 @@
-# Iker's Music 3DS
+# FourthTube  
 
-Reproductor de música homebrew para Nintendo 3DS / 2DS (New 2DS XL incluida) con playlists.
+A work-in-progress homebrew YouTube client for the 3DS  
 
-## Características
-- Formatos: **MP3, OGG Vorbis, WAV (16-bit)**
-- Biblioteca automática desde `sdmc:/music` (subcarpetas incluidas)
-- Playlists persistentes (`sdmc:/3ds/IkersMusic/playlists/*.m3u`), crear/borrar/añadir/quitar
-- Aleatorio, repetir (no / todo / una), volumen, siguiente/anterior, pausa
-- Control por botones y pantalla táctil
+[GBAtemp Thread](https://gbatemp.net/threads/fourthtube-for-now-a-fork-of-thirdtube-that-works.660775/)
 
-## Controles
-| Botón | Acción |
-|---|---|
-| ↑ ↓ / Círculo | Mover selección |
-| A (o tocar 2 veces) | Reproducir / abrir playlist / añadir a playlist |
-| B | Volver |
-| X | Pausa / reanudar |
-| Y | Canciones: añadir a playlist · Playlists: crear nueva · Dentro de playlist: quitar canción |
-| SELECT | (en lista de playlists) borrar playlist |
-| L / R | Anterior / siguiente |
-| ← → | Volumen |
-| ZL / ZR | Pestaña Canciones / Playlists |
-| START | Salir |
+[Discord Server](https://discord.gg/UPK3wDTTE2)
 
-## Requisitos en la consola
-1. Pon tu música en `sdmc:/music/`.
-2. Necesitas el firmware del DSP en `sdmc:/3ds/dspfirm.cdc` (se obtiene con la app **DSP1** de homebrew; sin él no hay audio).
+## Instability Warning
 
-## Cómo obtener el .cia (sin instalar nada: GitHub Actions)
-1. Sube el repo a GitHub (ya está).
-2. Ve a la pestaña **Actions** → workflow **Build 3DSX + CIA** (se ejecuta solo en cada push; o pulsa *Run workflow*).
-3. Cuando termine, abre la ejecución y descarga el artefacto **IkersMusic3DS** (zip con `.cia` y `.3dsx`).
-4. Pasa el `.cia` a la SD (p. ej. carpeta `cias/`), abre **FBI** en la consola → *SD* → selecciona el `.cia` → *Install*.
-   (El `.3dsx` sirve para probar sin instalar: cópialo a `sdmc:/3ds/` y ábrelo con Homebrew Launcher.)
+As this app is still in the beta stage, you may and will encounter crashes and other bugs.  
+If you find one of those, it would be helpful to open an issue on this GitHub repository.  
 
-## Compilar en local (opcional)
-Instala [devkitPro](https://devkitpro.org/wiki/Getting_Started) y:
-```
-sudo dkp-pacman -S 3ds-dev 3ds-mpg123 3ds-libvorbisidec 3ds-libogg
-python3 tools/gen_assets.py meta
-make
-```
-Para el .cia local necesitas además `makerom` y `bannertool` (mira los pasos del workflow en `.github/workflows/build.yml`).
+## Notice As Of The 4th Of February, 2026 On Playback 
+
+YouTube in recent months have decided once more to make our lives more of a pain and have been 
+changing their backend. Unfortunately, a wave of changes, has led to video playback to face various 
+issue, we are aware of these issues now. We are currently working hard trying to figure out a fix
+for it. Unfortunately we cannot provide an ETA when this will be fully resolved, do be aware that we all 
+have personal lives outside of this project so devote as much time as we can to it. But also remember this is
+open source, if you figure out a fix, while we (the main maintainers) are busy, feel free to make a 
+pull request, and well add you to.the credits! Sorry for such a long rant, we just want to inform ya'll that
+this isn't dead and we are trying! We will update you as this saga continues.
+
+Update 1: A member on our Discord, saltsalad, has reported that switching to VisionOS in settings appears 
+to resolve the issue of playback, but not subtitles.
+
+Update 2: Smu1zel has found the issue, YouTube has required a PO-TOKEN on the default implemention. An interim release will make VisionOS the default choice, but do be aware it will cause YouTube Kids content to be unwatchable as it's blocked from it.
+
+Update 3. The interim release Beta 34.1 source code has been finished (sorry for a direct GitHub edit, erievs has lumbago (lazy), and this was small enough where I erievs didn't feel like setting up git proper). Someone else will have to build it as erievs is having a nightmere of a time trying to build it at the momment, a devkitpro update was needed and it isn't going smoothly for them. 
+
+**Please don't make duplicate issues (such as O3DS crashing). This will only make it harder to keep track of bugs.**
+
+## Credits
+
+  [WindowsServer2003](https://github.com/windows-server-2003) - The creator of ThirdTube.
+
+  [Smu1zel](https://github.com/Smu1zel) - Figured out the line of code that needed to be changed and tested the change out, fixing the app after it stopped working in 2024.
+
+  [NCP 3.0](https://github.com/erievs) - Fixing the app after it stopped working in 2024.
+
+  [5GBurrito](https://github.com/5GBurrito) - Minor changes (project manager?).
+
+  [2b-zipper](https://github.com/2b-zipper) - New banner, watch history fix, new icon, 480p support, some other fixes, and a fair bit more (thank you so much!).
+
+  [ItsFrocat](https://github.com/ItsFrocat) & [Dragontwo14](https://github.com/Dragontwo14) - For the strings used in the German translation.
+
+  [cooolgamer](https://github.com/cooolgamer) - For the strings used in the French translation, as well as a custom boot screen.
+
+  [Dxni](https://github.com/Icee666) - For the strings used in the Italian translation.
+  
+  [returndislike](https://returnyoutubedislike.com/install) - Used for dislikes.
+
+## Description
+It utilizes some undocumented YouTube APIs to get the raw video URL and plays the stream using the decoder taken from [Video player for 3DS by Core-2-Extreme](https://github.com/Core-2-Extreme/Video_player_for_3DS).  
+
+It does not run any JavaScript code or render HTML/CSS, so it's significantly faster than YouTube on the browser.  
+
+The name is derived from the fact that it is the fourth YouTube client on 3DS, following the official YouTube app (discontinued), then the New 3DS browser, and ThirdTube.  
+
+## QR code
+You can use the QR code below to download & install the .cia directly from your system. 
+
+<img src="https://github.com/erievs/FourthTube/blob/main/images/qr-code.png" width="200" height="200">
+
+## Screenshots
+<img src="https://github.com/windows-server-2003/ThirdTube/blob/main/images/0.jpg" width="400" height="480"> ![](https://github.com/windows-server-2003/ThirdTube/blob/main/images/1.bmp)  
+![](https://github.com/windows-server-2003/ThirdTube/blob/main/images/3.bmp) ![](https://github.com/windows-server-2003/ThirdTube/blob/main/images/4.bmp)  
+
+## Features
+
+ - Video Playback up to 480p  
+ - Livestreams and premiere videos support  
+ - Searching  
+ - Video suggestions  
+ - Comments  
+ - Captions  
+ - Local watch history and channel subscriptions  
+ - No ads  
+   It's more like "Ads are not implemented" rather than "We have ad-blocking functionality".  
+   Of course, we will never "implement" it :)  
+
+## Controls
+
+ - B button : go back to the previous screen  
+ - C-pad up/down : scroll
+ - L/R : switch between tabs
+ - Select + Start : blackout the bottom screen
+ - In video player
+    - Arrow left/right : 10 s seek
+    - ZL/ZR : 5 s seek
+
+Below are for debug purposes
+
+ - Select + X : toggle debug log
+ - Select + Y : toggle memory usage monitor
+ - Select + R + A : toggle FPS monitor
+
+
+
+## Requirements
+A 3DS (including 2DS) with [Luma3DS](https://github.com/LumaTeam/Luma3DS) installed and with the DSP firmware dumped. On modern Luma3DS versions, you can [do this using a built-in feature](https://3ds.hacks.guide/finalizing-setup.html#section-iii-rtc-and-dsp-setup:~:text=dump%20the%20sound%20firmware). Otherwise, you can use [DSP1](https://github.com/zoogie/DSP1).  
+We haven't tested the minimum system version, but at least 8.1.0-0 is needed.  
+
+## FAQs
+
+ - Does it make sense?  
+   The **worst** question in the console homebrew scene. Isn't it just exciting to see your favorite videos playing on a 3DS?
+ - How can I migrate my data from ThirdTube to FourthTube?  
+   Rename the /3ds/ThirdTube folder to FourthTube. If you were using an unofficial fork of ThirdTube (such as a translation), this folder may be named differently.
+ - What are these app data options in Advanced?  
+   This selects what client FourthTube will "spoof" to trick YouTube into giving us video URLs.
+   The default "Android" setting works for most users. If you can't play videos for some reason, try switching to visionOS or Android VR. These don't work with Kids videos, so they should only be used if you have to.
+
+## Building
+[Click Here for instructions](/Documentation/Build%20Instructions.md)
+
+## License
+You can use the code under the terms of the GNU General Public License GPL v3 or under the terms of any later revisions of the GPL. Refer to the provided LICENSE file for further information.
+
+## Third-party licenses
+
+### [FFmpeg](https://ffmpeg.org/)
+by the FFmpeg developers under GNU Lesser General Public License (LGPL) version 2.1  
+The modified source code can be found at https://github.com/windows-server-2003/FFmpeg/tree/3ds.  
+### [rapidjson](https://github.com/Tencent/rapidjson)
+by Tencent and Milo Yip under MIT License  
+### [libctru](https://github.com/devkitPro/libctru)
+by devkitPro under zlib License  
+### [libcurl](https://curl.se/)
+by Daniel Stenberg and many contributors under the curl License  
+### [libbrotli](https://github.com/google/brotli)  
+by the Brotli Authors under MIT license
+### [stb](https://github.com/nothings/stb/)
+by Sean Barrett under MIT License and Public Domain  
+
+## Archived ThirdTube credits
+* Core 2 Extreme  
+  For [Video player for 3DS](https://github.com/Core-2-Extreme/Video_player_for_3DS) which this app is based on.  
+  Needless to say, the video playback functionality is essential for this app, and it would not have been possible to develop this software without him spending his time optimizing the code sometimes even with assembly and looking into HW decoding on the new 3DS.
+* dixy52-beep  
+  For in-app textures
+* [PokéTube](https://github.com/Poketubepoggu)  
+  For the icon and the banner
+* The contributors of [youtube-dl](https://github.com/ytdl-org/youtube-dl)  
+  As a reference about YouTube webpage parsing. It was especially helpful for the deobfuscation of ciphered signatures.  
+* The contributors of [pytube](https://github.com/pytube/pytube)  
+  As a reference about YouTube webpage parsing. Thanks to its strict dependency-free policy, I was able to port some of the code without difficulty.  
+

@@ -12,12 +12,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Instalar librerias 3DS y herramientas
+      - name: Herramientas del sistema
         run: |
           apt-get update
-          apt-get install -y git make cmake g++ gcc python3 python3-pil
-          find /opt/devkitpro/portlibs -name mpg123.h -o -name ivorbisfile.h | grep .
-          test -f /opt/devkitpro/libctru/include/3ds.h
+          apt-get install -y git make cmake g++ gcc
+
+      - name: Diagnostico de librerias devkitPro
+        run: |
+          ls /opt/devkitpro/portlibs/3ds/lib | head -50
+          dkp-pacman -Q | grep -i "mbedtls\|zlib\|libctru\|citro" || true
 
       - name: Compilar makerom y bannertool
         run: |
@@ -30,27 +33,12 @@ jobs:
           make -C /tmp/bannertool/b -j"$(nproc)"
           cp /tmp/bannertool/b/bannertool /usr/local/bin/
 
-      - name: Generar iconos y banner
-        run: python3 tools/gen_assets.py meta
-
-      - name: Compilar .3dsx
-        run: make
-
-      - name: Crear .cia
-        run: |
-          bannertool makebanner -i meta/banner.png -a meta/banner.wav -o build/banner.bnr
-          bannertool makesmdh -s "Iker's Music 3DS" -l "Reproductor de musica con playlists" -p "Iker" -i meta/icon.png -o build/icon.icn
-          makerom -f cia -o IkersMusic3DS.cia -elf IkersMusic3DS.elf -rsf meta/app.rsf \
-            -target t -exefslogo -icon build/icon.icn -banner build/banner.bnr \
-            -major 1 -minor 0 -micro 0 \
-            -DAPP_TITLE="Iker's Music 3DS" -DAPP_PRODUCT_CODE="CTR-P-IKMU" -DAPP_UNIQUE_ID="0xF1A01" \
-            -DAPP_SYSTEM_MODE="64MB" -DAPP_SYSTEM_MODE_EXT="Legacy" -DAPP_CATEGORY="Application" \
-            -DAPP_USE_ON_SD="true" -DAPP_MEMORY_TYPE="Application" -DAPP_CPU_SPEED="268MHz" \
-            -DAPP_ENABLE_L2_CACHE="false" -DAPP_ENCRYPTED="false"
+      - name: Compilar .3dsx y .cia
+        run: make MAKEROM=makerom BANNERTOOL=bannertool
 
       - uses: actions/upload-artifact@v4
         with:
-          name: IkersMusic3DS
+          name: IkersTube
           path: |
-            IkersMusic3DS.cia
-            IkersMusic3DS.3dsx
+            IkersTube_dev.cia
+            IkersTube.3dsx

@@ -4,3 +4,4 @@ build/
 *.smdh
 *.cia
 *.map
+romfs/gfx/*.t3x
