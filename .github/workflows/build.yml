@@ -76,12 +76,13 @@ jobs:
           name: IkersTube
           path: dist/
 
-  # Every devbuild is its own, permanent pre-release (tag v<version>); nothing is deleted or overwritten.
+  # Devbuilds are published from main only. Every devbuild is its own, permanent pre-release (tag v<version>);
+# nothing is deleted or overwritten.
   # To ship a stable version, publish a normal (non pre-release) release yourself with IkersTube.cia and
   # IkersTube.3dsx attached: the app installs it automatically, while devbuilds are only offered.
   release:
     needs: [version, build]
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

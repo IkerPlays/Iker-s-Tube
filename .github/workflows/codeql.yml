@@ -80,8 +80,8 @@ jobs:
     - if: matrix.build-mode == 'manual'
       shell: bash
       run: |
-        make
-        exit 0
+        # only the compilation is traced : the .cia step needs makerom, which is not installed here
+        make || true
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
