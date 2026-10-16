@@ -75,7 +75,8 @@ CFLAGS	:= -Wall -Wextra -Wno-unused -Wno-psabi -O2 -mword-relocations \
 		-fomit-frame-pointer -ffunction-sections -fdata-sections \
 		$(ARCH) -DDEF_BUILD_TIME="\"$(TIME)\""
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D__3DS__ -DCURL_STATICLIB
+IKT_VERSION ?= 1.0.0
+CFLAGS	+=	$(INCLUDE) -DARM11 -D__3DS__ -DCURL_STATICLIB -DIKT_VERSION="\"$(IKT_VERSION)\""
 
 CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=gnu++14
 

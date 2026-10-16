@@ -2,8 +2,22 @@
 #include "network_downloader.hpp"
 #include "network_io.hpp"
 
-#define MAX_CACHE_BLOCKS                                                                                               \
-	(var_is_new3ds ? NetworkStream::NEW3DS_MAX_CACHE_BLOCKS : NetworkStream::OLD3DS_MAX_CACHE_BLOCKS)
+#include <malloc.h>
+
+// The cache is much bigger on New 3DS than the original 12 MB so that the video can buffer minutes ahead, but we
+// fall back to the original size whenever the heap is running low so that we never run out of memory.
+static u64 get_max_cache_blocks() {
+	if (!var_is_new3ds) {
+		return NetworkStream::OLD3DS_MAX_CACHE_BLOCKS;
+	}
+	struct mallinfo mi = mallinfo();
+	s64 heap_free = (s64)envGetHeapSize() - (s64)mi.uordblks;
+	if (heap_free < 28 * 1000 * 1000) {
+		return NetworkStream::NEW3DS_SAFE_CACHE_BLOCKS;
+	}
+	return NetworkStream::NEW3DS_MAX_CACHE_BLOCKS;
+}
+#define MAX_CACHE_BLOCKS get_max_cache_blocks()
 
 // --------------------------------
 // NetworkStream implementation

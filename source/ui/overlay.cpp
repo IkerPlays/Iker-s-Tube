@@ -78,6 +78,10 @@ void draw_overlay_menu(int y) {
 		Draw_texture(var_square_image[0], menu_icon_line_color, x, y, width, ICON_LINE_HEIGHT);
 	}
 
+	if (var_update_available) { // red dot : an update is available
+		Draw_texture(var_square_image[0], DEF_DRAW_RED, menu_icon_x + OVERLAY_MENU_ICON_SIZE - 10, menu_icon_y + 2, 8, 8);
+	}
+
 	if (is_menu_drawn()) {
 		int y_base = menu_icon_y - contents.size() * CONTENT_HEIGHT;
 		for (int i = 0; i < (int)contents.size(); i++) {
@@ -103,6 +107,10 @@ void update_overlay_menu(Hid_info *key) {
 		prev_scene = global_current_scene;
 	}
 	contents.clear();
+	if (var_update_available && global_current_scene != SceneType::SETTINGS) {
+		// takes the user straight to Settings where the "Update" button is
+		contents.push_back({LOCALIZED(UPDATES_AVAILABLE), Content::Type::SETTINGS});
+	}
 	if (global_current_scene != SceneType::HOME) {
 		contents.push_back({LOCALIZED(HOME), Content::Type::HOME});
 	}

@@ -211,7 +211,7 @@ static void update_worker_thread_func(void *) {
 			std::string new_error_message;
 			
 			bool check_success = false;
-			auto result = session_list.perform(HttpRequest::GET("https://api.github.com/repos/IkerPlays/Iker-s-YT/releases/latest", {}));
+			auto result = session_list.perform(HttpRequest::GET("https://api.github.com/repos/IkerPlays/Iker-s-YT/releases?per_page=10", {}));
 			if (result.fail) new_error_message = "Failed accessing(deep fail) : " + result.fail;
 			else if (result.status_code == 200) {
 				result.data.push_back('\0');
@@ -222,6 +222,52 @@ static void update_worker_thread_func(void *) {
 					logger.error("updater", "failed to parse json : " + error);
 					new_error_message = "failed to parse json : " + error;
 				} else {
+					// /releases (not /releases/latest) also lists pre-releases such as the CI "devbuild".
+					// Pick the newest release (stable or dev build) that has both a .cia and a .3dsx.
+					auto has_suffix = [] (const std::string &str, const std::string &suffix) {
+						return str.size() >= suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+					};
+					auto first_number_seq = [] (const std::string &str) {
+						std::vector<int> res;
+						size_t head = 0;
+						while (head < str.size()) {
+							while (head < str.size() && !isdigit(str[head])) head++;
+							if (head >= str.size()) break;
+							int cur = 0;
+							while (head < str.size() && isdigit(str[head])) cur = cur * 10 + str[head++] - '0';
+							res.push_back(cur);
+						}
+						return res;
+					};
+					std::string best_version_str;
+					{
+						RJson best;
+						std::vector<int> best_seq;
+						for (auto item : result_json.array_items()) {
+							if (item["draft"].bool_value()) continue;
+							bool has_cia = false, has_3dsx = false;
+							for (auto asset : item["assets"].array_items()) {
+								auto asset_url = asset["browser_download_url"].string_value();
+								if (has_suffix(asset_url, ".cia")) has_cia = true;
+								if (has_suffix(asset_url, ".3dsx")) has_3dsx = true;
+							}
+							if (!has_cia || !has_3dsx) continue;
+							// version = digits in the tag, or in the release name when the tag has none ("devbuild")
+							std::string version_str = item["tag_name"].string_value();
+							auto seq = first_number_seq(version_str);
+							if (seq.empty()) {
+								version_str = item["name"].string_value();
+								seq = first_number_seq(version_str);
+							}
+							if (seq.empty()) continue;
+							if (!best.is_valid() || best_seq < seq) {
+								best = item;
+								best_seq = seq;
+								best_version_str = version_str;
+							}
+						}
+						if (best.is_valid()) result_json = best;
+					}
 					update_url_3dsx = update_url_cia;
 					for (auto item : result_json["assets"].array_items()) {
 						auto url = item["browser_download_url"].string_value();
@@ -244,7 +290,7 @@ static void update_worker_thread_func(void *) {
 							}
 							return res;
 						};
-						auto new_version_seq = version_str_to_vector(result_json["tag_name"].string_value());
+						auto new_version_seq = version_str_to_vector(best_version_str);
 						auto cur_version_seq = version_str_to_vector(DEF_CURRENT_APP_VER);
 						bool update_available = cur_version_seq < new_version_seq;
 						std::string release_notes = result_json["body"].string_value();
@@ -288,8 +334,10 @@ static void update_worker_thread_func(void *) {
    						}
    						resource_lock.unlock();
 
-						if (update_available) update_state = UpdateState::UPDATES_AVAILABLE, next_version_str = result_json["tag_name"].string_value();
+						if (update_available) update_state = UpdateState::UPDATES_AVAILABLE, next_version_str = best_version_str;
 						else update_state = UpdateState::UP_TO_DATE;
+						var_update_available = update_available;
+						var_need_refresh = true;
 						check_success = true;
 					}
 				}

@@ -5,22 +5,27 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write # needed to publish the "devbuild" release
+
 jobs:
   build:
     runs-on: ubuntu-latest
     container: devkitpro/devkitarm:latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Version (VERSION + numero de build)
+        id: ver
+        run: |
+          echo "version=$(cat VERSION | tr -d '[:space:]').${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       - name: Herramientas del sistema
         run: |
           apt-get update
           apt-get install -y git make cmake g++ gcc
-
-      - name: Diagnostico de librerias devkitPro
-        run: |
-          ls /opt/devkitpro/portlibs/3ds/lib | head -50
-          dkp-pacman -Q | grep -i "mbedtls\|zlib\|libctru\|citro" || true
 
       - name: Compilar makerom y bannertool
         run: |
@@ -34,11 +39,39 @@ jobs:
           cp /tmp/bannertool/b/bannertool /usr/local/bin/
 
       - name: Compilar .3dsx y .cia
-        run: make MAKEROM=makerom BANNERTOOL=bannertool
+        run: make MAKEROM=makerom BANNERTOOL=bannertool IKT_VERSION=${{ steps.ver.outputs.version }}
+
+      - name: Preparar ficheros
+        run: |
+          mkdir dist
+          cp IkersTube_dev.cia dist/IkersTube.cia
+          cp IkersTube.3dsx dist/IkersTube.3dsx
 
       - uses: actions/upload-artifact@v4
         with:
           name: IkersTube
-          path: |
-            IkersTube_dev.cia
-            IkersTube.3dsx
+          path: dist/
+
+  # Publica (o reemplaza) el release "devbuild" con el ultimo build. El actualizador de la app lo detecta.
+  # Si publicas tu mismo un release normal (p. ej. tag v1.1 con .cia y .3dsx), se considera mas nuevo mientras su
+  # numero de version sea mayor que el del devbuild.
+  release:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: IkersTube
+          path: dist
+
+      - name: Publicar devbuild
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          gh release delete devbuild --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
+          gh release create devbuild dist/IkersTube.cia dist/IkersTube.3dsx \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "Iker's Tube $VERSION (devbuild)" \
+            --notes "Build automatico $VERSION del commit $GITHUB_SHA. Instala el .cia con FBI o deja que la app se actualice sola desde Ajustes."

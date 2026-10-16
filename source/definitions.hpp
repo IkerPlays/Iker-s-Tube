@@ -4,7 +4,10 @@
 #define DEF_MAIN_DIR (std::string) "/3ds/IkersTube/"
 #define DEF_SWKBD_MAX_DIC_WORDS 128
 #define DEF_CHECK_INTERNET_URL (std::string) "https://connectivitycheck.gstatic.com/generate_204"
-#define DEF_CURRENT_APP_VER (std::string) "Beta 34.1"
+#ifndef IKT_VERSION
+#define IKT_VERSION "1.0.0" // overridden by the build (CI passes "<VERSION file>.<run number>")
+#endif
+#define DEF_CURRENT_APP_VER (std::string) IKT_VERSION
 #define DEF_CURRENT_APP_VER_INT 0
 #define GITHUB_URL std::string("https://github.com/IkerPlays/Iker-s-YT")
 

@@ -10,10 +10,13 @@ Basado en [FourthTube](https://github.com/erievs/FourthTube) (que viene de Third
 - **Caché de miniaturas duplicada** (600): menos descargas al volver atrás en las listas.
 - Datos separados en `sdmc:/3ds/IkersTube/` (no pisa los de FourthTube) y app con su propio ID.
 
-## Instalar
-1. En la pestaña **Actions** de este repo, abre la última ejecución verde y descarga el artefacto **IkersTube**.
-2. Descomprime. `IkersTube_dev.cia` se instala con **FBI** (SD → el `.cia` → Install).
-   `IkersTube.3dsx` sirve para probar desde el Homebrew Launcher (`sdmc:/3ds/`).
+## Instalar y actualizar
+- Cada build sube el **devbuild** a [Releases](../../releases) con `IkersTube.cia` y `IkersTube.3dsx`.
+  Instala el `.cia` con **FBI** (SD → el `.cia` → Install); el `.3dsx` sirve para probar desde el Homebrew Launcher.
+- **Autoactualización:** la app busca nuevas versiones al abrirse. Si hay una, aparece un **punto rojo en ☰** y la
+  entrada *Actualización disponible*, que lleva a Ajustes → **Actualizar**.
+- Si publicas tú un release normal (con `.cia` y `.3dsx`, p. ej. tag `v1.1`), la app lo ofrece cuando su versión es
+  mayor que la instalada. La versión de los builds es `VERSION` + número de build (p. ej. `1.0.14`).
 
 ## Aviso
 YouTube cambia su API a menudo y puede bloquear clientes. Si un vídeo no carga, prueba otro cliente en

@@ -2,6 +2,7 @@
 
 extern bool var_connect_test_success;
 extern bool var_need_refresh;
+extern bool var_update_available; // set by the background updater when a newer release exists
 extern bool var_allow_send_app_info;
 extern bool var_hide_pointer;
 extern bool var_night_mode;

@@ -9,7 +9,8 @@
 // one instance per one url (once constructed, the url is not changeable)
 struct NetworkStream {
 	static constexpr u64 BLOCK_SIZE = 0x40000; // 256 KiB
-	static constexpr u64 NEW3DS_MAX_CACHE_BLOCKS = 12 * 1000 * 1000 / BLOCK_SIZE;
+	static constexpr u64 NEW3DS_MAX_CACHE_BLOCKS = 32 * 1000 * 1000 / BLOCK_SIZE;       // ~2-3 min of 360p video
+	static constexpr u64 NEW3DS_SAFE_CACHE_BLOCKS = 12 * 1000 * 1000 / BLOCK_SIZE; // used when RAM runs low
 	static constexpr u64 OLD3DS_MAX_CACHE_BLOCKS = 4 * 1000 * 1000 / BLOCK_SIZE;
 	static constexpr int RETRY_CNT_MAX = 8; // consecutive failures tolerated before the stream is declared dead
 	static u64 get_block_num(u64 size) { return (size + BLOCK_SIZE - 1) / BLOCK_SIZE; }
