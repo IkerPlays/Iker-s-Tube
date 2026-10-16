@@ -6,33 +6,52 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # needed to publish the "devbuild" release
+  contents: write # needed to publish devbuild releases
 
-# a newer push cancels the older run, so the devbuild release always comes from the latest commit
+# a newer push cancels the older run, so a devbuild is always built from the latest commit
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  # Version of this build : "<core>-dev.<run number>".
+  # <core> is the VERSION file, but never lower than the latest STABLE release you published : once 1.0.0 is
+  # out, devbuilds become 1.0.1-dev.N (which the app sees as newer than 1.0.0).
+  version:
     runs-on: ubuntu-latest
-    container: devkitpro/devkitarm:latest
     outputs:
       version: ${{ steps.ver.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Version (VERSION + numero de build)
-        id: ver
+      - id: ver
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "version=$(cat VERSION | tr -d '[:space:]').${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          core=$(tr -d '[:space:]' < VERSION)
+          IFS=. read -r a b c <<< "$core"
+          core="${a:-0}.${b:-0}.${c:-0}"
+          stable=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --limit 100 \
+                     --json tagName --jq '.[].tagName' | sed 's/^v//' \
+                     | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)
+          if [ -n "$stable" ] && [ "$(printf '%s\n%s\n' "$core" "$stable" | sort -V | tail -1)" = "$stable" ]; then
+            IFS=. read -r a b c <<< "$stable"
+            core="$a.$b.$((c + 1))"
+          fi
+          echo "version=${core}-dev.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-      - name: Herramientas del sistema
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System tools
         run: |
           apt-get update
           apt-get install -y git make cmake g++ gcc
 
-      - name: Compilar makerom y bannertool
+      - name: Build makerom and bannertool
         run: |
           git clone --depth 1 https://github.com/3DSGuy/Project_CTR.git /tmp/ctr
           make -C /tmp/ctr/makerom deps
@@ -43,10 +62,10 @@ jobs:
           make -C /tmp/bannertool/b -j"$(nproc)"
           cp /tmp/bannertool/b/bannertool /usr/local/bin/
 
-      - name: Compilar .3dsx y .cia
-        run: make MAKEROM=makerom BANNERTOOL=bannertool IKT_VERSION=${{ steps.ver.outputs.version }}
+      - name: Build .3dsx and .cia
+        run: make MAKEROM=makerom BANNERTOOL=bannertool IKT_VERSION=${{ needs.version.outputs.version }}
 
-      - name: Preparar ficheros
+      - name: Collect files
         run: |
           mkdir dist
           cp IkersTube_dev.cia dist/IkersTube.cia
@@ -57,11 +76,11 @@ jobs:
           name: IkersTube
           path: dist/
 
-  # Publica (o reemplaza) el release "devbuild" con el ultimo build. El actualizador de la app lo detecta.
-  # Si publicas tu mismo un release normal (p. ej. tag v1.1 con .cia y .3dsx), se considera mas nuevo mientras su
-  # numero de version sea mayor que el del devbuild.
+  # Every devbuild is its own, permanent pre-release (tag v<version>); nothing is deleted or overwritten.
+  # To ship a stable version, publish a normal (non pre-release) release yourself with IkersTube.cia and
+  # IkersTube.3dsx attached: the app installs it automatically, while devbuilds are only offered.
   release:
-    needs: build
+    needs: [version, build]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -72,21 +91,21 @@ jobs:
           name: IkersTube
           path: dist
 
-      - name: Publicar devbuild
+      - name: Publish devbuild
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.build.outputs.version }}
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
           {
-            echo "# Iker's Tube ${VERSION}"
+            echo "# Iker's Tube ${VERSION} (devbuild)"
             echo
             cat RELEASE_NOTES.md
             echo
             echo "---"
-            echo "<sub>Build automático · versión **${VERSION}** · commit \`${GITHUB_SHA::7}\`</sub>"
+            echo "Automatic development build ${VERSION} from commit \`${GITHUB_SHA::7}\`."
+            echo "Development builds are for testing and may be unstable."
           } > notes.md
-          gh release delete devbuild --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" || true
-          gh release create devbuild dist/IkersTube.cia dist/IkersTube.3dsx \
+          gh release create "v${VERSION}" dist/IkersTube.cia dist/IkersTube.3dsx \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
-            --title "Iker's Tube $VERSION (devbuild)" \
+            --title "Iker's Tube ${VERSION} (devbuild)" \
             --notes-file notes.md

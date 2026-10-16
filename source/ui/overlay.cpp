@@ -81,7 +81,7 @@ void draw_overlay_menu(int y) {
 		Draw_texture(var_square_image[0], menu_icon_line_color, x, y, width, ICON_LINE_HEIGHT);
 	}
 
-	if (var_update_available) { // red dot : an update is available
+	if (var_update_available || var_update_banner) { // red dot : an update is available / news about an update
 		Draw_texture(var_square_image[0], DEF_DRAW_RED, menu_icon_x + OVERLAY_MENU_ICON_SIZE - 10, menu_icon_y + 2, 8, 8);
 	}
 
@@ -121,7 +121,9 @@ void update_overlay_menu(Hid_info *key) {
 		prev_scene = global_current_scene;
 	}
 	contents.clear();
-	if (var_update_available && global_current_scene != SceneType::SETTINGS) {
+	if (var_update_banner && global_current_scene != SceneType::SETTINGS) {
+		contents.push_back({var_update_banner, Content::Type::SETTINGS}); // "Actualizando..." / "Actualizado: reinicia la app"
+	} else if (var_update_available && global_current_scene != SceneType::SETTINGS) {
 		// takes the user straight to Settings where the "Update" button is
 		contents.push_back({LOCALIZED(UPDATES_AVAILABLE), Content::Type::SETTINGS});
 	}

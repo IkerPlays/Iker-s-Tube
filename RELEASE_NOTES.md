@@ -1,20 +1,13 @@
-## ✨ Novedades
+## What's new
 
-- **Biblioteca** — nueva pantalla en el menú ☰ con tu **cola** (reordena con pulsación larga: *Subir / Bajar / Quitar*, o *Vaciar cola*) y tus **favoritos**, guardados en la tarjeta SD.
-- **Botón Favorito** dentro de cada vídeo para guardarlo y verlo más tarde.
-- **Cola de reproducción** — mantén pulsado cualquier vídeo (inicio, búsqueda, canal, sugeridos) para añadirlo; verás su posición **#1, #2…**. Al acabar el actual suena la cola antes que cualquier sugerencia. Con **R** saltas al siguiente de la cola y con **L** reinicias el vídeo.
-- **Búfer inteligente en ventana deslizante** — descarga por delante, guarda en la tarjeta SD y libera lo que queda atrás. Se acabaron los cortes al minuto.
-- **Autoactualización integrada** — punto rojo en ☰ y aviso *Actualización disponible* cuando hay una versión nueva.
-- **Nueva identidad** — icono, banner y paleta oscura con acento rojo, menú con animación y miniaturas con fundido.
+- **Smarter updates.** Stable releases are now installed automatically when the app starts. Development builds are only offered (red dot on the menu button and the Update button in Settings), and you decide whether to install them. A new Settings switch lets stable installs also see devbuilds.
+- **Unique devbuilds.** Every development build is now its own release, versioned `<next version>-dev.<build>`.
+- **Update status in the menu.** The menu shows "Updating..." and "Updated: restart the app" while an update is installed.
 
-## 🛠️ Mejoras
+## Improvements
 
-- **Cambio de vídeo instantáneo**: si pides otro vídeo mientras uno aún carga, la carga anterior se cancela en lugar de bloquearte.
-- **Sincronía audio/vídeo ajustable** en *Ajustes* (por defecto +60 ms para compensar la latencia de pantalla).
-- Carga de vídeo más rápida cuando un cliente de reproducción falla: ya no se piden subtítulos en cada intento.
-- El autoplay ya no reproduce vídeos aleatorios por defecto.
+- Release notes are now shown in English and in plain text inside the app.
 
-## 🐞 Correcciones
+## Fixes
 
-- El **punto rojo de actualización desaparece** al instalar la nueva versión.
-- Mensajes de error del actualizador más claros.
+- Version comparison is now exact: a stable release always wins over the devbuilds of the same version.
