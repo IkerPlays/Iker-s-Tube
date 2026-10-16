@@ -529,6 +529,28 @@ static std::string extractVisitorData() {
 	}
 }
 
+// Builds the /player request body for a given client (0 : Android(iOS UA), 1 : Android VR, 2 : visionOS).
+static std::string build_player_body(int client, const std::string &video_id, const std::string &playlist_id,
+                                     const std::string &visitor_data) {
+	std::string body;
+	if (client == 1) {
+		body =
+		    R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android", "userAgent": "com.google.android.apps.youtube.vr.oculus/1.62.27 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip\"","osVersion": "12L", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
+	} else if (client == 2) {
+		body =
+		    R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "VISIONOS","clientVersion": "0.1","deviceMake": "Apple","deviceModel": "iPhone16,2","osName": "iPhone","userAgent": "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)\"","osVersion": "2.2.22N842", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
+	} else {
+		body =
+		    R"({"videoId": "%0", %1"context": {"client": {"hl": "%2","gl": "%3","clientName": "ANDROID","clientVersion": "20.10.38","deviceMake": "Apple","deviceModel": "iPhone9,1","osName": "iPhone","userAgent": "com.google.ios.youtube/19.01.1 (iPhone9,1; U; CPU iOS 15_0_0 like Mac OS X;)\"","osVersion": "15.0.0.19A346", "visitorData": "%4"}}, "playbackContext": {"contentPlaybackContext": {"signatureTimestamp": "0"}}})";
+	}
+	body = std::regex_replace(body, std::regex("%0"), video_id);
+	body = std::regex_replace(body, std::regex("%1"), playlist_id.empty() ? "" : "\"playlistId\": \"" + playlist_id + "\", ");
+	body = std::regex_replace(body, std::regex("%2"), language_code);
+	body = std::regex_replace(body, std::regex("%3"), country_code);
+	body = std::regex_replace(body, std::regex("%4"), visitor_data);
+	return body;
+}
+
 YouTubeVideoDetail youtube_load_video_page(std::string url) {
 	YouTubeVideoDetail res;
 
@@ -667,6 +689,29 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 				    [&](const std::string &error) { debug_error("[v-fallback] " + error); });
 			} else {
 				debug_error("[v-fallback] Network request failed");
+			}
+		}
+
+		// Automatic client fallback : if the selected client did not give a playable stream, try the others
+		// (Android VR, visionOS, Android) in turn so that playback keeps working when YouTube blocks one of them.
+		if (!use_android_vr && !res.is_playable()) {
+			static const int fallback_order[3] = {1, 2, 0};
+			for (int client : fallback_order) {
+				if (client == var_player_response) continue;
+				debug_info("Trying fallback player client " + std::to_string(client));
+				std::map<std::string, std::string> empty_headers;
+				auto fb = http_post_json(get_innertube_api_url("player"),
+				                         build_player_body(client, res.id, playlist_id, visitor_data), empty_headers);
+				if (!fb.first || fb.second.empty()) continue;
+				std::vector<char> fb_data(fb.second.begin(), fb.second.end());
+				fb_data.push_back('\0');
+				parse_json_destructive((char *)&fb_data[0],
+				                       [&](Document &json_root, RJson data) { extract_player_data(json_root, data, res); },
+				                       [&](const std::string &error) { debug_error("[v-fallback-client] " + error); });
+				if (res.is_playable()) {
+					debug_info("Fallback client " + std::to_string(client) + " worked");
+					break;
+				}
 			}
 		}
 	}

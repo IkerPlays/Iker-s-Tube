@@ -37,7 +37,7 @@ static std::map<std::string, std::vector<u8>> thumbnail_cache;
 static int thumbnail_free_time_cnter = 0; // incremented each time when a thumbnail is freed
 static std::map<std::string, int> thumbnail_free_time;
 
-#define THUMBNAIL_CACHE_MAX 300 // 4 KB * 300 = 1.2 MB
+#define THUMBNAIL_CACHE_MAX 600 // 4 KB * 600 = 2.4 MB (fewer re-downloads when scrolling back)
 
 struct URLStatus {
 	std::set<int> handles;

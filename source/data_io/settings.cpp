@@ -61,7 +61,7 @@ void load_settings() {
 	var_full_screen_mode = load_int("full_screen_mode", 0);
 	var_full_dislike_like_count = load_int("full_dislike_like_count", 0);
 	var_hide_pointer = load_int("hide_pointer", 0);
-	var_night_mode = load_int("dark_theme", 0);
+	var_night_mode = load_int("dark_theme", 1);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
 	var_community_image_size =
 	    std::min(COMMUNITY_IMAGE_SIZE_MAX,

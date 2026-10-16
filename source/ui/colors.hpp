@@ -27,7 +27,7 @@
 #define COLOR_LIGHT_BLUE 0xFFEEAAAA
 #define COLOR_LIGHT_GREEN 0xFFAAEEAA
 
-#define COLOR_LINK 0xFFCB6600
+#define COLOR_LINK 0xFF4B4BFF // accent (red)
 
 #define DEFAULT_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xFF) : COLOR_GRAY(0x00))
 #define LIGHT0_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xCC) : COLOR_GRAY(0x33))
