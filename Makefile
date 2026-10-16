@@ -12,7 +12,7 @@ INCLUDES    := include
 APP_TITLE   := Iker's Music 3DS
 APP_DESCRIPTION := Reproductor de musica con playlists
 APP_AUTHOR  := Iker
-APP_ICON    := $(CURDIR)/meta/icon.png
+APP_ICON    := $(TOPDIR)/meta/icon.png
 
 ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 CFLAGS   := -g -Wall -O2 -mword-relocations -ffunction-sections $(ARCH) -D__3DS__ -std=gnu11 $(INCLUDE)
