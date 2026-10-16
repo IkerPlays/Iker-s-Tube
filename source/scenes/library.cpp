@@ -1,6 +1,7 @@
 #include "headers.hpp"
 #include <vector>
 #include <string>
+#include <cstdlib>
 
 #include "scenes/library.hpp"
 #include "scenes/video_player.hpp"
@@ -9,19 +10,24 @@
 #include "ui/overlay.hpp"
 #include "network_decoder/thumbnail_loader.hpp"
 #include "data_io/favorites.hpp"
+#include "data_io/user_playlists.hpp"
 #include "util/play_queue.hpp"
 
 #define MAX_THUMBNAIL_LOAD_REQUEST 12
 
-// "Biblioteca" : the play queue (reorder / clear) and the favorites list
+// "Biblioteca" : the play queue (reorder / clear), the favorites and the named playlists
 namespace Library {
 bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
 
-int mode = 0; // 0 : queue, 1 : favorites
+int mode = 0;           // 0 : queue, 1 : favorites, 2 : playlists
+int open_playlist = -1; // playlists mode : index of the opened playlist (-1 : list of playlists)
+bool playlist_repeat = false;
 bool rebuild_request = false;
+bool new_playlist_request = false;
 std::string clicked_url;
+std::function<void()> pending_action; // runs after the update (e.g. opening a second dialog)
 
 int CONTENT_Y_HIGHT = 240; // changes according to whether the video playing bar is drawn or not
 
@@ -41,15 +47,15 @@ static u32 button_background(const View &view) {
 }
 
 static View *make_option(const std::string &text, std::function<void()> action) {
-	return (new TextView(0, 0, 180, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+	return (new TextView(0, 0, 200, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 	    ->set_text(text)
 	    ->set_x_alignment(TextView::XAlign::CENTER)
 	    ->set_y_alignment(TextView::YAlign::CENTER)
 	    ->set_text_offset(0, -1)
 	    ->set_on_view_released([action](View &) {
-		    action();
 		    main_view->reset_holding_status();
 		    on_long_tap_dialog->set_is_visible(false);
+		    action();
 		    rebuild_request = true;
 		    var_need_refresh = true;
 	    })
@@ -59,7 +65,7 @@ static View *make_option(const std::string &text, std::function<void()> action) 
 static void show_dialog(const std::vector<View *> &options) {
 	on_long_tap_dialog->recursive_delete_subviews();
 	on_long_tap_dialog
-	    ->set_subview((new VerticalListView(0, 0, 180))->set_views(options))
+	    ->set_subview((new VerticalListView(0, 0, 200))->set_views(options))
 	    ->set_on_cancel([](OverlayView &view) {
 		    main_view->reset_holding_status();
 		    view.set_is_visible(false);
@@ -67,6 +73,54 @@ static void show_dialog(const std::vector<View *> &options) {
 	    })
 	    ->set_is_visible(true);
 	var_need_refresh = true;
+}
+
+// asks a name with the system keyboard. Returns false if the user cancelled.
+static bool ask_text(const char *hint, std::string &out) {
+	SwkbdState keyboard;
+	swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 40);
+	swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY);
+	swkbdSetValidation(&keyboard, SWKBD_NOTEMPTY_NOTBLANK, 0, 0);
+	swkbdSetHintText(&keyboard, hint);
+	swkbdSetButton(&keyboard, SWKBD_BUTTON_LEFT, LOCALIZED(CANCEL).c_str(), false);
+	swkbdSetButton(&keyboard, SWKBD_BUTTON_RIGHT, LOCALIZED(OK).c_str(), true);
+	char text[64] = {0};
+	video_set_skip_drawing(true);
+	auto pressed = swkbdInputText(&keyboard, text, sizeof text);
+	video_set_skip_drawing(false);
+	if (pressed != SWKBD_BUTTON_RIGHT) {
+		return false;
+	}
+	out = text;
+	return true;
+}
+
+// dialog : choose the playlist where the video goes (or create one)
+static void add_to_playlist_dialog(const FavoriteVideo &video) {
+	std::vector<View *> options;
+	auto lists = playlists_get();
+	for (size_t i = 0; i < lists.size(); i++) {
+		options.push_back(make_option(lists[i].name, [i, video]() { playlist_add(i, video); }));
+	}
+	options.push_back(make_option("+ Nueva lista", [video]() {
+		std::string name;
+		if (ask_text("Nombre de la lista", name) && playlist_create(name)) {
+			auto all = playlists_get();
+			for (size_t i = 0; i < all.size(); i++) {
+				if (all[i].name == name) {
+					playlist_add(i, video);
+				}
+			}
+		}
+	}));
+	show_dialog(options);
+}
+
+static FavoriteVideo video_from_url(const std::string &url, const std::string &title) {
+	FavoriteVideo v;
+	v.id = youtube_get_video_id_by_url(url);
+	v.title = title;
+	return v;
 }
 
 static SuccinctVideoView *make_item(const std::string &id, const std::string &title, const std::string &line2,
@@ -78,8 +132,43 @@ static SuccinctVideoView *make_item(const std::string &id, const std::string &ti
 	    ->set_thumbnail_url(youtube_get_video_thumbnail_url_by_id(id));
 }
 
+static TextView *make_button(const std::string &text, int width, std::function<void()> action) {
+	TextView *button = (new TextView(0, 0, width, 22));
+	button->set_text(text)
+	    ->set_x_alignment(TextView::XAlign::CENTER)
+	    ->set_y_alignment(TextView::YAlign::CENTER)
+	    ->set_get_background_color(button_background)
+	    ->set_on_view_released([action](View &) { action(); });
+	return button;
+}
+
+// plays a playlist : the first video now, the others through the queue
+static void start_playlist(const UserPlaylist &playlist, bool shuffle) {
+	std::vector<std::pair<std::string, std::string>> items;
+	for (auto &v : playlist.videos) {
+		items.push_back({youtube_get_video_url_by_id(v.id), v.title});
+	}
+	if (!items.size()) {
+		return;
+	}
+	if (shuffle) {
+		for (size_t i = items.size(); i > 1; i--) {
+			std::swap(items[i - 1], items[rand() % i]);
+		}
+	}
+	play_queue_clear();
+	for (size_t i = 1; i < items.size(); i++) {
+		play_queue_toggle(items[i].first, items[i].second);
+	}
+	if (playlist_repeat) {
+		play_queue_set_repeat(items, shuffle);
+	}
+	clicked_url = items[0].first;
+}
+
 void Library_init(void) {
 	logger.info("library/init", "Initializing...");
+	srand((unsigned)osGetTime());
 	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
 	on_long_tap_dialog->set_is_visible(false);
 	favorites_load();
@@ -95,9 +184,11 @@ void Library_exit(void) {
 void Library_suspend(void) { thread_suspend = true; }
 void Library_resume(std::string arg) {
 	if (arg == "favorites") {
-		mode = 1;
+		mode = 1, open_playlist = -1;
 	} else if (arg == "queue") {
 		mode = 0;
+	} else if (arg == "playlists") {
+		mode = 2, open_playlist = -1;
 	}
 	if (main_view) {
 		main_view->on_resume();
@@ -106,6 +197,132 @@ void Library_resume(std::string arg) {
 	thread_suspend = false;
 	var_need_refresh = true;
 	rebuild_views();
+}
+
+static void build_queue(VerticalListView *list) {
+	int n = play_queue_size();
+	for (int i = 0; i < n; i++) {
+		std::string url, title;
+		if (!play_queue_get(i, url, title)) {
+			break;
+		}
+		std::string id = youtube_get_video_id_by_url(url);
+		SuccinctVideoView *view = make_item(id, title, "#" + std::to_string(i + 1), "");
+		view->set_get_background_color(button_background)
+		    ->set_on_view_released([i, url](View &) {
+			    play_queue_remove_at(i); // it is playing now : it leaves the queue
+			    clicked_url = url;
+			    rebuild_request = true;
+		    })
+		    ->add_on_long_hold(35, [i, url, title](View &) {
+			    show_dialog({make_option("Subir", [i]() { play_queue_move(i, -1); }),
+			                 make_option("Bajar", [i]() { play_queue_move(i, 1); }),
+			                 make_option("Añadir a una lista...", [url, title]() { pending_action = [url, title]() { add_to_playlist_dialog(video_from_url(url, title)); }; }),
+			                 make_option("Quitar de la cola", [i]() { play_queue_remove_at(i); })});
+		    });
+		list->views.push_back(view);
+	}
+	if (!n) {
+		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
+		                          ->set_text_lines(std::vector<std::string>{"La cola está vacía.", "Mantén pulsado cualquier vídeo", "para añadirlo."})
+		                          ->set_x_alignment(TextView::XAlign::CENTER)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	} else {
+		list->views.insert(list->views.begin(), make_button("Vaciar cola", 320, []() {
+			                   play_queue_clear();
+			                   rebuild_request = true;
+		                   }));
+	}
+}
+
+static void build_favorites(VerticalListView *list) {
+	auto favs = favorites_get();
+	for (auto &v : favs) {
+		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
+		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
+		view->set_get_background_color(button_background)
+		    ->set_on_view_released([url](View &) { clicked_url = url; })
+		    ->add_on_long_hold(35, [id, url, v](View &) {
+			    show_dialog({make_option("Añadir a la cola", [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option("Añadir a una lista...", [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
+			                 make_option("Quitar de favoritos", [id]() { favorites_remove(id); })});
+		    });
+		list->views.push_back(view);
+	}
+	if (!favs.size()) {
+		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
+		                          ->set_text_lines(std::vector<std::string>{"Aún no tienes favoritos.", "Usa el botón Favorito dentro", "de un vídeo."})
+		                          ->set_x_alignment(TextView::XAlign::CENTER)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
+}
+
+static void build_playlists(VerticalListView *list) {
+	auto lists = playlists_get();
+	if (open_playlist >= (int)lists.size()) {
+		open_playlist = -1;
+	}
+
+	if (open_playlist < 0) { // all the playlists
+		list->views.push_back(make_button("+ Nueva lista", 320, []() { new_playlist_request = true; }));
+		for (size_t i = 0; i < lists.size(); i++) {
+			auto &pl = lists[i];
+			View *row = (new TextView(0, 0, 320, 30))
+			                ->set_text(pl.name + "  (" + std::to_string(pl.videos.size()) + ")")
+			                ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+			                ->set_y_alignment(TextView::YAlign::CENTER)
+			                ->set_get_background_color(button_background)
+			                ->set_on_view_released([i](View &) {
+				                open_playlist = i;
+				                rebuild_request = true;
+			                })
+			                ->add_on_long_hold(35, [i, pl](View &) {
+				                show_dialog({make_option("Reproducir", [pl]() { start_playlist(pl, false); }),
+				                             make_option("Aleatorio", [pl]() { start_playlist(pl, true); }),
+				                             make_option("Eliminar lista", [i]() { playlist_delete(i); })});
+			                });
+			list->views.push_back(row);
+		}
+		if (!lists.size()) {
+			list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
+			                          ->set_text_lines(std::vector<std::string>{"No tienes listas.", "Crea una y añade vídeos desde", "Favoritos o la cola (pulsación larga)."})
+			                          ->set_x_alignment(TextView::XAlign::CENTER)
+			                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+		}
+		return;
+	}
+
+	// one playlist
+	UserPlaylist pl = lists[open_playlist];
+	int index = open_playlist;
+	list->views.push_back(make_button("< " + pl.name, 320, []() {
+		open_playlist = -1;
+		rebuild_request = true;
+	}));
+	list->views.push_back((new HorizontalListView(0, 0, 22))
+	                          ->set_views({make_button("Reproducir", 106, [pl]() { start_playlist(pl, false); }),
+	                                       make_button("Aleatorio", 106, [pl]() { start_playlist(pl, true); }),
+	                                       make_button(playlist_repeat ? "Repetir: sí" : "Repetir: no", 108, []() {
+		                                       playlist_repeat = !playlist_repeat;
+		                                       rebuild_request = true;
+	                                       })}));
+	for (auto &v : pl.videos) {
+		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
+		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
+		view->set_get_background_color(button_background)
+		    ->set_on_view_released([url](View &) { clicked_url = url; })
+		    ->add_on_long_hold(35, [index, id, url, v](View &) {
+			    show_dialog({make_option("Añadir a la cola", [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option("Quitar de la lista", [index, id]() { playlist_remove(index, id); })});
+		    });
+		list->views.push_back(view);
+	}
+	if (!pl.videos.size()) {
+		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
+		                          ->set_text_lines(std::vector<std::string>{"Lista vacía.", "Añade vídeos desde Favoritos", "o la cola (pulsación larga)."})
+		                          ->set_x_alignment(TextView::XAlign::CENTER)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
 }
 
 static void rebuild_views() {
@@ -117,79 +334,28 @@ static void rebuild_views() {
 	VerticalListView *list = (new VerticalListView(0, 0, 320))
 	                             ->set_margin(SMALL_MARGIN)
 	                             ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::LIBRARY);
-
 	if (mode == 0) {
-		int n = play_queue_size();
-		for (int i = 0; i < n; i++) {
-			std::string url, title;
-			if (!play_queue_get(i, url, title)) {
-				break;
-			}
-			std::string id = youtube_get_video_id_by_url(url);
-			SuccinctVideoView *view = make_item(id, title, "#" + std::to_string(i + 1), "");
-			view->set_get_background_color(button_background)
-			    ->set_on_view_released([i, url](View &) {
-				    play_queue_remove_at(i); // it is playing now : it leaves the queue
-				    clicked_url = url;
-				    rebuild_request = true;
-			    })
-			    ->add_on_long_hold(35, [i](View &) {
-				    show_dialog({make_option("Subir", [i]() { play_queue_move(i, -1); }),
-				                 make_option("Bajar", [i]() { play_queue_move(i, 1); }),
-				                 make_option("Quitar de la cola", [i]() { play_queue_remove_at(i); })});
-			    });
-			list->views.push_back(view);
-		}
-		if (!n) {
-			list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-			                          ->set_text_lines(std::vector<std::string>{"La cola esta vacia.", "Manten pulsado cualquier video", "para anadirlo."})
-			                          ->set_x_alignment(TextView::XAlign::CENTER)
-			                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
-		} else {
-			list->views.insert(list->views.begin(),
-			                   (new TextView(0, 0, 320, 22))
-			                       ->set_text("Vaciar cola")
-			                       ->set_x_alignment(TextView::XAlign::CENTER)
-			                       ->set_y_alignment(TextView::YAlign::CENTER)
-			                       ->set_get_background_color(button_background)
-			                       ->set_on_view_released([](View &) {
-				                       play_queue_clear();
-				                       rebuild_request = true;
-			                       }));
-		}
+		build_queue(list);
+	} else if (mode == 1) {
+		build_favorites(list);
 	} else {
-		auto favs = favorites_get();
-		for (auto &v : favs) {
-			SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
-			std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
-			view->set_get_background_color(button_background)
-			    ->set_on_view_released([url](View &) { clicked_url = url; })
-			    ->add_on_long_hold(35, [id, url, v](View &) {
-				    show_dialog({make_option("Anadir a la cola", [url, v]() { play_queue_toggle(url, v.title); }),
-				                 make_option("Quitar de favoritos", [id]() { favorites_remove(id); })});
-			    });
-			list->views.push_back(view);
-		}
-		if (!favs.size()) {
-			list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-			                          ->set_text_lines(std::vector<std::string>{"Aun no tienes favoritos.", "Usa el boton Favorito dentro", "de un video."})
-			                          ->set_x_alignment(TextView::XAlign::CENTER)
-			                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
-		}
+		build_playlists(list);
 	}
 
-	constexpr int selector_width = 180;
+	constexpr int selector_width = 210;
 	main_view = (new ScrollView(0, 0, 320, 240))
 	                ->set_views({(new HorizontalListView(0, 0, MIDDLE_FONT_INTERVAL))
 	                                 ->set_views({(new TextView(0, 0, 320 - selector_width, MIDDLE_FONT_INTERVAL))
 	                                                  ->set_text("Biblioteca")
-	                                                  ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
+	                                                  ->set_font_size(0.5, MIDDLE_FONT_INTERVAL),
 	                                              (new SelectorView(0, 0, selector_width, MIDDLE_FONT_INTERVAL, false))
 	                                                  ->set_texts({(std::function<std::string()>)[]() { return std::string("Cola"); },
-	                                                               (std::function<std::string()>)[]() { return std::string("Favoritos"); }},
+	                                                               (std::function<std::string()>)[]() { return std::string("Favoritos"); },
+	                                                               (std::function<std::string()>)[]() { return std::string("Listas"); }},
 	                                                              mode)
 	                                                  ->set_on_change([](const SelectorView &view) {
 		                                                  mode = view.selected_button;
+		                                                  open_playlist = -1;
 		                                                  rebuild_request = true;
 	                                                  })}),
 	                             (new RuleView(0, 0, 320, 3)), list});
@@ -254,12 +420,30 @@ void Library_draw(void) {
 				video_update_playing_bar(key);
 			}
 		}
+		if (pending_action) { // e.g. a second dialog : opened here because it replaces the views that were just updated
+			auto action = pending_action;
+			pending_action = nullptr;
+			action();
+		}
+		if (new_playlist_request) { // the keyboard is opened after the update, never from inside a view callback
+			new_playlist_request = false;
+			std::string name;
+			if (ask_text("Nombre de la lista", name)) {
+				playlist_create(name);
+			}
+			rebuild_request = true;
+		}
 		if (rebuild_request) { // after the update : the views of the list may have just been used
 			rebuild_request = false;
 			rebuild_views();
 		}
 		if (key.p_b) {
-			global_intent.next_scene = SceneType::BACK;
+			if (mode == 2 && open_playlist >= 0) {
+				open_playlist = -1; // back to the list of playlists
+				rebuild_views();
+			} else {
+				global_intent.next_scene = SceneType::BACK;
+			}
 		}
 	}
 }

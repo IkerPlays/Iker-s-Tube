@@ -2,9 +2,18 @@
 #include "system/libctru_wrapper.hpp"
 #include <vector>
 #include <utility>
+#include <cstdlib>
 
 static Mutex queue_lock;
 static std::vector<std::pair<std::string, std::string>> queue; // {url, title}
+static std::vector<std::pair<std::string, std::string>> repeat_items; // refills the queue when it runs out
+static bool repeat_shuffle = false;
+
+static void shuffle_items(std::vector<std::pair<std::string, std::string>> &items) {
+	for (size_t i = items.size(); i > 1; i--) {
+		std::swap(items[i - 1], items[rand() % i]);
+	}
+}
 
 bool play_queue_toggle(const std::string &url, const std::string &title) {
 	bool added = true;
@@ -43,6 +52,12 @@ int play_queue_size() {
 bool play_queue_pop(std::string &url_out) {
 	bool res = false;
 	queue_lock.lock();
+	if (!queue.size() && repeat_items.size()) { // "repeat list" : start the list again
+		queue = repeat_items;
+		if (repeat_shuffle) {
+			shuffle_items(queue);
+		}
+	}
 	if (queue.size()) {
 		url_out = queue.front().first;
 		queue.erase(queue.begin());
@@ -51,9 +66,16 @@ bool play_queue_pop(std::string &url_out) {
 	queue_lock.unlock();
 	return res;
 }
+void play_queue_set_repeat(const std::vector<std::pair<std::string, std::string>> &items, bool shuffle) {
+	queue_lock.lock();
+	repeat_items = items;
+	repeat_shuffle = shuffle;
+	queue_lock.unlock();
+}
 void play_queue_clear() {
 	queue_lock.lock();
 	queue.clear();
+	repeat_items.clear();
 	queue_lock.unlock();
 }
 
