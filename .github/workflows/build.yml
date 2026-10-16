@@ -15,7 +15,7 @@ jobs:
       - name: Instalar librerias 3DS y herramientas
         run: |
           apt-get update
-          apt-get install -y git make g++ gcc python3 python3-pil
+          apt-get install -y git make cmake g++ gcc python3 python3-pil
           dkp-pacman -Sy --noconfirm 3ds-mpg123 3ds-libvorbisidec 3ds-libogg || \
             pacman -Sy --noconfirm 3ds-mpg123 3ds-libvorbisidec 3ds-libogg
 
@@ -25,9 +25,10 @@ jobs:
           make -C /tmp/ctr/makerom deps
           make -C /tmp/ctr/makerom -j"$(nproc)"
           cp /tmp/ctr/makerom/bin/makerom /usr/local/bin/
-          git clone --depth 1 --recursive https://github.com/Steveice10/bannertool.git /tmp/bannertool
-          make -C /tmp/bannertool -j"$(nproc)"
-          cp /tmp/bannertool/output/linux-x86_64/bannertool /usr/local/bin/
+          git clone --depth 1 https://github.com/carstene1ns/3ds-bannertool.git /tmp/bannertool
+          cmake -S /tmp/bannertool -B /tmp/bannertool/b
+          make -C /tmp/bannertool/b -j"$(nproc)"
+          cp /tmp/bannertool/b/bannertool /usr/local/bin/
 
       - name: Generar iconos y banner
         run: python3 tools/gen_assets.py meta
