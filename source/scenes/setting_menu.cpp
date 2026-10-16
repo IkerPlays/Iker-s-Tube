@@ -294,6 +294,31 @@ static void update_worker_thread_func(void *) {
 						auto cur_version_seq = version_str_to_vector(DEF_CURRENT_APP_VER);
 						bool update_available = cur_version_seq < new_version_seq;
 						std::string release_notes = result_json["body"].string_value();
+						{ // the notes are written in Markdown with emoji for GitHub : make them readable on the 3DS font
+							std::string clean, raw = release_notes;
+							for (size_t i = 0; i < raw.size(); i++) {
+								unsigned char c = raw[i];
+								if (c < 0x80) {
+									if (c != '*' && c != '`' && c != '#' && c != '\r') clean += (char) c;
+								} else {
+									size_t len = c >= 0xF0 ? 4 : c >= 0xE0 ? 3 : 2;
+									if (len == 2) { // accented letters are fine
+										clean.append(raw, i, 2);
+									} else if (c == 0xE2 && i + 2 < raw.size() && raw[i + 1] == (char) 0x80 &&
+									           (raw[i + 2] == (char) 0x93 || raw[i + 2] == (char) 0x94)) {
+										clean += '-'; // en/em dash
+									}
+									i += len - 1; // emoji and symbols the font can't draw are dropped
+								}
+							}
+							std::istringstream clean_lines(clean);
+							std::string kept, l;
+							while (std::getline(clean_lines, l)) {
+								if (l.rfind("<sub>", 0) == 0 || l.rfind("---", 0) == 0) continue;
+								kept += l + "\n";
+							}
+							release_notes = kept;
+						}
 						std::istringstream lines(release_notes);
 						std::ostringstream wrapped;
 						std::string line;
