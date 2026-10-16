@@ -19,7 +19,7 @@ CFLAGS   := -g -Wall -O2 -mword-relocations -ffunction-sections $(ARCH) -D__3DS_
 ASFLAGS  := -g $(ARCH)
 LDFLAGS   = -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 LIBS     := -lcitro2d -lcitro3d -lmpg123 -lvorbisidec -logg -lctru -lm
-LIBDIRS  := $(PORTLIBS) $(CTRULIB)
+LIBDIRS  := $(DEVKITPRO)/portlibs/3ds $(DEVKITPRO)/portlibs/armv6k $(DEVKITPRO)/libctru
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 export OUTPUT   := $(CURDIR)/$(TARGET)
