@@ -34,6 +34,7 @@ extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
 extern bool var_mark_watched; // check mark on the thumbnails of videos that are in the history
+extern int var_new_feed_videos; // subscription videos not seen yet (red dot on the menu icon)
 extern int var_theme;             // color theme index (see colors.hpp)
 extern bool var_large_thumbnails; // bigger thumbnails in video lists
 extern bool var_disable_pull_to_refresh;

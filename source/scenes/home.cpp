@@ -1,3 +1,4 @@
+#include "data_io/feed_seen.hpp"
 #include "headers.hpp"
 #include <vector>
 #include <string>
@@ -70,6 +71,7 @@ using namespace Home;
 static void load_home_page(void *);
 static void load_home_page_more(void *);
 static void load_subscription_feed(void *);
+static std::vector<std::string> feed_latest_ids; // ids of the videos of the last local feed load
 static void load_oauth_subscription_feed(void *);
 static void load_oauth_subscription_feed_more(void *);
 static void load_oauth_subscribed_channels(void *);
@@ -800,6 +802,14 @@ static void load_subscription_feed(void *) {
 	}
 
 	std::vector<View *> new_feed_video_views;
+	{ // new videos since the last time the feed tab was opened : red dot on the menu icon
+		feed_latest_ids.clear();
+		for (auto &i : loaded_videos) {
+			for (auto &video : i.second) feed_latest_ids.push_back(youtube_get_video_id_by_url(video.url));
+		}
+		var_new_feed_videos = feed_seen_count_new(feed_latest_ids);
+		var_need_refresh = true;
+	}
 	for (auto &i : loaded_videos) {
 		for (auto video : i.second) {
 			SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
@@ -1195,6 +1205,12 @@ void Home_draw(void) {
 	bool video_playing_bar_show = video_is_playing();
 	CONTENT_Y_HIGH = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
+
+	if (var_new_feed_videos > 0 && main_tab_view->selected_tab == 2) { // the user is looking at the new videos tab
+		feed_seen_mark(feed_latest_ids);
+		var_new_feed_videos = 0;
+		var_need_refresh = true;
+	}
 
 	if (var_need_refresh || !var_eco_mode) {
 		var_need_refresh = false;

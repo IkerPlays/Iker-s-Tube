@@ -2,6 +2,7 @@
 #include "variables.hpp"
 #include "headers.hpp"
 #include "ui/ui.hpp"
+#include "data_io/string_resource.hpp"
 #include "util/play_queue.hpp"
 
 #define ICON_LINE_HEIGHT 3
@@ -81,7 +82,7 @@ void draw_overlay_menu(int y) {
 		Draw_texture(var_square_image[0], menu_icon_line_color, x, y, width, ICON_LINE_HEIGHT);
 	}
 
-	if (var_update_available || var_update_banner) { // red dot : an update is available / news about an update
+	if (var_update_available || var_update_banner || var_new_feed_videos > 0) { // red dot : an update is available / news about an update
 		Draw_texture(var_square_image[0], DEF_DRAW_RED, menu_icon_x + OVERLAY_MENU_ICON_SIZE - 10, menu_icon_y + 2, 8, 8);
 	}
 
@@ -126,6 +127,9 @@ void update_overlay_menu(Hid_info *key) {
 	} else if (var_update_available && global_current_scene != SceneType::SETTINGS) {
 		// takes the user straight to Settings where the "Update" button is
 		contents.push_back({LOCALIZED(UPDATES_AVAILABLE), Content::Type::SETTINGS});
+	}
+	if (var_new_feed_videos > 0 && global_current_scene != SceneType::HOME) {
+		contents.push_back({std::to_string(var_new_feed_videos) + " " + tr("new videos", "vídeos nuevos"), Content::Type::HOME});
 	}
 	if (global_current_scene != SceneType::HOME) {
 		contents.push_back({LOCALIZED(HOME), Content::Type::HOME});
