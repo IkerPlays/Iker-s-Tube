@@ -569,3 +569,14 @@ bool youtube_studio_set_thumbnail(const std::string &video_id, const std::string
 	}
 	return true;
 }
+
+bool youtube_studio_video_stats(const std::string &video_id, std::string &views, std::string &likes, std::string &comments) {
+	std::string body;
+	auto r = api_request("GET", "https://www.googleapis.com/youtube/v3/videos?part=statistics&id=" + video_id, "", "", body);
+	if (r.fail || !r.status_code_is_success()) return false;
+	unsigned long long n = 0;
+	views = number_field(body, "viewCount", n) ? short_number(n) : "-";
+	likes = number_field(body, "likeCount", n) ? short_number(n) : "-";
+	comments = number_field(body, "commentCount", n) ? short_number(n) : "-";
+	return true;
+}

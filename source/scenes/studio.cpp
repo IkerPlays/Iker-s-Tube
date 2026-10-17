@@ -42,6 +42,7 @@ static volatile bool my_loading = false;
 static std::string my_error;
 static bool my_public_only = false; // the list is the public one (no Studio login)
 static StudioVideo sel_video;
+static std::string sel_stats; // views, likes and comments of the open video (guarded by state_lock)
 static bool delete_armed = false; // the first tap on Delete only asks for a second one
 static std::string pick_dir = "sdmc:/";
 static std::string form_path, form_title, form_desc;
@@ -555,6 +556,20 @@ static void load_my_videos_task(void *) {
 	var_need_refresh = true;
 }
 
+static void load_video_stats_task(void *arg) {
+	std::string *id = (std::string *)arg;
+	std::string views, likes, comments;
+	std::string text;
+	if (youtube_studio_video_stats(*id, views, likes, comments)) {
+		text = tr("Views ", "Visitas ") + views + "  " + tr("Likes ", "Me gusta ") + likes + "  " + tr("Comments ", "Comentarios ") + comments;
+	}
+	LightLock_Lock(&state_lock);
+	if (sel_video.id == *id) sel_stats = text;
+	LightLock_Unlock(&state_lock);
+	var_need_refresh = true;
+	delete id;
+}
+
 static void start_my_videos_load() {
 	if (my_loading || !OAuth::is_authenticated()) return;
 	my_loading = true;
@@ -623,8 +638,10 @@ static std::vector<View *> build_myvideos() {
 		v.push_back(button([text]() { return text; }, [copy]() {
 			LightLock_Lock(&state_lock);
 			sel_video = copy;
+			sel_stats = "";
 			LightLock_Unlock(&state_lock);
 			delete_armed = false;
+			if (studio_auth_signed_in()) queue_async_task(load_video_stats_task, new std::string(copy.id)); // views, likes, comments
 			go(MODE_VIDEO);
 		}));
 	}
@@ -638,6 +655,7 @@ static std::vector<View *> build_video() {
 		std::string title = locked_copy(sel_video.title);
 		return title.size() > 46 ? title.substr(0, 46) + ".." : title;
 	}));
+	v.push_back(label([]() { return locked_copy(sel_stats); }));
 	v.push_back(button([]() {
 		std::string p = locked_copy(sel_video.privacy);
 		return tr("Visibility: ", "Visibilidad: ") + (p == "public" ? tr("Public", "Público") : p == "unlisted" ? tr("Unlisted", "No listado") : tr("Private", "Privado"));

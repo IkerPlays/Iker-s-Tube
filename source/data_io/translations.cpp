@@ -383,6 +383,13 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"The Studio tab is for your channel.", {"L'onglet Studio sert à votre chaîne.", "Der Studio-Tab ist für deinen Kanal.", "La scheda Studio è per il tuo canale.", "A aba Studio é para o seu canal.", "Studioタブはあなたのチャンネル用です。"}},
 	    {"Create a report to send", {"Créer un rapport à envoyer", "Bericht zum Senden erstellen", "Crea un rapporto da inviare", "Criar um relatório para enviar", "送信用レポートを作成"}},
 	    {"Could not write the report", {"Impossible d'écrire le rapport", "Bericht konnte nicht geschrieben werden", "Impossibile scrivere il rapporto", "Não foi possível gravar o relatório", "レポートを書き込めません"}},
+	    {"Views ", {"Vues ", "Aufrufe ", "Visualizzazioni ", "Visualizações ", "再生 "}},
+	    {"Likes ", {"J'aime ", "Likes ", "Mi piace ", "Curtidas ", "高評価 "}},
+	    {"Comments ", {"Commentaires ", "Kommentare ", "Commenti ", "Comentários ", "コメント "}},
+	    {"Next video in ", {"Prochaine vidéo dans ", "Nächstes Video in ", "Prossimo video tra ", "Próximo vídeo em ", "次の動画まで "}},
+	    {"cancel", {"annuler", "abbrechen", "annulla", "cancelar", "キャンセル"}},
+	    {"Wait before the next video", {"Attendre avant la vidéo suivante", "Vor dem nächsten Video warten", "Attendi prima del prossimo video", "Esperar antes do próximo vídeo", "次の動画の前に待つ"}},
+	    {"A countdown is shown; pressing A cancels the autoplay.", {"Un compte à rebours s'affiche ; A annule la lecture automatique.", "Ein Countdown wird angezeigt; A bricht die automatische Wiedergabe ab.", "Viene mostrato un conto alla rovescia; A annulla la riproduzione automatica.", "Uma contagem regressiva é mostrada; A cancela a reprodução automática.", "カウントダウンが表示されます。Aで自動再生をキャンセルします。"}},
 	};
 	return table;
 }

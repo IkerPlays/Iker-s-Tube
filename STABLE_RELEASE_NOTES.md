@@ -24,10 +24,12 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Statistics fixed.** Subscribers, total views and total videos come from the public About page of your channel, so they load without the Data API.
 - **Own Studio login.** Uploading and editing need the YouTube Data API, which the main login cannot use. Studio has its own sign-in with a Google Cloud client of yours, built into the app by the build secrets or set up in the Studio tab with a QR or by typing (see Documentation/STUDIO_SETUP.md).
 - **Upload with more options.** Category and custom thumbnail, a button to watch the uploaded video, and uploads run in their own network session.
+- **Video numbers.** Opening one of your uploads shows its views, likes and comments.
 - **Resume uploads and tags.** An interrupted upload can be continued later, and the upload form has tags.
 - **Edit my uploads.** Change visibility, title, delete, or watch your latest uploads (without the Studio login it lists your public videos). Create playlists and open your channel.
 
 ### Comments and player
+- **Autoplay countdown.** An optional wait (3, 5 or 10 s) with a countdown before the next video, cancelled with A.
 - **Collaboration videos.** Tap the author of a video with several channels to see all of them (icon, handle, subscribers), open any, or long press one to subscribe.
 - **Comments.** Sending, replying and liking try several YouTube clients, and a failure now shows the reason on screen. Pinned and creator-hearted comments are marked.
 - **SponsorBlock.** An optional setting skips the parts of a video that the community marked as sponsors (or also self promotion, intros and outros).

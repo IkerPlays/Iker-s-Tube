@@ -33,6 +33,7 @@ extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
+extern int var_autoplay_delay; // 0..3 : 0 s, 3 s, 5 s, 10 s before the next video starts by itself
 extern bool var_tour_done;    // the first-use tour was shown
 extern bool var_incognito;    // nothing is remembered : no watch history, searches, resume points or last played video
 extern int var_sponsorblock;  // 0 off, 1 skip sponsors, 2 skip sponsors, self promotion, intros and outros (SponsorBlock)

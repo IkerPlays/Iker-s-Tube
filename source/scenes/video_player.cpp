@@ -320,6 +320,9 @@ static void caption_lang_remember(const std::string &id) {
 	fclose(f);
 }
 
+static std::string autoplay_pending_url; // the next video waits for the countdown (guarded by small_resource_lock)
+static std::string autoplay_pending_for; // the id of the video that ended
+static u64 autoplay_due_ms = 0;
 static std::string pending_offline_delete; // a saved video that was watched to the end : deleted when another video starts
 static bool stop_after_video = false; // do not continue with the queue / autoplay when the current video ends
 static void mini_player_draw();
@@ -2765,7 +2768,31 @@ debug_info_view =
 	    return timeout;
     }
 
+// the countdown before an automatic next video (called by the player and, when it is not on screen, by video_is_playing())
+static void autoplay_countdown_tick() {
+	small_resource_lock.lock();
+	if (autoplay_pending_url != "") {
+		if (!eof_reached || playing_video_info.id != autoplay_pending_for) { // the user replayed / sought / chose another video
+			autoplay_pending_url = "";
+		} else if (osGetTime() >= autoplay_due_ms) {
+			std::string next = autoplay_pending_url;
+			autoplay_pending_url = "";
+			send_change_video_request_wo_lock(next, true, false, false);
+		} else {
+			static int last_shown = -1;
+			int left = (int)((autoplay_due_ms - osGetTime()) / 1000) + 1;
+			if (left != last_shown) {
+				last_shown = left;
+				notice_show(tr("Next video in ", "Siguiente vídeo en ") + std::to_string(left) + " s (A: " + tr("cancel", "cancelar") + ")");
+			}
+			var_need_refresh = true;
+		}
+	}
+	small_resource_lock.unlock();
+}
+
     bool video_is_playing() {
+	    autoplay_countdown_tick();
 	    if (var_sleep_timer_end && osGetTime() >= var_sleep_timer_end) { // sleep timer : pause the playback
 		    var_sleep_timer_end = 0;
 		    small_resource_lock.lock();
@@ -3506,10 +3533,16 @@ debug_info_view =
 						    } else if (var_loop_mode == false && !stop_here) {
 							    if ((var_autoplay_level == 2 && playing_video_info.has_next_video()) ||
 							        (var_autoplay_level == 1 && playing_video_info.has_next_video_in_playlist())) {
-
-								    send_change_video_request_wo_lock(playing_video_info.get_next_video().url, true,
-								                                      false, false);
-								    break_flag = true;
+								    if (var_autoplay_delay > 0) { // wait : the countdown is handled by the UI thread
+									    static const int delays[4] = {0, 3, 5, 10};
+									    autoplay_pending_url = playing_video_info.get_next_video().url;
+									    autoplay_pending_for = playing_video_info.id;
+									    autoplay_due_ms = osGetTime() + delays[var_autoplay_delay] * 1000;
+								    } else {
+									    send_change_video_request_wo_lock(playing_video_info.get_next_video().url, true,
+									                                      false, false);
+									    break_flag = true;
+								    }
 							    }
 						    } else if (var_loop_mode == true) {
 							    vid_seek_request = true;
@@ -3981,6 +4014,7 @@ debug_info_view =
 			    if (account_playlists_take(playlists_video_id, account_lists)) {
 				    show_account_playlists(playlists_video_id, account_lists);
 			    }
+			    autoplay_countdown_tick(); // the countdown before an automatic next video
 			    if (collab_request_id != "") { // collaboration : load the list of channels
 				    std::string *id = new std::string(collab_request_id);
 				    collab_request_id = "";

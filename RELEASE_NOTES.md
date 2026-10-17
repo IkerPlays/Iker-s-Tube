@@ -1,6 +1,4 @@
 Devbuild notes
 
-Fixes from a code review of the latest additions:
-- Studio: new uploads sent their data to an empty address and always failed (a bug of the resume feature). Fixed.
-- SponsorBlock: it now asks again when you turn it on during a video, when the connection comes back, or after a failed request (at most every 20 seconds).
-- Thumbnail cache on the SD card: files are written to a temporary name first and renamed, a bad file is deleted when it cannot be decoded, and the disk work no longer happens while the thumbnail list is locked.
+- Autoplay: new setting Wait before the next video (Settings, Playback): None, 3, 5 or 10 seconds. When a video ends and autoplay picks the next one, a countdown is shown and pressing A cancels it. It also runs while another screen is open. Videos you queued yourself still start at once.
+- Studio: when you open one of your uploads for editing (with the Studio login) it shows its views, likes and comments.
