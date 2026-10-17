@@ -98,7 +98,7 @@ void PostView::draw_() const {
 		}
 		if (is_loading_replies || get_has_more_replies() || replies_shown < replies.size()) { // load more replies
 			cur_y += SMALL_MARGIN;
-			std::string message = is_loading_replies ? LOCALIZED(LOADING)
+			std::string message = is_loading_replies ? loading_text()
 			                      : replies_shown    ? LOCALIZED(SHOW_MORE_REPLIES)
 			                                         : LOCALIZED(SHOW_REPLIES);
 			Draw(message, content_x_pos(), cur_y - 2, 0.5, 0.5, COLOR_LINK);
@@ -202,7 +202,7 @@ void PostView::update_(Hid_info key) {
 		}
 		if (is_loading_replies || get_has_more_replies() || replies_shown < replies.size()) {
 			cur_y += SMALL_MARGIN;
-			std::string message = is_loading_replies ? LOCALIZED(LOADING)
+			std::string message = is_loading_replies ? loading_text()
 			                      : replies_shown    ? LOCALIZED(SHOW_MORE_REPLIES)
 			                                         : LOCALIZED(SHOW_REPLIES);
 			bool inside_show_more_replies =

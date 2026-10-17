@@ -769,7 +769,7 @@ debug_info_view =
 	    if (cur_video_info.error != "" || cur_video_info.has_more_suggestions() || !cur_video_info.suggestions.size()) {
 		    TextView *bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 2))
 		                                ->set_text(cur_video_info.error != ""              ? cur_video_info.error
-		                                           : cur_video_info.has_more_suggestions() ? LOCALIZED(LOADING)
+		                                           : cur_video_info.has_more_suggestions() ? loading_text()
 		                                           : !cur_video_info.suggestions.size()    ? LOCALIZED(EMPTY)
 		                                                                                   : "IE")
 		                                ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
@@ -815,7 +815,7 @@ debug_info_view =
 		    TextView *bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 2))
 		                                ->set_text(cur_video_info.comments_disabled     ? LOCALIZED(COMMENTS_DISABLED)
 		                                           : cur_video_info.error != ""         ? cur_video_info.error
-		                                           : cur_video_info.has_more_comments() ? LOCALIZED(LOADING)
+		                                           : cur_video_info.has_more_comments() ? loading_text()
 		                                           : !cur_video_info.comments.size()    ? LOCALIZED(NO_COMMENTS)
 		                                                                                : "IE")
 		                                ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
@@ -940,7 +940,7 @@ debug_info_view =
 	    }
 	    if (need_loading && is_to_display) {
 		    static TextView *loading_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-		                                        ->set_text([]() { return LOCALIZED(LOADING); })
+		                                        ->set_text([]() { return loading_text(); })
 		                                        ->set_x_alignment(TextView::XAlign::CENTER)
 		                                        ->set_y_alignment(TextView::YAlign::UP);
 		    for (int i = 0; i < 4; i++) {

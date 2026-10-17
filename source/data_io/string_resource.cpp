@@ -55,3 +55,19 @@ Result_with_string load_string_resources(std::string lang) {
 
 	return result;
 }
+
+#include <3ds.h>
+#include "variables.hpp"
+
+std::string loading_text() {
+	std::string text = get_string_resource("LOADING");
+	while (!text.empty() && text.back() == '.') {
+		text.pop_back();
+	}
+	if (text.size() >= 3 && text.compare(text.size() - 3, 3, "\xE2\x80\xA6") == 0) {
+		text.resize(text.size() - 3);
+	}
+	int dots = (int)((osGetTime() / 300) % 3) + 1;
+	var_need_refresh = true; // keep the animation running while something is loading
+	return text + std::string(dots, '.');
+}

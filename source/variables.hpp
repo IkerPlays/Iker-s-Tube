@@ -13,6 +13,8 @@ extern double var_av_sync_ms; // > 0 : show the video earlier (compensates the d
 extern bool var_allow_send_app_info;
 extern bool var_hide_pointer;
 extern bool var_night_mode;
+extern int var_theme;             // color theme index (see colors.hpp)
+extern bool var_large_thumbnails; // bigger thumbnails in video lists
 extern bool var_disable_pull_to_refresh;
 extern bool var_eco_mode;
 extern bool var_debug_mode;

@@ -293,7 +293,7 @@ void Search_resume(std::string arg) {
 static void set_loading_bottom_view() {
 	delete result_bottom_view;
 	result_bottom_view = (new TextView(0, 0, 320, 30))
-	                         ->set_text((std::function<std::string()>)[]() { return LOCALIZED(LOADING); })
+	                         ->set_text((std::function<std::string()>)[]() { return loading_text(); })
 	                         ->set_x_alignment(TextView::XAlign::CENTER);
 	result_view->views[1] = result_bottom_view;
 }
@@ -305,7 +305,7 @@ static void update_result_bottom_view() {
 		if (search_result.error != "") {
 			cur_view->set_text(search_result.error);
 		} else {
-			cur_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(LOADING); });
+			cur_view->set_text((std::function<std::string()>)[]() { return loading_text(); });
 		}
 		result_bottom_view = cur_view;
 	} else {

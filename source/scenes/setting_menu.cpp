@@ -677,6 +677,38 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Color theme
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return "Ruby"; },
+							(std::function<std::string ()>) []() { return "Ocean"; },
+							(std::function<std::string ()>) []() { return "Forest"; },
+							(std::function<std::string ()>) []() { return "Violet"; },
+							(std::function<std::string ()>) []() { return "Amber"; },
+							(std::function<std::string ()>) []() { return "AMOLED"; }
+						}, var_theme)
+						->set_title([](const SelectorView &) { return "Color theme"; })
+						->set_on_change([](const SelectorView &view) {
+							if (var_theme != view.selected_button) {
+								var_theme = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					// Large thumbnails
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_large_thumbnails)
+						->set_title([](const SelectorView &) { return "Large thumbnails"; })
+						->set_info([](const SelectorView &) { return "Applies to lists opened from now on."; })
+						->set_on_change([](const SelectorView &view) {
+							if (var_large_thumbnails != view.selected_button) {
+								var_large_thumbnails = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Disable pull to refresh
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

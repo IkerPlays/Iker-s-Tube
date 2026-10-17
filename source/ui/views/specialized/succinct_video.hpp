@@ -6,8 +6,9 @@
 #include "../view.hpp"
 #include "util/play_queue.hpp"
 
-#define VIDEO_LIST_THUMBNAIL_HEIGHT 54
-#define VIDEO_LIST_THUMBNAIL_WIDTH 96
+#include "variables.hpp"
+#define VIDEO_LIST_THUMBNAIL_HEIGHT (var_large_thumbnails ? 72 : 54)
+#define VIDEO_LIST_THUMBNAIL_WIDTH (var_large_thumbnails ? 128 : 96)
 
 struct SuccinctVideoView : public FixedSizeView {
   private:

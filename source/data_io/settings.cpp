@@ -62,6 +62,8 @@ void load_settings() {
 	var_full_dislike_like_count = load_int("full_dislike_like_count", 0);
 	var_hide_pointer = load_int("hide_pointer", 0);
 	var_night_mode = load_int("dark_theme", 1);
+	var_theme = std::max(0, std::min(5, load_int("color_theme", 0)));
+	var_large_thumbnails = load_int("large_thumbnails", 0);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
 	var_community_image_size =
 	    std::min(COMMUNITY_IMAGE_SIZE_MAX,
@@ -117,6 +119,8 @@ void save_settings() {
 	add_int("full_dislike_like_count", var_full_dislike_like_count);
 	add_int("hide_pointer", var_hide_pointer);
 	add_int("dark_theme", var_night_mode);
+	add_int("color_theme", var_theme);
+	add_int("large_thumbnails", var_large_thumbnails);
 	add_int("disable_pull_to_refresh", var_disable_pull_to_refresh);
 	add_int("community_image_size", var_community_image_size);
 	add_int("autoplay_level_v2", var_autoplay_level);

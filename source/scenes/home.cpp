@@ -609,7 +609,7 @@ static void update_home_bottom_view(bool force_show_loading) {
 			                              if (home_info.error != "") {
 				                              return home_info.error;
 			                              } else {
-				                              return LOCALIZED(LOADING);
+				                              return loading_text();
 			                              }
 		                              })
 		                              ->set_x_alignment(TextView::XAlign::CENTER)
@@ -633,7 +633,7 @@ static void update_oauth_feed_bottom_view(bool force_show_loading) {
 			                                    if (oauth_feed_error != "") {
 				                                    return oauth_feed_error;
 			                                    } else {
-				                                    return LOCALIZED(LOADING);
+				                                    return loading_text();
 			                                    }
 		                                    })
 		                                    ->set_x_alignment(TextView::XAlign::CENTER)
