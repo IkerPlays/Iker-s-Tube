@@ -8,6 +8,7 @@
 
 #include "scenes/home.hpp"
 #include "scenes/search.hpp"
+#include "scenes/studio.hpp"
 #include "scenes/video_player.hpp"
 #include "data_io/subscription_util.hpp"
 #include "youtube_parser/parser.hpp"
@@ -263,10 +264,11 @@ void Home_init(void) {
 		}
 	}
 	main_tab_view = (new TabView(0, 0, 320, CONTENT_Y_HIGH - TOP_HEIGHT))
-	                    ->set_views({home_tab_view, channels_tab_view, feed_tab_view})
+	                    ->set_views({home_tab_view, channels_tab_view, feed_tab_view, Studio_create_view()})
 	                    ->set_tab_texts<std::function<std::string()>>({[]() { return LOCALIZED(HOME); },
 	                                                                   []() { return LOCALIZED(SUBSCRIBED_CHANNELS); },
-	                                                                   []() { return LOCALIZED(NEW_VIDEOS); }});
+	                                                                   []() { return LOCALIZED(NEW_VIDEOS); },
+	                                                                   []() { return std::string("Studio"); }});
 	main_view = (new VerticalListView(0, 0, 320))
 	                ->set_views({(new CustomView(0, 0, 320, 25))
 	                                 ->set_draw([](const CustomView &) { return Search_get_search_bar_view()->draw(); })
@@ -308,6 +310,7 @@ void Home_exit(void) {
 	main_view->recursive_delete_subviews();
 	delete main_view;
 	main_view = NULL;
+	Studio_exit();
 	main_tab_view = NULL;
 	feed_tab_view = NULL;
 	local_feed_videos_view = NULL;
@@ -1305,6 +1308,7 @@ void Home_draw(void) {
 		if (feed_fixed) {
 			feed_fixed->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT - main_tab_view->tab_selector_height);
 		}
+		Studio_set_height(CONTENT_Y_HIGH - TOP_HEIGHT - main_tab_view->tab_selector_height);
 		main_view->update(key);
 		if (clicked_url != "") {
 			global_intent.next_scene = clicked_is_video ? SceneType::VIDEO_PLAYER : SceneType::CHANNEL;
