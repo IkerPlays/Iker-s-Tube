@@ -475,7 +475,21 @@ void Menu_worker_thread(void *arg) {
 			count = 0;
 		}
 
-		if (var_time_to_turn_off_lcd != 0) {
+		{ // save the data usage counter every ~5 minutes
+			static int save_counter = 0;
+			static u64 last_saved_bytes = 0;
+			if (++save_counter >= 6000) {
+				save_counter = 0;
+				if (var_data_session_bytes != last_saved_bytes) {
+					last_saved_bytes = var_data_session_bytes;
+					misc_tasks_request(TASK_SAVE_SETTINGS);
+				}
+			}
+		}
+
+		const float lcd_timeout = lcd_off_timeout_seconds();
+		const bool audio_dark = var_audio_screens_off && video_is_audio_only_playing();
+		if (lcd_timeout != 0) {
 			var_afk_time += 0.05;
 		}
 
@@ -489,8 +503,8 @@ void Menu_worker_thread(void *arg) {
 
 		// Determine which screens should be turned off based on mode
 		// Mode 0: Bottom, Mode 1: Top, Mode 2: Both
-		bool allowed_top_off = (var_screen_off_mode == 1 || var_screen_off_mode == 2);
-		bool allowed_bot_off = (var_screen_off_mode == 0 || var_screen_off_mode == 2);
+		bool allowed_top_off = (var_screen_off_mode == 1 || var_screen_off_mode == 2) || audio_dark;
+		bool allowed_bot_off = (var_screen_off_mode == 0 || var_screen_off_mode == 2) || audio_dark;
 
 		// Manual off logic
 		bool top_off_manual = manual_screen_off && (var_screen_off_mode == 1 || var_screen_off_mode == 2);
@@ -501,11 +515,10 @@ void Menu_worker_thread(void *arg) {
 		bool next_bot_manual_off = bot_off_manual && !var_app_suspended;
 
 		bool idle_off_requested = false;
-		if (var_time_to_turn_off_lcd != 0 && var_afk_time > var_time_to_turn_off_lcd) {
+		if (lcd_timeout != 0 && var_afk_time > lcd_timeout) {
 			idle_off_requested = true;
 			next_screen_dimmed = false;
-		} else if (var_time_to_turn_off_lcd != 0 &&
-		           var_afk_time > std::max<float>(var_time_to_turn_off_lcd * 0.5, (var_time_to_turn_off_lcd - 10))) {
+		} else if (lcd_timeout != 0 && var_afk_time > std::max<float>(lcd_timeout * 0.5, (lcd_timeout - 10))) {
 			idle_off_requested = false;
 			next_screen_dimmed = true;
 		} else {

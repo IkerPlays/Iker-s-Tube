@@ -1865,6 +1865,15 @@ debug_info_view =
 	    small_resource_lock.unlock();
     }
 
+    bool video_is_audio_only_playing() { return audio_only_mode && vid_play_request && !vid_pausing; }
+    float lcd_off_timeout_seconds() {
+	    float timeout = var_time_to_turn_off_lcd;
+	    if (var_audio_screens_off && video_is_audio_only_playing()) {
+		    timeout = timeout != 0 ? std::min<float>(timeout, 15.0f) : 15.0f;
+	    }
+	    return timeout;
+    }
+
     bool video_is_playing() {
 	    if (var_sleep_timer_end && osGetTime() >= var_sleep_timer_end) { // sleep timer : pause the playback
 		    var_sleep_timer_end = 0;

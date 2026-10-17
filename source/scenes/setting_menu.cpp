@@ -123,6 +123,13 @@ namespace Settings {
 };
 using namespace Settings;
 
+static std::string format_data_size(double bytes) {
+	char buf[32];
+	if (bytes >= 1e9) snprintf(buf, sizeof buf, "%.2f GB", bytes / 1e9);
+	else snprintf(buf, sizeof buf, "%.1f MB", bytes / 1e6);
+	return buf;
+}
+
 void (*show_info_popup_callback)(const std::string &, int) = nullptr;
 
 void show_info_popup(const std::string &message, int height = 30) {
@@ -595,6 +602,28 @@ void Sem_init(void) {
 								var_screen_off_mode = view.selected_button;
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
+						}),
+					// audio-only playback : screens off after a few seconds (listen with the console closed)
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_audio_screens_off)
+						->set_title([](const SelectorView &) { return std::string("Solo audio: apagar pantallas"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_audio_screens_off != view.selected_button) {
+								var_audio_screens_off = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// data usage
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							return "Datos descargados (sesión): " + format_data_size((double) var_data_session_bytes);
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							return "Datos descargados (total): " + format_data_size(var_data_total_bytes + (double) var_data_session_bytes);
 						}),
 					// full screen mode
 					(new SelectorView(0, 0, 320, 35, true))

@@ -48,6 +48,7 @@ static std::string remove_leading_whitespaces(std::string str) {
 static size_t curl_receive_data_callback_func(char *in_ptr, size_t, size_t len, void *user_data) {
 	std::vector<u8> *out = (std::vector<u8> *)user_data;
 	out->insert(out->end(), in_ptr, in_ptr + len);
+	var_data_session_bytes += len; // data usage counter (Settings > Advanced)
 
 	// Util_log_save("curl", "received : " + std::to_string(len));
 	return len;
