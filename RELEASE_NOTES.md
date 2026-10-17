@@ -1,3 +1,6 @@
 Devbuild notes
 
-- Thumbnails are now kept on the SD card (sdmc:/3ds/IkersTube/thumbs, up to about 400 small pictures, the oldest are removed). Lists show their pictures at once the next time and download nothing again. The Data saver setting does not use them.
+Fixes from a code review of the latest additions:
+- Studio: new uploads sent their data to an empty address and always failed (a bug of the resume feature). Fixed.
+- SponsorBlock: it now asks again when you turn it on during a video, when the connection comes back, or after a failed request (at most every 20 seconds).
+- Thumbnail cache on the SD card: files are written to a temporary name first and renamed, a bad file is deleted when it cannot be decoded, and the disk work no longer happens while the thumbnail list is locked.

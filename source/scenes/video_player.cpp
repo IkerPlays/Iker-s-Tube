@@ -389,15 +389,17 @@ static Mutex sb_lock;
 static std::vector<std::pair<double, double>> sb_segments;
 static std::vector<bool> sb_done; // the segment was already skipped (it can be skipped again after seeking back)
 static std::string sb_for_id;
+static volatile bool sb_loaded = false; // the segments of sb_for_id were received (even if there are none)
 
 static void sb_load_task(void *arg) {
 	std::string *video_id = (std::string *)arg;
 	std::vector<std::pair<double, double>> segments;
 	bool ok = sponsorblock_load(*video_id, var_sponsorblock, segments);
 	sb_lock.lock();
-	if (sb_for_id == *video_id) {
+	if (sb_for_id == *video_id && ok) {
 		sb_segments = segments;
 		sb_done.assign(segments.size(), false);
+		sb_loaded = true;
 	}
 	sb_lock.unlock();
 	if (ok && segments.size()) logger.info("player", "SponsorBlock : " + std::to_string(segments.size()) + " segment(s)");
@@ -406,16 +408,24 @@ static void sb_load_task(void *arg) {
 
 static void sponsorblock_tick(const std::string &id) {
 	static std::string loaded_id;
-	if (id != loaded_id) { // another video : forget the segments and ask for the new ones
+	static int requested_level = 0;
+	static u64 last_request_ms = 0;
+	if (id != loaded_id) { // another video : forget the segments
 		loaded_id = id;
+		requested_level = 0;
 		sb_lock.lock();
 		sb_segments.clear();
 		sb_done.clear();
 		sb_for_id = id;
+		sb_loaded = false;
 		sb_lock.unlock();
-		if (var_sponsorblock && id != "" && var_wifi_state == 2 && playing_video_info.url.compare(0, 8, "offline:") != 0) {
-			queue_async_task(sb_load_task, new std::string(id));
-		}
+	}
+	// ask for the segments when needed : the setting was turned on or changed, or the last try failed (at most every 20 s)
+	if (var_sponsorblock && id != "" && var_wifi_state == 2 && playing_video_info.url.compare(0, 8, "offline:") != 0 &&
+	    !is_async_task_running(sb_load_task) && (requested_level != var_sponsorblock || (!sb_loaded && osGetTime() - last_request_ms > 20000))) {
+		requested_level = var_sponsorblock;
+		last_request_ms = osGetTime();
+		queue_async_task(sb_load_task, new std::string(id));
 	}
 	if (!var_sponsorblock || !vid_play_request || vid_pausing) return;
 	sb_lock.lock();

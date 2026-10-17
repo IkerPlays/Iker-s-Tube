@@ -360,10 +360,13 @@ static void disk_cache_write(const std::string &url, const std::vector<u8> &data
 		disk_cache_prune(); // once per run
 	}
 	writes++;
-	FILE *f = fopen(disk_cache_path(url).c_str(), "wb");
+	std::string path = disk_cache_path(url), tmp = path + ".tmp";
+	FILE *f = fopen(tmp.c_str(), "wb");
 	if (!f) return;
-	fwrite(data.data(), 1, data.size(), f);
+	bool ok = fwrite(data.data(), 1, data.size(), f) == data.size();
 	fclose(f);
+	if (ok) rename(tmp.c_str(), path.c_str()); // a half written file is never used
+	else remove(tmp.c_str());
 }
 
 static bool should_be_running = true;
@@ -446,6 +449,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 				decoded_data = Image_decode(&res.data[0], res.data.size(), &w, &h);
 			}
 			if (decoded_data) {
+				if (res.status_code / 100 == 2) disk_cache_write(info.url, res.data); // (only what was just downloaded, outside of the lock)
 				// update cache
 				resource_lock.lock();
 				if (thumbnail_cache.size() >= THUMBNAIL_CACHE_MAX) {
@@ -466,7 +470,6 @@ void thumbnail_downloader_thread_func(void *arg) {
 					}
 				}
 				thumbnail_cache[info.url] = res.data;
-				if (res.status_code / 100 == 2) disk_cache_write(info.url, res.data); // (only what was just downloaded)
 				if (thumbnail_cache.size() >= THUMBNAIL_CACHE_MAX + 10) {
 					logger.warning("tloader", "over caching : " + std::to_string(thumbnail_cache.size()));
 				}
@@ -551,6 +554,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 				free(decoded_data);
 				decoded_data = NULL;
 			} else {
+				if (res.status_code == 0 && res.data.size()) remove(disk_cache_path(info.url).c_str()); // a bad file from the SD card cache
 				resource_lock.lock();
 				if (requested_urls.count(info.url)) {
 					requested_urls[info.url].is_loaded = false;

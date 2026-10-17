@@ -263,7 +263,7 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 		     {"X-Upload-Content-Length", std::to_string(total)},
 		     {"X-Upload-Content-Type", mime_of(path)}},
 		    meta));
-		std::string upload_url = init.get_header("location");
+		upload_url = init.get_header("location");
 		if (init.fail || !init.status_code_is_success() || upload_url == "") {
 			error = init.fail ? init.error : "http " + std::to_string(init.status_code);
 			std::string body(init.data.begin(), init.data.end());
