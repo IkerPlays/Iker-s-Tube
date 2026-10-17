@@ -251,6 +251,7 @@ static void new_playlist_task(void *arg) {
 // ---- Studio login (own Google Cloud client, see Documentation/STUDIO_SETUP.md) ----
 static volatile bool login_running = false;
 static std::string login_text; // what to do (guarded by state_lock)
+static std::string login_url, login_code; // shown on their own lines so none is cut (guarded by state_lock)
 
 static void set_login_text(const std::string &t) {
 	LightLock_Lock(&state_lock);
@@ -268,7 +269,12 @@ static void login_thread(void *) {
 		login_running = false;
 		return;
 	}
-	set_login_text(tr("Open ", "Abre ") + code.url + tr(" and type ", " y escribe ") + code.user_code);
+	LightLock_Lock(&state_lock);
+	login_url = code.url;
+	if (login_url.compare(0, 8, "https://") == 0) login_url = login_url.substr(8);
+	login_code = code.user_code;
+	LightLock_Unlock(&state_lock);
+	set_login_text(tr("On your phone or computer open:", "En el móvil u ordenador abre:"));
 	u64 start = osGetTime();
 	while (true) {
 		svcSleepThread((s64)code.interval * 1000000000LL);
@@ -288,6 +294,9 @@ static void login_thread(void *) {
 			break;
 		}
 	}
+	LightLock_Lock(&state_lock);
+	login_url = login_code = "";
+	LightLock_Unlock(&state_lock);
 	login_running = false;
 }
 
@@ -373,6 +382,11 @@ static std::vector<View *> build_dash() {
 		v.push_back(button([]() { return login_running ? tr("Waiting for the login...", "Esperando el acceso...") : tr("Sign in for Studio", "Iniciar sesión en Studio"); },
 		                   []() { start_login(); }));
 		v.push_back(label([]() { return locked_copy(login_text); }));
+		v.push_back(label([]() { return locked_copy(login_url); }));
+		v.push_back(label([]() {
+			std::string code = locked_copy(login_code);
+			return code == "" ? std::string() : tr("and type the code: ", "y escribe el código: ") + code;
+		}));
 	} else {
 		v.push_back(button([]() { return tr("Studio connected - sign out", "Studio conectado - cerrar sesión"); }, []() {
 			studio_auth_sign_out();

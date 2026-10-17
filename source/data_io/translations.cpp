@@ -413,6 +413,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"could not get the time from the internet", {"impossible d'obtenir l'heure sur Internet", "Uhrzeit konnte nicht aus dem Internet geholt werden", "impossibile ottenere l'ora da Internet", "não foi possível obter a hora da internet", "インターネットから時刻を取得できませんでした"}},
 	    {"Watched: ", {"Vu : ", "Gesehen: ", "Visti: ", "Assistidos: ", "視聴: "}},
 	    {" videos, about ", {" vidéos, environ ", " Videos, etwa ", " video, circa ", " vídeos, cerca de ", " 本、約 "}},
+	    {"On your phone or computer open:", {"Sur le téléphone ou l'ordinateur, ouvrez :", "Öffne am Handy oder Computer:", "Sul telefono o computer apri:", "No celular ou computador abra:", "スマホかPCで開く："}},
+	    {"and type the code: ", {"et saisissez le code : ", "und gib den Code ein: ", "e scrivi il codice: ", "e digite o código: ", "コードを入力： "}},
 	};
 	return table;
 }
