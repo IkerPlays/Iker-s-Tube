@@ -13,6 +13,15 @@
 - **Audio-only screen.** A clean top screen with the title, author, time and a progress bar.
 - **Data usage counter.** Settings show how much data this session and the whole install have used.
 
+- **Spinning logo cube.** The idle top screen now shows a rotating cube with "Iker's Tube" and the app logo on its sides.
+- **Text size.** A global small / normal / large text size in Settings.
+- **Dim while playing.** Optional: the bottom screen gets dark after 20 seconds without touch while a video plays.
+- **Network and error info.** Settings show the Wi-Fi state and the last warnings and errors.
+
 ## Improvements
+
+- Subtitles now load with more caption formats and retry with explicit formats when YouTube returns an empty answer.
+- The update screen shows a short summary of the release notes instead of all of them.
+- All new options and screens are available in English and Spanish.
 
 - Shuffle now gives a different order every time you start it.

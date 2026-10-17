@@ -631,6 +631,53 @@ void Sem_init(void) {
 						->set_text((std::function<std::string ()>) [] () -> std::string {
 							return tr("Data downloaded (total): ", "Datos descargados (total): ") + format_data_size(var_data_total_bytes + (double) var_data_session_bytes);
 						}),
+					// Auto-dim
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_auto_dim)
+						->set_title([](const SelectorView &) { return tr("Dim bottom screen while playing", "Atenuar pantalla inferior al reproducir"); })
+						->set_info([](const SelectorView &) { return tr("After 20 seconds without touching the console, the bottom screen gets dark while a video plays. Touch it to restore.", "Tras 20 segundos sin tocar la consola, la pantalla inferior se oscurece mientras suena un vídeo. Tócala para restaurarla."); })
+						->set_popup_height(70)
+						->set_on_change([](const SelectorView &view) {
+							if (var_auto_dim != view.selected_button) {
+								var_auto_dim = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// network status and last errors
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							std::string state = tr("Wi-Fi: ", "Wi-Fi: ");
+							if (var_wifi_state != 2) return state + tr("not connected", "sin conexión");
+							int level = *(u8 *)0x1FF81066;
+							return state + tr("connected, signal ", "conectado, señal ") + std::to_string(level) + "/3";
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string { return tr("Last warnings and errors:", "Últimos avisos y errores:"); }),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							auto lines = logger.recent(LogLevel::WARNING, 3);
+							if (0 >= (int) lines.size()) return "";
+							auto cut = truncate_str(lines[0], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							auto lines = logger.recent(LogLevel::WARNING, 3);
+							if (1 >= (int) lines.size()) return "";
+							auto cut = truncate_str(lines[1], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							auto lines = logger.recent(LogLevel::WARNING, 3);
+							if (2 >= (int) lines.size()) return "";
+							auto cut = truncate_str(lines[2], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
+						}),
 					// full screen mode
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
@@ -681,6 +728,23 @@ void Sem_init(void) {
 							if (var_night_mode != view.selected_button) {
 								var_night_mode = view.selected_button;
 								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// Global text size
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
+							(std::function<std::string ()>) []() { return std::string("Normal"); },
+							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
+						}, var_text_scale)
+						->set_title([](const SelectorView &) { return tr("Text size", "Tamaño de letra"); })
+						->set_info([](const SelectorView &) { return tr("Applies to the whole app. Lists already on screen update when you reopen them.", "Se aplica a toda la app. Las listas ya abiertas se actualizan al volver a abrirlas."); })
+						->set_popup_height(60)
+						->set_on_change([](const SelectorView &view) {
+							if (var_text_scale != view.selected_button) {
+								var_text_scale = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
 							}
 						}),
 					// Color theme

@@ -3,6 +3,7 @@
 #include "system/libctru_wrapper.hpp"
 #include "ui/colors.hpp"
 #include <deque>
+#include <vector>
 #include <string>
 #include <cinttypes>
 
@@ -79,6 +80,19 @@ class Logger {
 	DEFINE_VARIANT(caution, CAUTION);
 	DEFINE_VARIANT(warning, WARNING);
 	DEFINE_VARIANT(error, ERROR);
+
+	// the last `count` lines of at least `min_level` (oldest first), for the settings screen
+	std::vector<std::string> recent(LogLevel min_level, size_t count) {
+		std::vector<std::string> out;
+		content_lock.lock();
+		for (auto it = logs.rbegin(); it != logs.rend() && out.size() < count; ++it) {
+			if ((int)it->level >= (int)min_level) {
+				out.insert(out.begin(), it->str);
+			}
+		}
+		content_lock.unlock();
+		return out;
+	}
 
 	void update(Hid_info key); // called per frame
 	void draw();               // draw logs if `draw_enabled`

@@ -236,7 +236,12 @@ void Draw_c2d_image_free(Image_data c2d_image) {
 	c2d_image.subtex = NULL;
 }
 
+static const float text_scale_table[3] = {0.9f, 1.0f, 1.1f};
+
 void Draw(std::string text, float x, float y, float text_size_x, float text_size_y, int abgr8888) {
+	const float text_scale = text_scale_table[var_text_scale < 0 ? 0 : var_text_scale > 2 ? 2 : var_text_scale];
+	text_size_x *= text_scale;
+	text_size_y *= text_scale;
 	bool reverse = false;
 	bool found = false;
 	bool font_loaded[2] = {
@@ -378,6 +383,7 @@ float Draw_get_height(const std::string &text, float text_size_y) {
 }
 
 float Draw_get_width_one(u32 cur_char, float text_size_x) {
+	text_size_x *= text_scale_table[var_text_scale < 0 ? 0 : var_text_scale > 2 ? 2 : var_text_scale];
 	if (cur_char == samples[0] || cur_char == samples[1]) {
 		return 0; // NULL, linebreak
 	}

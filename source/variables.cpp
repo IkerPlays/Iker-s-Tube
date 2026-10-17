@@ -14,6 +14,7 @@ bool var_allow_send_app_info = false;
 bool var_hide_pointer = false;
 bool var_night_mode = true;
 int var_theme = 0;
+int var_text_scale = 1;
 bool var_auto_dim = false;
 bool var_auto_quality = true;
 int var_auto_quality_cap = 0;

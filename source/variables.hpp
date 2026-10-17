@@ -18,6 +18,7 @@ extern int var_caption_color; // 0 white, 1 yellow, 2 cyan, 3 green
 extern bool var_auto_quality; // lower the quality for the next videos when playback keeps stalling
 extern int var_auto_quality_cap; // current cap in p (0 = none)
 extern bool var_auto_dim; // dim the bottom screen while a video plays and the console is not touched
+extern int var_text_scale; // 0 small, 1 normal, 2 large (global text size)
 extern int var_theme;             // color theme index (see colors.hpp)
 extern bool var_large_thumbnails; // bigger thumbnails in video lists
 extern bool var_disable_pull_to_refresh;

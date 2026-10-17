@@ -67,6 +67,7 @@ void load_settings() {
 	var_auto_quality = load_int("auto_quality", 1);
 	var_auto_quality_cap = load_int("auto_quality_cap", 0);
 	var_auto_dim = load_int("auto_dim", 0);
+	var_text_scale = std::max(0, std::min(2, load_int("text_scale", 1)));
 	var_theme = std::max(0, std::min(5, load_int("color_theme", 0)));
 	var_large_thumbnails = load_int("large_thumbnails", 0);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
@@ -125,6 +126,7 @@ void save_settings() {
 	add_int("hide_pointer", var_hide_pointer);
 	add_int("dark_theme", var_night_mode);
 	add_int("color_theme", var_theme);
+	add_int("text_scale", var_text_scale);
 	add_int("auto_dim", var_auto_dim);
 	add_int("auto_quality", var_auto_quality);
 	add_int("auto_quality_cap", var_auto_quality_cap);
