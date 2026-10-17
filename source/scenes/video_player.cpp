@@ -8,6 +8,8 @@
 #include "util/play_queue.hpp"
 #include "data_io/favorites.hpp"
 #include "ui/qr_popup.hpp"
+#include <sstream>
+#include "util/timestamp_parser.hpp"
 #include "ui/logo_draw.hpp"
 #include "data_io/resume_position.hpp"
 #include "scenes/home.hpp"
@@ -181,6 +183,7 @@ const char *get_network_waiting_status() {
 void video_set_should_suspend_decoding(bool should_suspend) { should_suspend_decoding = should_suspend; }
 
 static void send_seek_request_wo_lock(double pos);
+static void send_seek_request(double pos);
 static void send_change_video_request(std::string url, bool update_player, bool update_view, bool force_load);
 static void send_change_video_request_wo_lock(std::string url, bool update_player, bool update_view, bool force_load);
 
@@ -237,6 +240,20 @@ static void auto_quality_tick() {
 		}
 		lowered_for_this_video = true;
 		smooth_since = now;
+	}
+}
+
+// A-B loop : repeat a section of the playing video (a < 0 : not set, b < 0 : only the start is set)
+static double ab_loop_a = -1, ab_loop_b = -1;
+
+static void ab_loop_tick() {
+	static std::string tracked_id;
+	if (playing_video_info.id != tracked_id) {
+		tracked_id = playing_video_info.id;
+		ab_loop_a = ab_loop_b = -1;
+	}
+	if (ab_loop_a >= 0 && ab_loop_b > ab_loop_a && vid_play_request && !vid_pausing && vid_current_pos >= ab_loop_b) {
+		send_seek_request(ab_loop_a);
 	}
 }
 
@@ -1237,6 +1254,85 @@ debug_info_view =
 				                                              reload_button, favorite_button, qr_button}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+			    }
+			    {
+				    // tools : jump 10 seconds back / forward (touch is only on the bottom screen, so these replace double tap), A-B loop
+				    auto make_tool = [](std::function<std::string()> text, int width, std::function<void()> action) {
+					    return (new TextView(0, 0, width, 20))
+					        ->set_text(text)
+					        ->set_x_alignment(TextView::XAlign::CENTER)
+					        ->set_get_background_color(View::STANDARD_BACKGROUND)
+					        ->set_on_view_released([action](View &) { action(); });
+				    };
+				    auto jump = [](double delta) {
+					    if (network_decoder.ready && cur_video_info.id == playing_video_info.id) {
+						    double pos = std::min<double>(vid_duration, std::max<double>(0, vid_current_pos + delta));
+						    send_seek_request_wo_lock(pos);
+					    }
+				    };
+				    main_tab_views.push_back(
+				        (new HorizontalListView(0, 0, 20))
+				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)),
+				                         make_tool([]() { return std::string("-10 s"); }, 70, [jump]() { jump(-10); }),
+				                         make_tool([]() { return std::string("+10 s"); }, 70, [jump]() { jump(10); }),
+				                         make_tool(
+				                             []() {
+					                             if (ab_loop_a < 0) return std::string("A-B");
+					                             if (ab_loop_b < 0) return std::string("A-B: A");
+					                             return std::string("A-B: ") + Util_convert_seconds_to_time(ab_loop_a) + "-" + Util_convert_seconds_to_time(ab_loop_b);
+				                             },
+				                             150,
+				                             []() {
+					                             if (cur_video_info.id != playing_video_info.id || !network_decoder.ready) return;
+					                             if (ab_loop_a < 0) {
+						                             ab_loop_a = vid_current_pos;
+					                             } else if (ab_loop_b < 0) {
+						                             if (vid_current_pos > ab_loop_a + 1) ab_loop_b = vid_current_pos;
+					                             } else {
+						                             ab_loop_a = ab_loop_b = -1;
+					                             }
+					                             var_need_refresh = true;
+				                             })}));
+				    main_tab_views.push_back(
+				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+
+				    // chapters : lines of the description that start with a timestamp ("0:00 Intro")
+				    std::vector<std::pair<double, std::string>> chapters;
+				    {
+					    std::istringstream desc(tmp_video_info.description);
+					    std::string line;
+					    while (std::getline(desc, line) && chapters.size() < 40) {
+						    int ts_start, ts_end;
+						    double seconds;
+						    if (Util_find_timestamp_in_text(line, 0, &ts_start, &ts_end, &seconds) && ts_start <= 2) {
+							    std::string title = line.substr(ts_end);
+							    size_t first = title.find_first_not_of(" -\t:|)(");
+							    title = first == std::string::npos ? "" : title.substr(first);
+							    if (!title.empty()) chapters.push_back({seconds, title});
+						    }
+					    }
+				    }
+				    if (chapters.size() >= 2) {
+					    main_tab_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+					                                 ->set_text(tr("Chapters", "Capítulos"))
+					                                 ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+					                                 ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+					    for (auto &chapter : chapters) {
+						    double seconds = chapter.first;
+						    main_tab_views.push_back(
+						        (new TextView(SMALL_MARGIN, 0, 320 - SMALL_MARGIN * 2, 22))
+						            ->set_text(Util_convert_seconds_to_time(seconds) + "  " + truncate_str(chapter.second, 250, 1, 0.5, 0.5).at(0))
+						            ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+						            ->set_y_alignment(TextView::YAlign::CENTER)
+						            ->set_get_background_color(View::STANDARD_BACKGROUND)
+						            ->set_on_view_released([seconds](View &) {
+							            if (network_decoder.ready && cur_video_info.id == playing_video_info.id)
+								            send_seek_request_wo_lock(seconds);
+						            }));
+					    }
+					    main_tab_views.push_back(
+					        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+				    }
 			    }
 			    {
 				    std::vector<std::string> description_lines;
@@ -2792,6 +2888,7 @@ debug_info_view =
 
 		    update_overlay_menu(&key);
 		    auto_quality_tick();
+		    ab_loop_tick();
 
 		    if (qr_popup_update(key)) {
 			    // the QR popup is open : it takes all the input
