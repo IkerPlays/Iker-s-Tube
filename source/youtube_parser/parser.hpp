@@ -144,6 +144,7 @@ struct YouTubeVideoDetail {
 	int comment_continue_type = -1; // -1 : unavailable, 0 : using watch_comments, 1 : using innertube
 	bool comments_disabled = false;
 	std::string storyboard_spec; // preview thumbnails of the seek bar (empty if YouTube does not offer them)
+	std::string comment_first_token; // the first comments continuation token (used for account actions when no sort token exists)
 	std::string comment_sort_tokens[2]; // 0 : top comments, 1 : newest first (empty if unknown)
 	int comment_sort_type = 0;
 
@@ -173,6 +174,7 @@ struct YouTubeVideoDetail {
 		return YouTubeVideoSuccinct();
 	}
 	bool has_more_suggestions() const { return suggestions_continue_token != ""; }
+	std::string comments_account_token() const { return comment_sort_tokens[0] != "" ? comment_sort_tokens[0] : comment_first_token; }
 	bool has_more_comments() const { return comment_continue_type != -1; }
 	bool needs_timestamp_adjusting() const { return is_livestream && livestream_type == LivestreamType::PREMIERE; }
 	bool is_playable() const {

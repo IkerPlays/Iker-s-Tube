@@ -3727,7 +3727,7 @@ debug_info_view =
 				    out = buffer;
 				    return out != "";
 			    };
-			    std::string comments_token = cur_video_info.comment_sort_tokens[0];
+			    std::string comments_token = cur_video_info.comments_account_token();
 			    if (comment_write_request) {
 				    comment_write_request = false;
 				    std::string text;
@@ -3752,7 +3752,7 @@ debug_info_view =
 				        {[]() { return tr("Like", "Me gusta"); }, []() { return tr("Reply", "Responder"); }, []() { return tr("Translate", "Traducir"); }, []() { return LOCALIZED(CANCEL); }},
 				        [](OverlayDialogView &, int button) {
 					        if (button == 0) {
-						        std::string token = cur_video_info.comment_sort_tokens[0];
+						        std::string token = cur_video_info.comments_account_token();
 						        if (token == "") notice_show(tr("Open the comments first", "Abre antes los comentarios"));
 						        else account_comment_like_async(token, comment_target_id);
 					        } else if (button == 1) {

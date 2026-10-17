@@ -489,6 +489,7 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res) {
 		     i["engagementPanelSectionListRenderer"]["content"]["sectionListRenderer"]["continuations"].array_items()) {
 			if (j.has_key("reloadContinuationData")) {
 				res.comment_continue_token = j["reloadContinuationData"]["continuation"].string_value();
+				res.comment_first_token = res.comment_continue_token;
 				// Force type 1 for Android VR format
 				res.comment_continue_type = res.metadata_from_android_vr ? 1 : 0;
 				res.comments_disabled = false;
@@ -501,6 +502,7 @@ static void extract_metadata(RJson data, YouTubeVideoDetail &res) {
 					res.comment_continue_token =
 					    k["continuationItemRenderer"]["continuationEndpoint"]["continuationCommand"]["token"]
 					        .string_value();
+					res.comment_first_token = res.comment_continue_token;
 					res.comment_continue_type = 1;
 					res.comments_disabled = false;
 				}

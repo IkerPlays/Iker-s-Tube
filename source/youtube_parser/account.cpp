@@ -140,27 +140,70 @@ bool youtube_account_comment_create(const std::string &comments_token, const std
 	    .first;
 }
 
-// finds the part of the comment section that belongs to one comment id
-static bool find_comment_chunk(const std::string &json, const std::string &comment_id, size_t &from, size_t &to) {
-	size_t p = json.find("\"commentId\":\"" + comment_id + "\"");
-	if (p == std::string::npos) return false;
-	size_t next = json.find("\"commentId\":\"", p + 20);
-	from = p;
-	to = next == std::string::npos ? json.size() : next;
-	return true;
+// The tokens of a comment (like action, reply params) are protobuf messages in base64 that contain the id of the comment.
+// So the token that belongs to a comment is found by decoding the candidates and looking for the id inside, which does not
+// depend on how the answer is laid out.
+static std::string base64_decode_loose(const std::string &in) {
+	std::string clean;
+	for (size_t i = 0; i < in.size(); i++) { // percent escapes like %3D
+		if (in[i] == '%' && i + 2 < in.size() + 0) {
+			clean += (char)strtol(in.substr(i + 1, 2).c_str(), NULL, 16);
+			i += 2;
+		} else {
+			clean += in[i];
+		}
+	}
+	std::string out;
+	unsigned val = 0;
+	int bits = -8;
+	for (unsigned char c : clean) {
+		int d;
+		if (c >= 'A' && c <= 'Z') d = c - 'A';
+		else if (c >= 'a' && c <= 'z') d = c - 'a' + 26;
+		else if (c >= '0' && c <= '9') d = c - '0' + 52;
+		else if (c == '+' || c == '-') d = 62;
+		else if (c == '/' || c == '_') d = 63;
+		else continue; // '=' and anything else
+		val = (val << 6) | d;
+		bits += 6;
+		if (bits >= 0) {
+			out += (char)((val >> bits) & 0xFF);
+			bits -= 8;
+		}
+	}
+	return out;
+}
+
+// looks for `token_key` in the `window` bytes that follow each occurrence of `anchor`; returns the first token whose
+// decoded content contains the comment id
+static std::string find_comment_token(const std::string &json, const std::string &anchor, size_t window,
+                                      const std::string &token_key, const std::string &comment_id) {
+	size_t pos = 0;
+	while ((pos = json.find(anchor, pos)) != std::string::npos) {
+		size_t end = std::min(json.size(), pos + window);
+		size_t search = pos;
+		while (true) {
+			size_t p = json.find(token_key, search);
+			if (p == std::string::npos || p >= end) break;
+			std::string token = text_after(json, p, end, token_key);
+			if (token != "" && base64_decode_loose(token).find(comment_id) != std::string::npos) return token;
+			search = p + token_key.size();
+		}
+		pos += anchor.size();
+	}
+	return "";
 }
 
 bool youtube_account_comment_like(const std::string &comments_token, const std::string &comment_id) {
 	std::string json;
 	if (comments_token == "" || !fetch_comment_section(comments_token, json)) return false;
-	size_t from, to;
-	if (!find_comment_chunk(json, comment_id, from, to)) {
-		logger.warning("account", "comment not found in the first page : " + comment_id);
-		return false;
+	std::string action = find_comment_token(json, "\"likeCommand\"", 1500, "\"action\":\"", comment_id);
+	if (action == "") { // older layout : the action sits inside the comment itself
+		size_t p = json.find("\"commentId\":\"" + comment_id + "\"");
+		if (p != std::string::npos) action = text_after(json, p, std::min(json.size(), p + 6000), "\"performCommentActionEndpoint\":{\"action\":\"");
 	}
-	std::string action = text_after(json, from, to, "\"performCommentActionEndpoint\":{\"action\":\"");
 	if (action == "") {
-		logger.warning("account", "no like action for the comment");
+		logger.warning("account", "no like action found for the comment (not in this page, or the account layout differs)");
 		return false;
 	}
 	return account_post("comment/perform_comment_action", "\"actions\": [\"" + json_escape(action) + "\"]").first;
@@ -170,15 +213,18 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
                                    const std::string &text) {
 	std::string json;
 	if (comments_token == "" || !fetch_comment_section(comments_token, json)) return false;
-	size_t from, to;
-	if (!find_comment_chunk(json, comment_id, from, to)) {
-		logger.warning("account", "comment not found in the first page : " + comment_id);
-		return false;
-	}
-	std::string params = text_after(json, from, to, "\"createReplyParams\":\"");
-	if (params == "") params = text_after(json, from, to, "\"createCommentReplyParams\":\"");
+	std::string params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createReplyParams\":\"", comment_id);
+	if (params == "") params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createCommentReplyParams\":\"", comment_id);
 	if (params == "") {
-		logger.warning("account", "no reply params for the comment");
+		size_t p = json.find("\"commentId\":\"" + comment_id + "\"");
+		if (p != std::string::npos) {
+			size_t end = std::min(json.size(), p + 8000);
+			params = text_after(json, p, end, "\"createReplyParams\":\"");
+			if (params == "") params = text_after(json, p, end, "\"createCommentReplyParams\":\"");
+		}
+	}
+	if (params == "") {
+		logger.warning("account", "no reply params found for the comment (not in this page, or the account layout differs)");
 		return false;
 	}
 	return account_post("comment/create_comment_reply",
