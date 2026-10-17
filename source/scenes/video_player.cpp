@@ -243,6 +243,8 @@ static void auto_quality_tick() {
 	}
 }
 
+static double *eq_values_ptr = NULL; // the equalizer bar values (set up in VideoPlayer_init)
+
 // A-B loop : repeat a section of the playing video (a < 0 : not set, b < 0 : only the start is set)
 static double ab_loop_a = -1, ab_loop_b = -1;
 
@@ -257,8 +259,42 @@ static void ab_loop_tick() {
 	}
 }
 
+
+static void apply_eq_preset(const double (&gains)[18]) {
+	for (int i = 0; i < 18; i++) {
+		if (eq_values_ptr) eq_values_ptr[i] = gains[i];
+		network_decoder.set_equalizer_value(i, gains[i]);
+	}
+	var_need_refresh = true;
+}
+
+static std::vector<View *> make_eq_preset_buttons() {
+	static const double flat[18] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	static const double bass[18] = {1.8, 1.7, 1.6, 1.5, 1.3, 1.15, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	static const double voice[18] = {0.5, 0.55, 0.65, 0.8, 1, 1.2, 1.4, 1.5, 1.5, 1.4, 1.3, 1.1, 1, 0.8, 0.7, 0.6, 0.5, 0.5};
+	static const double treble[18] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1.1, 1.25, 1.4, 1.55, 1.7, 1.75, 1.75, 1.7, 1.6};
+	auto button = [](std::function<std::string()> name, const double *gains) {
+		return (new TextView(0, 0, EQUALIZER_POPUP_WIDTH / 4, 19))
+		    ->set_text(name)
+		    ->set_x_alignment(TextView::XAlign::CENTER)
+		    ->set_get_background_color(View::STANDARD_BACKGROUND)
+		    ->set_on_view_released([gains](View &) {
+			    double copy[18];
+			    for (int i = 0; i < 18; i++) copy[i] = gains[i];
+			    apply_eq_preset(reinterpret_cast<const double(&)[18]>(copy));
+		    });
+	};
+	return {button([]() { return tr("Flat", "Plano"); }, flat), button([]() { return std::string("Bass"); }, bass),
+	        button([]() { return tr("Voice", "Voz"); }, voice), button([]() { return std::string("Treble"); }, treble)};
+}
+
 static void decode_thread(void *arg);
 static void convert_thread(void *arg);
+
+
+// Equalizer presets : 18 gains (1.0 = unchanged) for the same bands as equalizer_hz_list
+static void apply_eq_preset(const double (&gains)[18]);
+static std::vector<View *> make_eq_preset_buttons();
 
 void VideoPlayer_init(void) {
 	logger.info(DEF_SAPP0_INIT_STR, "Initializing...");
@@ -536,6 +572,7 @@ debug_info_view =
                                            1480, 2093, 2960, 4186, 5920, 8372, 11840, 16744, 20000};
     static double equalizer_values[18];
     std::fill(equalizer_values, equalizer_values + 18, 1.0);
+    eq_values_ptr = equalizer_values;
     for (int i = 0; i < 18; i++) {
 	    BarView *bar_view = (new BarView(0, 0, 180, DEFAULT_FONT_INTERVAL))
 	                            ->set_values_sync(0.0, 2.0, &equalizer_values[i])
@@ -557,16 +594,8 @@ debug_info_view =
     }
     equalizer_popup_view->set_subview(
         (new VerticalListView(0, 0, EQUALIZER_POPUP_WIDTH))
-            ->set_views({(new TextView(0, 0, EQUALIZER_POPUP_WIDTH, 19))
-                             ->set_text([]() { return LOCALIZED(RESET); })
-                             ->set_x_alignment(TextView::XAlign::CENTER)
-                             ->set_get_background_color(View::STANDARD_BACKGROUND)
-                             ->set_on_view_released([](View &) {
-	                             std::fill(equalizer_values, equalizer_values + 18, 1.0);
-	                             for (int i = 0; i < 18; i++) {
-		                             network_decoder.set_equalizer_value(i, 1);
-	                             }
-                             }),
+            ->set_views({(new HorizontalListView(0, 0, 19))
+                             ->set_views(make_eq_preset_buttons()),
                          (new RuleView(0, 0, EQUALIZER_POPUP_WIDTH, 1))->set_margin(0),
                          (new ScrollView(0, 0, EQUALIZER_POPUP_WIDTH, EQUALIZER_POPUP_HEIGHT - 40))
                              ->set_views(equalizer_views)
