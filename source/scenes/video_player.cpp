@@ -269,7 +269,8 @@ static void auto_quality_tick() {
 }
 
 static std::vector<std::pair<double, std::string>> current_chapters; // chapters of the displayed video (from its description)
-static VerticalListView *bookmarks_list_view = NULL; // rebuilt outside of the view updates
+static VerticalListView *bookmarks_list_view = NULL; // the list shown in the page; rebuilt outside of the view updates
+static VerticalListView *pending_bookmarks_list_view = NULL; // created by the loader, becomes bookmarks_list_view when the page is installed
 static bool bookmarks_rebuild_request = false, bookmark_add_request = false;
 static std::string bookmarks_video_id;
 static double quick_speed = 1.0;
@@ -337,7 +338,7 @@ static void ab_loop_tick() {
 		ab_loop_a = ab_loop_b = -1;
 	}
 	if (ab_loop_a >= 0 && ab_loop_b > ab_loop_a && vid_play_request && !vid_pausing && vid_current_pos >= ab_loop_b) {
-		send_seek_request(ab_loop_a);
+		send_seek_request_wo_lock(ab_loop_a); // called while small_resource_lock is already held
 	}
 }
 
@@ -1486,9 +1487,8 @@ debug_info_view =
 				    current_chapters = chapters.size() >= 2 ? chapters : decltype(chapters)();
 				    // bookmarks of this video (the list is refilled whenever one is added or removed)
 				    bookmarks_video_id = tmp_video_info.id;
-				    bookmarks_list_view = new VerticalListView(0, 0, 320);
-				    bookmarks_rebuild_request = true;
-				    main_tab_views.push_back(bookmarks_list_view);
+				    pending_bookmarks_list_view = new VerticalListView(0, 0, 320);
+				    main_tab_views.push_back(pending_bookmarks_list_view);
 				    if (chapters.size() >= 2) {
 					    main_tab_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
 					                                 ->set_text(tr("Chapters", "Capítulos"))
@@ -1498,7 +1498,7 @@ debug_info_view =
 						    double seconds = chapter.first;
 						    main_tab_views.push_back(
 						        (new TextView(SMALL_MARGIN, 0, 320 - SMALL_MARGIN * 2, 22))
-						            ->set_text(Util_convert_seconds_to_time(seconds) + "  " + truncate_str(chapter.second, 250, 1, 0.5, 0.5).at(0))
+						            ->set_text(Util_convert_seconds_to_time(seconds) + "  " + truncate_first_line(chapter.second, 250, 0.5))
 						            ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 						            ->set_y_alignment(TextView::YAlign::CENTER)
 						            ->set_get_background_color(View::STANDARD_BACKGROUND)
@@ -1720,9 +1720,13 @@ debug_info_view =
     }
 
     thumbnail_cancel_request(main_icon_view->handle);
+    bookmarks_list_view = NULL; // it is deleted together with the old page
     main_tab_view->recursive_delete_subviews();
     main_icon_view = new_main_icon_view;
     main_tab_view->set_views({main_tab_views});
+    bookmarks_list_view = pending_bookmarks_list_view;
+    pending_bookmarks_list_view = NULL;
+    bookmarks_rebuild_request = true;
 
     suggestion_main_view->recursive_delete_subviews();
     suggestion_main_view->views = new_suggestion_views;

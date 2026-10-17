@@ -1168,7 +1168,7 @@ void Sem_init(void) {
 							std::string best; int best_count = 0;
 							for (auto &c : counts) if (c.second > best_count) best = c.first, best_count = c.second;
 							if (best == "") return tr("Most watched channel: -", "Canal más visto: -");
-							return truncate_str(tr("Most watched channel: ", "Canal más visto: ") + best, 310, 1, 0.5, 0.5).at(0);
+							return truncate_first_line(tr("Most watched channel: ", "Canal más visto: ") + best, 310, 0.5);
 						}),
 					// section: History
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
