@@ -15,7 +15,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ### New look
 - **Bottom navigation bar** with icons (Home, Search, Library, Downloads, More) on the main screens.
 - **Pill tabs** in the accent color and rounded buttons.
-- **Start screen.** A loading screen with a progress bar from the first moment, kept for 3 seconds at the end so the account and data load (the real Homebrew animation of the .cia is played by the HOME Menu before it).
+- **Start screen.** A loading screen with a progress bar from the first moment, kept for 3 seconds at the end so the account and data load (the .cia now carries the real Homebrew logo animation instead of the old FourthTube one; the HOME Menu plays it before the app).
 
 ### Studio
 - **Statistics kept.** The last numbers are saved and shown when they cannot be loaded.
@@ -31,7 +31,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 
 ### Library and reliability
 - **Queue and backups.** The play queue survives a restart, your data is backed up on the SD card once a week, and the app tells you when the last run ended in a crash.
-- **Search.** Long press a recent search to forget it, and optional settings hide Shorts and already watched videos in search and home.
+- **Search.** Long press a recent search to forget it, and optional settings hide Shorts and already watched videos in search, home and the subscription feeds.
 - **Fixes from a code review.** Failed download threads no longer block later downloads, popups no longer leak on every visit, a failed read of an offline file no longer breaks playback, and uploads no longer clash with other network requests.
 
 ## Installing

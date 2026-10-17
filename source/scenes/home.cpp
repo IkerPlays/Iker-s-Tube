@@ -825,6 +825,7 @@ static void load_subscription_feed(void *) {
 	}
 	for (auto &i : loaded_videos) {
 		for (auto video : i.second) {
+			if (result_video_hidden(video.url)) continue; // the settings hide Shorts / watched videos
 			SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 
 			cur_view->set_title_lines(truncate_str(video.title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
@@ -950,7 +951,7 @@ static void load_oauth_subscription_feed(void *) {
 					}
 				}
 
-				if (!video_id.empty() && !title.empty()) {
+				if (!video_id.empty() && !title.empty() && !result_video_hidden("https://m.youtube.com/watch?v=" + video_id)) {
 					SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 
 					cur_view->set_title_lines(truncate_str(title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
@@ -1090,7 +1091,7 @@ static void load_oauth_subscription_feed_more(void *) {
 					}
 				}
 
-				if (!video_id.empty() && !title.empty()) {
+				if (!video_id.empty() && !title.empty() && !result_video_hidden("https://m.youtube.com/watch?v=" + video_id)) {
 					SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 
 					cur_view->set_title_lines(truncate_str(title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));

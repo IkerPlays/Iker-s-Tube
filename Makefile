@@ -63,7 +63,9 @@ BANNER_IMAGE				:= resource/banner.png
 ICON        				:= resource/icon.png
 RSF_PATH				:= resource/app.rsf
 
-LOGO                :=	resource/logo.bin
+# no custom logo : the RSF has "Logo: Homebrew" and makerom puts its own Homebrew logo animation in the .cia
+# (a -logo file would override it : the old resource/logo.bin was the FourthTube one)
+LOGO                :=
 
 #---------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------
