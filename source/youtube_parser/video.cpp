@@ -876,9 +876,11 @@ void YouTubeVideoDetail::load_more_comments() {
 		return;
 	}
 
+	const std::string page_token_used = comment_continue_token; // the page that is being loaded
 	auto parse_comment_thread_renderer = [&](RJson comment_thread_renderer) {
 		auto cur_comment = extract_comment_from_comment_renderer(
 		    comment_thread_renderer["commentThreadRenderer"]["comment"]["commentRenderer"], 48);
+		cur_comment.page_token = page_token_used;
 		// get the icon of the author with minimum size
 		for (auto i : comment_thread_renderer["commentThreadRenderer"]["replies"]["commentRepliesRenderer"]["contents"]
 		                  .array_items()) {

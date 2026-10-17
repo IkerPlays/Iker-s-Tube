@@ -28,7 +28,7 @@ bool account_ready() {
 	return false;
 }
 
-enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE };
+enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE };
 
 static void run_job(void *arg) {
 	AccountJob *job = (AccountJob *)arg;
@@ -91,6 +91,11 @@ static void run_job(void *arg) {
 		failed = tr("Could not translate (no connection?)", "No se pudo traducir (¿sin conexión?)");
 		break;
 	}
+	case COMMENT_DELETE:
+		ok = youtube_account_comment_delete(job->a, job->b);
+		done = tr("Comment deleted", "Comentario borrado");
+		failed = tr("Could not delete the comment", "No se pudo borrar el comentario");
+		break;
 	case COMMENT_REPLY:
 		ok = youtube_account_comment_reply(job->a, job->b, job->c);
 		done = tr("Reply sent", "Respuesta enviada");
@@ -140,6 +145,10 @@ void account_comment_async(const std::string &comments_token, const std::string 
 void account_comment_like_async(const std::string &comments_token, const std::string &comment_id) {
 	if (!account_ready()) return;
 	queue_job(new AccountJob{COMMENT_LIKE, comments_token, comment_id, ""});
+}
+void account_comment_delete_async(const std::string &comments_token, const std::string &comment_id) {
+	if (!account_ready()) return;
+	queue_job(new AccountJob{COMMENT_DELETE, comments_token, comment_id, ""});
 }
 void account_comment_reply_async(const std::string &comments_token, const std::string &comment_id, const std::string &text) {
 	if (!account_ready()) return;

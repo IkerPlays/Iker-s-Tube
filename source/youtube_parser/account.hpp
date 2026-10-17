@@ -24,6 +24,8 @@ bool youtube_account_playlist_edit(const std::string &playlist_id, const std::st
 // comments : `comments_token` is a continuation token of the comment section of the video (comment_sort_tokens[0])
 bool youtube_account_comment_create(const std::string &comments_token, const std::string &text);
 bool youtube_account_comment_like(const std::string &comments_token, const std::string &comment_id);
+// deletes a comment of the signed-in user (best effort : the delete action is looked for in the menu of the comment)
+bool youtube_account_comment_delete(const std::string &comments_token, const std::string &comment_id);
 bool youtube_account_comment_reply(const std::string &comments_token, const std::string &comment_id,
                                    const std::string &text);
 

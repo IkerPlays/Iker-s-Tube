@@ -130,6 +130,7 @@ struct YouTubeVideoDetail {
 		std::string id;
 		std::string publish_date;
 		std::string upvotes_str;
+		std::string page_token; // the continuation token of the comment page this comment came from (for the account actions)
 		bool pinned = false;  // pinned by the creator
 		bool hearted = false; // the creator gave it a heart
 

@@ -361,6 +361,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Brightness +", {"Luminosité +", "Helligkeit +", "Luminosità +", "Brilho +", "明るさ +"}},
 	    {"Brightness -", {"Luminosité -", "Helligkeit -", "Luminosità -", "Brilho -", "明るさ -"}},
 	    {"Brightness ", {"Luminosité ", "Helligkeit ", "Luminosità ", "Brilho ", "明るさ "}},
+	    {"Comment deleted", {"Commentaire supprimé", "Kommentar gelöscht", "Commento eliminato", "Comentário apagado", "コメントを削除しました"}},
+	    {"Could not delete the comment", {"Impossible de supprimer le commentaire", "Kommentar konnte nicht gelöscht werden", "Impossibile eliminare il commento", "Não foi possível apagar o comentário", "コメントを削除できません"}},
 	};
 	return table;
 }

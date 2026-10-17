@@ -333,6 +333,30 @@ bool youtube_account_comment_like(const std::string &comments_token, const std::
 	return account_post("comment/perform_comment_action", "\"actions\": [\"" + json_escape(action) + "\"]", comment_client).first;
 }
 
+bool youtube_account_comment_delete(const std::string &comments_token, const std::string &comment_id) {
+	std::string json;
+	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
+	// the menu of an own comment has an entry with the DELETE icon, followed by the action that does it
+	std::string action;
+	for (const char *marker : {"\"iconType\":\"DELETE\"", "\"iconType\":\"TRASH\"", "\"icon\":\"DELETE\"", "\"icon\":\"TRASH\"", "\"DELETE\""}) {
+		size_t pos = 0;
+		while (action == "" && (pos = json.find(marker, pos)) != std::string::npos) {
+			size_t end = std::min(json.size(), pos + 3500);
+			std::string token = text_after(json, pos, end, "\"performCommentActionEndpoint\":{\"action\":\"");
+			if (token == "") token = text_after(json, pos, end, "\"action\":\"");
+			if (token != "" && base64_decode_loose(token).find(comment_id) != std::string::npos) action = token;
+			pos += strlen(marker);
+		}
+		if (action != "") break;
+	}
+	if (action == "") {
+		set_last_error("no delete action found");
+		logger.warning("account", "no delete action found for the comment");
+		return false;
+	}
+	return account_post("comment/perform_comment_action", "\"actions\": [\"" + json_escape(action) + "\"]", comment_client).first;
+}
+
 bool youtube_account_comment_reply(const std::string &comments_token, const std::string &comment_id,
                                    const std::string &text) {
 	std::string json;

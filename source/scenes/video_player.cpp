@@ -12,6 +12,7 @@
 #include "scenes/account_tasks.hpp"
 #include "scenes/offline_tasks.hpp"
 #include "youtube_parser/sponsorblock.hpp"
+#include "oauth/oauth.hpp"
 #include "data_io/offline.hpp"
 #include "ui/notice.hpp"
 #include "ui/ui.hpp"
@@ -1380,6 +1381,13 @@ debug_info_view =
 	    comment_tab_view->views[2] = comments_bottom_view;
     }
 #define COMMENT_MAX_LINE_NUM 1000 // this limit exists due to performance reason (TODO : more efficient truncating)
+    // the token of the comment page that has this comment (the first page : the one of the section), for the account actions
+    static std::string comment_actions_token(const std::string &comment_id) {
+	    for (auto &c : cur_video_info.comments) {
+		    if (c.id == comment_id && c.page_token != "") return c.page_token;
+	    }
+	    return cur_video_info.comments_account_token();
+    }
     static PostView *comment_to_view(const YouTubeVideoDetail::Comment &comment, int comment_index) {
 	    auto &cur_content = comment.content;
 	    std::vector<std::string> cur_lines;
@@ -4013,23 +4021,34 @@ debug_info_view =
 				    comment_reply_request = false;
 				    std::string text;
 				    if (account_ready() && ask_comment_text(tr("Write a reply", "Escribe una respuesta"), text)) {
-					    account_comment_reply_async(comments_token, comment_target_id, text);
+					    account_comment_reply_async(comment_actions_token(comment_target_id), comment_target_id, text);
 				    }
 			    }
 			    if (comment_menu_request != "") {
 				    comment_target_id = comment_menu_request;
 				    comment_menu_request = "";
 				    comment_dialog->get_message_view()->set_text_lines(std::vector<std::string>{tr("Comment", "Comentario")})->update_y_range(0, 30);
+				    bool own_comment = false; // a comment of the signed-in account : Delete takes the place of Translate
+				    for (auto &c : cur_video_info.comments) {
+					    if (c.id == comment_target_id && OAuth::is_authenticated() && c.author.id != "" && c.author.id == OAuth::get_user_channel_id()) own_comment = true;
+				    }
 				    comment_dialog->set_buttons<std::function<std::string()>>(
-				        {[]() { return tr("Like", "Me gusta"); }, []() { return tr("Reply", "Responder"); }, []() { return tr("Translate", "Traducir"); }, []() { return LOCALIZED(CANCEL); }},
-				        [](OverlayDialogView &, int button) {
+				        {[]() { return tr("Like", "Me gusta"); }, []() { return tr("Reply", "Responder"); },
+				         own_comment ? (std::function<std::string()>)[]() { return tr("Delete", "Borrar"); } : (std::function<std::string()>)[]() { return tr("Translate", "Traducir"); },
+				         []() { return LOCALIZED(CANCEL); }},
+				        [own_comment](OverlayDialogView &, int button) {
 					        if (button == 0) {
-						        std::string token = cur_video_info.comments_account_token();
+						        std::string token = comment_actions_token(comment_target_id);
 						        youtube_account_set_video(cur_video_info.id);
 						        if (token == "") notice_show(tr("Open the comments first", "Abre antes los comentarios"));
 						        else account_comment_like_async(token, comment_target_id);
 					        } else if (button == 1) {
 						        comment_reply_request = true;
+					        } else if (button == 2 && own_comment) {
+						        std::string token = comment_actions_token(comment_target_id);
+						        youtube_account_set_video(cur_video_info.id);
+						        if (token == "") notice_show(tr("Open the comments first", "Abre antes los comentarios"));
+						        else account_comment_delete_async(token, comment_target_id);
 					        } else if (button == 2) {
 						        for (auto &c : cur_video_info.comments) { // the text of the long pressed comment
 							        if (c.id == comment_target_id) {

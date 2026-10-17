@@ -11,6 +11,7 @@ void account_playlists_async(const std::string &video_id); // fills the list bel
 void account_playlist_edit_async(const std::string &playlist_id, const std::string &video_id, bool add);
 void account_comment_async(const std::string &comments_token, const std::string &text);
 void account_comment_like_async(const std::string &comments_token, const std::string &comment_id);
+void account_comment_delete_async(const std::string &comments_token, const std::string &comment_id);
 void account_comment_reply_async(const std::string &comments_token, const std::string &comment_id, const std::string &text);
 
 // translation of a text into the language of the app (Google Translate web endpoint)
