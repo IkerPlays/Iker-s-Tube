@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Settings, Data tab: new line with how many videos you have watched (from the history) and about how many hours they last.
+- Explore, Shorts: now works as a feed. Open any Short and the rest of the list keeps playing after it in a shuffled loop (clear the queue to stop). Shorts are no longer hidden there even if Hide Shorts is on.

@@ -18,6 +18,7 @@
 #include "util/result_filter.hpp"
 #include "data_io/last_played.hpp"
 #include "data_io/history.hpp"
+#include "util/play_queue.hpp"
 #include "ui/qr_scan.hpp"
 #include "ui/notice.hpp"
 #include "scenes/account_tasks.hpp"
@@ -153,7 +154,9 @@ static std::string history_remove_request; // a search to forget (long press), d
 static bool qr_scan_pending = false;
 
 // starts a search. Must be called while resource_lock is held (from the update of this scene)
-static void start_search(const std::string &word) {
+static bool shorts_feed = false; // the search is the Shorts feed : its videos keep playing one after another
+static void start_search(const std::string &word, bool feed = false) {
+	shorts_feed = feed;
 	cur_search_word = word;
 	double search_box_width = 320 - SEARCH_BOX_MARGIN * 3 - URL_BUTTON_WIDTH;
 	search_box_view->set_text(truncate_search_text_for_display(word, search_box_width, 0.5));
@@ -181,13 +184,14 @@ static void show_search_history() {
 	                                        "live now", "new movie trailers", "world news today", "#shorts", "how it works explained", "funny moments"};
 	for (int i = 0; i < 9; i++) {
 		std::string query = explore_queries[i];
+		bool feed = i == 6; // Shorts
 		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
 		                                      ->set_text(explore_labels[i])
 		                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
 		                                      ->set_y_alignment(TextView::YAlign::CENTER)
 		                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
 		                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
-		                                      ->set_on_view_released([query](View &) { start_search(query); }));
+		                                      ->set_on_view_released([query, feed](View &) { start_search(query, feed); }));
 	}
 	// Discover : more from the channels you watched most recently
 	{
@@ -504,6 +508,7 @@ static void load_search_results(void *) {
 	// pre-access processing
 	resource_lock.lock();
 	std::string search_word = cur_search_word;
+	bool feed = shorts_feed;
 	search_done = false;
 
 	result_list_view->recursive_delete_subviews();
@@ -524,9 +529,17 @@ static void load_search_results(void *) {
 	remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
 	// the Shorts / watched videos that the settings hide
-	new_result.results.erase(std::remove_if(new_result.results.begin(), new_result.results.end(),
-	                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url); }),
-	                         new_result.results.end());
+	if (!feed) {
+		new_result.results.erase(std::remove_if(new_result.results.begin(), new_result.results.end(),
+		                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url); }),
+		                         new_result.results.end());
+	} else { // Shorts feed : play them all in a shuffled loop once you open one
+		std::vector<std::pair<std::string, std::string>> items;
+		for (auto &item : new_result.results) {
+			if (item.type == YouTubeSuccinctItem::VIDEO) items.push_back({item.video.url, item.video.title});
+		}
+		play_queue_set_repeat(items, true);
+	}
 
 	// wrap and truncate here
 	logger.info("search", "truncate/view creation start");
