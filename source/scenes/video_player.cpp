@@ -532,6 +532,82 @@ static void show_account_playlists(const std::string &video_id, const std::vecto
 	var_need_refresh = true;
 }
 
+// ---- collaboration videos : a screen with every channel of the video ----
+static std::string collab_request_id; // set by the author row of a collaboration video, handled outside of the view update
+static Mutex collab_lock;
+static std::vector<YouTubeChannelSuccinct> collab_result;
+static bool collab_ready = false;
+
+static void load_collab_task(void *arg) {
+	std::string *video_id = (std::string *)arg;
+	std::vector<YouTubeChannelSuccinct> list;
+	std::string error;
+	if (youtube_load_collaborators(*video_id, list, error)) {
+		collab_lock.lock();
+		collab_result = list;
+		collab_ready = true;
+		collab_lock.unlock();
+		var_need_refresh = true;
+	} else {
+		logger.warning("player", "collaborators : " + error);
+		notice_show(tr("Could not load the channels", "No se pudieron cargar los canales"));
+	}
+	delete video_id;
+}
+
+static bool collab_take(std::vector<YouTubeChannelSuccinct> &out) {
+	bool ready;
+	collab_lock.lock();
+	ready = collab_ready;
+	if (ready) {
+		out = collab_result;
+		collab_ready = false;
+	}
+	collab_lock.unlock();
+	return ready && out.size();
+}
+
+static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &channels) {
+	const int width = 300;
+	VerticalListView *list = (new VerticalListView(0, 0, width))->enable_thumbnail_request_update(6, SceneType::VIDEO_PLAYER);
+	for (auto &channel : channels) {
+		SuccinctChannelView *view = new SuccinctChannelView(0, 0, width, CHANNEL_ICON_HEIGHT);
+		view->set_name(truncate_first_line(channel.name, width - CHANNEL_ICON_WIDTH - 6, 0.6));
+		view->set_auxiliary_lines({truncate_first_line(channel.subscribers, width - CHANNEL_ICON_WIDTH - 6, 0.5)});
+		view->set_thumbnail_url(channel.icon_url);
+		view->set_get_background_color(View::STANDARD_BACKGROUND);
+		std::string id = channel.id;
+		view->set_on_view_released([id](View &) {
+			channel_id_pressed = id; // opens the channel
+			account_pl_popup_view->set_is_visible(false);
+			var_need_refresh = true;
+		});
+		list->views.push_back(view);
+	}
+	int list_height = std::min<int>(CHANNEL_ICON_HEIGHT * 3, (int)channels.size() * CHANNEL_ICON_HEIGHT);
+	account_pl_popup_view->recursive_delete_subviews();
+	account_pl_popup_view->set_subview(
+	    (new VerticalListView(0, 0, width))
+	        ->set_views({(new TextView(0, 0, width, 22))
+	                         ->set_text(tr("Channels in this video", "Canales de este vídeo"))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
+	                     (new ScrollView(0, 0, width, list_height))
+	                         ->set_views({list})
+	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
+	                     (new TextView(0, 0, width, 22))
+	                         ->set_text(LOCALIZED(CLOSE))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                         ->set_on_view_released([](View &) {
+		                         account_pl_popup_view->set_is_visible(false);
+		                         var_need_refresh = true;
+	                         })})
+	        ->set_draw_order({1, 0, 2}));
+	account_pl_popup_view->set_is_visible(true);
+	var_need_refresh = true;
+}
+
 // Sound profiles : an equalizer curve plus a volume, for one tap
 static std::vector<View *> make_sound_profile_buttons() {
 	static const double music[18] = {1.4, 1.35, 1.25, 1.1, 1, 1, 1, 1, 1, 1.05, 1.15, 1.25, 1.3, 1.3, 1.25, 1.2, 1.15, 1.1};
@@ -1405,10 +1481,17 @@ debug_info_view =
 			    }
 
 			    std::string author_id = tmp_video_info.author.id;
+			    bool is_collab = tmp_video_info.author.is_collaboration;
+			    std::string collab_video_id = tmp_video_info.id;
+			    // a collaboration : tapping the author opens the screen with all the channels
+			    auto author_pressed = [author_id, is_collab, collab_video_id](View &) {
+				    if (is_collab) collab_request_id = collab_video_id;
+				    else channel_id_pressed = author_id;
+			    };
 			    new_main_icon_view
 			        ->set_handle(thumbnail_request(tmp_video_info.author.icon_url, SceneType::VIDEO_PLAYER, 1000,
 			                                       ThumbnailType::ICON))
-			        ->set_on_view_released([author_id](View &) { channel_id_pressed = author_id; });
+			        ->set_on_view_released(author_pressed);
 			    main_tab_views = {
 			        (new TextView(0, 0, 320, 15 * title_lines.size())) // title
 			            ->set_text_lines(title_lines)
@@ -1459,13 +1542,16 @@ debug_info_view =
 			                                            : 320 - SMALL_MARGIN * 3 - ICON_SIZE - SUBSCRIBE_BUTTON_WIDTH,
 			                                        DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
 			                              ->set_text(tmp_video_info.author.name)
-			                              ->set_font_size(0.55, DEFAULT_FONT_INTERVAL + SMALL_MARGIN),
+			                              ->set_font_size(0.55, DEFAULT_FONT_INTERVAL + SMALL_MARGIN)
+			                              ->set_on_view_released(author_pressed),
 			                          (new TextView(0, 0,
 			                                        tmp_video_info.author.is_collaboration
 			                                            ? 320 - SMALL_MARGIN * 2 - ICON_SIZE
 			                                            : 320 - SMALL_MARGIN * 3 - ICON_SIZE - SUBSCRIBE_BUTTON_WIDTH,
 			                                        DEFAULT_FONT_INTERVAL))
-			                              ->set_text(tmp_video_info.author.subscribers.empty()
+			                              ->set_text(tmp_video_info.author.is_collaboration
+			                                             ? tr("Tap to see all the channels", "Toca para ver todos los canales")
+			                                         : tmp_video_info.author.subscribers.empty()
 			                                             ? ""
 			                                             : (tmp_video_info.metadata_from_android_vr
 			                                                    ? tmp_video_info.author.subscribers
@@ -3769,6 +3855,16 @@ debug_info_view =
 			    std::vector<AccountPlaylist> account_lists;
 			    if (account_playlists_take(playlists_video_id, account_lists)) {
 				    show_account_playlists(playlists_video_id, account_lists);
+			    }
+			    if (collab_request_id != "") { // collaboration : load the list of channels
+				    std::string *id = new std::string(collab_request_id);
+				    collab_request_id = "";
+				    notice_show(tr("Loading the channels...", "Cargando los canales..."));
+				    queue_async_task(load_collab_task, id);
+			    }
+			    std::vector<YouTubeChannelSuccinct> collab_list;
+			    if (collab_take(collab_list)) {
+				    show_collab_channels(collab_list);
 			    }
 			    std::string translation_title, translation_text;
 			    if (translation_take(translation_title, translation_text)) {

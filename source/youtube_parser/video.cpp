@@ -1202,3 +1202,89 @@ void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std
 
 	caption_data[{base_lang_id, translation_lang_id}] = cur_caption;
 }
+
+// ---- collaboration videos : the page of the video as the desktop site sees it lists every channel in a dialog ----
+
+// the text of a JSON string that starts at `s` (until the closing quote) with the common escapes undone and the invisible
+// direction marks YouTube puts around handles removed
+static std::string collab_text(const std::string &json, size_t s) {
+	std::string out;
+	for (size_t i = s; i < json.size() && json[i] != '"'; i++) {
+		if (json[i] == '\\' && i + 1 < json.size()) {
+			char c = json[++i];
+			if (c == 'u' && i + 4 < json.size()) {
+				unsigned code = strtoul(json.substr(i + 1, 4).c_str(), NULL, 16);
+				i += 4;
+				if (code == 0x200E || code == 0x2068 || code == 0x2069) continue;
+				if (code < 0x80) out += (char)code;
+				else if (code < 0x800) {
+					out += (char)(0xC0 | (code >> 6));
+					out += (char)(0x80 | (code & 0x3F));
+				} else {
+					out += (char)(0xE0 | (code >> 12));
+					out += (char)(0x80 | ((code >> 6) & 0x3F));
+					out += (char)(0x80 | (code & 0x3F));
+				}
+			} else if (c == 'n') out += ' ';
+			else out += c;
+		} else if ((unsigned char)json[i] == 0xE2 && i + 2 < json.size() && (unsigned char)json[i + 1] == 0x81 &&
+		           ((unsigned char)json[i + 2] == 0xA8 || (unsigned char)json[i + 2] == 0xA9)) {
+			i += 2; // U+2068 / U+2069
+		} else {
+			out += json[i];
+		}
+	}
+	return out;
+}
+
+bool youtube_load_collaborators(const std::string &video_id, std::vector<YouTubeChannelSuccinct> &out, std::string &error) {
+	std::string body = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "WEB", "clientVersion": "2.20241126.01.00", "utcOffsetMinutes": 0}}, "videoId": "%2"})";
+	body = std::regex_replace(body, std::regex("%0"), language_code);
+	body = std::regex_replace(body, std::regex("%1"), country_code);
+	body = std::regex_replace(body, std::regex("%2"), video_id);
+	auto response = http_post_json(get_innertube_api_url("next"), body);
+	if (!response.first) {
+		error = response.second.substr(0, 80);
+		return false;
+	}
+	const std::string &json = response.second;
+	size_t anchor = json.find("\"videoOwnerRenderer\"");
+	const std::string key = "\"listItemViewModel\":{\"title\":{\"content\":\"";
+	const std::string runs = "\",\"commandRuns\":[";
+	std::vector<std::pair<size_t, std::string>> items; // {position, name} of the channel rows
+	size_t pos = anchor == std::string::npos ? 0 : anchor, last = pos;
+	while (anchor != std::string::npos && items.size() < 12) {
+		size_t q = json.find(key, pos);
+		if (q == std::string::npos || q - last > 40000) break; // the rows of the dialog are close together
+		size_t name_start = q + key.size();
+		std::string name = collab_text(json, name_start);
+		size_t name_end = json.find('"', name_start);
+		pos = name_start;
+		if (name_end == std::string::npos) break;
+		if (json.compare(name_end, runs.size(), runs) != 0) continue; // a row without a channel link (menu entry)
+		last = q;
+		items.push_back({q, name});
+	}
+	for (size_t i = 0; i < items.size(); i++) {
+		size_t end = i + 1 < items.size() ? items[i + 1].first : std::min(json.size(), items[i].first + 14000);
+		std::string region = json.substr(items[i].first, end - items[i].first);
+		YouTubeChannelSuccinct channel;
+		channel.name = items[i].second;
+		size_t b = region.find("\"browseId\":\"UC");
+		if (b == std::string::npos) continue;
+		b += 12;
+		channel.id = region.substr(b, region.find('"', b) - b);
+		bool dup = false;
+		for (auto &c : out) dup = dup || c.id == channel.id;
+		if (dup) break; // the dialog is repeated in the answer : the first copy is enough
+		const std::string sub_key = "\"subtitle\":{\"content\":\"";
+		const std::string avatar_key = "\"avatarViewModel\":{\"image\":{\"sources\":[{\"url\":\"";
+		size_t sub = region.find(sub_key);
+		if (sub != std::string::npos) channel.subscribers = collab_text(region, sub + sub_key.size());
+		size_t av = region.find(avatar_key);
+		if (av != std::string::npos) channel.icon_url = collab_text(region, av + avatar_key.size());
+		out.push_back(channel);
+	}
+	if (out.empty()) error = "no channels found";
+	return !out.empty();
+}

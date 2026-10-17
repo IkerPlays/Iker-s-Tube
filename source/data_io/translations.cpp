@@ -318,6 +318,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Loading your account and data...", {"Chargement du compte et des données...", "Konto und Daten werden geladen...", "Caricamento di account e dati...", "Carregando conta e dados...", "アカウントとデータを読み込み中..."}},
 	    {"Watch the uploaded video", {"Voir la vidéo envoyée", "Hochgeladenes Video ansehen", "Guarda il video caricato", "Ver o vídeo enviado", "アップロードした動画を見る"}},
 	    {"Saved for offline viewing: ", {"Enregistré pour le mode hors ligne : ", "Für Offline-Wiedergabe gespeichert: ", "Salvato per la visione offline: ", "Salvo para ver offline: ", "オフライン視聴用に保存: "}},
+	    {"Tap to see all the channels", {"Touchez pour voir toutes les chaînes", "Tippen, um alle Kanäle zu sehen", "Tocca per vedere tutti i canali", "Toque para ver todos os canais", "タップで全チャンネルを表示"}},
+	    {"Channels in this video", {"Chaînes de cette vidéo", "Kanäle in diesem Video", "Canali in questo video", "Canais neste vídeo", "この動画のチャンネル"}},
+	    {"Could not load the channels", {"Impossible de charger les chaînes", "Kanäle konnten nicht geladen werden", "Impossibile caricare i canali", "Não foi possível carregar os canais", "チャンネルを読み込めません"}},
+	    {"Loading the channels...", {"Chargement des chaînes...", "Kanäle werden geladen...", "Caricamento dei canali...", "Carregando os canais...", "チャンネルを読み込み中..."}},
 	};
 	return table;
 }

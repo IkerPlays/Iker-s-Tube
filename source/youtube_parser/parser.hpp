@@ -190,6 +190,8 @@ struct YouTubeVideoDetail {
 };
 // this function does not load comments; call youtube_video_page_load_more_comments() if necessary
 YouTubeVideoDetail youtube_load_video_page(std::string url);
+// the channels of a collaboration video (all of them, with their subscribers and icon). Blocks on the network (a big answer).
+bool youtube_load_collaborators(const std::string &video_id, std::vector<YouTubeChannelSuccinct> &out, std::string &error);
 
 struct YouTubeChannelDetail {
 	std::string id;
