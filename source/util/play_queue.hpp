@@ -17,3 +17,4 @@ void play_queue_set_repeat(const std::vector<std::pair<std::string, std::string>
 bool play_queue_get(int index, std::string &url, std::string &title); // 0-based
 void play_queue_remove_at(int index);
 void play_queue_move(int index, int delta); // swaps the item with its neighbour (delta = -1 up, +1 down)
+void play_queue_load(); // reads the queue saved by the last run (call once at startup)

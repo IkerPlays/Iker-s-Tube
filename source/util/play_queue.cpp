@@ -3,11 +3,52 @@
 #include <vector>
 #include <utility>
 #include <cstdlib>
+#include <cstdio>
+#include <sys/stat.h>
+
+#define QUEUE_PATH "sdmc:/3ds/IkersTube/queue.txt"
+#define QUEUE_TMP_PATH "sdmc:/3ds/IkersTube/queue.tmp"
 
 static Mutex queue_lock;
 static std::vector<std::pair<std::string, std::string>> queue; // {url, title}
 static std::vector<std::pair<std::string, std::string>> repeat_items; // refills the queue when it runs out
 static bool repeat_shuffle = false;
+
+// the queue survives the app restart : url<TAB>title per line (the caller holds queue_lock)
+static void save_queue() {
+	mkdir("sdmc:/3ds", 0777);
+	mkdir("sdmc:/3ds/IkersTube", 0777);
+	FILE *f = fopen(QUEUE_TMP_PATH, "w");
+	if (!f) return;
+	for (auto &i : queue) {
+		std::string title = i.second;
+		for (auto &c : title) {
+			if (c == '\t' || c == '\n' || c == '\r') c = ' ';
+		}
+		fprintf(f, "%s\t%s\n", i.first.c_str(), title.c_str());
+	}
+	fclose(f);
+	remove(QUEUE_PATH);
+	rename(QUEUE_TMP_PATH, QUEUE_PATH);
+}
+
+void play_queue_load() {
+	queue_lock.lock();
+	FILE *f = fopen(QUEUE_PATH, "r");
+	if (f) {
+		char line[1024];
+		queue.clear();
+		while (fgets(line, sizeof line, f) && queue.size() < 500) {
+			std::string s = line;
+			while (s.size() && (s.back() == '\n' || s.back() == '\r')) s.pop_back();
+			size_t tab = s.find('\t');
+			if (tab == std::string::npos || tab == 0) continue;
+			queue.push_back({s.substr(0, tab), s.substr(tab + 1)});
+		}
+		fclose(f);
+	}
+	queue_lock.unlock();
+}
 
 static void shuffle_items(std::vector<std::pair<std::string, std::string>> &items) {
 	for (size_t i = items.size(); i > 1; i--) {
@@ -28,6 +69,7 @@ bool play_queue_toggle(const std::string &url, const std::string &title) {
 	if (added) {
 		queue.push_back({url, title});
 	}
+	save_queue();
 	queue_lock.unlock();
 	return added;
 }
@@ -40,6 +82,7 @@ void play_queue_play_next(const std::string &url, const std::string &title) {
 		}
 	}
 	queue.insert(queue.begin(), {url, title});
+	save_queue();
 	queue_lock.unlock();
 }
 int play_queue_position(const std::string &url) {
@@ -74,6 +117,7 @@ bool play_queue_pop(std::string &url_out) {
 		queue.erase(queue.begin());
 		res = true;
 	}
+	save_queue();
 	queue_lock.unlock();
 	return res;
 }
@@ -87,6 +131,7 @@ void play_queue_clear() {
 	queue_lock.lock();
 	queue.clear();
 	repeat_items.clear();
+	save_queue();
 	queue_lock.unlock();
 }
 
@@ -106,6 +151,7 @@ void play_queue_remove_at(int index) {
 	if (index >= 0 && index < (int)queue.size()) {
 		queue.erase(queue.begin() + index);
 	}
+	save_queue();
 	queue_lock.unlock();
 }
 void play_queue_move(int index, int delta) {
@@ -114,5 +160,6 @@ void play_queue_move(int index, int delta) {
 	if (index >= 0 && index < (int)queue.size() && other >= 0 && other < (int)queue.size()) {
 		std::swap(queue[index], queue[other]);
 	}
+	save_queue();
 	queue_lock.unlock();
 }

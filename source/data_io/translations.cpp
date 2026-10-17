@@ -256,6 +256,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Use Save video or Save audio inside a video.", {"Utilisez Enregistrer la vidéo ou l'audio dans une vidéo.", "Nutze Video speichern oder Audio speichern in einem Video.", "Usa Salva video o Salva audio dentro a un video.", "Use Salvar vídeo ou Salvar áudio dentro de um vídeo.", "動画内の「動画を保存」または「音声を保存」を使います。"}},
 	    {"Downloads", {"Téléchargements", "Downloads", "Download", "Downloads", "ダウンロード"}},
 	    {"More", {"Plus", "Mehr", "Altro", "Mais", "その他"}},
+	    {"The app closed unexpectedly last time (crash_last.txt)", {"L'appli s'est fermée de façon inattendue la dernière fois (crash_last.txt)", "Die App wurde beim letzten Mal unerwartet beendet (crash_last.txt)", "L'app si è chiusa inaspettatamente l'ultima volta (crash_last.txt)", "O app fechou inesperadamente da última vez (crash_last.txt)", "前回アプリが予期せず終了しました (crash_last.txt)"}},
 	};
 	return table;
 }

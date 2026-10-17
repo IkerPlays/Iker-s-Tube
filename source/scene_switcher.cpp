@@ -14,6 +14,11 @@
 #include "network_decoder/network_io.hpp"
 #include "network_decoder/thumbnail_loader.hpp"
 #include "util/async_task.hpp"
+#include "util/play_queue.hpp"
+#include "data_io/backup.hpp"
+#include "ui/notice.hpp"
+#include <sys/stat.h>
+#include <ctime>
 #include "util/misc_tasks.hpp"
 #include "ui/ui.hpp"
 // add here
@@ -51,6 +56,29 @@ static void Menu_draw_splash() {
 	Draw_screen_ready(0, 0xFF181212);
 	logo_draw(200, 120);
 	Draw_apply_draw();
+}
+
+#define AUTO_BACKUP_MARK "sdmc:/3ds/IkersTube/backup/last_auto.txt"
+// copies the user data to the SD card if the last automatic copy is older than a week
+static void auto_backup_task(void *) {
+	long long last = 0;
+	FILE *f = fopen(AUTO_BACKUP_MARK, "r");
+	if (f) {
+		if (fscanf(f, "%lld", &last) != 1) last = 0;
+		fclose(f);
+	}
+	long long now = (long long)time(NULL);
+	if (now < 1600000000LL || now - last < 7 * 24 * 3600) { // the clock is not set, or it is not time yet
+		return;
+	}
+	if (backup_export() >= 0) {
+		f = fopen(AUTO_BACKUP_MARK, "w");
+		if (f) {
+			fprintf(f, "%lld\n", now);
+			fclose(f);
+		}
+		logger.info("backup", "automatic weekly backup done");
+	}
 }
 
 void Menu_init(void) {
@@ -156,6 +184,7 @@ void Menu_init(void) {
 		}
 	}
 
+	play_queue_load(); // the queue of the last run
 	Sem_init();
 	Sem_suspend();
 	VideoPlayer_init();
@@ -193,6 +222,17 @@ void Menu_init(void) {
 	misc_tasks_thread = threadCreate(misc_tasks_thread_func, NULL, DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, 0, false);
 
 	Menu_get_system_info();
+
+	{ // the last run ended with an unexpected abort : say so once and keep the report as crash_last.txt
+		FILE *crash = fopen("sdmc:/3ds/IkersTube/crash.txt", "r");
+		if (crash) {
+			fclose(crash);
+			remove("sdmc:/3ds/IkersTube/crash_last.txt");
+			rename("sdmc:/3ds/IkersTube/crash.txt", "sdmc:/3ds/IkersTube/crash_last.txt");
+			notice_show(tr("The app closed unexpectedly last time (crash_last.txt)", "La app se cerró sola la última vez (crash_last.txt)"));
+		}
+	}
+	queue_async_task(auto_backup_task, NULL); // a backup of the user data once a week
 
 	logger.info(DEF_MENU_INIT_STR, "Initialized.");
 }

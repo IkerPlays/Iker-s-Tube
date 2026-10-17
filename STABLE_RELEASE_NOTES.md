@@ -34,6 +34,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Languages.** All the new texts are available in English, Spanish, French, German, Italian, Portuguese and Japanese.
 
 ### Reliability
+- **Queue and backups.** The play queue survives a restart, your data is backed up on the SD card once a week, and the app tells you when the last run ended in a crash.
 - **Fixes.** Videos over an hour with a single combined stream play again, the A-B loop no longer freezes, comment sorting no longer crashes, and many cases that could close the app were fixed after a full code review.
 - **Network.** Failed host name lookups right after the Wi-Fi connects are retried and the app asks the console to reconnect if the Wi-Fi drops during playback.
 - **Diagnostics.** Warnings and errors are saved to sdmc:/3ds/IkersTube/log.txt, and an unexpected abort writes sdmc:/3ds/IkersTube/crash.txt.
