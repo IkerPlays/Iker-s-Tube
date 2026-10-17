@@ -1,6 +1,7 @@
 #include "headers.hpp"
 #include "data_io/string_resource.hpp"
 #include <vector>
+#include <sys/stat.h>
 #include "ui/qr_popup.hpp"
 #include "ui/colors.hpp"
 extern "C" {
@@ -28,6 +29,15 @@ void qr_popup_show(const std::string &text) {
 	}
 	qr_text = text;
 	qr_visible = true;
+	{ // the 3DS has no clipboard : the link is also written to a text file on the SD card
+		mkdir("sdmc:/3ds", 0777);
+		mkdir("sdmc:/3ds/IkersTube", 0777);
+		FILE *f = fopen("sdmc:/3ds/IkersTube/shared_links.txt", "a");
+		if (f) {
+			fprintf(f, "%s\n", text.c_str());
+			fclose(f);
+		}
+	}
 	var_need_refresh = true;
 }
 
@@ -41,7 +51,7 @@ void qr_popup_draw() {
 	}
 	Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 0, 0, 320, 240);
 	const int quiet = 2; // quiet zone, in modules
-	int module_px = std::max(1, 200 / (qr_size + quiet * 2));
+	int module_px = std::max(1, 165 / (qr_size + quiet * 2));
 	int total = (qr_size + quiet * 2) * module_px;
 	int x0 = (320 - total) / 2;
 	int y0 = 8;
@@ -53,7 +63,8 @@ void qr_popup_draw() {
 			}
 		}
 	}
-	Draw_xy_centered(tr("Scan with your phone", "Escanéalo con tu móvil"), 0, 320, y0 + total + 4, y0 + total + 24, 0.5, 0.5, DEF_DRAW_BLACK);
+	Draw_xy_centered(tr("Scan with your phone", "Escanéalo con tu móvil"), 0, 320, y0 + total + 2, y0 + total + 20, 0.5, 0.5, DEF_DRAW_BLACK);
+	Draw_xy_centered(qr_text, 0, 320, y0 + total + 18, y0 + total + 32, 0.38, 0.38, DEF_DRAW_GRAY);
 	Draw_xy_centered(tr("Tap or press B to close", "Toca o pulsa B para cerrar"), 0, 320, 215, 235, 0.45, 0.45, DEF_DRAW_GRAY);
 }
 
