@@ -10,6 +10,7 @@
 #include "ui/qr_popup.hpp"
 #include "data_io/bookmarks.hpp"
 #include "data_io/channel_prefs.hpp"
+#include "data_io/channel_volume.hpp"
 #include "data_io/watch_later.hpp"
 #include <sstream>
 #include "util/timestamp_parser.hpp"
@@ -280,6 +281,11 @@ static bool stop_after_video = false; // do not continue with the queue / autopl
 static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
 
+static double mini_volume = 1.0;
+static void mini_volume_apply(double v) {
+	mini_volume = v;
+	network_decoder.set_preamp(v);
+}
 static double *eq_values_ptr = NULL; // the equalizer bar values (set up in VideoPlayer_init)
 
 // A-B loop : repeat a section of the playing video (a < 0 : not set, b < 0 : only the start is set)
@@ -321,6 +327,9 @@ static void channel_speed_tick() {
 	static std::string applied_for;
 	if (!network_decoder.ready || playing_video_info.id == "" || applied_for == playing_video_info.id) return;
 	applied_for = playing_video_info.id;
+	double volume = channel_volume_get(playing_video_info.author.id);
+	if (volume <= 0) volume = 1.0;
+	mini_volume_apply(volume);
 	double speed = channel_speed_get(playing_video_info.author.id);
 	if (speed <= 0) speed = 1.0;
 	if (speed != quick_speed) {
@@ -371,6 +380,32 @@ static std::vector<View *> make_eq_preset_buttons() {
 	        button([]() { return tr("Voice", "Voz"); }, voice), button([]() { return std::string("Treble"); }, treble)};
 }
 
+// Sound profiles : an equalizer curve plus a volume, for one tap
+static std::vector<View *> make_sound_profile_buttons() {
+	static const double music[18] = {1.4, 1.35, 1.25, 1.1, 1, 1, 1, 1, 1, 1.05, 1.15, 1.25, 1.3, 1.3, 1.25, 1.2, 1.15, 1.1};
+	static const double movie[18] = {1.5, 1.4, 1.25, 1.1, 1, 1, 1.1, 1.25, 1.3, 1.25, 1.15, 1.05, 1, 1, 1, 1, 1, 1};
+	static const double speech[18] = {0.4, 0.45, 0.55, 0.75, 1, 1.25, 1.5, 1.6, 1.6, 1.45, 1.3, 1.1, 0.9, 0.7, 0.6, 0.5, 0.4, 0.4};
+	struct Profile {
+		const double *gains;
+		double volume;
+	};
+	static const Profile profiles[3] = {{music, 1.0}, {movie, 1.3}, {speech, 1.2}};
+	auto button = [](std::function<std::string()> name, int index) {
+		return (new TextView(0, 0, EQUALIZER_POPUP_WIDTH / 3, 19))
+		    ->set_text(name)
+		    ->set_x_alignment(TextView::XAlign::CENTER)
+		    ->set_get_background_color(View::STANDARD_BACKGROUND)
+		    ->set_on_view_released([index](View &) {
+			    double copy[18];
+			    for (int i = 0; i < 18; i++) copy[i] = profiles[index].gains[i];
+			    apply_eq_preset(reinterpret_cast<const double(&)[18]>(copy));
+			    mini_volume_apply(profiles[index].volume);
+		    });
+	};
+	return {button([]() { return tr("Music", "Música"); }, 0), button([]() { return tr("Movie", "Película"); }, 1),
+	        button([]() { return tr("Speech", "Voz hablada"); }, 2)};
+}
+
 static void decode_thread(void *arg);
 static void convert_thread(void *arg);
 
@@ -378,6 +413,7 @@ static void convert_thread(void *arg);
 // Equalizer presets : 18 gains (1.0 = unchanged) for the same bands as equalizer_hz_list
 static void apply_eq_preset(const double (&gains)[18]);
 static std::vector<View *> make_eq_preset_buttons();
+static std::vector<View *> make_sound_profile_buttons();
 
 void VideoPlayer_init(void) {
 	logger.info(DEF_SAPP0_INIT_STR, "Initializing...");
@@ -679,8 +715,10 @@ debug_info_view =
         (new VerticalListView(0, 0, EQUALIZER_POPUP_WIDTH))
             ->set_views({(new HorizontalListView(0, 0, 19))
                              ->set_views(make_eq_preset_buttons()),
+                         (new HorizontalListView(0, 0, 19))
+                             ->set_views(make_sound_profile_buttons()),
                          (new RuleView(0, 0, EQUALIZER_POPUP_WIDTH, 1))->set_margin(0),
-                         (new ScrollView(0, 0, EQUALIZER_POPUP_WIDTH, EQUALIZER_POPUP_HEIGHT - 40))
+                         (new ScrollView(0, 0, EQUALIZER_POPUP_WIDTH, EQUALIZER_POPUP_HEIGHT - 59))
                              ->set_views(equalizer_views)
                              ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
                          (new TextView(0, 0, EQUALIZER_POPUP_WIDTH, 20))
@@ -691,7 +729,7 @@ debug_info_view =
 	                             var_need_refresh = true;
                              })
                              ->set_get_background_color(View::STANDARD_BACKGROUND)})
-            ->set_draw_order({2, 0, 1, 3}));
+            ->set_draw_order({3, 0, 1, 2, 4}));
     equalizer_popup_view->set_is_visible(false);
     playlist_title_view =
         (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL);
@@ -1355,7 +1393,11 @@ debug_info_view =
 				        ->set_get_background_color(View::STANDARD_BACKGROUND)
 				        ->set_on_view_released([](View &) {
 					        if (cur_video_info.id != "") {
-						        qr_popup_show("https://www.youtube.com/watch?v=" + cur_video_info.id);
+						        std::string link = "https://www.youtube.com/watch?v=" + cur_video_info.id;
+						        if (cur_video_info.id == playing_video_info.id && vid_current_pos > 10) { // also share the current moment
+							        link += "&t=" + std::to_string((int)vid_current_pos) + "s";
+						        }
+						        qr_popup_show(link);
 					        }
 				        });
 				    play_button->set_width(75);
@@ -2544,10 +2586,10 @@ debug_info_view =
 	    }
 	    var_need_refresh = true;
     }
-    static double mini_volume = 1.0;
     static void mini_set_volume(double v) {
 	    mini_volume = std::min(3.0, std::max(0.1, v));
 	    network_decoder.set_preamp(mini_volume);
+	    channel_volume_set(playing_video_info.author.id, mini_volume); // remembered for this channel
 	    var_need_refresh = true;
     }
     static void mini_player_draw() {
@@ -3457,15 +3499,10 @@ debug_info_view =
 				    pos = std::min<double>(vid_duration, pos);
 				    send_seek_request(pos);
 			    }
-		    } else if (key.p_r) {
-			    std::string queued_url;
-			    if (play_queue_pop(queued_url)) { // R : next video of the queue
-				    send_change_video_request(queued_url, true, false, false);
-			    }
-		    } else if (key.p_l) { // L : restart
-			    if (network_decoder.ready) {
-				    send_seek_request(0);
-			    }
+		    } else if (key.p_r && var_button_r) { // R : next video of the queue by default
+			    run_button_action(var_button_r);
+		    } else if (key.p_l && var_button_l) { // L : restart by default
+			    run_button_action(var_button_l);
 		    } else if (key.p_zr || key.p_zl) {
 			    if (network_decoder.ready) {
 				    double pos = vid_current_pos;

@@ -147,6 +147,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Custom", {"Perso", "Eigenes", "Personale", "Próprio", "カスタム"}},
 	    {"Custom theme color (hue): ", {"Couleur du thème perso (teinte) : ", "Farbe des eigenen Themas (Farbton): ", "Colore del tema personale (tonalità): ", "Cor do tema próprio (tom): ", "カスタムテーマの色（色相）："}},
 	    {"High contrast", {"Contraste élevé", "Hoher Kontrast", "Alto contrasto", "Alto contraste", "ハイコントラスト"}},
+	    {"Button L in the player", {"Bouton L dans le lecteur", "L-Taste im Player", "Pulsante L nel lettore", "Botão L no reprodutor", "プレーヤーのLボタン"}},
+	    {"Button R in the player", {"Bouton R dans le lecteur", "R-Taste im Player", "Pulsante R nel lettore", "Botão R no reprodutor", "プレーヤーのRボタン"}},
+	    {"Movie", {"Film", "Film", "Film", "Filme", "映画"}},
+	    {"Speech", {"Parole", "Sprache", "Parlato", "Fala", "話し声"}},
 	};
 	return table;
 }
