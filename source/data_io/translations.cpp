@@ -322,6 +322,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Channels in this video", {"Chaînes de cette vidéo", "Kanäle in diesem Video", "Canali in questo video", "Canais neste vídeo", "この動画のチャンネル"}},
 	    {"Could not load the channels", {"Impossible de charger les chaînes", "Kanäle konnten nicht geladen werden", "Impossibile caricare i canali", "Não foi possível carregar os canais", "チャンネルを読み込めません"}},
 	    {"Loading the channels...", {"Chargement des chaînes...", "Kanäle werden geladen...", "Caricamento dei canali...", "Carregando os canais...", "チャンネルを読み込み中..."}},
+	    {"Subscribed - long press to unsubscribe", {"Abonné - appui long pour se désabonner", "Abonniert - lange drücken zum Abbestellen", "Iscritto - pressione lunga per annullare", "Inscrito - segure para cancelar", "登録済み - 長押しで解除"}},
+	    {"Long press to subscribe", {"Appui long pour s'abonner", "Lange drücken zum Abonnieren", "Pressione lunga per iscriverti", "Segure para se inscrever", "長押しで登録"}},
+	    {"Unsubscribed", {"Désabonné", "Abbestellt", "Iscrizione annullata", "Inscrição cancelada", "登録解除しました"}},
+	    {"Subscribed", {"Abonné", "Abonniert", "Iscritto", "Inscrito", "登録しました"}},
 	};
 	return table;
 }

@@ -23,7 +23,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Edit my uploads.** Change visibility, title, delete, or watch your latest uploads (without the Studio login it lists your public videos). Create playlists and open your channel.
 
 ### Comments and player
-- **Collaboration videos.** Tap the author of a video with several channels to see all of them (icon, handle, subscribers) and open any.
+- **Collaboration videos.** Tap the author of a video with several channels to see all of them (icon, handle, subscribers), open any, or long press one to subscribe.
 - **Comments.** Sending, replying and liking try several YouTube clients, and a failure now shows the reason on screen. Pinned and creator-hearted comments are marked.
 - **Chapters** show as ticks on the buffering bar, and the last subtitle language is preselected.
 

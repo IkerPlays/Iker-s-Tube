@@ -537,6 +537,8 @@ static std::string collab_request_id; // set by the author row of a collaboratio
 static Mutex collab_lock;
 static std::vector<YouTubeChannelSuccinct> collab_result;
 static bool collab_ready = false;
+static bool collab_refresh_request = false; // a channel of the screen was (un)subscribed : redraw its texts
+static std::vector<YouTubeChannelSuccinct> collab_shown; // the channels of the screen that is open
 
 static void load_collab_task(void *arg) {
 	std::string *video_id = (std::string *)arg;
@@ -568,18 +570,41 @@ static bool collab_take(std::vector<YouTubeChannelSuccinct> &out) {
 }
 
 static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &channels) {
+	collab_shown = channels;
 	const int width = 300;
 	VerticalListView *list = (new VerticalListView(0, 0, width))->enable_thumbnail_request_update(6, SceneType::VIDEO_PLAYER);
 	for (auto &channel : channels) {
 		SuccinctChannelView *view = new SuccinctChannelView(0, 0, width, CHANNEL_ICON_HEIGHT);
 		view->set_name(truncate_first_line(channel.name, width - CHANNEL_ICON_WIDTH - 6, 0.6));
-		view->set_auxiliary_lines({truncate_first_line(channel.subscribers, width - CHANNEL_ICON_WIDTH - 6, 0.5)});
+		bool subscribed = subscription_is_subscribed(channel.id);
+		view->set_auxiliary_lines({truncate_first_line(channel.subscribers, width - CHANNEL_ICON_WIDTH - 6, 0.5),
+		                           subscribed ? tr("Subscribed - long press to unsubscribe", "Suscrito - mantén para quitar")
+		                                      : tr("Long press to subscribe", "Mantén para suscribirte")});
 		view->set_thumbnail_url(channel.icon_url);
 		view->set_get_background_color(View::STANDARD_BACKGROUND);
 		std::string id = channel.id;
 		view->set_on_view_released([id](View &) {
 			channel_id_pressed = id; // opens the channel
 			account_pl_popup_view->set_is_visible(false);
+			var_need_refresh = true;
+		});
+		view->add_on_long_hold(35, [channel](View &v) { // subscribe / unsubscribe this channel (and on the account when signed in)
+			bool now = subscription_is_subscribed(channel.id);
+			if (now) {
+				subscription_unsubscribe(channel.id);
+			} else {
+				SubscriptionChannel new_channel;
+				new_channel.id = channel.id;
+				new_channel.url = "https://m.youtube.com/channel/" + channel.id;
+				new_channel.name = channel.name;
+				new_channel.icon_url = channel.icon_url;
+				new_channel.subscriber_count_str = channel.subscribers;
+				subscription_subscribe(new_channel);
+			}
+			account_subscribe_async(channel.id, !now);
+			notice_show(now ? tr("Unsubscribed", "Suscripción quitada") : tr("Subscribed", "Suscrito"));
+			v.reset_holding_status(); // the release must not open the channel
+			collab_refresh_request = true;
 			var_need_refresh = true;
 		});
 		list->views.push_back(view);
@@ -3865,6 +3890,9 @@ debug_info_view =
 			    std::vector<YouTubeChannelSuccinct> collab_list;
 			    if (collab_take(collab_list)) {
 				    show_collab_channels(collab_list);
+			    } else if (collab_refresh_request) { // rebuild the open screen so the subscribed marks are up to date
+				    collab_refresh_request = false;
+				    if (account_pl_popup_view->is_visible && collab_shown.size()) show_collab_channels(std::vector<YouTubeChannelSuccinct>(collab_shown));
 			    }
 			    std::string translation_title, translation_text;
 			    if (translation_take(translation_title, translation_text)) {
