@@ -481,6 +481,25 @@ bool Search_show_search_keyboard() {
 		swkbdSetButton(&keyboard, SWKBD_BUTTON_LEFT, LOCALIZED(CANCEL).c_str(), false);
 		swkbdSetButton(&keyboard, SWKBD_BUTTON_RIGHT, LOCALIZED(OK).c_str(), true);
 		swkbdSetInitialText(&keyboard, cur_search_word.c_str());
+		// Suggestions while typing : the keyboard dictionary holds the search history and some common terms.
+		static SwkbdDictWord dict_words[96];
+		int dict_count = 0;
+		auto add_dict_word = [&](const std::string &w) {
+			if (w.empty() || w.size() > 38 || dict_count >= 96) {
+				return;
+			}
+			swkbdSetDictWord(&dict_words[dict_count++], w.c_str(), w.c_str());
+		};
+		for (auto &h : search_history_get()) {
+			add_dict_word(h);
+		}
+		static const char *common_terms[] = {"music",       "official video", "lyrics",  "live",     "remix",
+		                                     "trailer",     "gameplay",       "walkthrough", "playlist", "podcast",
+		                                     "nintendo 3ds", "tutorial",       "news",    "full album", "soundtrack"};
+		for (auto t : common_terms) {
+			add_dict_word(t);
+		}
+		swkbdSetDictionary(&keyboard, dict_words, dict_count);
 		char search_word[257];
 		add_cpu_limit(40);
 		video_set_skip_drawing(true);
