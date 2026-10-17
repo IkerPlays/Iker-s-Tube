@@ -3,6 +3,7 @@
 #include "scenes/video_player.hpp"
 #include "data_io/string_resource.hpp"
 #include "youtube_parser/studio.hpp"
+#include "youtube_parser/account.hpp"
 #include "oauth/oauth.hpp"
 #include "ui/ui.hpp"
 #include "ui/notice.hpp"
@@ -221,6 +222,17 @@ static void start_upload() {
 	go(MODE_DASH);
 }
 
+struct NewPlaylistJob {
+	std::string title, privacy;
+};
+static void new_playlist_task(void *arg) {
+	NewPlaylistJob *job = (NewPlaylistJob *)arg;
+	std::string id;
+	bool ok = youtube_account_playlist_create(job->title, job->privacy, id);
+	notice_show(ok ? tr("Playlist created: ", "Lista creada: ") + job->title : tr("Could not create the playlist", "No se pudo crear la lista"));
+	delete job;
+}
+
 static std::vector<View *> build_dash() {
 	std::vector<View *> v;
 	v.push_back((new TextView(0, 0, WIDTH, 24))
@@ -263,6 +275,12 @@ static std::vector<View *> build_dash() {
 	v.push_back(button([]() { return tr("Edit my uploads", "Editar mis subidas"); }, []() {
 		start_my_videos_load();
 		go(MODE_MYVIDEOS);
+	}));
+	v.push_back(button([]() { return tr("New playlist", "Nueva lista"); }, []() {
+		std::string title;
+		if (!ask_text(tr("Playlist name", "Nombre de la lista"), "", 100, false, title)) return;
+		notice_show(tr("Working...", "Trabajando..."));
+		queue_async_task(new_playlist_task, new NewPlaylistJob{title, "PRIVATE"}); // private : change it on YouTube if needed
 	}));
 	v.push_back(button([]() { return tr("My channel and videos", "Mi canal y vídeos"); }, []() {
 		if (OAuth::get_user_channel_id() == "") {

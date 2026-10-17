@@ -295,6 +295,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Tap again to DELETE it for good", {"Touchez encore pour la SUPPRIMER définitivement", "Nochmal tippen zum endgültigen LÖSCHEN", "Tocca ancora per ELIMINARLO per sempre", "Toque de novo para APAGAR de vez", "もう一度タップで完全に削除"}},
 	    {"Delete", {"Supprimer", "Löschen", "Elimina", "Apagar", "削除"}},
 	    {"Edit my uploads", {"Modifier mes envois", "Meine Uploads bearbeiten", "Modifica i miei caricamenti", "Editar meus envios", "アップロードを編集"}},
+	    {"New playlist", {"Nouvelle liste", "Neue Playlist", "Nuova playlist", "Nova lista", "新しいリスト"}},
+	    {"Playlist created: ", {"Liste créée : ", "Playlist erstellt: ", "Playlist creata: ", "Lista criada: ", "リストを作成: "}},
+	    {"Could not create the playlist", {"Impossible de créer la liste", "Playlist konnte nicht erstellt werden", "Impossibile creare la playlist", "Não foi possível criar a lista", "リストを作成できません"}},
 	};
 	return table;
 }

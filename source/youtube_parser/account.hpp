@@ -18,6 +18,8 @@ bool youtube_account_notifications(std::vector<YouTubeVideoSuccinct> &out);
 bool youtube_account_like(const std::string &video_id, int rating); // 1 like, -1 dislike, 0 remove the rating
 bool youtube_account_subscribe(const std::string &channel_id, bool subscribe);
 bool youtube_account_playlists(const std::string &video_id, std::vector<AccountPlaylist> &out);
+// creates an empty playlist of the account ; privacy : "PRIVATE", "UNLISTED" or "PUBLIC"
+bool youtube_account_playlist_create(const std::string &title, const std::string &privacy, std::string &playlist_id);
 bool youtube_account_playlist_edit(const std::string &playlist_id, const std::string &video_id, bool add);
 // comments : `comments_token` is a continuation token of the comment section of the video (comment_sort_tokens[0])
 bool youtube_account_comment_create(const std::string &comments_token, const std::string &text);

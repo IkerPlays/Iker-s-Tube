@@ -116,6 +116,18 @@ bool youtube_account_playlists(const std::string &video_id, std::vector<AccountP
 	return true;
 }
 
+bool youtube_account_playlist_create(const std::string &title, const std::string &privacy, std::string &playlist_id) {
+	std::string fields = "\"title\": \"" + json_escape(title) + "\", \"privacyStatus\": \"" + json_escape(privacy) + "\"";
+	for (int client = 0; client < 2; client++) { // the web client first : it is the one the site uses for this
+		auto r = account_post("playlist/create", fields, 1 - client);
+		if (!r.first) continue;
+		playlist_id = text_after(r.second, 0, r.second.size(), "\"playlistId\":\"");
+		if (playlist_id == "") playlist_id = text_after(r.second, 0, r.second.size(), "\"playlistId\": \"");
+		return true;
+	}
+	return false;
+}
+
 bool youtube_account_playlist_edit(const std::string &playlist_id, const std::string &video_id, bool add) {
 	std::string fields = "\"playlistId\": \"" + json_escape(playlist_id) + "\", \"actions\": [{\"action\": \"" +
 	                     (add ? "ACTION_ADD_VIDEO\", \"addedVideoId\"" : "ACTION_REMOVE_VIDEO_BY_VIDEO_ID\", \"removedVideoId\"") +
