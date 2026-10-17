@@ -89,6 +89,19 @@ std::vector<std::string> search_history_get() {
 	return res;
 }
 
+void search_history_remove(const std::string &word) {
+	history_lock.lock();
+	ensure_loaded_locked();
+	for (size_t i = 0; i < history.size(); i++) {
+		if (equals_ignore_case(history[i], word)) {
+			history.erase(history.begin() + i);
+			break;
+		}
+	}
+	save_locked();
+	history_lock.unlock();
+}
+
 void search_history_clear() {
 	history_lock.lock();
 	history.clear();

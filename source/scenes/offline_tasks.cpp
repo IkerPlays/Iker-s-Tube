@@ -20,6 +20,14 @@ struct DownloadJob {
 };
 
 static volatile bool download_running = false; // one download at a time
+static volatile bool download_cancel = false;
+static volatile int download_percent = 0;
+static std::string download_title; // set before the thread starts, read by the UI
+
+bool offline_download_running() { return download_running; }
+int offline_download_percent() { return download_percent; }
+std::string offline_download_title() { return download_title; }
+void offline_download_cancel() { download_cancel = true; }
 
 // downloads one file in 1 MB ranged chunks into `<path>.part`, then renames it. `progress` gets 0..100.
 static bool download_part(NetworkSessionList &session, const DownloadPart &part, const std::function<void(int)> &progress) {
@@ -29,6 +37,10 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 	u64 total = 0, done = 0;
 	const u64 CHUNK = 1024 * 1024;
 	while (ok) {
+		if (download_cancel) {
+			ok = false;
+			break;
+		}
 		u64 end = done + CHUNK - 1;
 		auto result = session.perform(HttpRequest::GET(part.url, {{"Range", "bytes=" + std::to_string(done) + "-" + std::to_string(end)}}));
 		if (result.fail || !result.status_code_is_success() || result.data.empty()) {
@@ -74,6 +86,8 @@ static void download_task(void *arg) {
 	for (size_t i = 0; i < job->parts.size() && ok; i++) {
 		ok = download_part(session, job->parts[i], [&](int percent) {
 			int overall = (int)((i * 100 + percent) / job->parts.size());
+			download_percent = overall;
+			var_need_refresh = true;
 			if (overall != last_percent && overall % 10 == 0) {
 				last_percent = overall;
 				notice_show(tr("Downloading ", "Descargando ") + what + ": " + std::to_string(overall) + "%");
@@ -91,7 +105,7 @@ static void download_task(void *arg) {
 		notice_show(tr("Saved for offline viewing", "Guardado para ver sin conexión"));
 	} else {
 		for (auto &part : job->parts) remove(part.path.c_str());
-		notice_show(tr("Could not download it", "No se pudo descargar"));
+		notice_show(download_cancel ? tr("Download cancelled", "Descarga cancelada") : tr("Could not download it", "No se pudo descargar"));
 	}
 	delete job;
 	download_running = false;
@@ -132,6 +146,9 @@ void offline_download_async(const std::string &id, const std::string &title, con
 		return;
 	}
 	download_running = true;
+	download_cancel = false;
+	download_percent = 0;
+	download_title = title;
 	notice_show(tr("Downloading: 0%", "Descargando: 0%"));
 	// its own thread : the shared async task thread must stay free for loading pages while the file downloads
 	if (!threadCreate(download_task, job, DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, -1, true)) {

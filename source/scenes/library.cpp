@@ -2,6 +2,8 @@
 #include "ui/qr_popup.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/offline.hpp"
+#include "scenes/offline_tasks.hpp"
+#include <sys/stat.h>
 #include "oauth/oauth.hpp"
 #include "util/async_task.hpp"
 #include <vector>
@@ -371,8 +373,50 @@ static void build_watch_later(VerticalListView *list) {
 	}
 }
 
+static u64 file_size(const std::string &path) {
+	struct stat st;
+	return stat(path.c_str(), &st) == 0 ? (u64)st.st_size : 0;
+}
+
+static std::string size_text(u64 bytes) {
+	char buf[32];
+	if (bytes >= 1024ULL * 1024 * 1024) snprintf(buf, sizeof buf, "%.2f GB", bytes / 1073741824.0);
+	else snprintf(buf, sizeof buf, "%llu MB", (unsigned long long)(bytes / 1048576));
+	return buf;
+}
+
 static void build_offline(VerticalListView *list) {
 	auto items = offline_list();
+	{ // summary : how many items, how much room they use and how much is free on the SD card
+		u64 used = 0;
+		for (auto &item : items) used += file_size(offline_file_path(item.id)) + file_size(offline_video_path(item.id));
+		std::string text = std::to_string(items.size()) + " " + tr("items", "elementos") + " - " + size_text(used) + " " + tr("saved", "guardados");
+		FS_ArchiveResource resource;
+		if (R_SUCCEEDED(FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_SD))) {
+			text += " - " + size_text((u64)resource.freeClusters * resource.clusterSize) + " " + tr("free", "libres");
+		}
+		list->views.push_back((new TextView(0, 0, 320, 22))
+		                          ->set_text(text)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+		                          ->set_y_alignment(TextView::YAlign::CENTER)
+		                          ->set_text_offset(SMALL_MARGIN, 0)
+		                          ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
+		// the running download : its progress, tap to cancel
+		list->views.push_back((new TextView(0, 0, 320, 22))
+		                          ->set_text((std::function<std::string()>)[]() {
+			                          if (!offline_download_running()) return tr("No download running", "Ninguna descarga en curso");
+			                          return tr("Downloading ", "Descargando ") + std::to_string(offline_download_percent()) + "% - " +
+			                                 tr("tap to cancel", "toca para cancelar");
+		                          })
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+		                          ->set_y_alignment(TextView::YAlign::CENTER)
+		                          ->set_text_offset(SMALL_MARGIN, 0)
+		                          ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                          ->set_on_view_released([](View &) {
+			                          if (offline_download_running()) offline_download_cancel();
+			                          var_need_refresh = true;
+		                          }));
+	}
 	for (auto &item : items) {
 		SuccinctVideoView *view = make_item(item.id, item.title, item.author, item.quality > 0 ? std::to_string(item.quality) + "p" : tr("audio", "audio"));
 		std::string id = item.id, url = "offline:" + item.id, title = item.title;

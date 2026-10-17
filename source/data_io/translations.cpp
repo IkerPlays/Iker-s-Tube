@@ -257,6 +257,14 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Downloads", {"Téléchargements", "Downloads", "Download", "Downloads", "ダウンロード"}},
 	    {"More", {"Plus", "Mehr", "Altro", "Mais", "その他"}},
 	    {"The app closed unexpectedly last time (crash_last.txt)", {"L'appli s'est fermée de façon inattendue la dernière fois (crash_last.txt)", "Die App wurde beim letzten Mal unerwartet beendet (crash_last.txt)", "L'app si è chiusa inaspettatamente l'ultima volta (crash_last.txt)", "O app fechou inesperadamente da última vez (crash_last.txt)", "前回アプリが予期せず終了しました (crash_last.txt)"}},
+	    {"items", {"éléments", "Elemente", "elementi", "itens", "件"}},
+	    {"saved", {"enregistrés", "gespeichert", "salvati", "salvos", "保存済み"}},
+	    {"free", {"libres", "frei", "liberi", "livres", "空き"}},
+	    {"No download running", {"Aucun téléchargement en cours", "Kein Download läuft", "Nessun download in corso", "Nenhum download em andamento", "ダウンロード中のものはありません"}},
+	    {"tap to cancel", {"touchez pour annuler", "Tippen zum Abbrechen", "tocca per annullare", "toque para cancelar", "タップで中止"}},
+	    {"Download cancelled", {"Téléchargement annulé", "Download abgebrochen", "Download annullato", "Download cancelado", "ダウンロードを中止しました"}},
+	    {"My channel and videos", {"Ma chaîne et mes vidéos", "Mein Kanal und Videos", "Il mio canale e i video", "Meu canal e vídeos", "マイチャンネルと動画"}},
+	    {"Your channel is not known yet", {"Votre chaîne n'est pas encore connue", "Dein Kanal ist noch nicht bekannt", "Il tuo canale non è ancora noto", "Seu canal ainda não é conhecido", "チャンネルがまだ不明です"}},
 	};
 	return table;
 }

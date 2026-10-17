@@ -148,6 +148,7 @@ static int search_filter_index = 0;
 static int account_feed_kind = 0; // 1 : recommendations, 2 : notifications of the YouTube account
 static void load_account_feed(void *);
 static bool history_clear_request = false;
+static std::string history_remove_request; // a search to forget (long press), done after the update
 static bool qr_scan_pending = false;
 
 // starts a search. Must be called while resource_lock is held (from the update of this scene)
@@ -270,7 +271,11 @@ static void show_search_history() {
 		                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
 		                                      ->set_y_alignment(TextView::YAlign::CENTER)
 		                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
-		                                      ->set_on_view_released([word](View &) { start_search(word); }));
+		                                      ->set_on_view_released([word](View &) { start_search(word); })
+		                                      ->add_on_long_hold(35, [word](View &) {
+			                                      history_remove_request = word;
+			                                      var_need_refresh = true;
+		                                      }));
 	}
 	result_list_view->views.push_back((new TextView(0, 0, 320, 24))
 	                                      ->set_text(tr("Clear history", "Borrar historial"))
@@ -767,6 +772,12 @@ void Search_draw(void) {
 			history_clear_request = false;
 			search_history_clear();
 			result_list_view->recursive_delete_subviews();
+			var_need_refresh = true;
+		}
+		if (history_remove_request != "") {
+			search_history_remove(history_remove_request);
+			history_remove_request = "";
+			result_list_view->recursive_delete_subviews(); // rebuilt without it
 			var_need_refresh = true;
 		}
 		if (clicked_url != "") {

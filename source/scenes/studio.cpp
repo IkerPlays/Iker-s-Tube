@@ -218,6 +218,14 @@ static std::vector<View *> build_dash() {
 		pick_short = true;
 		go(MODE_PICK);
 	}));
+	v.push_back(button([]() { return tr("My channel and videos", "Mi canal y vídeos"); }, []() {
+		if (OAuth::get_user_channel_id() == "") {
+			notice_show(tr("Your channel is not known yet", "Aún no se conoce tu canal"));
+			return;
+		}
+		global_intent.next_scene = SceneType::CHANNEL; // the channel page lists the videos with their views
+		global_intent.arg = OAuth::get_user_channel_id();
+	}));
 	v.push_back(label([]() { return locked_copy(upload_message); }));
 	return v;
 }
