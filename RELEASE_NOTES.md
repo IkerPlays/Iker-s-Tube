@@ -1,16 +1,12 @@
 ## What's new
 
-- **Backup.** Settings can export your favorites, watch later, playlists, bookmarks, history, subscriptions, resume points and settings to sdmc:/3ds/IkersTube/backup/ and import them back (restart the app after importing). The OAuth login is not included.
-- **Data saver.** Limits videos to 240p and skips thumbnails. A data limit per session shows a warning when it is exceeded.
-- **Statistics.** Total playing time, videos in the history and your most watched channel.
-- **Grid everywhere.** The two-column thumbnail grid now also works in channel pages and the home feed, not only in search.
-- **Watch later sync.** With the OAuth login, your YouTube Watch later playlist is downloaded into the Later tab once per session.
-- **Button shortcuts.** Choose what X and Y do in the player: +30 s, next in queue, restart, mini player, bookmark or stop after this video.
-- **Stop after this video** and a **+30 s skip** button for intros.
-- **Speed per channel.** The quick speed button remembers the speed for each channel and applies it to its next videos.
-- **Left-handed mini player.** Mirrors the previous/next and volume controls.
-- **Custom background.** Put background.png or background.jpg (up to 1024x1024) in sdmc:/3ds/IkersTube/ to use it as the idle top screen.
-
-## Improvements
-
-- Update messages are translated into every supported language.
+- **Stability.** Fixed a freeze when an A-B loop reached its end point, a crash risk when changing videos while the bookmark list was alive, and several places that could abort the app on unexpected data.
+- **Continue watching.** The Search screen shows the last video you played, and you can make the app open it at start (Settings, Start screen, Last video).
+- **First launch.** The very first time the app opens, Settings appear so you can pick language, theme and quality.
+- **Library.** Sort favorites and Watch later (newest, title, channel), filter them by text, and give favorites a tag. Videos you already watched get a check mark in lists (can be turned off).
+- **New videos alert.** A red dot on the menu icon tells you when your subscriptions have new videos after the feed loads.
+- **Custom theme.** A seventh theme with a color you pick, plus a high contrast mode.
+- **Sound profiles.** Music, Movie and Speech profiles in the equalizer combine a curve and a volume.
+- **Volume per channel.** The mini player volume is remembered for each channel, like the speed.
+- **L and R shortcuts.** Choose what L and R do in the player, like X and Y.
+- **QR with time.** The QR code of a video you are watching includes the current moment.
