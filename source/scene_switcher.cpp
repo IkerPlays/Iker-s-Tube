@@ -1,5 +1,7 @@
 ﻿#include "headers.hpp"
 #include "ui/logo_draw.hpp"
+#include "data_io/last_played.hpp"
+#include "youtube_parser/parser.hpp"
 
 #include "scenes/video_player.hpp"
 #include "scenes/search.hpp"
@@ -171,7 +173,15 @@ void Menu_init(void) {
 	// add here
 	Home_init(); // first running
 	global_current_scene = SceneType::HOME;
-	if (var_start_scene == 1) {
+	std::string last_id, last_title;
+	if (!var_welcome_done) { // first launch : show the settings so language, theme and quality can be picked
+		var_welcome_done = true;
+		misc_tasks_request(TASK_SAVE_SETTINGS);
+		global_intent.next_scene = SceneType::SETTINGS;
+	} else if (var_start_scene == 3 && last_played_get(last_id, last_title)) { // continue the last video (it resumes where it stopped)
+		global_intent.next_scene = SceneType::VIDEO_PLAYER;
+		global_intent.arg = youtube_get_video_url_by_id(last_id);
+	} else if (var_start_scene == 1) {
 		global_intent.next_scene = SceneType::LIBRARY;
 	} else if (var_start_scene == 2) {
 		global_intent.next_scene = SceneType::SEARCH;

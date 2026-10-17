@@ -567,7 +567,8 @@ void Sem_init(void) {
 						->set_texts({
 							(std::function<std::string ()>) []() { return tr("Home", "Inicio"); },
 							(std::function<std::string ()>) []() { return tr("Library", "Biblioteca"); },
-							(std::function<std::string ()>) []() { return tr("Search", "Búsqueda"); }
+							(std::function<std::string ()>) []() { return tr("Search", "Búsqueda"); },
+							(std::function<std::string ()>) []() { return tr("Last video", "Último vídeo"); }
 						}, var_start_scene)
 						->set_title([](const SelectorView &) { return tr("Start screen", "Pantalla de inicio"); })
 						->set_on_change([](const SelectorView &view) {

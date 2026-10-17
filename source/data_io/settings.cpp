@@ -68,7 +68,7 @@ void load_settings() {
 	var_auto_quality_cap = load_int("auto_quality_cap", 0);
 	var_auto_dim = load_int("auto_dim", 0);
 	var_text_scale = std::max(0, std::min(2, load_int("text_scale", 1)));
-	var_start_scene = std::max(0, std::min(2, load_int("start_scene", 0)));
+	var_start_scene = std::max(0, std::min(3, load_int("start_scene", 0)));
 	var_auto_theme = load_int("auto_theme", 0);
 	var_grid_view = load_int("grid_view", 0);
 	var_data_saver = load_int("data_saver", 0);
@@ -81,6 +81,7 @@ void load_settings() {
 	var_left_handed = load_int("left_handed", 0);
 	var_custom_hue = std::max(0, std::min(359, load_int("custom_hue", 200)));
 	var_high_contrast = load_int("high_contrast", 0);
+	var_welcome_done = load_int("welcome_done", 0);
 	var_theme = std::max(0, std::min(6, load_int("color_theme", 0)));
 	var_large_thumbnails = load_int("large_thumbnails", 0);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
@@ -139,6 +140,7 @@ void save_settings() {
 	add_int("hide_pointer", var_hide_pointer);
 	add_int("dark_theme", var_night_mode);
 	add_int("color_theme", var_theme);
+	add_int("welcome_done", var_welcome_done);
 	add_int("custom_hue", var_custom_hue);
 	add_int("high_contrast", var_high_contrast);
 	add_int("button_x", var_button_x);

@@ -27,8 +27,8 @@ static void save_locked() {
 		return;
 	}
 	for (auto &v : favorites) {
-		fprintf(f, "%s\t%s\t%s\t%s\n", clean_field(v.id).c_str(), clean_field(v.title).c_str(),
-		        clean_field(v.author).c_str(), clean_field(v.length_text).c_str());
+		fprintf(f, "%s\t%s\t%s\t%s\t%s\n", clean_field(v.id).c_str(), clean_field(v.title).c_str(),
+		        clean_field(v.author).c_str(), clean_field(v.length_text).c_str(), clean_field(v.tag).c_str());
 	}
 	fclose(f);
 	remove(FAVORITES_PATH);
@@ -62,6 +62,7 @@ void favorites_load() {
 				v.title = parts[1];
 				v.author = parts.size() > 2 ? parts[2] : "";
 				v.length_text = parts.size() > 3 ? parts[3] : "";
+				v.tag = parts.size() > 4 ? parts[4] : "";
 				favorites.push_back(v);
 			}
 		}
@@ -118,4 +119,16 @@ std::vector<FavoriteVideo> favorites_get() {
 	auto res = favorites;
 	favorites_lock.unlock();
 	return res;
+}
+
+void favorites_set_tag(const std::string &video_id, const std::string &tag) {
+	favorites_lock.lock();
+	for (auto &v : favorites) {
+		if (v.id == video_id) {
+			v.tag = tag;
+			break;
+		}
+	}
+	save_locked();
+	favorites_lock.unlock();
 }

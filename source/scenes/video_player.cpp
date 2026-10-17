@@ -10,6 +10,7 @@
 #include "ui/qr_popup.hpp"
 #include "data_io/bookmarks.hpp"
 #include "data_io/channel_prefs.hpp"
+#include "data_io/last_played.hpp"
 #include "data_io/channel_volume.hpp"
 #include "data_io/watch_later.hpp"
 #include <sstream>
@@ -345,6 +346,7 @@ static void ab_loop_tick() {
 	if (playing_video_info.id != tracked_id) {
 		tracked_id = playing_video_info.id;
 		ab_loop_a = ab_loop_b = -1;
+		if (vid_play_request) last_played_set(playing_video_info.id, playing_video_info.title); // for "continue watching"
 	}
 	if (ab_loop_a >= 0 && ab_loop_b > ab_loop_a && vid_play_request && !vid_pausing && vid_current_pos >= ab_loop_b) {
 		send_seek_request_wo_lock(ab_loop_a); // called while small_resource_lock is already held

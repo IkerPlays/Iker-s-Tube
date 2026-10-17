@@ -15,6 +15,7 @@
 #include "network_decoder/network_io.hpp"
 #include "util/async_task.hpp"
 #include "data_io/search_history.hpp"
+#include "data_io/last_played.hpp"
 #include "data_io/history.hpp"
 #include "ui/qr_scan.hpp"
 
@@ -215,6 +216,19 @@ static void show_search_history() {
 	                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                                      ->set_on_view_released([](View &) { qr_scan_pending = true; }));
+	{ // continue watching : the last video that was played
+		std::string last_id, last_title;
+		if (last_played_get(last_id, last_title)) {
+			std::string url = youtube_get_video_url_by_id(last_id);
+			result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+			                                      ->set_text(truncate_search_text_for_display(tr("Continue: ", "Seguir: ") + last_title, 300, 0.55))
+			                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+			                                      ->set_y_alignment(TextView::YAlign::CENTER)
+			                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
+			                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+			                                      ->set_on_view_released([url](View &) { clicked_url = url; clicked_is_channel = false; }));
+		}
+	}
 	if (!words.size()) {
 		return;
 	}

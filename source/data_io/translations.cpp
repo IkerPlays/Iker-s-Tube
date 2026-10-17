@@ -151,6 +151,15 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Button R in the player", {"Bouton R dans le lecteur", "R-Taste im Player", "Pulsante R nel lettore", "Botão R no reprodutor", "プレーヤーのRボタン"}},
 	    {"Movie", {"Film", "Film", "Film", "Filme", "映画"}},
 	    {"Speech", {"Parole", "Sprache", "Parlato", "Fala", "話し声"}},
+	    {"Last video", {"Dernière vidéo", "Letztes Video", "Ultimo video", "Último vídeo", "最後の動画"}},
+	    {"Continue: ", {"Continuer : ", "Weiter: ", "Continua: ", "Continuar: ", "続きから："}},
+	    {"Title A-Z", {"Titre A-Z", "Titel A-Z", "Titolo A-Z", "Título A-Z", "タイトル A-Z"}},
+	    {"Channel", {"Chaîne", "Kanal", "Canale", "Canal", "チャンネル"}},
+	    {"Filter: all", {"Filtre : tout", "Filter: alle", "Filtro: tutto", "Filtro: tudo", "フィルター：すべて"}},
+	    {"Filter (title, channel or tag)", {"Filtre (titre, chaîne ou étiquette)", "Filter (Titel, Kanal oder Tag)", "Filtro (titolo, canale o etichetta)", "Filtro (título, canal ou etiqueta)", "フィルター（タイトル・チャンネル・タグ）"}},
+	    {"Set tag...", {"Ajouter une étiquette...", "Tag setzen...", "Imposta etichetta...", "Definir etiqueta...", "タグを設定..."}},
+	    {"Remove tag", {"Retirer l'étiquette", "Tag entfernen", "Rimuovi etichetta", "Remover etiqueta", "タグを削除"}},
+	    {"Tag", {"Étiquette", "Tag", "Etichetta", "Etiqueta", "タグ"}},
 	};
 	return table;
 }

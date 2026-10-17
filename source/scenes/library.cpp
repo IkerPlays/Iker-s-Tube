@@ -131,6 +131,34 @@ static FavoriteVideo video_from_url(const std::string &url, const std::string &t
 	return v;
 }
 
+// sort and filter of the favorites / watch later lists (the filter matches title, channel or tag)
+static int list_sort = 0; // 0 newest first, 1 title A-Z, 2 channel
+static std::string list_filter;
+
+static std::string lower_copy(std::string s) {
+	for (auto &c : s) c = tolower((unsigned char)c);
+	return s;
+}
+static std::vector<FavoriteVideo> filter_and_sort(std::vector<FavoriteVideo> videos) {
+	if (list_filter != "") {
+		std::string needle = lower_copy(list_filter);
+		std::vector<FavoriteVideo> kept;
+		for (auto &v : videos) {
+			if (lower_copy(v.title).find(needle) != std::string::npos || lower_copy(v.author).find(needle) != std::string::npos ||
+			    lower_copy(v.tag).find(needle) != std::string::npos) {
+				kept.push_back(v);
+			}
+		}
+		videos = kept;
+	}
+	if (list_sort == 1) {
+		std::stable_sort(videos.begin(), videos.end(), [](const FavoriteVideo &a, const FavoriteVideo &b) { return lower_copy(a.title) < lower_copy(b.title); });
+	} else if (list_sort == 2) {
+		std::stable_sort(videos.begin(), videos.end(), [](const FavoriteVideo &a, const FavoriteVideo &b) { return lower_copy(a.author) < lower_copy(b.author); });
+	}
+	return videos;
+}
+
 static SuccinctVideoView *make_item(const std::string &id, const std::string &title, const std::string &line2,
                                     const std::string &length) {
 	return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
@@ -148,6 +176,33 @@ static TextView *make_button(const std::string &text, int width, std::function<v
 	    ->set_get_background_color(button_background)
 	    ->set_on_view_released([action](View &) { action(); });
 	return button;
+}
+
+// first row of the favorites / watch later lists : sort mode and text filter
+static void add_sort_filter_row(VerticalListView *list) {
+	static const char *sort_en[] = {"Newest", "Title A-Z", "Channel"};
+	static const char *sort_es[] = {"Recientes", "Título A-Z", "Canal"};
+	list->views.push_back((new HorizontalListView(0, 0, 22))
+	                          ->set_views({make_button(tr("Sort: ", "Orden: ") + tr(sort_en[list_sort], sort_es[list_sort]), 160,
+	                                                   []() {
+		                                                   list_sort = (list_sort + 1) % 3;
+		                                                   rebuild_request = true;
+	                                                   }),
+	                                       make_button(list_filter == "" ? tr("Filter: all", "Filtro: todo") : tr("Filter: ", "Filtro: ") + list_filter, 160,
+	                                                   []() {
+		                                                   if (list_filter != "") { // tapping an active filter clears it
+			                                                   list_filter = "";
+			                                                   rebuild_request = true;
+			                                                   return;
+		                                                   }
+		                                                   pending_action = []() {
+			                                                   std::string text = list_filter;
+			                                                   if (ask_text(tr("Filter (title, channel or tag)", "Filtro (título, canal o etiqueta)").c_str(), text)) {
+				                                                   list_filter = text;
+				                                                   rebuild_request = true;
+			                                                   }
+		                                                   };
+	                                                   })}));
 }
 
 // plays a playlist : the first video now, the others through the queue
@@ -248,9 +303,10 @@ static void build_queue(VerticalListView *list) {
 }
 
 static void build_favorites(VerticalListView *list) {
-	auto favs = favorites_get();
+	auto favs = filter_and_sort(favorites_get());
+	add_sort_filter_row(list);
 	for (auto &v : favs) {
-		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
+		SuccinctVideoView *view = make_item(v.id, v.title, (v.tag != "" ? "[" + v.tag + "] " : std::string()) + v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
@@ -258,6 +314,8 @@ static void build_favorites(VerticalListView *list) {
 			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
+			                 make_option(tr("Set tag...", "Poner etiqueta..."), [id]() { pending_action = [id]() { std::string tag; if (ask_text(tr("Tag", "Etiqueta").c_str(), tag)) { favorites_set_tag(id, tag); rebuild_request = true; } }; }),
+			                 make_option(tr("Remove tag", "Quitar etiqueta"), [id]() { favorites_set_tag(id, ""); rebuild_request = true; }),
 			                 make_option(tr("Remove from favorites", "Quitar de favoritos"), [id]() { favorites_remove(id); })});
 		    });
 		list->views.push_back(view);
@@ -283,7 +341,8 @@ static void build_watch_later(VerticalListView *list) {
 		pulled_this_session = true;
 		queue_async_task(pull_watch_later_task, NULL);
 	}
-	auto favs = watch_later_get();
+	auto favs = filter_and_sort(watch_later_get());
+	add_sort_filter_row(list);
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
