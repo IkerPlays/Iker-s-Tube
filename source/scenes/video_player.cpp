@@ -610,6 +610,12 @@ void VideoPlayer_init(void) {
 			}
 			y += SMALL_MARGIN;
 		}
+		if (vid_duration > 0) { // chapter marks on the bar
+			for (auto &chapter : current_chapters) {
+				if (chapter.first <= 0 || chapter.first >= vid_duration) continue;
+				Draw_texture(var_square_image[0], 0xFFFFFFFF, 5 + 310 * chapter.first / vid_duration, view.y0, 1, SMALL_MARGIN * 2);
+			}
+		}
 	});
 	video_quality_selector_view = (new SelectorView(0, 0, 320, 35, false))
 	                                  ->set_texts({(std::function<std::string()>)[]() { return LOCALIZED(OFF);
@@ -1246,7 +1252,7 @@ debug_info_view =
 	        (new PostView(0, 0, 320))
 	            ->set_author_name(comment.author.name)
 	            ->set_author_icon_url(comment.author.icon_url)
-	            ->set_time_str(comment.publish_date)
+	            ->set_time_str((comment.pinned ? tr("Pinned", "Fijado") + " | " : std::string()) + (comment.hearted ? "<3 | " : "") + comment.publish_date)
 	            ->set_upvote_str(comment.upvotes_str)
 	            ->set_content_lines(cur_lines)
 	            ->set_has_more_replies(

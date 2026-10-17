@@ -130,6 +130,8 @@ struct YouTubeVideoDetail {
 		std::string id;
 		std::string publish_date;
 		std::string upvotes_str;
+		bool pinned = false;  // pinned by the creator
+		bool hearted = false; // the creator gave it a heart
 
 		int reply_num;
 		std::vector<Comment> replies;

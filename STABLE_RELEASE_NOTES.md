@@ -10,6 +10,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ### Player
 - **Mini player** with big controls on the bottom screen, swipe gestures, volume remembered per channel and a left-handed mode.
 - **Tools on the video page.** Jump 10 s back or forward, skip 30 s, A-B loop, tappable chapters, bookmarks with names, next chapter, quick speed (50% to 200%, remembered per channel), stop after this video and a premiere countdown.
+- **Comments.** Pinned and creator-hearted comments are marked, and chapters show as ticks on the bar.
 - **Subtitles.** The last subtitle language is preselected on the next videos.
 - **Seek preview** thumbnails while dragging the progress bar, equalizer presets and sound profiles (music, movie, speech).
 - **Shorts play one after another** when opened from a channel.
@@ -23,7 +24,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ### Library and search
 - **Library.** Queue, favorites with tags, playlists, Watch later and the new Offline tab. Sort and filter favorites and Watch later, play next from any list and a check mark on videos you already watched.
 - **Save offline from lists.** Long press a video in Favorites, Watch later or a playlist to save its video or audio, and a strip tells you when there is no connection.
-- **Downloads screen.** Items saved, space used and free on the SD card, progress of the running download, a download queue and a way to cancel it.
+- **Downloads screen.** Play all or shuffle your saved videos, items saved, space used and free on the SD card, progress of the running download, a download queue and a way to cancel it.
 - **Offline videos and audio.** Save a video (360p, 240p on the old 3DS) or only its audio to the SD card and play it without a connection from the Offline list (Downloads in the bottom bar).
 - **Search.** Long press a recent search to forget it, keyboard suggestions, Explore and Discover shortcuts, continue watching the last video, QR scanning with the camera and a red dot when your subscriptions have new videos.
 - **Grid of thumbnails** in search, channels and the home feed (optional).

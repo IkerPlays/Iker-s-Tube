@@ -391,8 +391,25 @@ static std::string size_text(u64 bytes) {
 	return buf;
 }
 
+static void play_offline(bool shuffle) {
+	std::vector<std::pair<std::string, std::string>> items;
+	for (auto &item : offline_list()) items.push_back({"offline:" + item.id, item.title});
+	if (items.empty()) return;
+	if (shuffle) {
+		for (size_t i = items.size(); i > 1; i--) std::swap(items[i - 1], items[rand() % i]);
+	}
+	play_queue_clear();
+	for (size_t i = 1; i < items.size(); i++) play_queue_toggle(items[i].first, items[i].second);
+	clicked_url = items[0].first;
+}
+
 static void build_offline(VerticalListView *list) {
 	auto items = offline_list();
+	if (items.size() > 1) { // play everything that is saved, in order or shuffled
+		list->views.push_back((new HorizontalListView(0, 0, 22))
+		                          ->set_views({make_button(tr("Play all", "Reproducir todo"), 160, []() { play_offline(false); }),
+		                                       make_button(tr("Shuffle", "Aleatorio"), 160, []() { play_offline(true); })}));
+	}
 	{ // summary : how many items, how much room they use and how much is free on the SD card
 		u64 used = 0;
 		for (auto &item : items) used += file_size(offline_file_path(item.id)) + file_size(offline_video_path(item.id));

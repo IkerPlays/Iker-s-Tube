@@ -864,6 +864,8 @@ YouTubeVideoDetail::Comment extract_comment_from_comment_renderer(RJson comment_
 	cur_comment.author.name = get_text_from_object(comment_renderer["authorText"]);
 	cur_comment.publish_date = get_text_from_object(comment_renderer["publishedTimeText"]);
 	cur_comment.upvotes_str = get_text_from_object(comment_renderer["voteCount"]);
+	cur_comment.pinned = comment_renderer.has_key("pinnedCommentBadge");
+	cur_comment.hearted = comment_renderer["actionButtons"]["commentActionButtonsRenderer"].has_key("creatorHeart");
 	cur_comment.author.icon_url =
 	    get_thumbnail_url_exact(comment_renderer["authorThumbnail"]["thumbnails"], thumbnail_height);
 	return cur_comment;

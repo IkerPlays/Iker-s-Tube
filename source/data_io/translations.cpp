@@ -298,6 +298,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"New playlist", {"Nouvelle liste", "Neue Playlist", "Nuova playlist", "Nova lista", "新しいリスト"}},
 	    {"Playlist created: ", {"Liste créée : ", "Playlist erstellt: ", "Playlist creata: ", "Lista criada: ", "リストを作成: "}},
 	    {"Could not create the playlist", {"Impossible de créer la liste", "Playlist konnte nicht erstellt werden", "Impossibile creare la playlist", "Não foi possível criar a lista", "リストを作成できません"}},
+	    {"Pinned", {"Épinglé", "Angeheftet", "Fissato", "Fixado", "固定"}},
+	    {"Play all", {"Tout lire", "Alle abspielen", "Riproduci tutto", "Reproduzir tudo", "すべて再生"}},
 	};
 	return table;
 }
