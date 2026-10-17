@@ -634,6 +634,21 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Grid of thumbnails
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_grid_view)
+						->set_title([](const SelectorView &) { return tr("Grid of thumbnails", "Cuadrícula de miniaturas"); })
+						->set_info([](const SelectorView &) { return tr("Search results as a grid with two columns. Applies to new searches.", "Resultados de búsqueda en cuadrícula de dos columnas. Se aplica a las búsquedas nuevas."); })
+						->set_popup_height(60)
+						->set_on_change([](const SelectorView &view) {
+							if (var_grid_view != view.selected_button) {
+								var_grid_view = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Large thumbnails
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

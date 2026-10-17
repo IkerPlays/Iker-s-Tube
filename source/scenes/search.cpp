@@ -113,6 +113,7 @@ ScrollView *result_view;
 VerticalListView *result_list_view =
     (new VerticalListView(0, 0, 320))
         ->set_margin(SMALL_MARGIN)
+        ->set_flow(true)
         ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::SEARCH);
 View *result_bottom_view = new EmptyView(0, 0, 320, 0);
 }; // namespace Search
@@ -388,8 +389,13 @@ static View *result_item_to_view(const YouTubeSuccinctItem &item) {
 		cur_view->set_thumbnail_url(item.channel.icon_url);
 		res_view = cur_view;
 	} else {
-		SuccinctVideoView *cur_view = new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT);
-		cur_view->set_title_lines(truncate_str(item.get_name(), 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
+		const bool grid = var_grid_view;
+		const int cell_w = 158;
+		SuccinctVideoView *cur_view = grid ? new SuccinctVideoView(0, 0, cell_w, cell_w * 9 / 16 + (DEFAULT_FONT_INTERVAL - 1) * 2 + 3)
+		                                   : new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT);
+		cur_view->set_grid(grid);
+		cur_view->set_title_lines(grid ? truncate_str(item.get_name(), cell_w - 4, 2, 0.45, 0.45)
+		                               : truncate_str(item.get_name(), 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
 		if (item.type == YouTubeSuccinctItem::VIDEO) {
 			cur_view->set_auxiliary_lines({item.video.views_str, item.video.publish_date});
 			cur_view->set_bottom_right_overlay(item.video.duration_text);

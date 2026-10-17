@@ -89,6 +89,16 @@ void VerticalListView::swap_views(const std::vector<View *> &new_views) {
 	}
 }
 void VerticalListView::draw_() const {
+	if (flow) {
+		auto pos = flow_layout();
+		for (size_t i = 0; i < views.size(); i++) {
+			float top = y0 + pos[i].second;
+			if (top + views[i]->get_height() >= 0 && top < 240) {
+				views[i]->draw(x0 + pos[i].first, top);
+			}
+		}
+		return;
+	}
 	if (!draw_order.size()) {
 		double y_offset = y0;
 		for (auto view : views) {
@@ -111,13 +121,24 @@ void VerticalListView::draw_() const {
 	}
 }
 void VerticalListView::update_(Hid_info key) {
-	double y_offset = y0;
-	for (auto view : views) {
-		double y_bottom = y_offset + view->get_height();
-		if (y_bottom >= 0 && y_offset < 240) {
-			view->update(key, x0, y_offset);
+	std::vector<std::pair<float, float>> flow_pos;
+	if (flow) {
+		flow_pos = flow_layout();
+		for (size_t i = 0; i < views.size(); i++) {
+			float top = y0 + flow_pos[i].second;
+			if (top + views[i]->get_height() >= 0 && top < 240) {
+				views[i]->update(key, x0 + flow_pos[i].first, top);
+			}
 		}
-		y_offset = y_bottom + margin;
+	} else {
+		double y_offset = y0;
+		for (auto view : views) {
+			double y_bottom = y_offset + view->get_height();
+			if (y_bottom >= 0 && y_offset < 240) {
+				view->update(key, x0, y_offset);
+			}
+			y_offset = y_bottom + margin;
+		}
 	}
 	if (do_thumbnail_update) {
 		int video_num = views.size();
@@ -126,14 +147,15 @@ void VerticalListView::update_(Hid_info key) {
 		{
 			int cur_y = y0;
 			for (int i = 0; i < (int)views.size(); i++) {
+				if (flow) cur_y = y0 + flow_pos[i].second; // views of the same row share the same top
 				if (cur_y < 240) {
 					displayed_r = i;
 				}
-				cur_y += views[i]->get_height();
-				if (cur_y >= 0) {
+				int bottom = cur_y + views[i]->get_height();
+				if (bottom >= 0) {
 					displayed_l = std::min(displayed_l, i);
 				}
-				cur_y += margin;
+				if (!flow) cur_y = bottom + margin;
 			}
 			if (displayed_l > displayed_r) {
 				displayed_l = displayed_r = 0;

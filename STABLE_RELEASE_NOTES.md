@@ -13,6 +13,12 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **More reliable.** Wi-Fi reconnect during playback, automatic restart after installing an update, update screen with a short summary of the notes.
 - **Settings.** Grouped into sections, with data usage, Wi-Fi status and the latest warnings and errors.
 - **Languages.** The new texts are available in English, Spanish, French, German, Italian, Portuguese and Japanese.
+- **Watch later.** A Later tab in the Library and a Later button on the video page, mirrored to your YouTube Watch later playlist when you are signed in with OAuth.
+- **Mini player.** Big controls on the bottom screen (previous, play/pause, next, volume) with swipe gestures, to listen with the console in your pocket.
+- **More player tools.** Quick speed button (50% to 200%), named bookmarks, next chapter button and a logo screensaver when a video stays paused.
+- **Grid of thumbnails.** Optional two-column grid for search results.
+- **Start screen and automatic theme.** Choose the screen the app opens on and let the theme follow the time of day.
+- **Log files.** Warnings and errors are saved to the SD card, plus a button to save the full log.
 - **Logo.** New static logo on the idle screen and boot screen.
 
 ## Installing

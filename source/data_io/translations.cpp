@@ -118,6 +118,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Update failed", {"Échec de la mise à jour", "Update fehlgeschlagen", "Aggiornamento non riuscito", "Falha na atualização", "更新に失敗しました"}},
 	    {"http 404 : private repository or no releases", {"http 404 : dépôt privé ou sans versions", "http 404: privates Repository oder keine Releases", "http 404: repository privato o senza release", "http 404: repositório privado ou sem releases", "http 404：非公開リポジトリまたはリリースなし"}},
 	    {"Audio/video sync: ", {"Synchro audio/vidéo : ", "Audio/Video-Sync: ", "Sincronia audio/video: ", "Sincronia áudio/vídeo: ", "音声/映像の同期："}},
+	    {"Grid of thumbnails", {"Grille de miniatures", "Raster der Vorschaubilder", "Griglia di miniature", "Grade de miniaturas", "サムネイルをグリッド表示"}},
+	    {"Search results as a grid with two columns. Applies to new searches.", {"Résultats de recherche en grille de deux colonnes. S'applique aux nouvelles recherches.", "Suchergebnisse als Raster mit zwei Spalten. Gilt für neue Suchen.", "Risultati di ricerca in una griglia a due colonne. Si applica alle nuove ricerche.", "Resultados da pesquisa em grade de duas colunas. Aplica-se às novas pesquisas.", "検索結果を2列のグリッドで表示。新しい検索から適用されます。"}},
 	};
 	return table;
 }

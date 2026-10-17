@@ -17,9 +17,10 @@ struct SuccinctVideoView : public FixedSizeView {
 	std::vector<std::string> title_lines;
 	std::vector<std::string> auxiliary_lines;
 	std::string bottom_right_overlay;
-	float get_thumbnail_height() const { return y1 - y0; }
+	bool grid = false; // grid cell : the thumbnail fills the width and the title goes below it
+	float get_thumbnail_height() const { return grid ? (x1 - x0) * 9 / 16 : y1 - y0; }
 	float get_thumbnail_width() const {
-		return get_thumbnail_height() * VIDEO_LIST_THUMBNAIL_WIDTH / VIDEO_LIST_THUMBNAIL_HEIGHT;
+		return grid ? x1 - x0 : get_thumbnail_height() * VIDEO_LIST_THUMBNAIL_WIDTH / VIDEO_LIST_THUMBNAIL_HEIGHT;
 	}
 
   public:
@@ -58,6 +59,10 @@ struct SuccinctVideoView : public FixedSizeView {
 			view.reset_holding_status(); // the release must not open the video
 			var_need_refresh = true;
 		});
+		return this;
+	}
+	SuccinctVideoView *set_grid(bool grid) {
+		this->grid = grid;
 		return this;
 	}
 	SuccinctVideoView *set_is_playlist(bool is_playlist) {
@@ -100,6 +105,14 @@ struct SuccinctVideoView : public FixedSizeView {
 			             get_thumbnail_width() * overlay_proportion, get_thumbnail_height());
 			Draw_x_centered(LOCALIZED(PLAYLIST_SHORT), x0 + get_thumbnail_width() * (1 - overlay_proportion),
 			                x0 + get_thumbnail_width(), (y1 + y0) / 2 - 8, 0.5, 0.5, (u32)-1);
+		}
+		if (grid) {
+			float gy = y0 + get_thumbnail_height() + 1;
+			for (auto line : title_lines) {
+				Draw(line, x0 + 2, gy, 0.45, 0.45, DEFAULT_TEXT_COLOR);
+				gy += DEFAULT_FONT_INTERVAL - 1;
+			}
+			return;
 		}
 		float y = y0;
 		for (auto line : title_lines) {

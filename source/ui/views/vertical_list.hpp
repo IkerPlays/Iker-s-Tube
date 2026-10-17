@@ -12,6 +12,28 @@ struct VerticalListView : public FixedWidthView {
 	std::vector<int> draw_order;
 	double margin = 0.0;
 	bool do_thumbnail_update = false;
+	bool flow = false; // opt-in : views narrower than the list are placed side by side (grid of thumbnails)
+	// positions of the views relative to (x0, y0) : {x, y}; the bottom of the last row is returned in `total_height`
+	std::vector<std::pair<float, float>> flow_layout(float *total_height = NULL) const {
+		std::vector<std::pair<float, float>> pos(views.size());
+		float x = 0, y = 0, row_h = 0;
+		for (size_t i = 0; i < views.size(); i++) {
+			float w = views[i]->get_width(), hh = views[i]->get_height();
+			if (x > 0 && x + w > width + 0.5f) {
+				y += row_h + margin;
+				x = 0, row_h = 0;
+			}
+			pos[i] = {x, y};
+			x += w;
+			row_h = std::max(row_h, hh);
+		}
+		if (total_height) *total_height = views.size() ? y + row_h : 0;
+		return pos;
+	}
+	VerticalListView *set_flow(bool flow) {
+		this->flow = flow;
+		return this;
+	}
 	// these are thumbnail-related variables, not used if do_thumbnail_update == false
 	int thumbnail_loaded_l = 0;
 	int thumbnail_loaded_r = 0;
@@ -49,6 +71,11 @@ struct VerticalListView : public FixedWidthView {
 	}
 
 	float get_height() const override {
+		if (flow) {
+			float total;
+			flow_layout(&total);
+			return total;
+		}
 		float res = 0;
 		for (auto view : views) {
 			res += view->get_height();

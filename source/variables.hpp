@@ -21,6 +21,7 @@ extern bool var_auto_dim; // dim the bottom screen while a video plays and the c
 extern int var_text_scale; // 0 small, 1 normal, 2 large (global text size)
 extern int var_start_scene; // 0 home, 1 library, 2 search : screen opened at start
 extern bool var_auto_theme; // dark theme at night, light during the day
+extern bool var_grid_view; // video lists as a grid of thumbnails (search results)
 extern int var_theme;             // color theme index (see colors.hpp)
 extern bool var_large_thumbnails; // bigger thumbnails in video lists
 extern bool var_disable_pull_to_refresh;
