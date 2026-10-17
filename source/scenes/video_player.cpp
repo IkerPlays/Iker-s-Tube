@@ -2115,6 +2115,21 @@ debug_info_view =
 		                 vid_tex_height[texture_index] * vid_zoom);
 		    caption_overlay_view->cur_timestamp = vid_current_pos;
 		    caption_overlay_view->draw();
+	    } else if (vid_play_request && network_decoder.ready && audio_only_mode) {
+		    // minimalist audio-only screen : title, author, time and a progress bar
+		    auto title_lines = truncate_str(playing_video_info.title, 360, 3, 0.65, 0.65);
+		    float y = 60;
+		    for (auto &line : title_lines) {
+			    Draw_xy_centered(line, 0, 400, y, y + 22, 0.65, 0.65, DEFAULT_TEXT_COLOR);
+			    y += 22;
+		    }
+		    Draw_xy_centered(playing_video_info.author.name, 0, 400, y + 2, y + 20, 0.5, 0.5, LIGHT1_TEXT_COLOR);
+		    double dur = vid_duration > 0 ? vid_duration : 1;
+		    double pos = std::min(dur, std::max(0.0, vid_current_pos));
+		    Draw_xy_centered(Util_convert_seconds_to_time(pos) + " / " + Util_convert_seconds_to_time(vid_duration), 0,
+		                     400, 160, 180, 0.55, 0.55, DEFAULT_TEXT_COLOR);
+		    Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, 40, 188, 320, 6);
+		    Draw_texture(var_square_image[0], COLOR_ACCENT, 40, 188, 320 * pos / dur, 6);
 	    } else {
 		    Draw_texture(vid_banner[var_night_mode], 0, 15, 400, 225);
 	    }

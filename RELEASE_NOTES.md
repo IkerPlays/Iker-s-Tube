@@ -1,8 +1,17 @@
 ## What's new
 
-- **Named playlists.** The Library now has a third tab, Playlists: create your own lists, add videos from Favorites or from the queue (long press, "Add to a list..."), then play them in order or shuffled, with an optional repeat mode. Long press a playlist for quick actions, or open it to manage its videos.
-- **Search history.** The empty search screen lists your recent searches; tap one to search it again, or clear the list.
-- **Search filters.** A button under the search box cycles through filters: all, videos only, today, this week, this month, short (under 4 min) and long (over 20 min).
+- **Listen with the console closed.** Audio-only playback now turns the screens off after a few seconds so the battery lasts much longer. A setting controls how fast the screens switch off.
+- **Color themes.** Pick Ruby, Ocean, Forest, Violet, Amber or AMOLED black in Settings.
+- **Subtitle settings.** Choose the subtitle size (small, normal, large) and color (white, yellow, cyan, green).
+- **Automatic quality.** If playback keeps stalling, the next videos start at a lower quality; after a few minutes of smooth playback the quality goes back up.
+- **Search suggestions.** The search keyboard now suggests words from your search history and some common terms while you type.
+- **Explore shortcuts.** The search screen has ready-made searches: Music, Trending, Gaming, Live, Movie trailers and News.
+- **QR code of the video.** Press the QR button on a video page to show a code on the bottom screen and open the video on your phone.
+- **Scan a QR code.** From the search screen, scan a QR code with the camera to open a YouTube link.
+- **Boot screen.** The app now starts with its logo, and loading texts use an animated ellipsis.
+- **Large thumbnails.** Optional bigger thumbnails in video lists.
+- **Audio-only screen.** A clean top screen with the title, author, time and a progress bar.
+- **Data usage counter.** Settings show how much data this session and the whole install have used.
 
 ## Improvements
 
