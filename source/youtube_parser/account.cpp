@@ -25,11 +25,15 @@ static std::string json_escape(const std::string &s) {
 
 // POST to /youtubei/v1/<endpoint> as the signed-in user. `fields` is the part of the JSON body after the context
 // (for example `"videoId":"abc"`). Returns {ok, body}.
-static std::pair<bool, std::string> account_post(const std::string &endpoint, const std::string &fields) {
+static std::pair<bool, std::string> account_post(const std::string &endpoint, const std::string &fields, int client = 0) {
 	if (!OAuth::is_authenticated()) {
 		return {false, ""};
 	}
-	std::string body = R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID_VR","clientVersion": "1.62.27"}}, %2})";
+	// 0 : ANDROID_VR, 1 : MWEB (the comments tokens of the app come from MWEB)
+	const char *client_json = client == 1
+	                              ? R"("clientName": "MWEB","clientVersion": "2.20241202.07.00","utcOffsetMinutes": 0)"
+	                              : R"("clientName": "ANDROID_VR","clientVersion": "1.62.27")";
+	std::string body = std::string(R"({"context": {"client": {"hl": "%0","gl": "%1",)") + client_json + R"(}}, %2})";
 	body = std::regex_replace(body, std::regex("%0"), language_code);
 	body = std::regex_replace(body, std::regex("%1"), country_code);
 	size_t pos = body.find("%2");
@@ -38,8 +42,8 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
 	auto response = http_post_json(get_innertube_api_url(endpoint), body, headers);
 	bool ok = response.first && response.second.find("\"error\":{") == std::string::npos;
-	logger.info("account", endpoint + " -> " + (ok ? "ok" : "failed : " + response.second.substr(0, 100)));
-	if (!ok) logger.warning("account", endpoint + " failed");
+	logger.info("account", endpoint + " -> " + (ok ? "ok" : "failed : " + response.second.substr(0, 300)));
+	if (!ok) logger.warning("account", endpoint + " failed (client " + std::to_string(client) + ")");
 	return {ok, response.second};
 }
 
@@ -120,10 +124,19 @@ bool youtube_account_playlist_edit(const std::string &playlist_id, const std::st
 }
 
 // The comment section as the signed-in user sees it : it contains the tokens that allow writing, replying and liking.
+static int comment_client = 1; // the client that last returned a usable comment section
 static bool fetch_comment_section(const std::string &token, std::string &json) {
-	auto r = account_post("next", "\"continuation\": \"" + json_escape(token) + "\"");
-	json = r.second;
-	return r.first;
+	for (int attempt = 0; attempt < 2; attempt++) {
+		int client = attempt == 0 ? comment_client : 1 - comment_client;
+		auto r = account_post("next", "\"continuation\": \"" + json_escape(token) + "\"", client);
+		json = r.second;
+		if (r.first && json.find("createCommentParams") != std::string::npos) {
+			comment_client = client;
+			return true;
+		}
+		if (r.first && attempt == 1) return true; // other actions (like, reply) do not need createCommentParams
+	}
+	return false;
 }
 
 bool youtube_account_comment_create(const std::string &comments_token, const std::string &text) {
@@ -136,7 +149,8 @@ bool youtube_account_comment_create(const std::string &comments_token, const std
 		return false;
 	}
 	return account_post("comment/create_comment",
-	                    "\"commentText\": \"" + json_escape(text) + "\", \"createCommentParams\": \"" + json_escape(params) + "\"")
+	                    "\"commentText\": \"" + json_escape(text) + "\", \"createCommentParams\": \"" + json_escape(params) + "\"",
+	                    comment_client)
 	    .first;
 }
 
@@ -206,7 +220,7 @@ bool youtube_account_comment_like(const std::string &comments_token, const std::
 		logger.warning("account", "no like action found for the comment (not in this page, or the account layout differs)");
 		return false;
 	}
-	return account_post("comment/perform_comment_action", "\"actions\": [\"" + json_escape(action) + "\"]").first;
+	return account_post("comment/perform_comment_action", "\"actions\": [\"" + json_escape(action) + "\"]", comment_client).first;
 }
 
 bool youtube_account_comment_reply(const std::string &comments_token, const std::string &comment_id,
@@ -228,7 +242,8 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
 		return false;
 	}
 	return account_post("comment/create_comment_reply",
-	                    "\"commentText\": \"" + json_escape(text) + "\", \"createReplyParams\": \"" + json_escape(params) + "\"")
+	                    "\"commentText\": \"" + json_escape(text) + "\", \"createReplyParams\": \"" + json_escape(params) + "\"",
+	                    comment_client)
 	    .first;
 }
 
