@@ -1,4 +1,5 @@
 ﻿#include "headers.hpp"
+#include "ui/logo_draw.hpp"
 
 #include "scenes/video_player.hpp"
 #include "scenes/search.hpp"
@@ -40,21 +41,13 @@ void Menu_worker_thread(void *arg);
 	} while (0)
 
 
-// Boot splash : the app logo (a play button) and the name, drawn procedurally.
+// Boot splash : the app logo and name.
 static void Menu_draw_splash() {
 	Draw_frame_ready();
 	Draw_screen_ready(1, 0xFF181212);
 	Draw_screen_ready(2, 0xFF181212);
 	Draw_screen_ready(0, 0xFF181212);
-	// Rounded-ish red badge with a white play triangle built from stripes
-	const float cx = 200, cy = 100;
-	Draw_texture(var_square_image[0], 0xFF4B4BFF, cx - 40, cy - 28, 80, 56);
-	Draw_texture(var_square_image[0], 0xFF4B4BFF, cx - 36, cy - 32, 72, 64);
-	for (int i = 0; i < 24; i++) {
-		float h = 2.0f * (24 - i);
-		Draw_texture(var_square_image[0], DEF_DRAW_WHITE, cx - 10 + i, cy - h / 2, 1, h);
-	}
-	Draw_xy_centered("Iker's Tube", 0, 400, 140, 175, 0.9, 0.9, DEF_DRAW_WHITE);
+	logo_draw(200, 120);
 	Draw_apply_draw();
 }
 

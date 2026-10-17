@@ -389,6 +389,19 @@ static void update_worker_thread_func(void *) {
 				update_state = UpdateState::SUCCEEDED_INSTALLING, var_update_available = false, var_need_refresh = true;
 				var_update_banner = "Actualizado: reinicia la app";
 				installed_version_str = next_version_str; // not offered again before the restart
+				if (!is_3dsx) { // installed as a CIA : relaunch the app by itself to finish the update
+					var_update_banner = "Reiniciando...";
+					misc_tasks_request(TASK_SAVE_SETTINGS);
+					usleep(1500000); // let the settings be written
+					u64 program_id = 0x000400000F1A0200ULL; // 00040000 + (unique id 0xF1A02 << 8)
+					APT_GetProgramID(&program_id);
+					static u8 jump_param[0x300], jump_hmac[0x20];
+					if (R_SUCCEEDED(APT_PrepareToDoApplicationJump(0, program_id, MEDIATYPE_SD))) {
+						APT_DoApplicationJump(jump_param, sizeof(jump_param), jump_hmac);
+						usleep(5000000);
+					}
+					var_update_banner = "Actualizado: reinicia la app"; // the jump didn't happen
+				}
 			} else {
 				var_update_banner = "Error al actualizar";
 				resource_lock.lock();
