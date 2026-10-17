@@ -1,6 +1,7 @@
 #include "headers.hpp"
 #include "ui/qr_popup.hpp"
 #include "data_io/watch_later.hpp"
+#include "data_io/offline.hpp"
 #include "oauth/oauth.hpp"
 #include "util/async_task.hpp"
 #include <vector>
@@ -25,7 +26,7 @@ bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
 
-int mode = 0;           // 0 : queue, 1 : favorites, 2 : playlists, 3 : watch later
+int mode = 0;           // 0 : queue, 1 : favorites, 2 : playlists, 3 : watch later, 4 : offline audio
 int open_playlist = -1; // playlists mode : index of the opened playlist (-1 : list of playlists)
 bool playlist_repeat = false;
 bool rebuild_request = false;
@@ -253,6 +254,8 @@ void Library_resume(std::string arg) {
 		mode = 0;
 	} else if (arg == "playlists") {
 		mode = 2, open_playlist = -1;
+	} else if (arg == "offline") {
+		mode = 4, open_playlist = -1;
 	} else if (arg == "later") {
 		mode = 3, open_playlist = -1;
 	}
@@ -367,6 +370,27 @@ static void build_watch_later(VerticalListView *list) {
 	}
 }
 
+static void build_offline(VerticalListView *list) {
+	auto items = offline_list();
+	for (auto &item : items) {
+		SuccinctVideoView *view = make_item(item.id, item.title, item.author, "");
+		std::string id = item.id, url = "offline:" + item.id, title = item.title;
+		view->set_get_background_color(button_background)
+		    ->set_on_view_released([url](View &) { clicked_url = url; })
+		    ->add_on_long_hold(35, [id, url, title](View &) {
+			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
+			                 make_option(tr("Delete from the SD card", "Borrar de la SD"), [id]() { offline_remove(id); rebuild_request = true; })});
+		    });
+		list->views.push_back(view);
+	}
+	if (!items.size()) {
+		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
+		                          ->set_text_lines(std::vector<std::string>{tr("No saved audio yet.", "Aún no hay audio guardado."), tr("Use Save audio inside a video.", "Usa Guardar audio dentro de un vídeo."), ""})
+		                          ->set_x_alignment(TextView::XAlign::CENTER)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
+}
+
 static void build_playlists(VerticalListView *list) {
 	auto lists = playlists_get();
 	if (open_playlist >= (int)lists.size()) {
@@ -450,6 +474,8 @@ static void rebuild_views() {
 		build_queue(list);
 	} else if (mode == 3) {
 		build_watch_later(list);
+	} else if (mode == 4) {
+		build_offline(list);
 	} else if (mode == 1) {
 		build_favorites(list);
 	} else {
@@ -466,7 +492,8 @@ static void rebuild_views() {
 	                                                  ->set_texts({(std::function<std::string()>)[]() { return std::string(tr("Queue", "Cola")); },
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Favorites", "Favoritos")); },
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Playlists", "Listas")); },
-	                                                               (std::function<std::string()>)[]() { return std::string(tr("Later", "Luego")); }},
+	                                                               (std::function<std::string()>)[]() { return std::string(tr("Later", "Luego")); },
+	                                                               (std::function<std::string()>)[]() { return std::string("Offline"); }},
 	                                                              mode)
 	                                                  ->set_on_change([](const SelectorView &view) {
 		                                                  mode = view.selected_button;

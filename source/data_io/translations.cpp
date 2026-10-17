@@ -165,6 +165,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Continue where I left off", {"Reprendre où je me suis arrêté", "Dort weitermachen, wo ich aufgehört habe", "Riprendi da dove ho lasciato", "Continuar de onde parei", "続きから再生"}},
 	    {"A video you watched before starts from the minute you stopped. Off : always from the beginning.", {"Une vidéo déjà vue reprend à la minute où vous vous êtes arrêté. Désactivé : toujours depuis le début.", "Ein bereits gesehenes Video startet an der Stelle, wo du aufgehört hast. Aus: immer von vorn.", "Un video già visto riparte dal minuto in cui ti sei fermato. Disattivato: sempre dall'inizio.", "Um vídeo já assistido começa no minuto em que você parou. Desativado: sempre do início.", "視聴済みの動画は止めた所から再生します。オフ：常に最初から。"}},
 	    {"Play next", {"Lire ensuite", "Als Nächstes abspielen", "Riproduci dopo", "Reproduzir a seguir", "次に再生"}},
+	    {"Delete from the SD card", {"Supprimer de la SD", "Von der SD löschen", "Elimina dalla SD", "Apagar do SD", "SDから削除"}},
+	    {"No saved audio yet.", {"Aucun audio enregistré.", "Noch kein Audio gespeichert.", "Nessun audio salvato.", "Nenhum áudio salvo ainda.", "保存した音声はありません。"}},
+	    {"Use Save audio inside a video.", {"Utilisez Enregistrer l'audio dans une vidéo.", "Nutze „Audio speichern“ in einem Video.", "Usa Salva audio dentro un video.", "Use Salvar áudio dentro de um vídeo.", "動画内の「音声を保存」を使ってください。"}},
 	};
 	return table;
 }
