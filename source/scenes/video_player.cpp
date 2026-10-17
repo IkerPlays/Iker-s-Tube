@@ -1834,8 +1834,8 @@ debug_info_view =
 	    }
 	    playing_video_info = tmp_video_info;
 	    video_info_cache[url] = tmp_video_info;
-	    strncpy(vid_resume_id, tmp_video_info.id.c_str(), sizeof(vid_resume_id) - 1);
-	    vid_resume_id[sizeof(vid_resume_id) - 1] = 0;
+	    vid_resume_id[0] = 0; // the old video may still be decoding : its position must not be saved for the new id.
+	                          // The decode thread sets the id when the new video really starts.
 
 	    vid_change_video_request = true;
 	    if (network_decoder.ready) {
@@ -2870,7 +2870,7 @@ debug_info_view =
 			    // video page parsing sometimes randomly fails, so try several times
 			    network_waiting_status = "Reading Stream";
 			    // snapshot of the urls : the async thread may replace playing_video_info while the decoder starts
-			    std::string snap_video_url, snap_audio_url, snap_both_url;
+			    std::string snap_video_url, snap_audio_url, snap_both_url, snap_id;
 			    int snap_fragment_len = -1;
 			    bool snap_ts_adjust = false;
 			    {
@@ -2879,6 +2879,7 @@ debug_info_view =
 				    if (url_it != playing_video_info.video_stream_urls.end()) snap_video_url = url_it->second;
 				    snap_audio_url = playing_video_info.audio_stream_url;
 				    snap_both_url = playing_video_info.both_stream_url;
+				    snap_id = playing_video_info.id;
 				    snap_fragment_len = playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1;
 				    snap_ts_adjust = playing_video_info.needs_timestamp_adjusting();
 				    small_resource_lock.unlock();
@@ -2963,9 +2964,13 @@ debug_info_view =
 				    }
 			    }
 
-			    if (vid_play_request && seek_at_init_request < 0 && !playing_video_info.is_livestream) {
+			    if (vid_play_request) { // from now on the position is remembered for this video
+				    strncpy(vid_resume_id, snap_id.c_str(), sizeof(vid_resume_id) - 1);
+				    vid_resume_id[sizeof(vid_resume_id) - 1] = 0;
+			    }
+			    if (vid_play_request && seek_at_init_request < 0 && !playing_video_info.is_livestream && var_resume_videos) {
 				    // continue where the video was left
-				    double resume_pos = resume_get(playing_video_info.id);
+				    double resume_pos = resume_get(snap_id);
 				    if (resume_pos > 0 && vid_duration - resume_pos > 15) {
 					    seek_at_init_request = resume_pos;
 				    }
@@ -3267,7 +3272,7 @@ debug_info_view =
 					    {   // remember the position every 10 s so the video can be continued later
 						    static u64 last_resume_save = 0;
 						    u64 now = osGetTime();
-						    if (now - last_resume_save > 10000 && vid_duration > 60 && vid_resume_id[0]) {
+						    if (now - last_resume_save > 10000 && vid_duration > 60 && vid_resume_id[0] && !vid_change_video_request) {
 							    last_resume_save = now;
 							    resume_set(std::string(vid_resume_id), pts, vid_duration);
 							    resume_save();

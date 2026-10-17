@@ -14,6 +14,7 @@ bool var_allow_send_app_info = false;
 bool var_hide_pointer = false;
 bool var_night_mode = true;
 int var_theme = 0;
+bool var_resume_videos = true;
 int var_new_feed_videos = 0;
 bool var_mark_watched = true;
 bool var_welcome_done = false;

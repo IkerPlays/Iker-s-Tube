@@ -992,6 +992,21 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Resume videos
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_resume_videos)
+						->set_title([](const SelectorView &) { return tr("Continue where I left off", "Continuar donde lo dejé"); })
+						->set_info([](const SelectorView &) { return tr("A video you watched before starts from the minute you stopped. Off : always from the beginning.", "Un vídeo que ya viste empieza desde el minuto donde lo dejaste. Desactivado: siempre desde el principio."); })
+						->set_popup_height(60)
+						->set_on_change([](const SelectorView &view) {
+							if (var_resume_videos != view.selected_button) {
+								var_resume_videos = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Automatic quality
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
