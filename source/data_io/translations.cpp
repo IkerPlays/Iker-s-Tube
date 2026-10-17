@@ -363,6 +363,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Brightness ", {"Luminosité ", "Helligkeit ", "Luminosità ", "Brilho ", "明るさ "}},
 	    {"Comment deleted", {"Commentaire supprimé", "Kommentar gelöscht", "Commento eliminato", "Comentário apagado", "コメントを削除しました"}},
 	    {"Could not delete the comment", {"Impossible de supprimer le commentaire", "Kommentar konnte nicht gelöscht werden", "Impossibile eliminare il commento", "Não foi possível apagar o comentário", "コメントを削除できません"}},
+	    {"Tags: ", {"Tags : ", "Tags: ", "Tag: ", "Tags: ", "タグ："}},
+	    {"Tags (separated by commas)", {"Tags (séparés par des virgules)", "Tags (durch Kommas getrennt)", "Tag (separati da virgole)", "Tags (separadas por vírgulas)", "タグ（カンマ区切り）"}},
+	    {"Continue the unfinished upload: ", {"Reprendre l'envoi inachevé : ", "Unterbrochenen Upload fortsetzen: ", "Riprendi il caricamento interrotto: ", "Continuar o envio inacabado: ", "中断したアップロードを再開: "}},
+	    {"Forget the unfinished upload", {"Oublier l'envoi inachevé", "Unterbrochenen Upload vergessen", "Dimentica il caricamento interrotto", "Esquecer o envio inacabado", "中断したアップロードを破棄"}},
 	};
 	return table;
 }

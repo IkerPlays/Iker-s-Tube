@@ -47,6 +47,7 @@ static std::string pick_dir = "sdmc:/";
 static std::string form_path, form_title, form_desc;
 static int form_privacy = 0; // 0 private, 1 unlisted, 2 public
 static int form_category = 0; // index in categories[]
+static std::string form_tags;  // "a, b, c"
 static bool form_short = false;
 
 static const double WIDTH = 300;
@@ -162,7 +163,7 @@ static std::string parent_dir(const std::string &dir) {
 }
 
 struct UploadJob {
-	std::string path, title, description, privacy, category_id, thumb_path;
+	std::string path, title, description, privacy, category_id, thumb_path, tags, resume_url;
 	bool is_short;
 };
 
@@ -170,7 +171,7 @@ static void upload_thread(void *arg) {
 	UploadJob *job = (UploadJob *)arg;
 	std::string video_id, error;
 	int last_notice = -1;
-	bool ok = youtube_studio_upload(job->path, job->title, job->description, job->privacy, job->is_short, job->category_id,
+	bool ok = youtube_studio_upload(job->path, job->title, job->description, job->privacy, job->is_short, job->category_id, job->tags, job->resume_url,
 	                                [&](u64 done, u64 total) {
 		                                int percent = total ? (int)(done * 100 / total) : 0;
 		                                upload_percent = percent;
@@ -205,12 +206,15 @@ static void upload_thread(void *arg) {
 	notice_show(ok ? tr("Upload finished", "Subida terminada") : tr("Could not upload the video", "No se pudo subir el vídeo"));
 	delete job;
 	upload_running = false;
+	mode_dirty = true; // the dashboard shows the unfinished upload (if it failed) or not
 	var_need_refresh = true;
 }
 
-static void start_upload() {
+static void start_upload(const std::string &resume_path = "", const std::string &resume_title = "", const std::string &resume_url = "") {
 	if (upload_running) return;
-	UploadJob *job = new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_short};
+	UploadJob *job = resume_url != ""
+	                     ? new UploadJob{resume_path, resume_title, "", "private", "22", "", "", resume_url, false} // (the rest was sent when it started)
+	                     : new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_tags, "", form_short};
 	for (auto &c : job->privacy) c = tolower(c);
 	upload_running = true;
 	upload_percent = 0;
@@ -370,6 +374,20 @@ static std::vector<View *> build_dash() {
 			var_need_refresh = true;
 		}));
 	}
+	{ // an upload that did not finish can be continued
+		std::string pending_path, pending_title, pending_url;
+		if (!upload_running && youtube_studio_pending_upload(pending_path, pending_title, pending_url)) {
+			v.push_back(button([pending_title]() { return tr("Continue the unfinished upload: ", "Seguir la subida sin terminar: ") + pending_title.substr(0, 20); },
+			                   [pending_path, pending_title, pending_url]() {
+				                   if (studio_ready_or_notice()) start_upload(pending_path, pending_title, pending_url);
+			                   }));
+			v.push_back(button([]() { return tr("Forget the unfinished upload", "Olvidar la subida sin terminar"); }, []() {
+				youtube_studio_clear_pending_upload();
+				mode_dirty = true;
+				var_need_refresh = true;
+			}));
+		}
+	}
 	v.push_back(button([]() { return upload_running ? tr("Uploading: ", "Subiendo: ") + std::to_string(upload_percent) + "%"
 	                                                  : tr("Upload a video", "Subir un vídeo"); },
 	                   []() {
@@ -465,6 +483,7 @@ static std::vector<View *> build_pick() {
 			form_desc = "";
 			form_privacy = 0;
 			form_category = 0;
+			form_tags = "";
 			form_thumb = "";
 			form_short = pick_short;
 			go(MODE_FORM);
@@ -491,6 +510,11 @@ static std::vector<View *> build_form() {
 	}));
 	v.push_back(button([]() { return tr("Visibility: ", "Visibilidad: ") + privacy_text(form_privacy); }, []() {
 		form_privacy = (form_privacy + 1) % 3;
+		var_need_refresh = true;
+	}));
+	v.push_back(button([]() { return tr("Tags: ", "Etiquetas: ") + (form_tags == "" ? std::string("-") : form_tags.substr(0, 30)); }, []() {
+		std::string out;
+		if (ask_text(tr("Tags (separated by commas)", "Etiquetas (separadas por comas)"), form_tags, 200, true, out)) form_tags = out;
 		var_need_refresh = true;
 	}));
 	v.push_back(button([]() { return tr("Category: ", "Categoría: ") + tr(categories[form_category].en, categories[form_category].es); },

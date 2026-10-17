@@ -167,9 +167,42 @@ static std::string mime_of(const std::string &path) {
 	return "application/octet-stream";
 }
 
+#define PENDING_UPLOAD_PATH "sdmc:/3ds/IkersTube/studio_upload.txt"
+
+static void save_pending_upload(const std::string &path, const std::string &title, const std::string &url) {
+	mkdir("sdmc:/3ds", 0777);
+	mkdir("sdmc:/3ds/IkersTube", 0777);
+	FILE *f = fopen(PENDING_UPLOAD_PATH, "w");
+	if (!f) return;
+	std::string clean_title = title;
+	for (auto &c : clean_title) {
+		if (c == '\n' || c == '\r') c = ' ';
+	}
+	fprintf(f, "%s\n%s\n%s\n", url.c_str(), path.c_str(), clean_title.c_str());
+	fclose(f);
+}
+
+void youtube_studio_clear_pending_upload() { remove(PENDING_UPLOAD_PATH); }
+
+bool youtube_studio_pending_upload(std::string &path, std::string &title, std::string &upload_url) {
+	FILE *f = fopen(PENDING_UPLOAD_PATH, "r");
+	if (!f) return false;
+	char a[1024] = {0}, b[1024] = {0}, c[512] = {0};
+	bool ok = fgets(a, sizeof a, f) && fgets(b, sizeof b, f);
+	if (ok) fgets(c, sizeof c, f);
+	fclose(f);
+	auto trim = [](std::string s) { while (s.size() && (s.back() == '\n' || s.back() == '\r')) s.pop_back(); return s; };
+	upload_url = trim(a);
+	path = trim(b);
+	title = trim(c);
+	struct stat st;
+	return ok && upload_url != "" && stat(path.c_str(), &st) == 0; // the file must still be there
+}
+
 bool youtube_studio_upload(const std::string &path, const std::string &title, const std::string &description,
-                           const std::string &privacy, bool is_short, const std::string &category_id,
-                           const std::function<void(u64, u64)> &progress, std::string &video_id, std::string &error) {
+                           const std::string &privacy, bool is_short, const std::string &category_id, const std::string &tags,
+                           const std::string &resume_url, const std::function<void(u64, u64)> &progress, std::string &video_id,
+                           std::string &error) {
 	if (studio_bearer_token() == "") {
 		error = "not signed in";
 		return false;
@@ -197,29 +230,82 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 			full_title += " #Shorts";
 		if (full_description.find("#Shorts") == std::string::npos) full_description += (full_description == "" ? "" : "\n") + std::string("#Shorts");
 	}
+	std::string tags_json; // "a, b, c" -> ["a","b","c"]
+	{
+		std::string cur;
+		int count = 0;
+		for (char c : tags + ",") {
+			if (c == ',') {
+				while (cur.size() && isspace((unsigned char)cur.back())) cur.pop_back();
+				size_t first = 0;
+				while (first < cur.size() && isspace((unsigned char)cur[first])) first++;
+				cur = cur.substr(first);
+				if (cur != "" && count < 15) {
+					tags_json += (count ? ", " : "") + json_quote(cur);
+					count++;
+				}
+				cur = "";
+			} else {
+				cur += c;
+			}
+		}
+	}
 	std::string meta = "{\"snippet\": {\"title\": " + json_quote(full_title) + ", \"description\": " + json_quote(full_description) +
-	                   ", \"categoryId\": " + json_quote(category_id) + "}, \"status\": {\"privacyStatus\": " + json_quote(privacy) +
-	                   ", \"selfDeclaredMadeForKids\": false}}";
-	auto init = session.perform(HttpRequest::POST(
-	    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
-	    {{"Authorization", "Bearer " + studio_bearer_token()},
-	     {"Content-Type", "application/json; charset=UTF-8"},
-	     {"X-Upload-Content-Length", std::to_string(total)},
-	     {"X-Upload-Content-Type", mime_of(path)}},
-	    meta));
-	std::string upload_url = init.get_header("location");
-	if (init.fail || !init.status_code_is_success() || upload_url == "") {
-		error = init.fail ? init.error : "http " + std::to_string(init.status_code);
-		std::string body(init.data.begin(), init.data.end());
-		logger.warning("studio", "upload start failed : " + error + " " + body.substr(0, 400));
-		size_t m = body.find("\"message\"");
-		if (m != std::string::npos) error += " " + body.substr(m, 160);
-		fclose(file);
-		return false;
+	                   ", \"categoryId\": " + json_quote(category_id) + (tags_json != "" ? ", \"tags\": [" + tags_json + "]" : "") +
+	                   "}, \"status\": {\"privacyStatus\": " + json_quote(privacy) + ", \"selfDeclaredMadeForKids\": false}}";
+	std::string upload_url = resume_url;
+	u64 resume_offset = 0;
+	if (upload_url == "") {
+		auto init = session.perform(HttpRequest::POST(
+		    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+		    {{"Authorization", "Bearer " + studio_bearer_token()},
+		     {"Content-Type", "application/json; charset=UTF-8"},
+		     {"X-Upload-Content-Length", std::to_string(total)},
+		     {"X-Upload-Content-Type", mime_of(path)}},
+		    meta));
+		std::string upload_url = init.get_header("location");
+		if (init.fail || !init.status_code_is_success() || upload_url == "") {
+			error = init.fail ? init.error : "http " + std::to_string(init.status_code);
+			std::string body(init.data.begin(), init.data.end());
+			logger.warning("studio", "upload start failed : " + error + " " + body.substr(0, 400));
+			size_t m = body.find("\"message\"");
+			if (m != std::string::npos) error += " " + body.substr(m, 160);
+			fclose(file);
+			return false;
+		}
+		save_pending_upload(path, title, upload_url); // so it can be continued if it is interrupted
+	} else { // continuing : the server says how much it already has
+		auto q = session.perform(HttpRequest{"PUT", upload_url,
+		                                     HttpRequest::default_headers_added({{"Authorization", "Bearer " + studio_bearer_token()},
+		                                                                         {"Content-Range", "bytes */" + std::to_string(total)}}),
+		                                     "", false});
+		if (!q.fail && (q.status_code == 200 || q.status_code == 201)) { // it had finished
+			std::string resp(q.data.begin(), q.data.end());
+			size_t p = resp.find("\"id\"");
+			if (p != std::string::npos) {
+				p = resp.find('"', resp.find(':', p));
+				size_t e = resp.find('"', p + 1);
+				if (p != std::string::npos && e != std::string::npos) video_id = resp.substr(p + 1, e - p - 1);
+			}
+			youtube_studio_clear_pending_upload();
+			if (progress) progress(total, total);
+			fclose(file);
+			return true;
+		}
+		if (q.fail || q.status_code != 308) {
+			error = q.fail ? q.error : "http " + std::to_string(q.status_code);
+			if (q.status_code == 404 || q.status_code == 410) youtube_studio_clear_pending_upload(); // the session expired
+			fclose(file);
+			return false;
+		}
+		std::string range = q.get_header("range");
+		size_t dash = range.find('-');
+		resume_offset = dash != std::string::npos ? strtoull(range.c_str() + dash + 1, NULL, 10) + 1 : 0;
+		if (resume_offset > total) resume_offset = 0;
 	}
 
 	const u64 CHUNK = 512 * 1024; // a multiple of 256 KiB, as the upload protocol asks
-	u64 offset = 0;
+	u64 offset = resume_offset;
 	std::vector<char> buf(CHUNK);
 	int failures = 0;
 	while (offset < total) {
@@ -250,6 +336,7 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 				size_t e = resp.find('"', p + 1);
 				if (p != std::string::npos && e != std::string::npos) video_id = resp.substr(p + 1, e - p - 1);
 			}
+			youtube_studio_clear_pending_upload();
 			if (progress) progress(total, total);
 			fclose(file);
 			return true;
