@@ -419,6 +419,12 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"you liked on YouTube.", {"que vous avez aimées sur YouTube.", "die dir auf YouTube gefallen.", "che ti sono piaciuti su YouTube.", "que você curtiu no YouTube.", "YouTubeで高評価した動画。"}},
 	    {"Could not load your liked videos", {"Impossible de charger vos vidéos aimées", "Gefällt-mir-Videos konnten nicht geladen werden", "Impossibile caricare i video piaciuti", "Não foi possível carregar seus vídeos curtidos", "高評価の動画を読み込めませんでした"}},
 	    {"No liked videos.", {"Aucune vidéo aimée.", "Keine Videos mit Gefällt mir.", "Nessun video piaciuto.", "Nenhum vídeo curtido.", "高評価の動画はありません。"}},
+	    {"LIVE", {"EN DIRECT", "LIVE", "DIRETTA", "AO VIVO", "ライブ"}},
+	    {"SOON", {"BIENTÔT", "BALD", "PRESTO", "EM BREVE", "まもなく"}},
+	    {"starting", {"démarre", "startet", "in partenza", "começando", "開始"}},
+	    {"Upcoming: ", {"À venir : ", "Demnächst: ", "Prossimamente: ", "Em breve: ", "まもなく："}},
+	    {" d", {" j", " T", " g", " d", " 日"}},
+	    {"Starting soon: ", {"Bientôt : ", "Startet bald: ", "Inizia presto: ", "Começa em breve: ", "まもなく開始："}},
 	};
 	return table;
 }

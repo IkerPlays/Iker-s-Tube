@@ -1,4 +1,5 @@
 #include "data_io/feed_seen.hpp"
+#include "ui/notice.hpp"
 #include "headers.hpp"
 #include <vector>
 #include <string>
@@ -901,6 +902,10 @@ static void load_oauth_subscription_feed(void *) {
 
 	logger.info("home/oauth_feed", "truncate/view creation start");
 	std::vector<View *> new_oauth_feed_video_views;
+	std::vector<View *> live_views, upcoming_views; // shown first : what is on air now, then what starts soon
+	std::vector<long long> upcoming_times;
+	std::string soon_title; // an upcoming stream/premiere that starts within 15 minutes
+	long long now_unix = (long long)time(NULL);
 
 	if (data.is_valid()) {
 		auto contents = data["contents"]["singleColumnBrowseResultsRenderer"]["tabs"][(size_t)0]["tabRenderer"]
@@ -963,8 +968,28 @@ static void load_oauth_subscription_feed(void *) {
 					}
 				}
 
+				bool is_live = false;
+				long long start_time = 0;
+				if (renderer.has_key("badges")) {
+					for (auto badge : renderer["badges"].array_items()) {
+						if (badge.has_key("metadataBadgeRenderer") && badge["metadataBadgeRenderer"]["style"].string_value() == "BADGE_STYLE_TYPE_LIVE_NOW") is_live = true;
+					}
+				}
+				if (renderer.has_key("upcomingEventData")) {
+					start_time = atoll(renderer["upcomingEventData"]["startTime"].string_value().c_str());
+				}
+
 				if (!video_id.empty() && !title.empty() && !result_video_hidden("https://m.youtube.com/watch?v=" + video_id)) {
 					SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
+					if (is_live) {
+						duration_text = tr("LIVE", "DIRECTO");
+					} else if (start_time > 0) {
+						long long left = start_time - now_unix;
+						if (left > 0 && left < 900 && soon_title == "") soon_title = title;
+						std::string when = left <= 0 ? tr("starting", "empezando") : left < 3600 ? std::to_string(left / 60 + 1) + " min" : left < 86400 ? std::to_string(left / 3600) + " h" : std::to_string(left / 86400) + tr(" d", " d");
+						publish_date = tr("Upcoming: ", "Próximo: ") + when;
+						duration_text = tr("SOON", "PRONTO");
+					}
 
 					cur_view->set_title_lines(truncate_str(title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
 					cur_view->set_thumbnail_url(thumbnail_url);
@@ -976,10 +1001,19 @@ static void load_oauth_subscription_feed(void *) {
 						clicked_is_video = true;
 					});
 
-					new_oauth_feed_video_views.push_back(cur_view);
+					if (is_live) live_views.push_back(cur_view);
+					else if (start_time > 0) {
+						size_t at = 0;
+						while (at < upcoming_times.size() && upcoming_times[at] <= start_time) at++;
+						upcoming_views.insert(upcoming_views.begin() + at, cur_view);
+						upcoming_times.insert(upcoming_times.begin() + at, start_time);
+					} else new_oauth_feed_video_views.push_back(cur_view);
 				}
 			}
 		}
+		new_oauth_feed_video_views.insert(new_oauth_feed_video_views.begin(), upcoming_views.begin(), upcoming_views.end());
+		new_oauth_feed_video_views.insert(new_oauth_feed_video_views.begin(), live_views.begin(), live_views.end());
+		if (soon_title != "") notice_show(tr("Starting soon: ", "Empieza pronto: ") + soon_title.substr(0, 40));
 
 		if (data.has_key("contents") && data["contents"].has_key("singleColumnBrowseResultsRenderer") &&
 		    data["contents"]["singleColumnBrowseResultsRenderer"].has_key("tabs")) {
