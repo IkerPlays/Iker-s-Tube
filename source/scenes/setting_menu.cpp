@@ -675,6 +675,20 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Mark watched videos
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_mark_watched)
+						->set_title([](const SelectorView &) { return tr("Mark watched videos", "Marcar vídeos vistos"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_mark_watched != view.selected_button) {
+								var_mark_watched = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
 					// Large thumbnails
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

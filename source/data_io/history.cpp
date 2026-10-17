@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include <set>
 #include "history.hpp"
 #include "util/util.hpp"
 #include "ui/ui.hpp"
@@ -8,6 +9,8 @@ using namespace rapidjson;
 
 static std::vector<HistoryVideo> watch_history;
 static Mutex resource_lock;
+static std::set<std::string> watched_ids; // ids of the history (rebuilt lazily)
+static bool watched_ids_dirty = true;
 
 #define HISTORY_VERSION 0
 #define HISTORY_FILE_PATH (DEF_MAIN_DIR + "watch_history.json")
@@ -16,6 +19,7 @@ static Mutex resource_lock;
 static AtomicFileIO atomic_io(HISTORY_FILE_PATH, HISTORY_FILE_TMP_PATH);
 
 void load_watch_history() {
+	watched_ids_dirty = true;
 	auto tmp = atomic_io.load([](const std::string &data) {
 		Document json_root;
 		std::string error;
@@ -101,6 +105,7 @@ void save_watch_history() {
 	}
 }
 void add_watched_video(HistoryVideo video) {
+	watched_ids_dirty = true;
 	if (var_history_enabled) {
 		video.title_lines = truncate_str(video.title, 320 - VIDEO_LIST_THUMBNAIL_WIDTH - 6, 2, 0.5, 0.5);
 		resource_lock.lock();
@@ -123,6 +128,7 @@ void add_watched_video(HistoryVideo video) {
 	}
 }
 void history_erase_by_id(const std::string &id) {
+	watched_ids_dirty = true;
 	resource_lock.lock();
 	std::vector<HistoryVideo> tmp_watch_history;
 	for (auto video : watch_history) {
@@ -134,6 +140,7 @@ void history_erase_by_id(const std::string &id) {
 	resource_lock.unlock();
 }
 void history_erase_all() {
+	watched_ids_dirty = true;
 	resource_lock.lock();
 	watch_history.clear();
 	resource_lock.unlock();
@@ -147,6 +154,21 @@ std::vector<HistoryVideo> get_valid_watch_history() {
 			res.push_back(video);
 		}
 	}
+	resource_lock.unlock();
+	return res;
+}
+
+bool history_has_id(const std::string &id) {
+	bool res;
+	resource_lock.lock();
+	if (watched_ids_dirty) {
+		watched_ids.clear();
+		for (auto &v : watch_history) {
+			if (v.valid) watched_ids.insert(v.id);
+		}
+		watched_ids_dirty = false;
+	}
+	res = watched_ids.count(id) > 0;
 	resource_lock.unlock();
 	return res;
 }

@@ -160,6 +160,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Set tag...", {"Ajouter une étiquette...", "Tag setzen...", "Imposta etichetta...", "Definir etiqueta...", "タグを設定..."}},
 	    {"Remove tag", {"Retirer l'étiquette", "Tag entfernen", "Rimuovi etichetta", "Remover etiqueta", "タグを削除"}},
 	    {"Tag", {"Étiquette", "Tag", "Etichetta", "Etiqueta", "タグ"}},
+	    {"Mark watched videos", {"Marquer les vidéos vues", "Gesehene Videos markieren", "Segna i video visti", "Marcar vídeos assistidos", "視聴済みの動画に印を付ける"}},
 	};
 	return table;
 }

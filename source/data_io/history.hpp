@@ -19,3 +19,4 @@ void add_watched_video(HistoryVideo video);
 void history_erase_by_id(const std::string &id);
 void history_erase_all();
 std::vector<HistoryVideo> get_valid_watch_history();
+bool history_has_id(const std::string &id); // true if the video is in the watch history (cheap, cached)

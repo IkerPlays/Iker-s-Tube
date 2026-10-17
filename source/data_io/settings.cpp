@@ -82,6 +82,7 @@ void load_settings() {
 	var_custom_hue = std::max(0, std::min(359, load_int("custom_hue", 200)));
 	var_high_contrast = load_int("high_contrast", 0);
 	var_welcome_done = load_int("welcome_done", 0);
+	var_mark_watched = load_int("mark_watched", 1);
 	var_theme = std::max(0, std::min(6, load_int("color_theme", 0)));
 	var_large_thumbnails = load_int("large_thumbnails", 0);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
@@ -140,6 +141,7 @@ void save_settings() {
 	add_int("hide_pointer", var_hide_pointer);
 	add_int("dark_theme", var_night_mode);
 	add_int("color_theme", var_theme);
+	add_int("mark_watched", var_mark_watched);
 	add_int("welcome_done", var_welcome_done);
 	add_int("custom_hue", var_custom_hue);
 	add_int("high_contrast", var_high_contrast);
