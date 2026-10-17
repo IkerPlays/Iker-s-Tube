@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "data_io/string_resource.hpp"
 #include <vector>
 #include "ui/qr_popup.hpp"
 #include "ui/colors.hpp"
@@ -52,8 +53,8 @@ void qr_popup_draw() {
 			}
 		}
 	}
-	Draw_xy_centered("Scan with your phone", 0, 320, y0 + total + 4, y0 + total + 24, 0.5, 0.5, DEF_DRAW_BLACK);
-	Draw_xy_centered("Tap or press B to close", 0, 320, 215, 235, 0.45, 0.45, DEF_DRAW_GRAY);
+	Draw_xy_centered(tr("Scan with your phone", "Escanéalo con tu móvil"), 0, 320, y0 + total + 4, y0 + total + 24, 0.5, 0.5, DEF_DRAW_BLACK);
+	Draw_xy_centered(tr("Tap or press B to close", "Toca o pulsa B para cerrar"), 0, 320, 215, 235, 0.45, 0.45, DEF_DRAW_GRAY);
 }
 
 bool qr_popup_update(Hid_info key) {

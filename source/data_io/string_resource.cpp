@@ -71,3 +71,7 @@ std::string loading_text() {
 	var_need_refresh = true; // keep the animation running while something is loading
 	return text + std::string(dots, '.');
 }
+
+std::string tr(const char *en, const char *es) {
+	return var_lang == "es" ? es : en;
+}

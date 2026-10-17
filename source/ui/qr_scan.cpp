@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "data_io/string_resource.hpp"
 #include <3ds.h>
 #include "ui/qr_scan.hpp"
 #include "ui/colors.hpp"
@@ -78,9 +79,9 @@ bool qr_scan_run(std::string &out) {
 			Draw_frame_ready();
 			Draw_screen_ready(0, DEF_DRAW_BLACK);
 			Draw_texture(preview.c2d, 0, 0, QR_CAM_W, QR_CAM_H);
-			Draw_xy_centered("Point the camera at a QR code", 0, 400, 205, 235, 0.5, 0.5, DEF_DRAW_WHITE);
+			Draw_xy_centered(tr("Point the camera at a QR code", "Apunta la cámara a un código QR"), 0, 400, 205, 235, 0.5, 0.5, DEF_DRAW_WHITE);
 			Draw_screen_ready(2, DEFAULT_BACK_COLOR);
-			Draw_xy_centered("Scanning...\n\nTap or press B to cancel", 0, 320, 0, 240, 0.55, 0.55,
+			Draw_xy_centered(tr("Scanning...", "Escaneando...") + "\n\n" + tr("Tap or press B to cancel", "Toca o pulsa B para cancelar"), 0, 320, 0, 240, 0.55, 0.55,
 			                 DEFAULT_TEXT_COLOR);
 			Draw_apply_draw();
 		}

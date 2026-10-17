@@ -509,7 +509,7 @@ void Menu_worker_thread(void *arg) {
 
 		const float lcd_timeout = lcd_off_timeout_seconds();
 		const bool audio_dark = var_audio_screens_off && video_is_audio_only_playing();
-		if (lcd_timeout != 0) {
+		if (lcd_timeout != 0 || (var_auto_dim && video_is_playing())) {
 			var_afk_time += 0.05;
 		}
 
@@ -586,6 +586,16 @@ void Menu_worker_thread(void *arg) {
 			cur_screen_dimmed = next_screen_dimmed;
 			cur_top_manual_off = next_top_manual_off;
 			cur_bot_manual_off = next_bot_manual_off;
+		}
+
+		{ // auto-dim : the bottom screen gets dark while a video plays and nobody touches the console
+			static bool auto_dim_applied = false;
+			bool want_dim = var_auto_dim && video_is_playing() && var_afk_time > 20 && !cur_screen_dimmed &&
+			                cur_bot_applied_on;
+			if (want_dim != auto_dim_applied) {
+				Util_cset_set_screen_brightness(false, true, want_dim ? 10 : var_lcd_brightness);
+				auto_dim_applied = want_dim;
+			}
 		}
 	}
 	logger.info(DEF_MENU_WORKER_THREAD_STR, "Thread exit.");

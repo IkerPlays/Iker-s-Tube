@@ -15,7 +15,7 @@
 
 #define MAX_THUMBNAIL_LOAD_REQUEST 12
 
-// "Biblioteca" : the play queue (reorder / clear), the favorites and the named playlists
+// Biblioteca : the play queue (reorder / clear), the favorites and the named playlists
 namespace Library {
 bool thread_suspend = false;
 bool already_init = false;
@@ -102,9 +102,9 @@ static void add_to_playlist_dialog(const FavoriteVideo &video) {
 	for (size_t i = 0; i < lists.size(); i++) {
 		options.push_back(make_option(lists[i].name, [i, video]() { playlist_add(i, video); }));
 	}
-	options.push_back(make_option("+ Nueva lista", [video]() {
+	options.push_back(make_option(tr("+ New playlist", "+ Nueva lista"), [video]() {
 		std::string name;
-		if (ask_text("Nombre de la lista", name) && playlist_create(name)) {
+		if (ask_text(tr("Playlist name", "Nombre de la lista").c_str(), name) && playlist_create(name)) {
 			auto all = playlists_get();
 			for (size_t i = 0; i < all.size(); i++) {
 				if (all[i].name == name) {
@@ -215,20 +215,20 @@ static void build_queue(VerticalListView *list) {
 			    rebuild_request = true;
 		    })
 		    ->add_on_long_hold(35, [i, url, title](View &) {
-			    show_dialog({make_option("Subir", [i]() { play_queue_move(i, -1); }),
-			                 make_option("Bajar", [i]() { play_queue_move(i, 1); }),
-			                 make_option("Añadir a una lista...", [url, title]() { pending_action = [url, title]() { add_to_playlist_dialog(video_from_url(url, title)); }; }),
-			                 make_option("Quitar de la cola", [i]() { play_queue_remove_at(i); })});
+			    show_dialog({make_option(tr("Move up", "Subir"), [i]() { play_queue_move(i, -1); }),
+			                 make_option(tr("Move down", "Bajar"), [i]() { play_queue_move(i, 1); }),
+			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [url, title]() { pending_action = [url, title]() { add_to_playlist_dialog(video_from_url(url, title)); }; }),
+			                 make_option(tr("Remove from queue", "Quitar de la cola"), [i]() { play_queue_remove_at(i); })});
 		    });
 		list->views.push_back(view);
 	}
 	if (!n) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-		                          ->set_text_lines(std::vector<std::string>{"La cola está vacía.", "Mantén pulsado cualquier vídeo", "para añadirlo."})
+		                          ->set_text_lines(std::vector<std::string>{tr("The queue is empty.", "La cola está vacía."), tr("Long press any video", "Mantén pulsado cualquier vídeo"), tr("to add it.", "para añadirlo.")})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	} else {
-		list->views.insert(list->views.begin(), make_button("Vaciar cola", 320, []() {
+		list->views.insert(list->views.begin(), make_button(tr("Clear queue", "Vaciar cola"), 320, []() {
 			                   play_queue_clear();
 			                   rebuild_request = true;
 		                   }));
@@ -243,15 +243,15 @@ static void build_favorites(VerticalListView *list) {
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, v](View &) {
-			    show_dialog({make_option("Añadir a la cola", [url, v]() { play_queue_toggle(url, v.title); }),
-			                 make_option("Añadir a una lista...", [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
-			                 make_option("Quitar de favoritos", [id]() { favorites_remove(id); })});
+			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
+			                 make_option(tr("Remove from favorites", "Quitar de favoritos"), [id]() { favorites_remove(id); })});
 		    });
 		list->views.push_back(view);
 	}
 	if (!favs.size()) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-		                          ->set_text_lines(std::vector<std::string>{"Aún no tienes favoritos.", "Usa el botón Favorito dentro", "de un vídeo."})
+		                          ->set_text_lines(std::vector<std::string>{tr("You have no favorites yet.", "Aún no tienes favoritos."), tr("Use the Favorite button inside", "Usa el botón Favorito dentro"), tr("a video.", "de un vídeo.")})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
@@ -264,7 +264,7 @@ static void build_playlists(VerticalListView *list) {
 	}
 
 	if (open_playlist < 0) { // all the playlists
-		list->views.push_back(make_button("+ Nueva lista", 320, []() { new_playlist_request = true; }));
+		list->views.push_back(make_button(tr("+ New playlist", "+ Nueva lista"), 320, []() { new_playlist_request = true; }));
 		for (size_t i = 0; i < lists.size(); i++) {
 			auto &pl = lists[i];
 			View *row = (new TextView(0, 0, 320, 30))
@@ -277,15 +277,15 @@ static void build_playlists(VerticalListView *list) {
 				                rebuild_request = true;
 			                })
 			                ->add_on_long_hold(35, [i, pl](View &) {
-				                show_dialog({make_option("Reproducir", [pl]() { start_playlist(pl, false); }),
-				                             make_option("Aleatorio", [pl]() { start_playlist(pl, true); }),
+				                show_dialog({make_option(tr("Play", "Reproducir"), [pl]() { start_playlist(pl, false); }),
+				                             make_option(tr("Shuffle", "Aleatorio"), [pl]() { start_playlist(pl, true); }),
 				                             make_option("Eliminar lista", [i]() { playlist_delete(i); })});
 			                });
 			list->views.push_back(row);
 		}
 		if (!lists.size()) {
 			list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-			                          ->set_text_lines(std::vector<std::string>{"No tienes listas.", "Crea una y añade vídeos desde", "Favoritos o la cola (pulsación larga)."})
+			                          ->set_text_lines(std::vector<std::string>{tr("You have no playlists.", "No tienes listas."), tr("Create one and add videos from", "Crea una y añade vídeos desde"), tr("Favorites or the queue (long press).", "Favoritos o la cola (pulsación larga).")})
 			                          ->set_x_alignment(TextView::XAlign::CENTER)
 			                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 		}
@@ -300,9 +300,9 @@ static void build_playlists(VerticalListView *list) {
 		rebuild_request = true;
 	}));
 	list->views.push_back((new HorizontalListView(0, 0, 22))
-	                          ->set_views({make_button("Reproducir", 106, [pl]() { start_playlist(pl, false); }),
-	                                       make_button("Aleatorio", 106, [pl]() { start_playlist(pl, true); }),
-	                                       make_button(playlist_repeat ? "Repetir: sí" : "Repetir: no", 108, []() {
+	                          ->set_views({make_button(tr("Play", "Reproducir"), 106, [pl]() { start_playlist(pl, false); }),
+	                                       make_button(tr("Shuffle", "Aleatorio"), 106, [pl]() { start_playlist(pl, true); }),
+	                                       make_button(playlist_repeat ? tr("Repeat: on", "Repetir: sí") : tr("Repeat: off", "Repetir: no"), 108, []() {
 		                                       playlist_repeat = !playlist_repeat;
 		                                       rebuild_request = true;
 	                                       })}));
@@ -312,14 +312,14 @@ static void build_playlists(VerticalListView *list) {
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [index, id, url, v](View &) {
-			    show_dialog({make_option("Añadir a la cola", [url, v]() { play_queue_toggle(url, v.title); }),
-			                 make_option("Quitar de la lista", [index, id]() { playlist_remove(index, id); })});
+			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(tr("Remove from list", "Quitar de la lista"), [index, id]() { playlist_remove(index, id); })});
 		    });
 		list->views.push_back(view);
 	}
 	if (!pl.videos.size()) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-		                          ->set_text_lines(std::vector<std::string>{"Lista vacía.", "Añade vídeos desde Favoritos", "o la cola (pulsación larga)."})
+		                          ->set_text_lines(std::vector<std::string>{tr("Empty list.", "Lista vacía."), tr("Add videos from Favorites", "Añade vídeos desde Favoritos"), tr("or the queue (long press).", "o la cola (pulsación larga).")})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
@@ -346,12 +346,12 @@ static void rebuild_views() {
 	main_view = (new ScrollView(0, 0, 320, 240))
 	                ->set_views({(new HorizontalListView(0, 0, MIDDLE_FONT_INTERVAL))
 	                                 ->set_views({(new TextView(0, 0, 320 - selector_width, MIDDLE_FONT_INTERVAL))
-	                                                  ->set_text("Biblioteca")
+	                                                  ->set_text(tr("Library", "Biblioteca"))
 	                                                  ->set_font_size(0.5, MIDDLE_FONT_INTERVAL),
 	                                              (new SelectorView(0, 0, selector_width, MIDDLE_FONT_INTERVAL, false))
-	                                                  ->set_texts({(std::function<std::string()>)[]() { return std::string("Cola"); },
-	                                                               (std::function<std::string()>)[]() { return std::string("Favoritos"); },
-	                                                               (std::function<std::string()>)[]() { return std::string("Listas"); }},
+	                                                  ->set_texts({(std::function<std::string()>)[]() { return std::string(tr("Queue", "Cola")); },
+	                                                               (std::function<std::string()>)[]() { return std::string(tr("Favorites", "Favoritos")); },
+	                                                               (std::function<std::string()>)[]() { return std::string(tr("Playlists", "Listas")); }},
 	                                                              mode)
 	                                                  ->set_on_change([](const SelectorView &view) {
 		                                                  mode = view.selected_button;
@@ -428,7 +428,7 @@ void Library_draw(void) {
 		if (new_playlist_request) { // the keyboard is opened after the update, never from inside a view callback
 			new_playlist_request = false;
 			std::string name;
-			if (ask_text("Nombre de la lista", name)) {
+			if (ask_text(tr("Playlist name", "Nombre de la lista").c_str(), name)) {
 				playlist_create(name);
 			}
 			rebuild_request = true;

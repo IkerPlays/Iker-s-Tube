@@ -134,6 +134,10 @@ static const struct {
                       {"Este mes", "EgQIBBAB"},
                       {"Cortos (< 4 min)", "EgQQARgB"},
                       {"Largos (> 20 min)", "EgQQARgD"}};
+static std::string search_filter_name(int i) {
+	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Long (> 20 min)"};
+	return tr(en[i], search_filters[i].name);
+}
 static int search_filter_index = 0;
 static bool history_clear_request = false;
 static bool qr_scan_pending = false;
@@ -159,10 +163,10 @@ static void show_search_history() {
 	auto words = search_history_get();
 	// Explore : ready-made searches (YouTube no longer offers real Music / Trending feeds to this client)
 	result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
-	                                      ->set_text("Explore")
+	                                      ->set_text(tr("Explore", "Explorar"))
 	                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 	                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
-	static const char *explore_labels[] = {"Music", "Trending", "Gaming", "Live", "Movie trailers", "News"};
+	const std::string explore_labels[] = {tr("Music", "Música"), tr("Trending", "Tendencias"), tr("Gaming", "Videojuegos"), tr("Live", "Directos"), tr("Movie trailers", "Tráilers de películas"), tr("News", "Noticias")};
 	static const char *explore_queries[] = {"music 2026 official video", "trending today", "gaming highlights",
 	                                        "live now", "new movie trailers", "world news today"};
 	for (int i = 0; i < 6; i++) {
@@ -176,7 +180,7 @@ static void show_search_history() {
 		                                      ->set_on_view_released([query](View &) { start_search(query); }));
 	}
 	result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
-	                                      ->set_text("Scan a QR code (camera)")
+	                                      ->set_text(tr("Scan a QR code (camera)", "Escanear un código QR (cámara)"))
 	                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
 	                                      ->set_y_alignment(TextView::YAlign::CENTER)
 	                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
@@ -186,7 +190,7 @@ static void show_search_history() {
 		return;
 	}
 	result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
-	                                      ->set_text("Búsquedas recientes")
+	                                      ->set_text(tr("Recent searches", "Búsquedas recientes"))
 	                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 	                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
 	for (auto &word : words) {
@@ -198,7 +202,7 @@ static void show_search_history() {
 		                                      ->set_on_view_released([word](View &) { start_search(word); }));
 	}
 	result_list_view->views.push_back((new TextView(0, 0, 320, 24))
-	                                      ->set_text("Borrar historial")
+	                                      ->set_text(tr("Clear history", "Borrar historial"))
 	                                      ->set_x_alignment(TextView::XAlign::CENTER)
 	                                      ->set_y_alignment(TextView::YAlign::CENTER)
 	                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
@@ -251,7 +255,7 @@ void Search_init(void) {
 	                             ->set_margin(0),
 	                         (new TextView(0, 0, 320, FILTER_ROW_HEIGHT - 1))
 	                             ->set_text((std::function<std::string()>)[]() {
-		                             return std::string("Filtro: ") + search_filters[search_filter_index].name;
+		                             return std::string(tr("Filter: ", "Filtro: ")) + search_filter_name(search_filter_index);
 	                             })
 	                             ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
 	                             ->set_x_alignment(TextView::XAlign::CENTER)

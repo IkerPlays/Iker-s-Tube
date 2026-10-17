@@ -615,7 +615,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
 						}, var_audio_screens_off)
-						->set_title([](const SelectorView &) { return std::string("Solo audio: apagar pantallas"); })
+						->set_title([](const SelectorView &) { return std::string(tr("Audio only: turn screens off", "Solo audio: apagar pantallas")); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_audio_screens_off != view.selected_button) {
 								var_audio_screens_off = view.selected_button;
@@ -625,11 +625,11 @@ void Sem_init(void) {
 					// data usage
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
 						->set_text((std::function<std::string ()>) [] () -> std::string {
-							return "Datos descargados (sesión): " + format_data_size((double) var_data_session_bytes);
+							return tr("Data downloaded (session): ", "Datos descargados (sesión): ") + format_data_size((double) var_data_session_bytes);
 						}),
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
 						->set_text((std::function<std::string ()>) [] () -> std::string {
-							return "Datos descargados (total): " + format_data_size(var_data_total_bytes + (double) var_data_session_bytes);
+							return tr("Data downloaded (total): ", "Datos descargados (total): ") + format_data_size(var_data_total_bytes + (double) var_data_session_bytes);
 						}),
 					// full screen mode
 					(new SelectorView(0, 0, 320, 35, true))
@@ -693,7 +693,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return "Amber"; },
 							(std::function<std::string ()>) []() { return "AMOLED"; }
 						}, var_theme)
-						->set_title([](const SelectorView &) { return "Color theme"; })
+						->set_title([](const SelectorView &) { return tr("Color theme", "Tema de color"); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_theme != view.selected_button) {
 								var_theme = view.selected_button;
@@ -707,8 +707,8 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
 						}, var_auto_quality)
-						->set_title([](const SelectorView &) { return "Automatic quality"; })
-						->set_info([](const SelectorView &) { return "Lowers the quality of the next videos if playback keeps stalling, raises it again when the connection is stable."; })
+						->set_title([](const SelectorView &) { return tr("Automatic quality", "Calidad automática"); })
+						->set_info([](const SelectorView &) { return tr("Lowers the quality of the next videos if playback keeps stalling, raises it again when the connection is stable.", "Baja la calidad de los siguientes vídeos si la reproducción se atasca y la sube de nuevo cuando la conexión es estable."); })
 						->set_popup_height(70)
 						->set_on_change([](const SelectorView &view) {
 							if (var_auto_quality != view.selected_button) {
@@ -720,11 +720,11 @@ void Sem_init(void) {
 					// Subtitles
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
-							(std::function<std::string ()>) []() { return "Small"; },
+							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
 							(std::function<std::string ()>) []() { return "Normal"; },
-							(std::function<std::string ()>) []() { return "Large"; }
+							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
 						}, var_caption_size)
-						->set_title([](const SelectorView &) { return "Subtitle size"; })
+						->set_title([](const SelectorView &) { return tr("Subtitle size", "Tamaño de subtítulos"); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_caption_size != view.selected_button) {
 								var_caption_size = view.selected_button;
@@ -734,12 +734,12 @@ void Sem_init(void) {
 						}),
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
-							(std::function<std::string ()>) []() { return "White"; },
-							(std::function<std::string ()>) []() { return "Yellow"; },
-							(std::function<std::string ()>) []() { return "Cyan"; },
-							(std::function<std::string ()>) []() { return "Green"; }
+							(std::function<std::string ()>) []() { return tr("White", "Blanco"); },
+							(std::function<std::string ()>) []() { return tr("Yellow", "Amarillo"); },
+							(std::function<std::string ()>) []() { return tr("Cyan", "Cian"); },
+							(std::function<std::string ()>) []() { return tr("Green", "Verde"); }
 						}, var_caption_color)
-						->set_title([](const SelectorView &) { return "Subtitle color"; })
+						->set_title([](const SelectorView &) { return tr("Subtitle color", "Color de subtítulos"); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_caption_color != view.selected_button) {
 								var_caption_color = view.selected_button;
@@ -753,8 +753,8 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
 						}, var_large_thumbnails)
-						->set_title([](const SelectorView &) { return "Large thumbnails"; })
-						->set_info([](const SelectorView &) { return "Applies to lists opened from now on."; })
+						->set_title([](const SelectorView &) { return tr("Large thumbnails", "Miniaturas grandes"); })
+						->set_info([](const SelectorView &) { return tr("Applies to lists opened from now on.", "Se aplica a las listas que abras a partir de ahora."); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_large_thumbnails != view.selected_button) {
 								var_large_thumbnails = view.selected_button;
@@ -972,7 +972,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
 						}, var_show_devbuilds)
-						->set_title([](const SelectorView &) { return std::string("Ofrecer devbuilds (pruebas)"); })
+						->set_title([](const SelectorView &) { return std::string(tr("Offer devbuilds (testing)", "Ofrecer devbuilds (pruebas)")); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_show_devbuilds != view.selected_button) {
 								var_show_devbuilds = view.selected_button;

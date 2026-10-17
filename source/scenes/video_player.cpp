@@ -1194,7 +1194,7 @@ debug_info_view =
 				    TextView *favorite_button = (new TextView(0, 0, 100, 20));
 				    favorite_button
 				        ->set_text((std::function<std::string()>)[]() {
-					        return favorites_contains(cur_video_info.id) ? std::string("Quitar fav") : std::string("+ Favorito");
+					        return favorites_contains(cur_video_info.id) ? std::string(tr("Remove fav", "Quitar fav")) : std::string(tr("+ Favorite", "+ Favorito"));
 				        })
 				        ->set_x_alignment(TextView::XAlign::CENTER)
 				        ->set_get_background_color(View::STANDARD_BACKGROUND)
