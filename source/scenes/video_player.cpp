@@ -318,6 +318,7 @@ static void caption_lang_remember(const std::string &id) {
 	fclose(f);
 }
 
+static std::string pending_offline_delete; // a saved video that was watched to the end : deleted when another video starts
 static bool stop_after_video = false; // do not continue with the queue / autoplay when the current video ends
 static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
@@ -2179,6 +2180,11 @@ debug_info_view =
 		        ""; // for some reason, itag 18 causes problems when the video is long enough (it is only dropped when
 		            // there is another way to play : without a separate audio stream itag 18 is the only option)
 	    }
+	    if (pending_offline_delete != "" && pending_offline_delete != tmp_video_info.id) { // the finished download is not needed any more
+		    offline_remove(pending_offline_delete);
+		    video_info_cache.erase("offline:" + pending_offline_delete);
+		    pending_offline_delete = "";
+	    }
 	    playing_video_info = tmp_video_info;
 	    video_info_cache[url] = tmp_video_info;
 	    vid_resume_id[0] = 0; // the old video may still be decoding : its position must not be saved for the new id.
@@ -3398,6 +3404,9 @@ debug_info_view =
 						    stop_after_video = false;
 						    resume_set(playing_video_info.id, 0, 0); // watched until the end : next time from the start
 						    resume_save();
+						    if (var_offline_autodelete && var_loop_mode == false && playing_video_info.url.compare(0, 8, "offline:") == 0) {
+							    pending_offline_delete = playing_video_info.id;
+						    }
 						    std::string queued_url;
 						    if (var_loop_mode == false && !stop_here && play_queue_pop(queued_url)) {
 							    // something was queued by the user : play it before any autoplay suggestion

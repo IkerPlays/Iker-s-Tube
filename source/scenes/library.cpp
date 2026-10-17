@@ -405,6 +405,15 @@ static void play_offline(bool shuffle) {
 
 static void build_offline(VerticalListView *list) {
 	auto items = offline_list();
+	if (items.size() > 0) { // delete everything (asks first)
+		list->views.push_back(make_button(tr("Delete all downloads", "Borrar todas las descargas"), 320, []() {
+			show_dialog({make_option(tr("Yes, delete everything", "Sí, borrar todo"), []() {
+				             for (auto &item : offline_list()) offline_remove(item.id);
+				             rebuild_request = true;
+			             }),
+			             make_option(LOCALIZED(CANCEL), []() {})});
+		}));
+	}
 	if (items.size() > 1) { // play everything that is saved, in order or shuffled
 		list->views.push_back((new HorizontalListView(0, 0, 22))
 		                          ->set_views({make_button(tr("Play all", "Reproducir todo"), 160, []() { play_offline(false); }),

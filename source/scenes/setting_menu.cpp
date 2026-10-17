@@ -689,6 +689,20 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Delete downloads after watching them
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_offline_autodelete)
+						->set_title([](const SelectorView &) { return tr("Delete downloads after watching", "Borrar descargas al verlas"); })
+						->set_info([](const SelectorView &) { return tr("A saved video or audio is deleted from the SD card when it plays until the end.", "Un vídeo o audio guardado se borra de la SD cuando se reproduce hasta el final."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_offline_autodelete != view.selected_button) {
+								var_offline_autodelete = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Large thumbnails
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

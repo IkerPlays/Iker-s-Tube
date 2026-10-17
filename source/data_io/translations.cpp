@@ -326,6 +326,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Long press to subscribe", {"Appui long pour s'abonner", "Lange drücken zum Abonnieren", "Pressione lunga per iscriverti", "Segure para se inscrever", "長押しで登録"}},
 	    {"Unsubscribed", {"Désabonné", "Abbestellt", "Iscrizione annullata", "Inscrição cancelada", "登録解除しました"}},
 	    {"Subscribed", {"Abonné", "Abonniert", "Iscritto", "Inscrito", "登録しました"}},
+	    {"Delete downloads after watching", {"Supprimer les téléchargements après lecture", "Downloads nach dem Ansehen löschen", "Elimina i download dopo la visione", "Apagar downloads depois de assistir", "視聴後にダウンロードを削除"}},
+	    {"A saved video or audio is deleted from the SD card when it plays until the end.", {"Une vidéo ou un audio enregistré est supprimé de la carte SD quand il est lu jusqu'à la fin.", "Ein gespeichertes Video oder Audio wird von der SD-Karte gelöscht, wenn es bis zum Ende läuft.", "Un video o audio salvato viene eliminato dalla scheda SD quando viene riprodotto fino alla fine.", "Um vídeo ou áudio salvo é apagado do cartão SD quando é reproduzido até o fim.", "保存した動画や音声は最後まで再生するとSDカードから削除されます。"}},
+	    {"Delete all downloads", {"Supprimer tous les téléchargements", "Alle Downloads löschen", "Elimina tutti i download", "Apagar todos os downloads", "すべてのダウンロードを削除"}},
+	    {"Yes, delete everything", {"Oui, tout supprimer", "Ja, alles löschen", "Sì, elimina tutto", "Sim, apagar tudo", "はい、すべて削除"}},
 	};
 	return table;
 }

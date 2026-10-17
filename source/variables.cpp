@@ -17,6 +17,7 @@ int var_theme = 0;
 bool var_resume_videos = true;
 int var_new_feed_videos = 0;
 bool var_mark_watched = true;
+bool var_offline_autodelete = false;
 bool var_welcome_done = false;
 int var_custom_hue = 200;
 bool var_high_contrast = false;
