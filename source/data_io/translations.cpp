@@ -243,6 +243,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Uploading: ", {"Envoi : ", "Lade hoch: ", "Caricamento: ", "Enviando: ", "アップロード中："}},
 	    {"Uploading: 0%", {"Envoi : 0%", "Lade hoch: 0%", "Caricamento: 0%", "Enviando: 0%", "アップロード中：0%"}},
 	    {"Visibility: ", {"Visibilité : ", "Sichtbarkeit: ", "Visibilità: ", "Visibilidade: ", "公開設定："}},
+	    {" (YouTube does not allow uploads with this login)", {" (YouTube n'autorise pas l'envoi avec cette connexion)", " (YouTube erlaubt mit dieser Anmeldung keine Uploads)", " (YouTube non consente i caricamenti con questo accesso)", " (o YouTube não permite envios com este login)", "（このログインではYouTubeへのアップロードが許可されていません）"}},
 	};
 	return table;
 }

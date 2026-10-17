@@ -107,7 +107,9 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 		error = "cannot open the file";
 		return false;
 	}
-	NetworkSessionList &session = studio_session();
+	static NetworkSessionList upload_session; // not shared with the statistics : a session belongs to one thread
+	if (!upload_session.inited) upload_session.init();
+	NetworkSessionList &session = upload_session;
 
 	std::string full_title = title;
 	std::string full_description = description;
@@ -175,13 +177,10 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 			return true;
 		}
 		if (!r.fail && r.status_code == 308) { // chunk accepted
-			offset += len;
 			std::string range = r.get_header("range"); // "bytes=0-1234" : what the server really has
 			size_t dash = range.find('-');
-			if (dash != std::string::npos) {
-				u64 have = strtoull(range.c_str() + dash + 1, NULL, 10) + 1;
-				if (have > 0 && have <= total) offset = have;
-			}
+			u64 have = dash != std::string::npos ? strtoull(range.c_str() + dash + 1, NULL, 10) + 1 : 0; // no Range : nothing stored
+			offset = have <= total ? have : offset + len;
 			failures = 0;
 			if (progress) progress(offset, total);
 			continue;
@@ -195,11 +194,24 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 			fclose(file);
 			return false;
 		}
+		svcSleepThread((s64)failures * 1000000000LL); // back off before trying again
 		// ask the server how much it has before sending again
 		auto q = session.perform(HttpRequest{"PUT", upload_url,
 		                                     HttpRequest::default_headers_added({{"Authorization", "Bearer " + OAuth::get_access_token()},
 		                                                                         {"Content-Range", "bytes */" + std::to_string(total)}}),
 		                                     "", false});
+		if (!q.fail && (q.status_code == 200 || q.status_code == 201)) { // the upload had finished, only its answer was lost
+			std::string resp(q.data.begin(), q.data.end());
+			size_t p = resp.find("\"id\"");
+			if (p != std::string::npos) {
+				p = resp.find('"', resp.find(':', p));
+				size_t e = resp.find('"', p + 1);
+				if (p != std::string::npos && e != std::string::npos) video_id = resp.substr(p + 1, e - p - 1);
+			}
+			if (progress) progress(total, total);
+			fclose(file);
+			return true;
+		}
 		if (!q.fail && q.status_code == 308) {
 			std::string range = q.get_header("range");
 			size_t dash = range.find('-');

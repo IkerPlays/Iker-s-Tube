@@ -124,7 +124,7 @@ bool youtube_account_playlist_edit(const std::string &playlist_id, const std::st
 }
 
 // The comment section as the signed-in user sees it : it contains the tokens that allow writing, replying and liking.
-static int comment_client = 1; // the client that last returned a usable comment section
+static volatile int comment_client = 1; // the client that last returned a usable comment section
 static bool fetch_comment_section(const std::string &token, std::string &json) {
 	for (int attempt = 0; attempt < 2; attempt++) {
 		int client = attempt == 0 ? comment_client : 1 - comment_client;
@@ -134,7 +134,10 @@ static bool fetch_comment_section(const std::string &token, std::string &json) {
 			comment_client = client;
 			return true;
 		}
-		if (r.first && attempt == 1) return true; // other actions (like, reply) do not need createCommentParams
+		if (r.first && attempt == 1) { // other actions (like, reply) do not need createCommentParams
+			comment_client = client; // the tokens belong to this client
+			return true;
+		}
 	}
 	return false;
 }

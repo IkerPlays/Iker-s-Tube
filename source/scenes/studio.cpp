@@ -21,10 +21,10 @@ static bool mode_dirty = true;
 static LightLock state_lock;
 static bool state_lock_inited = false;
 static StudioStats stats;
-static bool stats_loaded = false;
+static volatile bool stats_loaded = false;
 static volatile bool stats_loading = false;
-
 static volatile bool upload_running = false;
+
 static volatile int upload_percent = 0;
 static std::string upload_message; // result of the last upload (guarded by state_lock)
 
@@ -54,7 +54,7 @@ static void load_stats_task(void *) {
 }
 
 static void start_stats_load() {
-	if (stats_loading || !OAuth::is_authenticated()) return;
+	if (stats_loading || upload_running || !OAuth::is_authenticated()) return;
 	stats_loading = true;
 	queue_async_task(load_stats_task, NULL);
 }
@@ -147,8 +147,12 @@ static void upload_thread(void *arg) {
 	LightLock_Lock(&state_lock);
 	if (ok) {
 		upload_message = tr("Uploaded: ", "Subido: ") + "youtube.com/watch?v=" + video_id;
+		stats_loaded = false; // the totals changed : reload them when the tab is shown again
 	} else {
 		upload_message = tr("Upload failed: ", "Error al subir: ") + error;
+		if (error.find("403") != std::string::npos || error.find("401") != std::string::npos) {
+			upload_message += tr(" (YouTube does not allow uploads with this login)", " (YouTube no permite subir con este inicio de sesión)");
+		}
 	}
 	LightLock_Unlock(&state_lock);
 	notice_show(ok ? tr("Upload finished", "Subida terminada") : tr("Could not upload the video", "No se pudo subir el vídeo"));
