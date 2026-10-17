@@ -275,6 +275,8 @@ static VerticalListView *bookmarks_list_view = NULL; // the list shown in the pa
 static VerticalListView *pending_bookmarks_list_view = NULL; // created by the loader, becomes bookmarks_list_view when the page is installed
 static bool bookmarks_rebuild_request = false, bookmark_add_request = false;
 static std::string bookmarks_video_id;
+static std::vector<std::pair<double, std::string>> pending_chapters; // same, built by the loader thread
+static std::string pending_bookmarks_video_id;
 static double quick_speed = 1.0;
 static BarView *speed_bar_view = NULL;
 static bool mini_visible = false;
@@ -1518,9 +1520,10 @@ debug_info_view =
 					    std::istringstream desc(tmp_video_info.description);
 					    std::string line;
 					    while (std::getline(desc, line) && chapters.size() < 40) {
-						    int ts_start, ts_end;
-						    double seconds;
-						    if (Util_find_timestamp_in_text(line, 0, &ts_start, &ts_end, &seconds) && ts_start <= 2) {
+						    int ts_start = -1, ts_end = -1;
+						    double seconds = 0;
+						    if (Util_find_timestamp_in_text(line, 0, &ts_start, &ts_end, &seconds) != -1 && ts_start >= 0 &&
+						        ts_start <= 2 && ts_end > ts_start && ts_end <= (int)line.size() && seconds >= 0) {
 							    std::string title = line.substr(ts_end);
 							    size_t first = title.find_first_not_of(" -\t:|)(");
 							    title = first == std::string::npos ? "" : title.substr(first);
@@ -1528,9 +1531,9 @@ debug_info_view =
 						    }
 					    }
 				    }
-				    current_chapters = chapters.size() >= 2 ? chapters : decltype(chapters)();
+				    pending_chapters = chapters.size() >= 2 ? chapters : decltype(chapters)(); // installed with the page (the UI thread reads current_chapters)
 				    // bookmarks of this video (the list is refilled whenever one is added or removed)
-				    bookmarks_video_id = tmp_video_info.id;
+				    pending_bookmarks_video_id = tmp_video_info.id;
 				    pending_bookmarks_list_view = new VerticalListView(0, 0, 320);
 				    main_tab_views.push_back(pending_bookmarks_list_view);
 				    if (chapters.size() >= 2) {
@@ -1744,6 +1747,12 @@ debug_info_view =
     }
     cur_video_info = tmp_video_info;
     video_info_cache[url] = tmp_video_info;
+    while (video_info_cache.size() > 5) { // every cached page holds suggestions and comments : keep only a few
+	    auto victim = video_info_cache.begin();
+	    while (victim != video_info_cache.end() && (victim->first == url || victim->first == cur_displaying_url || victim->first == cur_playing_url)) ++victim;
+	    if (victim == video_info_cache.end()) break;
+	    video_info_cache.erase(victim);
+    }
     if (cur_video_info.playlist.videos.size()) {
 	    main_view
 	        ->set_views({main_tab_view, suggestion_tab_view, comment_tab_view, captions_tab_view, playback_tab_view,
@@ -1770,6 +1779,8 @@ debug_info_view =
     main_tab_view->set_views({main_tab_views});
     bookmarks_list_view = pending_bookmarks_list_view;
     pending_bookmarks_list_view = NULL;
+    current_chapters = pending_chapters;
+    bookmarks_video_id = pending_bookmarks_video_id;
     bookmarks_rebuild_request = true;
 
     suggestion_main_view->recursive_delete_subviews();
@@ -2045,6 +2056,11 @@ debug_info_view =
 	    }
 	    cur_video_info = new_result;
 	    video_info_cache[cur_video_info.url] = new_result;
+	    for (auto view : comment_thumbnail_loaded_list) { // the avatars of the old comments are going away
+		    thumbnail_cancel_request(view->author_icon_handle);
+		    view->author_icon_handle = -1;
+	    }
+	    comment_thumbnail_loaded_list.clear();
 	    comments_main_view->recursive_delete_subviews();
 	    comments_main_view->views = new_comment_views;
 	    update_comment_bottom_view();
