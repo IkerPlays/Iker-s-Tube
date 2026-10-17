@@ -345,6 +345,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Sort: newest first", {"Tri : plus récents", "Sortierung: neueste zuerst", "Ordine: più recenti", "Ordem: mais recentes", "並び順：新しい順"}},
 	    {"Sort: title A-Z", {"Tri : titre A-Z", "Sortierung: Titel A-Z", "Ordine: titolo A-Z", "Ordem: título A-Z", "並び順：タイトル A-Z"}},
 	    {"Sort: biggest first", {"Tri : plus gros", "Sortierung: größte zuerst", "Ordine: più grandi", "Ordem: maiores", "並び順：大きい順"}},
+	    {"Search downloads", {"Chercher dans les téléchargements", "Downloads durchsuchen", "Cerca nei download", "Buscar nos downloads", "ダウンロードを検索"}},
+	    {"Search: ", {"Recherche : ", "Suche: ", "Ricerca: ", "Busca: ", "検索："}},
+	    {"Clear", {"Effacer", "Löschen", "Cancella", "Limpar", "消去"}},
+	    {"No downloads match.", {"Aucun téléchargement ne correspond.", "Keine Downloads passen.", "Nessun download corrisponde.", "Nenhum download corresponde.", "一致するダウンロードはありません。"}},
+	    {"Saved offline", {"Enregistré hors ligne", "Offline gespeichert", "Salvato offline", "Salvo offline", "オフライン保存済み"}},
 	};
 	return table;
 }

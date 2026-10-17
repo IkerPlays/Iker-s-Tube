@@ -7,7 +7,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Save offline from lists.** Long press a video in Favorites, Watch later, a playlist or the queue to save its video or audio. The app loads it in the background.
 - **Download queue.** Several downloads can be queued. The Downloads screen shows the progress, how many are waiting and lets you cancel.
 - **Downloads screen.** Items saved, space used and free on the SD card, and Play all / Shuffle for everything you saved.
-- **Sort downloads** by newest, title or size.
+- **Sort and search downloads** by newest, title or size, or by text, and the video page shows when a video is already saved.
 - **Clean up.** An optional setting deletes a download after you watch it, and a button deletes all downloads (with confirmation).
 - **Download indicator.** A green dot on Downloads while something downloads.
 - **Saved copies.** A DL tag marks the videos that are saved, and without internet opening one of them plays the saved copy.

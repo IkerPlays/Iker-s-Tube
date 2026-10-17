@@ -1,4 +1,4 @@
 Devbuild notes
 
-- Home: the first item of the list is now Continue watching, the last video you played (it resumes where you left it).
-- Downloads screen: a Sort button switches the list between newest first, title A-Z and biggest first.
+- Downloads screen: with more than 3 saved items a Search downloads button filters the list by title or channel (Clear removes the filter).
+- Video page: the Save video button reads Saved offline when that video is already on the SD card.

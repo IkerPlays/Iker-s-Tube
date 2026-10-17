@@ -391,6 +391,7 @@ static std::string size_text(u64 bytes) {
 	return buf;
 }
 
+static std::string offline_filter; // only the saved items whose title or author has this text
 static int offline_sort = 0; // 0 newest first, 1 title A-Z, 2 biggest first
 
 static void play_offline(bool shuffle) {
@@ -407,6 +408,32 @@ static void play_offline(bool shuffle) {
 
 static void build_offline(VerticalListView *list) {
 	auto items = offline_list();
+	const size_t all_items = items.size();
+	if (offline_filter != "") {
+		auto lower = [](std::string s) { for (auto &c : s) c = tolower((unsigned char)c); return s; };
+		std::string needle = lower(offline_filter);
+		items.erase(std::remove_if(items.begin(), items.end(), [&](const OfflineItem &item) {
+			            return lower(item.title).find(needle) == std::string::npos && lower(item.author).find(needle) == std::string::npos;
+		            }),
+		            items.end());
+	}
+	if (all_items > 3) { // search inside the downloads
+		list->views.push_back((new HorizontalListView(0, 0, 22))
+		                          ->set_views({make_button(offline_filter == "" ? tr("Search downloads", "Buscar en descargas") : tr("Search: ", "Búsqueda: ") + offline_filter,
+		                                                   offline_filter == "" ? 320 : 240,
+		                                                   []() {
+			                                                   std::string text;
+			                                                   if (ask_text(tr("Search downloads", "Buscar en descargas").c_str(), text)) {
+				                                                   offline_filter = text;
+				                                                   rebuild_request = true;
+			                                                   }
+		                                                   }),
+		                                       offline_filter == "" ? (View *)new EmptyView(0, 0, 0, 22)
+		                                                            : (View *)make_button(tr("Clear", "Quitar"), 80, []() {
+			                                                              offline_filter = "";
+			                                                              rebuild_request = true;
+		                                                              })}));
+	}
 	if (offline_sort == 1) {
 		std::sort(items.begin(), items.end(), [](const OfflineItem &a, const OfflineItem &b) { return a.title < b.title; });
 	} else if (offline_sort == 2) {
@@ -482,7 +509,8 @@ static void build_offline(VerticalListView *list) {
 	}
 	if (!items.size()) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-		                          ->set_text_lines(std::vector<std::string>{tr("Nothing saved yet.", "Aún no hay nada guardado."), tr("Use Save video or Save audio inside a video.", "Usa Guardar vídeo o Guardar audio dentro de un vídeo."), ""})
+		                          ->set_text_lines(all_items > 0 ? std::vector<std::string>{tr("No downloads match.", "Ninguna descarga coincide."), "", ""}
+		                                                                         : std::vector<std::string>{tr("Nothing saved yet.", "Aún no hay nada guardado."), tr("Use Save video or Save audio inside a video.", "Usa Guardar vídeo o Guardar audio dentro de un vídeo."), ""})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}

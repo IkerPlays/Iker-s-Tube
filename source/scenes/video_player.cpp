@@ -1825,7 +1825,7 @@ debug_info_view =
 						                           offline_download_async(cur_video_info.id, cur_video_info.title, cur_video_info.author.name,
 						                                                  cur_video_info.audio_stream_url);
 				                           }),
-				                 make_tool([]() { return tr("Save video", "Guardar vídeo"); }, 90,
+				                 make_tool([]() { return offline_has_id(cur_video_info.id) ? tr("Saved offline", "Guardado") : tr("Save video", "Guardar vídeo"); }, 90,
 				                           []() {
 					                           if (cur_video_info.id == "") return;
 					                           // the saved quality : 360p at most (240p on the old 3DS), the closest one that exists
