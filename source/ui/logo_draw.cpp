@@ -2,12 +2,54 @@
 #include <cmath>
 #include "data_io/string_resource.hpp"
 #include "ui/logo_draw.hpp"
+#include "network_decoder/image.hpp"
+#include <cstdio>
 
 static C2D_SpriteSheet logo_sheet = NULL;
 static C2D_Image logo_image;
 static bool logo_tried = false;
 
+// optional custom background : sdmc:/3ds/IkersTube/background.png (or .jpg), up to 1024x1024
+static Image_data bg_image;
+static bool bg_loaded = false, bg_tried = false;
+static void load_background() {
+	bg_tried = true;
+	const char *paths[] = {"sdmc:/3ds/IkersTube/background.png", "sdmc:/3ds/IkersTube/background.jpg"};
+	for (auto path : paths) {
+		FILE *f = fopen(path, "rb");
+		if (!f) continue;
+		fseek(f, 0, SEEK_END);
+		long size = ftell(f);
+		fseek(f, 0, SEEK_SET);
+		if (size <= 0 || size > 4 * 1024 * 1024) {
+			fclose(f);
+			continue;
+		}
+		std::vector<u8> data(size);
+		size_t got = fread(data.data(), 1, size, f);
+		fclose(f);
+		if (got != (size_t)size) continue;
+		int w = 0, h = 0;
+		u8 *pixels = Image_decode(data.data(), data.size(), &w, &h);
+		if (!pixels) continue;
+		int tw = 1, th = 1;
+		while (tw < w) tw <<= 1;
+		while (th < h) th <<= 1;
+		if (w > 1024 || h > 1024 || Draw_c2d_image_init(&bg_image, tw, th, GPU_RGB565).code != 0) {
+			free(pixels);
+			continue;
+		}
+		bg_loaded = Draw_set_texture_data(&bg_image, pixels, w, h, tw, th, GPU_RGB565).code == 0;
+		free(pixels);
+		if (bg_loaded) return;
+	}
+}
+
 void logo_draw(float cx, float cy) {
+	if (!bg_tried) load_background();
+	if (bg_loaded) {
+		Draw_texture(bg_image.c2d, 0, 0, 400, 240);
+	}
 	if (!logo_tried) {
 		logo_tried = true;
 		logo_sheet = C2D_SpriteSheetLoad("romfs:/gfx/draw/logo.t3x");
