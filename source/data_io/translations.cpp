@@ -135,6 +135,15 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Most watched channel: -", {"Chaîne la plus regardée : -", "Meistgesehener Kanal: -", "Canale più guardato: -", "Canal mais assistido: -", "最も見たチャンネル：-"}},
 	    {"Most watched channel: ", {"Chaîne la plus regardée : ", "Meistgesehener Kanal: ", "Canale più guardato: ", "Canal mais assistido: ", "最も見たチャンネル："}},
 	    {"Data limit reached", {"Limite de données atteinte", "Datenlimit erreicht", "Limite dati raggiunto", "Limite de dados atingido", "データ上限に達しました"}},
+	    {"None", {"Aucune", "Keine", "Nessuna", "Nenhuma", "なし"}},
+	    {"Next in queue", {"Suivante de la file", "Nächstes der Warteschlange", "Prossimo della coda", "Próximo da fila", "キューの次"}},
+	    {"Restart", {"Recommencer", "Neu starten", "Riavvia", "Reiniciar", "最初から"}},
+	    {"Bookmark", {"Marque-page", "Lesezeichen", "Segnalibro", "Marcador", "しおり"}},
+	    {"Stop after video", {"Arrêter après la vidéo", "Nach dem Video stoppen", "Ferma dopo il video", "Parar ao acabar", "動画の後で停止"}},
+	    {"Stop after: yes", {"Arrêt après : oui", "Stopp danach: ja", "Stop dopo: sì", "Parar depois: sim", "終了後に停止：オン"}},
+	    {"Button X in the player", {"Bouton X dans le lecteur", "X-Taste im Player", "Pulsante X nel lettore", "Botão X no reprodutor", "プレーヤーのXボタン"}},
+	    {"Button Y in the player", {"Bouton Y dans le lecteur", "Y-Taste im Player", "Pulsante Y nel lettore", "Botão Y no reprodutor", "プレーヤーのYボタン"}},
+	    {"Left-handed mini player", {"Mini-lecteur gaucher", "Mini-Player für Linkshänder", "Mini player per mancini", "Mini player para canhotos", "左利き用ミニプレーヤー"}},
 	};
 	return table;
 }

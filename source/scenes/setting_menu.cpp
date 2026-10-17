@@ -873,6 +873,52 @@ void Sem_init(void) {
 						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
 						->set_text_offset(0, -2)
 						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("None", "Nada"); },
+							(std::function<std::string ()>) []() { return std::string("+30 s"); },
+							(std::function<std::string ()>) []() { return tr("Next in queue", "Siguiente de la cola"); },
+							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
+							(std::function<std::string ()>) []() { return std::string("Mini player"); },
+							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
+							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); }
+						}, var_button_x)
+						->set_title([](const SelectorView &) { return tr("Button X in the player", "Botón X en el reproductor"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_button_x != view.selected_button) {
+								var_button_x = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("None", "Nada"); },
+							(std::function<std::string ()>) []() { return std::string("+30 s"); },
+							(std::function<std::string ()>) []() { return tr("Next in queue", "Siguiente de la cola"); },
+							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
+							(std::function<std::string ()>) []() { return std::string("Mini player"); },
+							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
+							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); }
+						}, var_button_y)
+						->set_title([](const SelectorView &) { return tr("Button Y in the player", "Botón Y en el reproductor"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_button_y != view.selected_button) {
+								var_button_y = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_left_handed)
+						->set_title([](const SelectorView &) { return tr("Left-handed mini player", "Mini reproductor para zurdos"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_left_handed != view.selected_button) {
+								var_left_handed = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Automatic quality
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

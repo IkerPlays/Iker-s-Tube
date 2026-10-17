@@ -74,6 +74,9 @@ void load_settings() {
 	var_data_saver = load_int("data_saver", 0);
 	var_data_limit_index = std::max(0, std::min(5, load_int("data_limit_index", 0)));
 	var_total_play_seconds = load_double("total_play_seconds", 0.0);
+	var_button_x = std::max(0, std::min(6, load_int("button_x", 1)));
+	var_button_y = std::max(0, std::min(6, load_int("button_y", 4)));
+	var_left_handed = load_int("left_handed", 0);
 	var_theme = std::max(0, std::min(5, load_int("color_theme", 0)));
 	var_large_thumbnails = load_int("large_thumbnails", 0);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
@@ -132,6 +135,9 @@ void save_settings() {
 	add_int("hide_pointer", var_hide_pointer);
 	add_int("dark_theme", var_night_mode);
 	add_int("color_theme", var_theme);
+	add_int("button_x", var_button_x);
+	add_int("button_y", var_button_y);
+	add_int("left_handed", var_left_handed);
 	add_int("data_saver", var_data_saver);
 	add_int("data_limit_index", var_data_limit_index);
 	add_double("total_play_seconds", var_total_play_seconds);

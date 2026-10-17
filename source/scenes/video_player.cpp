@@ -274,6 +274,7 @@ static std::string bookmarks_video_id;
 static double quick_speed = 1.0;
 static BarView *speed_bar_view = NULL;
 static bool mini_visible = false;
+static bool stop_after_video = false; // do not continue with the queue / autoplay when the current video ends
 static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
 
@@ -1431,6 +1432,21 @@ debug_info_view =
 					                           if (is_current()) bookmark_add_request = true;
 				                           }),
 				                 make_tool([]() { return std::string("Mini"); }, 50, []() { mini_visible = true; var_need_refresh = true; })}));
+				    // third row : skip 30 s (intros), stop after this video
+				    main_tab_views.push_back(
+				        (new HorizontalListView(0, 0, 20))
+				            ->set_views(
+				                {(new EmptyView(0, 0, SMALL_MARGIN, 20)),
+				                 make_tool([]() { return std::string("+30 s"); }, 70, [jump]() { jump(30); }),
+				                 make_tool(
+				                     []() {
+					                     return stop_after_video ? tr("Stop after: yes", "Parar al acabar: sí") : tr("Stop after video", "Parar al acabar");
+				                     },
+				                     180,
+				                     []() {
+					                     stop_after_video = !stop_after_video;
+					                     var_need_refresh = true;
+				                     })}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 
@@ -2481,6 +2497,32 @@ debug_info_view =
     static void mini_restart() {
 	    if (network_decoder.ready) send_seek_request_wo_lock(0);
     }
+    // actions that can be bound to X / Y (called outside of the view update, so the locking variants are fine)
+    static void run_button_action(int action) {
+	    switch (action) {
+	    case 1:
+		    if (network_decoder.ready) send_seek_request(std::min<double>(vid_duration, vid_current_pos + 30));
+		    break;
+	    case 2: {
+		    std::string queued_url;
+		    if (play_queue_pop(queued_url)) send_change_video_request(queued_url, true, false, false);
+		    break;
+	    }
+	    case 3:
+		    if (network_decoder.ready) send_seek_request(0);
+		    break;
+	    case 4:
+		    mini_visible = true;
+		    break;
+	    case 5:
+		    if (network_decoder.ready) bookmark_add_request = true;
+		    break;
+	    case 6:
+		    stop_after_video = !stop_after_video;
+		    break;
+	    }
+	    var_need_refresh = true;
+    }
     static double mini_volume = 1.0;
     static void mini_set_volume(double v) {
 	    mini_volume = std::min(3.0, std::max(0.1, v));
@@ -2510,10 +2552,20 @@ debug_info_view =
 	    Draw_texture(var_square_image[0], COLOR_ACCENT, 120, 115, 80, 60);
 	    Draw_texture(var_square_image[0], btn, 220, 115, 80, 60);
 	    u32 ic = DEF_DRAW_WHITE;
-	    C2D_DrawTriangle(72, 130, ic, 72, 160, ic, 50, 145, ic, 0); // |<
-	    C2D_DrawRectSolid(44, 130, 0, 4, 30, ic);
-	    C2D_DrawTriangle(228, 130, ic, 228, 160, ic, 250, 145, ic, 0); // >|
-	    C2D_DrawRectSolid(252, 130, 0, 4, 30, ic);
+	    // icons : "previous" |< and "next" >| ; the left-handed mode swaps their sides
+	    auto draw_prev = [&](float cx) {
+		    C2D_DrawTriangle(cx + 12, 130, ic, cx + 12, 160, ic, cx - 10, 145, ic, 0);
+		    C2D_DrawRectSolid(cx - 16, 130, 0, 4, 30, ic);
+	    };
+	    auto draw_next = [&](float cx) {
+		    C2D_DrawTriangle(cx - 12, 130, ic, cx - 12, 160, ic, cx + 10, 145, ic, 0);
+		    C2D_DrawRectSolid(cx + 12, 130, 0, 4, 30, ic);
+	    };
+	    if (var_left_handed) {
+		    draw_next(60), draw_prev(260);
+	    } else {
+		    draw_prev(60), draw_next(260);
+	    }
 	    if (vid_pausing || !vid_play_request) {
 		    C2D_DrawTriangle(150, 128, ic, 150, 162, ic, 176, 145, ic, 0);
 	    } else {
@@ -2523,8 +2575,8 @@ debug_info_view =
 	    // volume
 	    Draw_texture(var_square_image[0], btn, 20, 190, 50, 36);
 	    Draw_texture(var_square_image[0], btn, 250, 190, 50, 36);
-	    Draw_xy_centered("-", 20, 70, 190, 226, 0.9, 0.9, DEFAULT_TEXT_COLOR);
-	    Draw_xy_centered("+", 250, 300, 190, 226, 0.9, 0.9, DEFAULT_TEXT_COLOR);
+	    Draw_xy_centered(var_left_handed ? "+" : "-", 20, 70, 190, 226, 0.9, 0.9, DEFAULT_TEXT_COLOR);
+	    Draw_xy_centered(var_left_handed ? "-" : "+", 250, 300, 190, 226, 0.9, 0.9, DEFAULT_TEXT_COLOR);
 	    Draw_xy_centered(tr("Volume ", "Volumen ") + std::to_string((int)std::round(mini_volume * 100)) + "%", 70, 250, 190,
 	                     226, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 	    Draw_xy_centered("X", 290, 320, 0, 24, 0.6, 0.6, LIGHT1_TEXT_COLOR);
@@ -2556,12 +2608,14 @@ debug_info_view =
 			    if (x >= 290 && y < 30) {
 				    mini_visible = false;
 			    } else if (y >= 115 && y < 175) {
-				    if (x >= 20 && x < 100) mini_restart();
+				    bool left_is_prev = !var_left_handed;
+				    if (x >= 20 && x < 100) left_is_prev ? mini_restart() : mini_next();
 				    else if (x >= 120 && x < 200) toggle_pause();
-				    else if (x >= 220 && x < 300) mini_next();
+				    else if (x >= 220 && x < 300) left_is_prev ? mini_next() : mini_restart();
 			    } else if (y >= 190 && y < 226) {
-				    if (x >= 20 && x < 70) mini_set_volume(mini_volume / 1.25);
-				    else if (x >= 250 && x < 300) mini_set_volume(mini_volume * 1.25);
+				    bool left_is_down = !var_left_handed;
+				    if (x >= 20 && x < 70) mini_set_volume(left_is_down ? mini_volume / 1.25 : mini_volume * 1.25);
+				    else if (x >= 250 && x < 300) mini_set_volume(left_is_down ? mini_volume * 1.25 : mini_volume / 1.25);
 			    } else if (y >= 70 && y < 100 && x >= 20 && x < 300 && network_decoder.ready) {
 				    send_seek_request_wo_lock(vid_duration * (x - 20) / 280.0);
 			    }
@@ -2859,14 +2913,16 @@ debug_info_view =
 					    bool break_flag = false;
 					    if (!eof_reached) { // the first time it reaches EOF
 						    small_resource_lock.lock();
+						    const bool stop_here = stop_after_video; // "stop after this video" was requested
+						    stop_after_video = false;
 						    resume_set(playing_video_info.id, 0, 0); // watched until the end : next time from the start
 						    resume_save();
 						    std::string queued_url;
-						    if (var_loop_mode == false && play_queue_pop(queued_url)) {
+						    if (var_loop_mode == false && !stop_here && play_queue_pop(queued_url)) {
 							    // something was queued by the user : play it before any autoplay suggestion
 							    send_change_video_request_wo_lock(queued_url, true, false, false);
 							    break_flag = true;
-						    } else if (var_loop_mode == false) {
+						    } else if (var_loop_mode == false && !stop_here) {
 							    if ((var_autoplay_level == 2 && playing_video_info.has_next_video()) ||
 							        (var_autoplay_level == 1 && playing_video_info.has_next_video_in_playlist())) {
 
@@ -3365,6 +3421,10 @@ debug_info_view =
 			    }
 		    } else if ((key.h_x && key.p_b) || (key.h_b && key.p_x)) {
 			    vid_play_request = false;
+		    } else if (key.p_x && var_button_x) {
+			    run_button_action(var_button_x);
+		    } else if (key.p_y && var_button_y) {
+			    run_button_action(var_button_y);
 		    } else if (key.p_b) {
 			    global_intent.next_scene = SceneType::BACK;
 		    } else if (key.p_d_right || key.p_d_left) {

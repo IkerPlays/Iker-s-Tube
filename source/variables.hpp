@@ -25,6 +25,9 @@ extern bool var_grid_view; // video lists as a grid of thumbnails (search result
 extern bool var_data_saver; // limits the quality to 240p and does not download thumbnails
 extern int var_data_limit_index; // 0 off, then 100 MB, 250 MB, 500 MB, 1 GB, 2 GB (session)
 extern double var_total_play_seconds; // statistics : time spent playing
+extern int var_button_x; // action of the X button in the player (0 none, 1 +30 s, 2 next in queue, 3 restart, 4 mini player, 5 bookmark, 6 stop after this video)
+extern int var_button_y; // same for Y
+extern bool var_left_handed; // mirrors the mini player controls
 extern int var_theme;             // color theme index (see colors.hpp)
 extern bool var_large_thumbnails; // bigger thumbnails in video lists
 extern bool var_disable_pull_to_refresh;
