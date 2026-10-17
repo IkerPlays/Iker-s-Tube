@@ -1,3 +1,4 @@
+#include <map>
 #include "headers.hpp"
 #include "string_resource.hpp"
 
@@ -72,6 +73,27 @@ std::string loading_text() {
 	return text + std::string(dots, '.');
 }
 
+struct TrRow {
+	const char *fr, *de, *it, *pt, *ja;
+};
+const std::map<std::string, TrRow> &tr_table();
+
 std::string tr(const char *en, const char *es) {
-	return var_lang == "es" ? es : en;
+	if (var_lang == "es") {
+		return es;
+	}
+	if (var_lang != "en") {
+		auto &table = tr_table();
+		auto it = table.find(en);
+		if (it != table.end()) {
+			const char *text = var_lang == "fr"   ? it->second.fr
+			                   : var_lang == "de" ? it->second.de
+			                   : var_lang == "it" ? it->second.it
+			                   : var_lang == "br" ? it->second.pt
+			                   : var_lang == "ja" ? it->second.ja
+			                                      : en;
+			return text;
+		}
+	}
+	return en;
 }
