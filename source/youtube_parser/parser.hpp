@@ -142,6 +142,8 @@ struct YouTubeVideoDetail {
 	std::string comment_continue_token;
 	int comment_continue_type; // -1 : unavailable, 0 : using watch_comments, 1 : using innertube
 	bool comments_disabled;
+	std::string comment_sort_tokens[2]; // 0 : top comments, 1 : newest first (empty if unknown)
+	int comment_sort_type = 0;
 
 	bool has_next_video() const {
 		if (playlist.videos.size() && playlist.selected_index != (int)playlist.videos.size() - 1) {

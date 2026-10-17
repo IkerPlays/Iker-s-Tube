@@ -899,6 +899,20 @@ void YouTubeVideoDetail::load_more_comments() {
 				                              : i["appendContinuationItemsAction"]["continuationItems"];
 
 				                      for (auto comment : continuation_items.array_items()) {
+					                      if (comment.has_key("commentsHeaderRenderer")) { // sort menu : top / newest
+						                      int sort_index = 0;
+						                      for (auto sort_item : comment["commentsHeaderRenderer"]["sortMenu"]
+						                                                ["sortFilterSubMenuRenderer"]["subMenuItems"]
+						                                                    .array_items()) {
+							                      std::string token = sort_item["serviceEndpoint"]["continuationCommand"]
+							                                                    ["token"]
+							                                                        .string_value();
+							                      if (token != "" && sort_index < 2) {
+								                      comment_sort_tokens[sort_index] = token;
+							                      }
+							                      sort_index++;
+						                      }
+					                      }
 					                      if (comment.has_key("commentThreadRenderer")) {
 						                      comments.push_back(parse_comment_thread_renderer(comment));
 					                      }

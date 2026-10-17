@@ -140,7 +140,20 @@ View *suggestion_bottom_view = new EmptyView(0, 0, 320, 0);
 ScrollView *suggestion_tab_view;
 
 // comment tab
-View *comments_top_view = new EmptyView(0, 0, 320, 4);
+static void comment_sort_clicked();
+View *comments_top_view = (new TextView(0, 0, 320, 20))
+                              ->set_text((std::function<std::string()>)[]() -> std::string {
+	                              if (cur_video_info.comment_sort_tokens[0] == "" && cur_video_info.comment_sort_tokens[1] == "") {
+		                              return "";
+	                              }
+	                              return tr("Sort: ", "Orden: ") + (cur_video_info.comment_sort_type == 0 ? tr("Top", "Populares") : tr("Newest", "Recientes")) + "  >";
+                              })
+                              ->set_x_alignment(TextView::XAlign::CENTER)
+                              ->set_y_alignment(TextView::YAlign::CENTER)
+                              ->set_get_background_color(View::STANDARD_BACKGROUND)
+                              ->set_on_view_released([](View &) {
+	                              comment_sort_clicked();
+                              });
 VerticalListView *comments_main_view = new VerticalListView(0, 0, 320);
 View *comments_bottom_view = new EmptyView(0, 0, 320, 0);
 ScrollView *comment_tab_view = NULL;
@@ -189,6 +202,15 @@ static void send_change_video_request_wo_lock(std::string url, bool update_playe
 
 static void load_video_page(void *);
 static void load_more_comments(void *);
+static void change_comment_sort(void *);
+namespace VideoPlayer {
+static void comment_sort_clicked() {
+	if (!is_async_task_running(load_video_page) && !is_async_task_running(load_more_comments) &&
+	    !is_async_task_running(change_comment_sort)) {
+		queue_async_task(change_comment_sort, NULL);
+	}
+}
+} // namespace VideoPlayer
 static void load_more_suggestions(void *);
 static void load_more_replies(void *);
 static void load_caption(void *);
@@ -1812,6 +1834,42 @@ debug_info_view =
 	    video_info_cache[cur_video_info.url] = new_result;
 	    comments_main_view->views.insert(comments_main_view->views.end(), new_comment_views.begin(),
 	                                     new_comment_views.end());
+	    update_comment_bottom_view();
+	    var_need_refresh = true;
+	    small_resource_lock.unlock();
+    }
+
+    // switches the comments between "top" and "newest first" (the sort tokens come from the first comments answer)
+    static void change_comment_sort(void *) {
+	    small_resource_lock.lock();
+	    int target = cur_video_info.comment_sort_type == 0 ? 1 : 0;
+	    auto new_result = cur_video_info;
+	    small_resource_lock.unlock();
+	    if (new_result.comment_sort_tokens[target] == "") {
+		    return;
+	    }
+	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
+	    new_result.comments.clear();
+	    new_result.comment_continue_token = new_result.comment_sort_tokens[target];
+	    new_result.comment_continue_type = 1;
+	    new_result.comment_sort_type = target;
+	    new_result.load_more_comments();
+	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
+
+	    std::vector<View *> new_comment_views;
+	    for (size_t i = 0; i < new_result.comments.size(); i++) {
+		    new_comment_views.push_back(comment_to_view(new_result.comments[i], i));
+	    }
+
+	    small_resource_lock.lock();
+	    if (!vid_already_init) {
+		    small_resource_lock.unlock();
+		    return;
+	    }
+	    cur_video_info = new_result;
+	    video_info_cache[cur_video_info.url] = new_result;
+	    comments_main_view->recursive_delete_subviews();
+	    comments_main_view->views = new_comment_views;
 	    update_comment_bottom_view();
 	    var_need_refresh = true;
 	    small_resource_lock.unlock();
