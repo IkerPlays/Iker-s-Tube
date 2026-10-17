@@ -47,6 +47,10 @@ static bool delete_armed = false; // the first tap on Delete only asks for a sec
 static std::string pick_dir = "sdmc:/";
 static std::string form_path, form_title, form_desc;
 static int form_privacy = 0; // 0 private, 1 unlisted, 2 public
+static int form_publish = 0; // index in publish_options[] (0 = now)
+static const int publish_options[] = {0, 3600, 10800, 86400, 259200, 604800};
+static const char *publish_en[] = {"now", "in 1 hour", "in 3 hours", "in 1 day", "in 3 days", "in 1 week"};
+static const char *publish_es[] = {"ahora", "en 1 hora", "en 3 horas", "en 1 día", "en 3 días", "en 1 semana"};
 static int form_category = 0; // index in categories[]
 static std::string form_tags;  // "a, b, c"
 static bool form_short = false;
@@ -166,13 +170,14 @@ static std::string parent_dir(const std::string &dir) {
 struct UploadJob {
 	std::string path, title, description, privacy, category_id, thumb_path, tags, resume_url;
 	bool is_short;
+	int publish_in;
 };
 
 static void upload_thread(void *arg) {
 	UploadJob *job = (UploadJob *)arg;
 	std::string video_id, error;
 	int last_notice = -1;
-	bool ok = youtube_studio_upload(job->path, job->title, job->description, job->privacy, job->is_short, job->category_id, job->tags, job->resume_url,
+	bool ok = youtube_studio_upload(job->path, job->title, job->description, job->privacy, job->is_short, job->category_id, job->tags, job->publish_in, job->resume_url,
 	                                [&](u64 done, u64 total) {
 		                                int percent = total ? (int)(done * 100 / total) : 0;
 		                                upload_percent = percent;
@@ -214,8 +219,8 @@ static void upload_thread(void *arg) {
 static void start_upload(const std::string &resume_path = "", const std::string &resume_title = "", const std::string &resume_url = "") {
 	if (upload_running) return;
 	UploadJob *job = resume_url != ""
-	                     ? new UploadJob{resume_path, resume_title, "", "private", "22", "", "", resume_url, false} // (the rest was sent when it started)
-	                     : new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_tags, "", form_short};
+	                     ? new UploadJob{resume_path, resume_title, "", "private", "22", "", "", resume_url, false, 0} // (the rest was sent when it started)
+	                     : new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_tags, "", form_short, publish_options[form_publish]};
 	for (auto &c : job->privacy) c = tolower(c);
 	upload_running = true;
 	upload_percent = 0;
@@ -484,6 +489,7 @@ static std::vector<View *> build_pick() {
 			form_desc = "";
 			form_privacy = 0;
 			form_category = 0;
+			form_publish = 0;
 			form_tags = "";
 			form_thumb = "";
 			form_short = pick_short;
@@ -523,6 +529,10 @@ static std::vector<View *> build_form() {
 		                   form_category = (form_category + 1) % category_count;
 		                   var_need_refresh = true;
 	                   }));
+	v.push_back(button([]() { return tr("Publish: ", "Publicar: ") + tr(publish_en[form_publish], publish_es[form_publish]); }, []() {
+		form_publish = (form_publish + 1) % 6;
+		var_need_refresh = true;
+	}));
 	v.push_back(button([]() { return tr("Thumbnail: ", "Miniatura: ") + (form_thumb == "" ? std::string("-") : form_thumb.substr(form_thumb.find_last_of('/') + 1)); },
 	                   []() {
 		                   pick_image = true;

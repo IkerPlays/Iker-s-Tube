@@ -167,6 +167,32 @@ static std::string mime_of(const std::string &path) {
 	return "application/octet-stream";
 }
 
+// days since 1970-01-01 of a civil date (no timegm on the console)
+static long long days_from_civil(long long y, unsigned m, unsigned d) {
+	y -= m <= 2;
+	const long long era = (y >= 0 ? y : y - 399) / 400;
+	const unsigned yoe = (unsigned)(y - era * 400);
+	const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;
+	const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+	return era * 146097 + (long long)doe - 719468;
+}
+
+bool youtube_studio_utc_now(long long &epoch) {
+	auto r = studio_session().perform(HttpRequest::GET("https://www.google.com/generate_204", {}));
+	std::string date = r.get_header("date"); // "Sat, 17 Oct 2026 16:00:00 GMT"
+	char month_name[4] = {0};
+	int day = 0, year = 0, hour = 0, minute = 0, second = 0;
+	if (r.fail || sscanf(date.c_str(), "%*3s, %d %3s %d %d:%d:%d", &day, month_name, &year, &hour, &minute, &second) != 6) return false;
+	static const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	int month = 0;
+	for (int i = 0; i < 12; i++) {
+		if (strncmp(month_name, months[i], 3) == 0) month = i + 1;
+	}
+	if (!month) return false;
+	epoch = days_from_civil(year, month, day) * 86400LL + hour * 3600 + minute * 60 + second;
+	return true;
+}
+
 #define PENDING_UPLOAD_PATH "sdmc:/3ds/IkersTube/studio_upload.txt"
 
 static void save_pending_upload(const std::string &path, const std::string &title, const std::string &url) {
@@ -200,7 +226,7 @@ bool youtube_studio_pending_upload(std::string &path, std::string &title, std::s
 }
 
 bool youtube_studio_upload(const std::string &path, const std::string &title, const std::string &description,
-                           const std::string &privacy, bool is_short, const std::string &category_id, const std::string &tags,
+                           const std::string &privacy, bool is_short, const std::string &category_id, const std::string &tags, int publish_in_seconds,
                            const std::string &resume_url, const std::function<void(u64, u64)> &progress, std::string &video_id,
                            std::string &error) {
 	if (studio_bearer_token() == "") {
@@ -250,9 +276,25 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 			}
 		}
 	}
+	std::string publish_at;
+	std::string used_privacy = privacy;
+	if (publish_in_seconds > 0) { // scheduled : private until the moment, using the time of the internet
+		long long now = 0;
+		if (!youtube_studio_utc_now(now)) {
+			error = "could not get the time from the internet";
+			fclose(file);
+			return false;
+		}
+		time_t when = (time_t)(now + publish_in_seconds);
+		struct tm *t = gmtime(&when);
+		char buf[40];
+		snprintf(buf, sizeof buf, "%04d-%02d-%02dT%02d:%02d:%02dZ", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+		publish_at = buf;
+		used_privacy = "private";
+	}
 	std::string meta = "{\"snippet\": {\"title\": " + json_quote(full_title) + ", \"description\": " + json_quote(full_description) +
 	                   ", \"categoryId\": " + json_quote(category_id) + (tags_json != "" ? ", \"tags\": [" + tags_json + "]" : "") +
-	                   "}, \"status\": {\"privacyStatus\": " + json_quote(privacy) + ", \"selfDeclaredMadeForKids\": false}}";
+	                   "}, \"status\": {\"privacyStatus\": " + json_quote(used_privacy) + (publish_at != "" ? ", \"publishAt\": " + json_quote(publish_at) : "") + ", \"selfDeclaredMadeForKids\": false}}";
 	std::string upload_url = resume_url;
 	u64 resume_offset = 0;
 	if (upload_url == "") {

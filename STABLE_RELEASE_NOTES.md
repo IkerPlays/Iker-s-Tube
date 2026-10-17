@@ -45,6 +45,8 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Incognito mode.** From the More menu or Settings: no history, searches, resume points or last video are remembered.
 - **Search.** More Explore shortcuts (Shorts, Learn something, Funny), long press a recent search to forget it, and optional settings hide Shorts and already watched videos in search, home and the subscription feeds.
 - **Fixes from three code reviews.** A failed re-download no longer deletes a saved copy, saved videos with one file can play as audio, the bottom bar no longer piles up screens, the crash notice stays visible, comment details are shared safely between threads, Failed download threads no longer block later downloads, popups no longer leak on every visit, a failed read of an offline file no longer breaks playback, and uploads no longer clash with other network requests.
+- **Bell, Not interested, Hide channel.** New video tools when signed in: per-channel notification level, and telling YouTube to stop recommending a video or channel.
+- **Scheduled publishing.** Studio upload has Publish: now, 1 hour, 3 hours, 1 day, 3 days or 1 week; the time comes from the internet (the console clock has no reliable time zone).
 
 ## Installing
 

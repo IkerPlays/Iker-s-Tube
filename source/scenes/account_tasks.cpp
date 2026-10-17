@@ -28,7 +28,7 @@ bool account_ready() {
 	return false;
 }
 
-enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE };
+enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL };
 
 static void run_job(void *arg) {
 	AccountJob *job = (AccountJob *)arg;
@@ -91,6 +91,16 @@ static void run_job(void *arg) {
 		failed = tr("Could not translate (no connection?)", "No se pudo traducir (¿sin conexión?)");
 		break;
 	}
+	case NOT_INTERESTED:
+		ok = youtube_account_not_interested(job->a, job->flag);
+		done = job->flag ? tr("You will not be recommended this channel", "No se te recomendará este canal") : tr("Noted: not interested", "Anotado: no me interesa");
+		failed = tr("Could not send it", "No se pudo enviar");
+		break;
+	case BELL:
+		ok = youtube_account_channel_bell(job->a, job->number);
+		done = job->number == 0 ? tr("Notifications: all", "Notificaciones: todas") : job->number == 1 ? tr("Notifications: personalized", "Notificaciones: personalizadas") : tr("Notifications: none", "Notificaciones: ninguna");
+		failed = tr("Could not change the bell", "No se pudo cambiar la campana");
+		break;
 	case COMMENT_DELETE:
 		ok = youtube_account_comment_delete(job->a, job->b);
 		done = tr("Comment deleted", "Comentario borrado");
@@ -145,6 +155,18 @@ void account_comment_async(const std::string &comments_token, const std::string 
 void account_comment_like_async(const std::string &comments_token, const std::string &comment_id) {
 	if (!account_ready()) return;
 	queue_job(new AccountJob{COMMENT_LIKE, comments_token, comment_id, ""});
+}
+void account_not_interested_async(const std::string &video_id, bool whole_channel) {
+	if (!account_ready()) return;
+	AccountJob *j = new AccountJob{NOT_INTERESTED, video_id, "", ""};
+	j->flag = whole_channel;
+	queue_job(j);
+}
+void account_bell_async(const std::string &channel_id, int level) {
+	if (!account_ready()) return;
+	AccountJob *j = new AccountJob{BELL, channel_id, "", ""};
+	j->number = level;
+	queue_job(j);
 }
 void account_comment_delete_async(const std::string &comments_token, const std::string &comment_id) {
 	if (!account_ready()) return;

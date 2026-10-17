@@ -5,6 +5,8 @@
 
 // Background versions of the account actions : they show the result with notice_show().
 bool account_ready(); // false (and a notice is shown) when there is no OAuth login
+void account_not_interested_async(const std::string &video_id, bool whole_channel);
+void account_bell_async(const std::string &channel_id, int level);
 void account_like_async(const std::string &video_id, int rating);
 void account_subscribe_async(const std::string &channel_id, bool subscribe);
 void account_playlists_async(const std::string &video_id); // fills the list below when done

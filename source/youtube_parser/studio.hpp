@@ -17,8 +17,11 @@ StudioStats youtube_studio_stats();
 // Uploads the file at `path`. `privacy` is "private", "unlisted" or "public". A short is a vertical video of up to 3
 // minutes whose description has #Shorts. `progress(done, total)` is called after every chunk.
 // Returns true and fills `video_id` on success, otherwise `error` tells why.
+// the current UTC time from the internet (the Date header of a Google answer : the console clock has no reliable time zone)
+bool youtube_studio_utc_now(long long &epoch);
+// publish_in_seconds > 0 : the video is uploaded private and YouTube publishes it that much later
 bool youtube_studio_upload(const std::string &path, const std::string &title, const std::string &description,
-                           const std::string &privacy, bool is_short, const std::string &category_id, const std::string &tags,
+                           const std::string &privacy, bool is_short, const std::string &category_id, const std::string &tags, int publish_in_seconds,
                            const std::string &resume_url, const std::function<void(u64, u64)> &progress, std::string &video_id,
                            std::string &error);
 // An upload that did not finish (the app was closed, no connection...) can be continued : this tells which one is pending.

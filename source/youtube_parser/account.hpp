@@ -12,6 +12,11 @@ struct AccountPlaylist {
 };
 
 // the videos YouTube recommends to the account and the videos of its notification inbox (title + url + author when known)
+// "Not interested" / "Don't recommend this channel" for a video that came in the recommendations (its feedback tokens are kept
+// when the recommendations are loaded) : false if the video is not one of them
+bool youtube_account_not_interested(const std::string &video_id, bool whole_channel);
+// the notification bell of a channel you are subscribed to : level 0 all, 1 personalized, 2 none
+bool youtube_account_channel_bell(const std::string &channel_id, int level);
 bool youtube_account_recommendations(std::vector<YouTubeVideoSuccinct> &out);
 bool youtube_account_notifications(std::vector<YouTubeVideoSuccinct> &out);
 

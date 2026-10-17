@@ -1922,6 +1922,18 @@ debug_info_view =
 				                                   []() { if (cur_video_info.id != "") account_like_async(cur_video_info.id, -1); }),
 				                         make_tool([]() { return tr("My list", "Mi lista"); }, 70,
 				                                   []() { if (cur_video_info.id != "") account_playlists_async(cur_video_info.id); }),
+				                         make_tool([]() { return tr("Bell", "Campana"); }, 60,
+				                                   []() {
+					                                   static int bell_level = 0; // all -> personalized -> none -> all ...
+					                                   if (cur_video_info.author.id != "") {
+						                                   account_bell_async(cur_video_info.author.id, bell_level);
+						                                   bell_level = (bell_level + 1) % 3;
+					                                   }
+				                                   }),
+				                         make_tool([]() { return tr("Not interested", "No me interesa"); }, 100,
+				                                   []() { if (cur_video_info.id != "") account_not_interested_async(cur_video_info.id, false); }),
+				                         make_tool([]() { return tr("Hide channel", "Ocultar canal"); }, 100,
+				                                   []() { if (cur_video_info.id != "") account_not_interested_async(cur_video_info.id, true); }),
 				                         make_tool([]() { return tr("Translate", "Traducir"); }, 80,
 				                                   []() {
 					                                   if (cur_video_info.title != "")

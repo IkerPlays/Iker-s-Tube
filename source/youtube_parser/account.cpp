@@ -390,6 +390,43 @@ static bool is_video_id(const std::string &s) {
 	return true;
 }
 
+// the feedback tokens of the recommended videos {video id -> {not interested, don't recommend the channel}}
+static std::map<std::string, std::pair<std::string, std::string>> feedback_tokens;
+
+bool youtube_account_not_interested(const std::string &video_id, bool whole_channel) {
+	std::string token;
+	LightLock_Lock(&state_lock);
+	auto it = feedback_tokens.find(video_id);
+	if (it != feedback_tokens.end()) token = whole_channel ? it->second.second : it->second.first;
+	LightLock_Unlock(&state_lock);
+	if (token == "") {
+		set_last_error("open it from the recommendations first");
+		return false;
+	}
+	for (int client : {1, 0}) {
+		if (account_post("feedback", "\"feedbackTokens\": [\"" + json_escape(token) + "\"]", client).first) return true;
+	}
+	return false;
+}
+
+bool youtube_account_channel_bell(const std::string &channel_id, int level) {
+	for (int client : {1, 0, 2, 3}) {
+		auto page = account_post("browse", "\"browseId\": \"" + json_escape(channel_id) + "\"", client);
+		if (!page.first) continue;
+		// the menu of the bell has three entries (all, personalized, none) with the action that sets each one
+		std::vector<std::string> params;
+		const std::string key = "\"modifyChannelNotificationPreferenceEndpoint\":{\"params\":\"";
+		for (size_t pos = 0; params.size() < 3 && (pos = page.second.find(key, pos)) != std::string::npos; pos += key.size()) {
+			std::string p = text_after(page.second, pos, page.second.size(), key);
+			if (p != "" && std::find(params.begin(), params.end(), p) == params.end()) params.push_back(p);
+		}
+		if (params.size() < 3) continue; // not subscribed on the account (or a layout without the bell)
+		return account_post("notification/modify_channel_preference", "\"params\": \"" + json_escape(params[std::max(0, std::min(2, level))]) + "\"", client).first;
+	}
+	set_last_error("no bell found : subscribe on your account first");
+	return false;
+}
+
 bool youtube_account_recommendations(std::vector<YouTubeVideoSuccinct> &out) {
 	auto r = account_post("browse", "\"browseId\": \"FEwhat_to_watch\"");
 	if (!r.first) return false;
@@ -413,6 +450,19 @@ bool youtube_account_recommendations(std::vector<YouTubeVideoSuccinct> &out) {
 		v.duration_text = text_after(json, pos, end, "\"lengthText\":{\"simpleText\":\"");
 		v.url = youtube_get_video_url_by_id(id);
 		v.thumbnail_url = youtube_get_video_thumbnail_url_by_id(id);
+		{ // the feedback tokens of its menu
+			size_t window = std::min(json.size(), pos + 9000);
+			std::string not_interested, dont_recommend;
+			size_t ni = json.find("NOT_INTERESTED", pos);
+			if (ni != std::string::npos && ni < window) not_interested = text_after(json, ni, std::min(json.size(), ni + 1500), "\"feedbackToken\":\"");
+			size_t dr = json.find("REMOVE", pos);
+			if (dr != std::string::npos && dr < window) dont_recommend = text_after(json, dr, std::min(json.size(), dr + 1500), "\"feedbackToken\":\"");
+			if (not_interested != "" || dont_recommend != "") {
+				LightLock_Lock(&state_lock);
+				feedback_tokens[id] = {not_interested, dont_recommend};
+				LightLock_Unlock(&state_lock);
+			}
+		}
 		out.push_back(v);
 	}
 	logger.info("account", "recommendations : " + std::to_string(out.size()));
