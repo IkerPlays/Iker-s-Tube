@@ -138,3 +138,26 @@ std::vector<FavoriteVideo> watch_later_get() {
 	watch_later_lock.unlock();
 	return res;
 }
+
+int watch_later_merge(const std::vector<FavoriteVideo> &videos) {
+	int added = 0;
+	watch_later_lock.lock();
+	for (auto &v : videos) {
+		bool exists = false;
+		for (auto &o : watch_later_list) {
+			if (o.id == v.id) {
+				exists = true;
+				break;
+			}
+		}
+		if (!exists) {
+			watch_later_list.push_back(v);
+			added++;
+		}
+	}
+	if (added) {
+		save_locked();
+	}
+	watch_later_lock.unlock();
+	return added;
+}

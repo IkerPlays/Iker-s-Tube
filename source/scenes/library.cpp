@@ -1,6 +1,8 @@
 #include "headers.hpp"
 #include "ui/qr_popup.hpp"
 #include "data_io/watch_later.hpp"
+#include "oauth/oauth.hpp"
+#include "util/async_task.hpp"
 #include <vector>
 #include <string>
 #include <cstdlib>
@@ -268,7 +270,19 @@ static void build_favorites(VerticalListView *list) {
 	}
 }
 
+static void pull_watch_later_task(void *) {
+	if (watch_later_pull_remote() > 0) {
+		rebuild_request = true;
+		var_need_refresh = true;
+	}
+}
+
 static void build_watch_later(VerticalListView *list) {
+	static bool pulled_this_session = false; // YouTube's Watch later list is downloaded once per session (OAuth only)
+	if (!pulled_this_session && OAuth::is_authenticated()) {
+		pulled_this_session = true;
+		queue_async_task(pull_watch_later_task, NULL);
+	}
 	auto favs = watch_later_get();
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
