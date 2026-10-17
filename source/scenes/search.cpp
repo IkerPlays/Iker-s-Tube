@@ -155,6 +155,24 @@ static void show_search_history() {
 		return;
 	}
 	auto words = search_history_get();
+	// Explore : ready-made searches (YouTube no longer offers real Music / Trending feeds to this client)
+	result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+	                                      ->set_text("Explore")
+	                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+	                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+	static const char *explore_labels[] = {"Music", "Trending", "Gaming", "Live", "Movie trailers", "News"};
+	static const char *explore_queries[] = {"music 2026 official video", "trending today", "gaming highlights",
+	                                        "live now", "new movie trailers", "world news today"};
+	for (int i = 0; i < 6; i++) {
+		std::string query = explore_queries[i];
+		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+		                                      ->set_text(explore_labels[i])
+		                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+		                                      ->set_y_alignment(TextView::YAlign::CENTER)
+		                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
+		                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                                      ->set_on_view_released([query](View &) { start_search(query); }));
+	}
 	if (!words.size()) {
 		return;
 	}
