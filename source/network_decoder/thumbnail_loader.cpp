@@ -32,6 +32,7 @@ static volatile SceneType active_scene = SceneType::SEARCH;
 static Mutex resource_lock;
 static std::vector<Request> requests;
 static std::queue<int> free_list;
+static std::set<int> free_handles; // the same handles as free_list : guards against cancelling a handle twice
 
 static std::map<std::string, std::vector<u8>> thumbnail_cache;
 static int thumbnail_free_time_cnter = 0; // incremented each time when a thumbnail is freed
@@ -60,6 +61,7 @@ int thumbnail_request(const std::string &url, SceneType scene_id, int priority, 
 	if (free_list.size()) {
 		handle = free_list.front();
 		free_list.pop();
+		free_handles.erase(handle);
 		requests[handle] = {url, scene_id, priority};
 	} else {
 		handle = requests.size();
@@ -79,6 +81,9 @@ inline static void thumbnail_cancel_request_wo_lock(int handle) {
 	if (handle == -1) {
 		return;
 	}
+	if (handle < 0 || handle >= (int)requests.size() || free_handles.count(handle)) {
+		return; // invalid or already cancelled
+	}
 	std::string url = requests[handle].url;
 	auto &url_status = requested_urls[url];
 	url_status.handles.erase(handle);
@@ -90,6 +95,7 @@ inline static void thumbnail_cancel_request_wo_lock(int handle) {
 		thumbnail_free_time[url] = ++thumbnail_free_time_cnter;
 	}
 	free_list.push(handle);
+	free_handles.insert(handle);
 }
 void thumbnail_cancel_request(int handle) {
 	if (handle == -1) {
@@ -141,7 +147,10 @@ bool thumbnail_is_available(int handle) {
 	if (handle == -1) {
 		return false;
 	}
-	return thumbnail_is_available(requests[handle].url); // TODO : lock
+	resource_lock.lock();
+	std::string url = handle >= 0 && handle < (int)requests.size() ? requests[handle].url : std::string();
+	resource_lock.unlock();
+	return thumbnail_is_available(url);
 }
 
 int thumbnail_get_status_code(const std::string &url) {
@@ -157,7 +166,10 @@ int thumbnail_get_status_code(int handle) {
 	if (handle == -1) {
 		return false;
 	}
-	return thumbnail_get_status_code(requests[handle].url);
+	resource_lock.lock();
+	std::string url = handle >= 0 && handle < (int)requests.size() ? requests[handle].url : std::string();
+	resource_lock.unlock();
+	return thumbnail_get_status_code(url);
 }
 
 void thumbnail_get_dimensions(int handle, int *width, int *height) {
@@ -440,6 +452,13 @@ void thumbnail_downloader_thread_func(void *arg) {
 				result = Draw_c2d_image_init(&result_image, texture_w, texture_h, format);
 				if (result.code != 0) {
 					logger.error("thumb-dl", "out of linearmem");
+					resource_lock.lock();
+					if (requested_urls.count(info.url)) { // do not decode the same picture again and again
+						requested_urls[info.url].is_loaded = false;
+						requested_urls[info.url].error = true;
+						requested_urls[info.url].waiting_retry = false;
+					}
+					resource_lock.unlock();
 				} else {
 					result = Draw_set_texture_data(&result_image, decoded_data, w, h, texture_w, texture_h, format);
 					if (result.code != 0) {

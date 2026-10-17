@@ -25,12 +25,20 @@ static void load_background() {
 			fclose(f);
 			continue;
 		}
-		std::vector<u8> data(size);
-		size_t got = fread(data.data(), 1, size, f);
+		u8 *data = (u8 *)malloc(size);
+		if (!data) {
+			fclose(f);
+			continue;
+		}
+		size_t got = fread(data, 1, size, f);
 		fclose(f);
-		if (got != (size_t)size) continue;
+		if (got != (size_t)size) {
+			free(data);
+			continue;
+		}
 		int w = 0, h = 0;
-		u8 *pixels = Image_decode(data.data(), data.size(), &w, &h);
+		u8 *pixels = Image_decode(data, size, &w, &h);
+		free(data);
 		if (!pixels) continue;
 		int tw = 1, th = 1;
 		while (tw < w) tw <<= 1;
@@ -42,6 +50,7 @@ static void load_background() {
 		bg_loaded = Draw_set_texture_data(&bg_image, pixels, w, h, tw, th, GPU_RGB565).code == 0;
 		free(pixels);
 		if (bg_loaded) return;
+		Draw_c2d_image_free(bg_image); // the texture was created but could not be filled
 	}
 }
 

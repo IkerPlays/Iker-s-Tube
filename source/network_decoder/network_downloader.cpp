@@ -205,7 +205,8 @@ std::vector<u8> NetworkStream::get_data(u64 start, u64 size) {
 		downloaded_data_lock.lock();
 		auto itr = downloaded_data.find(block);
 		if (itr != downloaded_data.end()) {
-			res.insert(res.end(), itr->second.begin() + cur_l, itr->second.begin() + cur_r);
+			u64 ram_r = std::min<u64>(cur_r, itr->second.size()); // a short block must not be read past its end
+			if (cur_l < ram_r) res.insert(res.end(), itr->second.begin() + cur_l, itr->second.begin() + ram_r);
 			downloaded_data_lock.unlock();
 			continue;
 		}

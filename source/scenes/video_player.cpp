@@ -1948,7 +1948,9 @@ debug_info_view =
     });
     // update playlist tab
     if (cur_video_info.playlist.id != "" && cur_video_info.playlist.id == tmp_video_info.playlist.id) {
-	    for (size_t i = 0; i < cur_video_info.playlist.videos.size(); i++) {
+	    size_t playlist_len = std::min(std::min(cur_video_info.playlist.videos.size(), tmp_video_info.playlist.videos.size()),
+	                                   playlist_list_videos_view->views.size());
+	    for (size_t i = 0; i < playlist_len; i++) {
 		    if ((int)i == cur_video_info.playlist.selected_index) {
 			    playlist_list_videos_view->views[i]->set_get_background_color(
 			        [](const View &) { return COLOR_LIGHT_BLUE; });
@@ -2749,17 +2751,24 @@ debug_info_view =
 	    if (vid_play_request && network_decoder.ready && !audio_only_mode) {
 		    Draw_texture(vid_image[texture_index].c2d, vid_x, vid_y, vid_tex_width[texture_index] * vid_zoom,
 		                 vid_tex_height[texture_index] * vid_zoom);
-		    caption_overlay_view->cur_timestamp = vid_current_pos;
-		    caption_overlay_view->draw();
+		    small_resource_lock.lock(); // the overlay is replaced by the loader threads
+		    if (caption_overlay_view) {
+			    caption_overlay_view->cur_timestamp = vid_current_pos;
+			    caption_overlay_view->draw();
+		    }
+		    small_resource_lock.unlock();
 	    } else if (vid_play_request && network_decoder.ready && audio_only_mode) {
 		    // minimalist audio-only screen : title, author, time and a progress bar
-		    auto title_lines = truncate_str(playing_video_info.title, 360, 3, 0.65, 0.65);
+		    small_resource_lock.lock(); // playing_video_info is replaced when the video changes
+		    std::string audio_title = playing_video_info.title, audio_author = playing_video_info.author.name;
+		    small_resource_lock.unlock();
+		    auto title_lines = truncate_str(audio_title, 360, 3, 0.65, 0.65);
 		    float y = 60;
 		    for (auto &line : title_lines) {
 			    Draw_xy_centered(line, 0, 400, y, y + 22, 0.65, 0.65, DEFAULT_TEXT_COLOR);
 			    y += 22;
 		    }
-		    Draw_xy_centered(playing_video_info.author.name, 0, 400, y + 2, y + 20, 0.5, 0.5, LIGHT1_TEXT_COLOR);
+		    Draw_xy_centered(audio_author, 0, 400, y + 2, y + 20, 0.5, 0.5, LIGHT1_TEXT_COLOR);
 		    double dur = vid_duration > 0 ? vid_duration : 1;
 		    double pos = std::min(dur, std::max(0.0, vid_current_pos));
 		    Draw_xy_centered(Util_convert_seconds_to_time(pos) + " / " + Util_convert_seconds_to_time(vid_duration), 0,
@@ -2856,23 +2865,33 @@ debug_info_view =
 
 			    // video page parsing sometimes randomly fails, so try several times
 			    network_waiting_status = "Reading Stream";
+			    // snapshot of the urls : the async thread may replace playing_video_info while the decoder starts
+			    std::string snap_video_url, snap_audio_url, snap_both_url;
+			    {
+				    small_resource_lock.lock();
+				    auto url_it = playing_video_info.video_stream_urls.find((int)video_p_value);
+				    if (url_it != playing_video_info.video_stream_urls.end()) snap_video_url = url_it->second;
+				    snap_audio_url = snap_audio_url;
+				    snap_both_url = snap_both_url;
+				    small_resource_lock.unlock();
+			    }
 			    if (audio_only_mode) {
 				    result = network_decoder.init(
-				        playing_video_info.audio_stream_url, stream_downloader,
+				        snap_audio_url, stream_downloader,
 				        playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1,
 				        playing_video_info.needs_timestamp_adjusting(), var_is_new3ds);
-			    } else if (playing_video_info.video_stream_urls[(int)video_p_value] != "" &&
-			               playing_video_info.audio_stream_url != "") {
+			    } else if (snap_video_url != "" &&
+			               snap_audio_url != "") {
 				    result = network_decoder.init(
-				        playing_video_info.video_stream_urls[(int)video_p_value], playing_video_info.audio_stream_url,
+				        snap_video_url, snap_audio_url,
 				        stream_downloader,
 				        playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1,
 				        playing_video_info.needs_timestamp_adjusting(),
 				        var_is_new3ds && (video_p_value == 360 || video_p_value == 480));
-			    } else if ((video_p_value == 360 || video_p_value == 480) && playing_video_info.both_stream_url != "") {
+			    } else if ((video_p_value == 360 || video_p_value == 480) && snap_both_url != "") {
 				    // itag 18 (both_stream) of a long video takes too much time and sometimes leads to a crash
 				    result = network_decoder.init(
-				        playing_video_info.both_stream_url, stream_downloader,
+				        snap_both_url, stream_downloader,
 				        playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1,
 				        playing_video_info.needs_timestamp_adjusting(), var_is_new3ds);
 			    } else {
@@ -3433,10 +3452,11 @@ debug_info_view =
 		    ab_loop_tick();
 		    channel_speed_tick();
 
+		    bool popup_took_input = false; // the keys must not be handled a second time after the lock
 		    if (mini_player_update(key)) {
-			    // the mini player is open : it takes all the input
+			    popup_took_input = true; // the mini player is open : it takes all the input
 		    } else if (qr_popup_update(key)) {
-			    // the QR popup is open : it takes all the input
+			    popup_took_input = true; // the QR popup is open : it takes all the input
 		    } else if (equalizer_popup_view->is_visible) {
 			    equalizer_popup_view->update(key);
 		    } else {
@@ -3459,6 +3479,9 @@ debug_info_view =
 		    }
 
 		    small_resource_lock.unlock();
+		    if (popup_took_input) {
+			    key = Hid_info(); // nothing is pressed for the code below
+		    }
 
 		    if (bookmark_add_request) { // asked from a button : the keyboard must be opened outside of the view update
 			    bookmark_add_request = false;

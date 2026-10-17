@@ -91,6 +91,9 @@ struct CaptionOverlayView : public FixedSizeView {
 		while (lines.size() && lines.back() == "") {
 			lines.pop_back();
 		}
+		if (lines.size() > 6) { // overlapping captions : only the last lines fit on the screen anyway
+			lines.erase(lines.begin(), lines.end() - 6);
+		}
 
 		static const float sizes[3] = {0.42f, 0.5f, 0.62f};
 		static const u32 colors[4] = {0xFFFFFFFF, 0xFF00E5FF, 0xFFFFFF40, 0xFF60FF60};

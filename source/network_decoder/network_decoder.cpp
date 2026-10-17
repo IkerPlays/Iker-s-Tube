@@ -68,10 +68,18 @@ static int read_network_stream(void *opaque, u8 *buf, int buf_size_) { // size o
 	stream->network_waiting_status = NULL;
 
 	{
-		auto tmp = stream->get_data(stream->read_head, std::min<u64>(buf_size, stream->len - stream->read_head));
-		size_t read_size = tmp.size();
+		u64 want = std::min<u64>(buf_size, stream->len - stream->read_head);
+		auto tmp = stream->get_data(stream->read_head, want);
+		// an empty answer before the real end means the data was not there for a moment : try again a few times
+		for (int retry = 0; tmp.empty() && want > 0 && retry < 20; retry++) {
+			usleep(50000);
+			tmp = stream->get_data(stream->read_head, want);
+		}
+		size_t read_size = std::min<size_t>(tmp.size(), buf_size);
 		stream->read_head += read_size;
-		memcpy(buf, &tmp[0], read_size);
+		if (read_size) {
+			memcpy(buf, tmp.data(), read_size);
+		}
 		if (!read_size) {
 			return AVERROR_EOF;
 		}

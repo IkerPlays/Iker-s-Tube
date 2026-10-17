@@ -51,7 +51,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 			res.is_livestream = true;
 		}
 		if (i["approxDurationMs"].string_value() != "") {
-			res.duration_ms = stoll(i["approxDurationMs"].string_value());
+			res.duration_ms = strtoll(i["approxDurationMs"].string_value().c_str(), NULL, 10);
 		}
 
 		if (i["type"].string_value() == "FORMAT_STREAM_TYPE_OTF") {

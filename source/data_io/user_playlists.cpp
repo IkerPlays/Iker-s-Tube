@@ -94,9 +94,9 @@ static void save_locked() {
 		return;
 	}
 	for (auto &p : playlists) {
-		fprintf(f, "#%s\n", p.name.c_str());
+		fprintf(f, "#%s\n", clean(p.name).c_str());
 		for (auto &v : p.videos) {
-			fprintf(f, "%s\t%s\t%s\t%s\n", clean(v.id).c_str(), v.title.c_str(), v.author.c_str(), v.length_text.c_str());
+			fprintf(f, "%s\t%s\t%s\t%s\n", clean(v.id).c_str(), clean(v.title).c_str(), clean(v.author).c_str(), clean(v.length_text).c_str());
 		}
 	}
 	fclose(f);

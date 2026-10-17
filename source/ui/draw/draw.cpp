@@ -210,10 +210,15 @@ Result_with_string Draw_c2d_image_init(Image_data *c2d_image, int tex_size_x, in
 		c2d_image->c2d.tex = NULL;
 		result.code = DEF_ERR_OUT_OF_LINEAR_MEMORY;
 		result.string = DEF_ERR_OUT_OF_LINEAR_MEMORY_STR;
+		return result;
 	}
 	c2d_image->c2d.subtex = c2d_image->subtex;
 
 	if (!C3D_TexInit(c2d_image->c2d.tex, (u16)tex_size_x, (u16)tex_size_y, color_format)) {
+		linearFree_concurrent(c2d_image->subtex);
+		linearFree_concurrent(c2d_image->c2d.tex);
+		c2d_image->subtex = NULL;
+		c2d_image->c2d.tex = NULL;
 		result.code = DEF_ERR_OUT_OF_LINEAR_MEMORY;
 		result.string = DEF_ERR_OUT_OF_LINEAR_MEMORY_STR;
 		return result;

@@ -74,17 +74,17 @@ struct YouTubeVideoDetail {
 	std::string audio_stream_url;
 	std::map<int, std::string> video_stream_urls; // first : video size (144p, 240p, 360p ...)
 	std::string both_stream_url;
-	int duration_ms;
-	bool is_livestream;
+	int duration_ms = 0;
+	bool is_livestream = false;
 	enum class LivestreamType {
 		PREMIERE,
 		LIVESTREAM,
 	};
 	LivestreamType livestream_type;
-	bool is_upcoming;
+	bool is_upcoming = false;
 	std::string playability_status;
 	std::string playability_reason;
-	int stream_fragment_len; // used only for livestreams
+	int stream_fragment_len = 0; // used only for livestreams
 	std::string like_count_str;
 	std::string dislike_count_str;
 	std::string publish_date;
@@ -140,8 +140,8 @@ struct YouTubeVideoDetail {
 
 	std::string suggestions_continue_token;
 	std::string comment_continue_token;
-	int comment_continue_type; // -1 : unavailable, 0 : using watch_comments, 1 : using innertube
-	bool comments_disabled;
+	int comment_continue_type = -1; // -1 : unavailable, 0 : using watch_comments, 1 : using innertube
+	bool comments_disabled = false;
 	std::string storyboard_spec; // preview thumbnails of the seek bar (empty if YouTube does not offer them)
 	std::string comment_sort_tokens[2]; // 0 : top comments, 1 : newest first (empty if unknown)
 	int comment_sort_type = 0;

@@ -71,7 +71,7 @@ class RJson {
 		return json && json->IsObject() && json->HasMember(key) ? (*json)[key] : RJson();
 	}
 	RJson operator[](const std::string &str) const { return (*this)[str.c_str()]; }
-	RJson operator[](size_t index) const { return json && json->IsArray() ? (*json)[index] : RJson(); }
+	RJson operator[](size_t index) const { return json && json->IsArray() && index < json->Size() ? (*json)[index] : RJson(); }
 
 	std::string dump() const {
 		if (!json) {
