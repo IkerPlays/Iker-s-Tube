@@ -416,8 +416,18 @@ static YouTubeVideoDetail offline_video_info(const std::string &id) {
 	info.title = item.title;
 	info.author.name = item.author;
 	info.playability_status = "OK";
-	info.audio_stream_url = "local:" + offline_file_path(id);
-	info.both_stream_url = info.audio_stream_url;
+	if (item.quality > 0) { // saved video : played from the SD card like a normal one
+		std::string video = "local:" + offline_video_path(id);
+		info.video_stream_urls[item.quality] = video;
+		if (item.combined) {
+			info.both_stream_url = video; // video and sound in one file
+		} else {
+			info.audio_stream_url = "local:" + offline_file_path(id);
+		}
+	} else {
+		info.audio_stream_url = "local:" + offline_file_path(id);
+		info.both_stream_url = info.audio_stream_url;
+	}
 	info.succinct_thumbnail_url = youtube_get_video_thumbnail_url_by_id(id);
 	info.comment_continue_type = -1;
 	info.comments_disabled = true;
@@ -1673,6 +1683,22 @@ debug_info_view =
 					                           if (cur_video_info.id != "")
 						                           offline_download_async(cur_video_info.id, cur_video_info.title, cur_video_info.author.name,
 						                                                  cur_video_info.audio_stream_url);
+				                           }),
+				                 make_tool([]() { return tr("Save video", "Guardar vídeo"); }, 90,
+				                           []() {
+					                           if (cur_video_info.id == "") return;
+					                           // the saved quality : 360p at most (240p on the old 3DS), the closest one that exists
+					                           int wanted = var_is_new3ds ? 360 : 240, quality = 0;
+					                           std::string video_url;
+					                           for (auto &i : cur_video_info.video_stream_urls) {
+						                           if (i.first <= wanted && i.first > quality) {
+							                           quality = i.first;
+							                           video_url = i.second;
+						                           }
+					                           }
+					                           offline_download_async(cur_video_info.id, cur_video_info.title, cur_video_info.author.name,
+					                                                  cur_video_info.audio_stream_url, true, video_url,
+					                                                  var_is_new3ds ? cur_video_info.both_stream_url : "", quality);
 				                           })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
 				    main_tab_views.push_back(
@@ -2056,13 +2082,18 @@ debug_info_view =
     if (var_data_saver && wanted_quality > 240) {
 	    wanted_quality = 240;
     }
-    const bool offline_video = tmp_video_info.audio_stream_url.compare(0, 6, "local:") == 0;
-    if (offline_video) {
+    const bool offline_item = tmp_video_info.url.compare(0, 8, "offline:") == 0;
+    const bool offline_video = offline_item && !tmp_video_info.video_stream_urls.empty(); // saved with its video
+    const bool offline_audio_only = offline_item && !offline_video;
+    if (offline_audio_only) {
 	    audio_only_mode = true; // saved audio has no video
-    } else if (var_video_quality != 0) {
+    } else if (var_video_quality != 0 || offline_video) {
 	    audio_only_mode = false; // a previous video (offline or without video streams) must not keep this one audio-only
     }
-    if (var_video_quality == 0 || offline_video) {
+    if (offline_video) {
+	    wanted_quality = tmp_video_info.video_stream_urls.begin()->first; // the saved one
+    }
+    if ((var_video_quality == 0 && !offline_video) || offline_audio_only) {
 	    audio_only_mode = true;
     } else {
 	    if (!audio_only_mode && !is_available(wanted_quality)) {

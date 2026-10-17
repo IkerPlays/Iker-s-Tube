@@ -1206,7 +1206,11 @@ void Home_draw(void) {
 	thumbnail_set_active_scene(SceneType::HOME);
 
 	bool video_playing_bar_show = video_is_playing();
-	CONTENT_Y_HIGH = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+	{
+		int nav_bottom = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+		overlay_set_nav(true, nav_bottom);
+		CONTENT_Y_HIGH = nav_bottom - NAV_BAR_HEIGHT;
+	}
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
 
 	if (var_new_feed_videos > 0 && main_tab_view->selected_tab == 2) { // the user is looking at the new videos tab

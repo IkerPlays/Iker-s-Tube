@@ -1,6 +1,7 @@
 #include "data_io/offline.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cstdio>
+#include <cstdlib>
 #include <sys/stat.h>
 
 #define OFFLINE_DIR "sdmc:/3ds/IkersTube/offline"
@@ -20,6 +21,10 @@ std::string offline_file_path(const std::string &id) {
 	return std::string(OFFLINE_DIR) + "/" + id + ".m4a";
 }
 
+std::string offline_video_path(const std::string &id) {
+	return std::string(OFFLINE_DIR) + "/" + id + ".mp4";
+}
+
 static std::vector<OfflineItem> read_index() {
 	std::vector<OfflineItem> items;
 	FILE *f = fopen(OFFLINE_INDEX, "r");
@@ -31,7 +36,19 @@ static std::vector<OfflineItem> read_index() {
 		size_t t1 = s.find('\t');
 		size_t t2 = t1 == std::string::npos ? t1 : s.find('\t', t1 + 1);
 		if (t1 == std::string::npos || t2 == std::string::npos) continue;
-		items.push_back({s.substr(0, t1), s.substr(t1 + 1, t2 - t1 - 1), s.substr(t2 + 1)});
+		OfflineItem item;
+		item.id = s.substr(0, t1);
+		item.title = s.substr(t1 + 1, t2 - t1 - 1);
+		size_t t3 = s.find('\t', t2 + 1);
+		if (t3 == std::string::npos) {
+			item.author = s.substr(t2 + 1);
+		} else {
+			item.author = s.substr(t2 + 1, t3 - t2 - 1);
+			size_t t4 = s.find('\t', t3 + 1);
+			item.quality = atoi(s.substr(t3 + 1, t4 == std::string::npos ? std::string::npos : t4 - t3 - 1).c_str());
+			item.combined = t4 != std::string::npos && s.compare(t4 + 1, 1, "1") == 0;
+		}
+		items.push_back(item);
 	}
 	fclose(f);
 	return items;
@@ -43,7 +60,9 @@ static void write_index(const std::vector<OfflineItem> &items) {
 	mkdir(OFFLINE_DIR, 0777);
 	FILE *f = fopen(OFFLINE_INDEX_TMP, "w");
 	if (!f) return;
-	for (auto &i : items) fprintf(f, "%s\t%s\t%s\n", clean(i.id).c_str(), clean(i.title).c_str(), clean(i.author).c_str());
+	for (auto &i : items)
+		fprintf(f, "%s\t%s\t%s\t%d\t%d\n", clean(i.id).c_str(), clean(i.title).c_str(), clean(i.author).c_str(), i.quality,
+		        i.combined ? 1 : 0);
 	fclose(f);
 	remove(OFFLINE_INDEX);
 	rename(OFFLINE_INDEX_TMP, OFFLINE_INDEX);
@@ -95,5 +114,6 @@ void offline_remove(const std::string &id) {
 	}
 	write_index(items);
 	remove(offline_file_path(id).c_str());
+	remove(offline_video_path(id).c_str());
 	offline_lock.unlock();
 }

@@ -247,6 +247,7 @@ void Library_exit(void) {
 	logger.info("library/exit", "Exited.");
 }
 void Library_suspend(void) { thread_suspend = true; }
+bool Library_is_offline_mode(void) { return mode == 4; }
 void Library_resume(std::string arg) {
 	if (arg == "favorites") {
 		mode = 1, open_playlist = -1;
@@ -373,7 +374,7 @@ static void build_watch_later(VerticalListView *list) {
 static void build_offline(VerticalListView *list) {
 	auto items = offline_list();
 	for (auto &item : items) {
-		SuccinctVideoView *view = make_item(item.id, item.title, item.author, "");
+		SuccinctVideoView *view = make_item(item.id, item.title, item.author, item.quality > 0 ? std::to_string(item.quality) + "p" : tr("audio", "audio"));
 		std::string id = item.id, url = "offline:" + item.id, title = item.title;
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
@@ -385,7 +386,7 @@ static void build_offline(VerticalListView *list) {
 	}
 	if (!items.size()) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-		                          ->set_text_lines(std::vector<std::string>{tr("No saved audio yet.", "Aún no hay audio guardado."), tr("Use Save audio inside a video.", "Usa Guardar audio dentro de un vídeo."), ""})
+		                          ->set_text_lines(std::vector<std::string>{tr("Nothing saved yet.", "Aún no hay nada guardado."), tr("Use Save video or Save audio inside a video.", "Usa Guardar vídeo o Guardar audio dentro de un vídeo."), ""})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
@@ -511,7 +512,11 @@ void Library_draw(void) {
 	thumbnail_set_active_scene(SceneType::LIBRARY);
 
 	bool video_playing_bar_show = video_is_playing();
-	CONTENT_Y_HIGHT = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+	{
+		int nav_bottom = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+		overlay_set_nav(true, nav_bottom);
+		CONTENT_Y_HIGHT = nav_bottom - NAV_BAR_HEIGHT;
+	}
 	main_view->update_y_range(0, CONTENT_Y_HIGHT);
 
 	if (var_need_refresh || !var_eco_mode) {

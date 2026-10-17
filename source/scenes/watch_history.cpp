@@ -181,7 +181,11 @@ void History_draw(void) {
 	thumbnail_set_active_scene(SceneType::HISTORY);
 
 	bool video_playing_bar_show = video_is_playing();
-	CONTENT_Y_HIGHT = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+	{
+		int nav_bottom = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+		overlay_set_nav(true, nav_bottom);
+		CONTENT_Y_HIGHT = nav_bottom - NAV_BAR_HEIGHT;
+	}
 	main_view->update_y_range(0, CONTENT_Y_HIGHT);
 
 	if (var_need_refresh || !var_eco_mode) {

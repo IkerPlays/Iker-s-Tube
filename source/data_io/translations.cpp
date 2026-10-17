@@ -244,6 +244,18 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Uploading: 0%", {"Envoi : 0%", "Lade hoch: 0%", "Caricamento: 0%", "Enviando: 0%", "アップロード中：0%"}},
 	    {"Visibility: ", {"Visibilité : ", "Sichtbarkeit: ", "Visibilità: ", "Visibilidade: ", "公開設定："}},
 	    {" (YouTube does not allow uploads with this login)", {" (YouTube n'autorise pas l'envoi avec cette connexion)", " (YouTube erlaubt mit dieser Anmeldung keine Uploads)", " (YouTube non consente i caricamenti con questo accesso)", " (o YouTube não permite envios com este login)", "（このログインではYouTubeへのアップロードが許可されていません）"}},
+	    {"video", {"vidéo", "Video", "video", "vídeo", "動画"}},
+	    {"audio", {"audio", "Audio", "audio", "áudio", "音声"}},
+	    {"Downloading ", {"Téléchargement ", "Lade herunter ", "Download ", "Baixando ", "ダウンロード中 "}},
+	    {"Saved for offline viewing", {"Enregistré pour le mode hors ligne", "Für Offline-Wiedergabe gespeichert", "Salvato per la visione offline", "Salvo para ver offline", "オフライン視聴用に保存しました"}},
+	    {"Could not download it", {"Impossible de télécharger", "Download nicht möglich", "Impossibile scaricare", "Não foi possível baixar", "ダウンロードできません"}},
+	    {"This video has no stream to save", {"Cette vidéo n'a rien à enregistrer", "Dieses Video hat nichts zu speichern", "Questo video non ha nulla da salvare", "Este vídeo não tem nada para salvar", "保存できるストリームがありません"}},
+	    {"Downloading: 0%", {"Téléchargement : 0%", "Lade herunter: 0%", "Download: 0%", "Baixando: 0%", "ダウンロード中：0%"}},
+	    {"Save video", {"Enregistrer la vidéo", "Video speichern", "Salva video", "Salvar vídeo", "動画を保存"}},
+	    {"Nothing saved yet.", {"Rien d'enregistré.", "Noch nichts gespeichert.", "Ancora nulla di salvato.", "Nada salvo ainda.", "まだ保存されていません。"}},
+	    {"Use Save video or Save audio inside a video.", {"Utilisez Enregistrer la vidéo ou l'audio dans une vidéo.", "Nutze Video speichern oder Audio speichern in einem Video.", "Usa Salva video o Salva audio dentro a un video.", "Use Salvar vídeo ou Salvar áudio dentro de um vídeo.", "動画内の「動画を保存」または「音声を保存」を使います。"}},
+	    {"Downloads", {"Téléchargements", "Downloads", "Download", "Downloads", "ダウンロード"}},
+	    {"More", {"Plus", "Mehr", "Altro", "Mais", "その他"}},
 	};
 	return table;
 }

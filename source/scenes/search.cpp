@@ -704,7 +704,11 @@ void Search_draw(void) {
 	thumbnail_set_active_scene(SceneType::SEARCH);
 
 	bool video_playing_bar_show = video_is_playing();
-	RESULT_Y_HIGH = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+	{
+		int nav_bottom = video_playing_bar_show ? 240 - VIDEO_PLAYING_BAR_HEIGHT : 240;
+		overlay_set_nav(true, nav_bottom);
+		RESULT_Y_HIGH = nav_bottom - NAV_BAR_HEIGHT;
+	}
 	result_view->update_y_range(0, RESULT_Y_HIGH - RESULT_Y_LOW);
 
 	if (toast_view_visible_frames_left > 0) {

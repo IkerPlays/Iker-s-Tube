@@ -1,7 +1,4 @@
 Devbuild notes
 
-- New Studio tab next to Home, Subscribed and New. It shows your subscribers, total views and total videos, and lets you upload a video or a Short from any folder of the SD card (title, description and visibility are asked before sending). It needs the OAuth login and uses the YouTube Data API: if YouTube refuses it for this login, the reason is shown in the tab and saved in log.txt.
-- Comments: writing, replying and liking now use the same web client that loads the comments, which fixes "Could not send the comment". Failures are written with the server answer in log.txt.
-- Network: request bodies can now be binary (needed for uploads).
-- Studio: uploads use their own network session (no more clash with Reload), a lost answer or a 308 without Range is handled, retries wait a little, and the totals reload after an upload. A refused upload explains that YouTube does not allow it with this login.
-- Comments: like and reply send their request with the same web client that produced their tokens.
+- Offline videos: the Save video button (video page tools) saves the video on the SD card, not only the audio. 360p with sound when the stream has both together, otherwise the video at up to 360p (240p on the old 3DS) plus the audio. Saved videos play from the Offline list (now also reachable from the Downloads item of the new bottom bar) without any connection, and the list shows 360p / audio next to each item.
+- New look: bottom navigation bar with icons (Home, Search, Library, Downloads, More) on the Home, Search, Library and History screens. The More item opens the usual menu (Settings, About, History, Exit). Tabs are now rounded pills in the accent color, and the Studio buttons have rounded corners.

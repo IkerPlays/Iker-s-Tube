@@ -104,6 +104,7 @@ static View *button(const std::function<std::string()> &text, std::function<void
 	    ->set_x_alignment(TextView::XAlign::CENTER)
 	    ->set_y_alignment(TextView::YAlign::CENTER)
 	    ->set_get_background_color(View::STANDARD_BACKGROUND)
+	    ->set_corner_radius(7)
 	    ->set_on_view_released([on_release](View &) { on_release(); });
 }
 

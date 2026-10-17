@@ -21,13 +21,14 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 
 ### Library and search
 - **Library.** Queue, favorites with tags, playlists, Watch later and the new Offline tab. Sort and filter favorites and Watch later, play next from any list and a check mark on videos you already watched.
-- **Offline audio.** Save the audio of a video to the SD card and play it without a connection.
+- **Offline videos and audio.** Save a video (360p, 240p on the old 3DS) or only its audio to the SD card and play it without a connection from the Offline list (Downloads in the bottom bar).
 - **Search.** Keyboard suggestions, Explore and Discover shortcuts, continue watching the last video, QR scanning with the camera and a red dot when your subscriptions have new videos.
 - **Grid of thumbnails** in search, channels and the home feed (optional).
 - **Translate** a video title and description, or a comment, into the language of the app.
 - **QR codes** of any video (including the current moment), also from the queue, favorites and playlists.
 
 ### Look and settings
+- **Bottom bar and pill tabs.** A navigation bar with icons (Home, Search, Library, Downloads, More) and rounded pill tabs.
 - **Themes.** Six themes plus a custom color, a high contrast mode, text size, large thumbnails and an optional background picture from the SD card.
 - **Settings in sections** with a start screen, automatic theme by time of day, data saver, a data limit warning, statistics, backup export and import, and the first launch opens the settings.
 - **Languages.** All the new texts are available in English, Spanish, French, German, Italian, Portuguese and Japanese.

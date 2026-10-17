@@ -69,21 +69,14 @@ struct TabView : public FixedSizeView {
 		}
 		views[selected_tab]->draw(x0, y0);
 
-		Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, x0, y1 - tab_selector_height, x1 - x0,
-		             tab_selector_height);
-		Draw_texture(var_square_image[0], LIGHT2_BACK_COLOR, tab_pos_x(selected_tab), y1 - tab_selector_height,
-		             tab_width(), tab_selector_height);
-		Draw_texture(var_square_image[0], LIGHT3_BACK_COLOR, tab_pos_x(selected_tab), y1 - tab_selector_height,
-		             tab_width(), tab_selector_selected_line_height);
+		Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, x0, y1 - tab_selector_height, x1 - x0, tab_selector_height);
+		// the selected tab is a rounded pill
+		Draw_round_rect(tab_pos_x(selected_tab) + 3, y1 - tab_selector_height + 2, tab_width() - 6, tab_selector_height - 4,
+		                (tab_selector_height - 4) / 2, LIGHT3_BACK_COLOR);
 		for (int i = 0; i < tab_num; i++) {
-			float y = y1 - tab_selector_height + (tab_selector_height - Draw_get_height(tab_texts[i], 0.5)) / 2;
-			if (i == selected_tab) {
-				y -= 2;
-			} else {
-				y -= 3;
-			}
+			float y = y1 - tab_selector_height + (tab_selector_height - Draw_get_height(tab_texts[i], 0.5)) / 2 - 2;
 			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, tab_font_size, tab_font_size,
-			                DEFAULT_TEXT_COLOR);
+			                i == selected_tab ? 0xFFFFFFFF : DEFAULT_TEXT_COLOR);
 		}
 	}
 	void update_(Hid_info key) override {

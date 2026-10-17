@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include <cmath>
 #include "ui/colors.hpp"
 
 namespace Draw_ {
@@ -574,6 +575,23 @@ void Draw_texture(C2D_Image image, int abgr8888, float x, float y, float x_size,
 			C2D_PlainImageTint(&tint, abgr8888, true);
 			C2D_DrawImage(image, &c2d_parameter, &tint);
 		}
+	}
+}
+
+void Draw_round_rect(float x, float y, float w, float h, float r, int abgr8888) {
+	if (r > h / 2) r = h / 2;
+	if (r > w / 2) r = w / 2;
+	int rr = (int)r;
+	if (rr <= 0) {
+		Draw_texture(var_square_image[0], abgr8888, x, y, w, h);
+		return;
+	}
+	Draw_texture(var_square_image[0], abgr8888, x, y + rr, w, h - 2 * rr);
+	for (int k = 0; k < rr; k++) { // the corners : one row at a time, narrower towards the edge
+		float dy = rr - k - 0.5f;
+		float inset = rr - sqrtf((float)rr * rr - dy * dy);
+		Draw_texture(var_square_image[0], abgr8888, x + inset, y + k, w - 2 * inset, 1);
+		Draw_texture(var_square_image[0], abgr8888, x + inset, y + h - 1 - k, w - 2 * inset, 1);
 	}
 }
 

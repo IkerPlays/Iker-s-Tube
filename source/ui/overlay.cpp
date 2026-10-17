@@ -4,6 +4,8 @@
 #include "ui/ui.hpp"
 #include "data_io/string_resource.hpp"
 #include "util/play_queue.hpp"
+#include "scenes/library.hpp"
+#include <algorithm>
 
 #define ICON_LINE_HEIGHT 3
 #define ICON_LINE_Y_MARGIN 4
@@ -53,7 +55,96 @@ static OverlayDialogView *dialog_view = (new OverlayDialogView(0, 0, 320, 240));
 #define menu_content_string_color DEFAULT_TEXT_COLOR
 #define menu_content_border_color COLOR_GRAY(var_night_mode ? 0x22 : 0xDD)
 
+static bool nav_enabled = false;
+static int nav_top = 240 - NAV_BAR_HEIGHT;
+#define NAV_ITEMS 5
+#define NAV_MORE 4
+void overlay_set_nav(bool enabled, int bottom) {
+	nav_enabled = enabled;
+	nav_top = bottom - NAV_BAR_HEIGHT;
+}
+static int nav_at(int x, int y) {
+	if (!nav_enabled || x < 0 || y < nav_top || y >= nav_top + NAV_BAR_HEIGHT) {
+		return -1;
+	}
+	return std::min(NAV_ITEMS - 1, x * NAV_ITEMS / 320);
+}
+// the item that matches the current scene (-1 : none)
+static int nav_selected() {
+	switch (global_current_scene) {
+	case SceneType::HOME:
+		return 0;
+	case SceneType::SEARCH:
+		return 1;
+	case SceneType::LIBRARY:
+		return Library_is_offline_mode() ? 3 : 2;
+	default:
+		return -1;
+	}
+}
+static void nav_icon(int type, float cx, float cy, u32 c) {
+	const float w = 1.6f;
+	switch (type) {
+	case 0: // home : roof and body
+		Draw_line(cx - 8, cy, c, cx, cy - 7, c, w);
+		Draw_line(cx, cy - 7, c, cx + 8, cy, c, w);
+		Draw_texture(var_square_image[0], c, cx - 5, cy, 10, 6);
+		break;
+	case 1: { // search : a circle (octagon) and a handle
+		const float px[8] = {1, 0.7f, 0, -0.7f, -1, -0.7f, 0, 0.7f}, py[8] = {0, 0.7f, 1, 0.7f, 0, -0.7f, -1, -0.7f};
+		for (int i = 0; i < 8; i++) {
+			int j = (i + 1) % 8;
+			Draw_line(cx - 1 + px[i] * 5, cy - 1 + py[i] * 5, c, cx - 1 + px[j] * 5, cy - 1 + py[j] * 5, c, w);
+		}
+		Draw_line(cx + 3, cy + 3, c, cx + 8, cy + 8, c, w + 0.6f);
+		break;
+	}
+	case 2: // library : a list
+		Draw_texture(var_square_image[0], c, cx - 7, cy - 6, 14, 2);
+		Draw_texture(var_square_image[0], c, cx - 7, cy - 1, 14, 2);
+		Draw_texture(var_square_image[0], c, cx - 7, cy + 4, 9, 2);
+		break;
+	case 3: // downloads : an arrow into a tray
+		Draw_line(cx, cy - 7, c, cx, cy + 2, c, w);
+		Draw_line(cx - 5, cy - 3, c, cx, cy + 3, c, w);
+		Draw_line(cx + 5, cy - 3, c, cx, cy + 3, c, w);
+		Draw_texture(var_square_image[0], c, cx - 7, cy + 6, 14, 2);
+		break;
+	default: // more : three dots
+		Draw_texture(var_square_image[0], c, cx - 8, cy - 1, 4, 4);
+		Draw_texture(var_square_image[0], c, cx - 2, cy - 1, 4, 4);
+		Draw_texture(var_square_image[0], c, cx + 4, cy - 1, 4, 4);
+		break;
+	}
+}
+static void draw_nav_bar() {
+	const std::string labels[NAV_ITEMS] = {LOCALIZED(HOME), tr("Search", "Buscar"), tr("Library", "Biblioteca"),
+	                                       tr("Downloads", "Descargas"), tr("More", "Más")};
+	Draw_texture(var_square_image[0], COLOR_GRAY(var_night_mode ? 0x1C : 0xEE), 0, nav_top, 320, NAV_BAR_HEIGHT);
+	Draw_texture(var_square_image[0], COLOR_GRAY(var_night_mode ? 0x38 : 0xCC), 0, nav_top, 320, 1);
+	int selected = nav_selected();
+	if (menu_status != CLOSED) {
+		selected = NAV_MORE;
+	}
+	for (int i = 0; i < NAV_ITEMS; i++) {
+		float x0 = i * 320.0f / NAV_ITEMS, x1 = (i + 1) * 320.0f / NAV_ITEMS, cx = (x0 + x1) / 2, cy = nav_top + 9;
+		bool sel = i == selected;
+		bool pressed = holding_touch && nav_at(last_touch_x, last_touch_y) == i;
+		if (sel) {
+			Draw_round_rect(cx - 16, cy - 7, 32, 15, 7, COLOR_ACCENT);
+		} else if (pressed) {
+			Draw_round_rect(cx - 16, cy - 7, 32, 15, 7, COLOR_GRAY(var_night_mode ? 0x44 : 0xD0));
+		}
+		u32 color = sel ? 0xFFFFFFFF : COLOR_GRAY(var_night_mode ? 0xB8 : 0x55);
+		nav_icon(i, cx, cy, color);
+		Draw_x_centered(labels[i], x0, x1, nav_top + 19, 0.4, 0.4, sel ? DEFAULT_TEXT_COLOR : color);
+	}
+}
+
 static bool in_icon(int x, int y) {
+	if (nav_enabled) {
+		return nav_at(x, y) == NAV_MORE;
+	}
 	return x >= menu_icon_x && x < menu_icon_x + OVERLAY_MENU_ICON_SIZE && y >= menu_icon_y &&
 	       y < menu_icon_y + OVERLAY_MENU_ICON_SIZE;
 }
@@ -69,21 +160,29 @@ static int content_at(int x, int y) {
 }
 
 void draw_overlay_menu(int y) {
-	menu_icon_y = y;
+	menu_icon_y = nav_enabled ? nav_top : y;
 
-	u32 color = holding_touch && in_icon(last_touch_x, last_touch_y) ? menu_icon_background_color_selected
-	                                                                 : menu_icon_background_color;
-	Draw_texture(var_square_image[0], color, menu_icon_x, menu_icon_y, OVERLAY_MENU_ICON_SIZE, OVERLAY_MENU_ICON_SIZE);
-	for (int i = 0; i < 3; i++) {
-		int y = menu_icon_y + (float)(OVERLAY_MENU_ICON_SIZE - ICON_LINE_HEIGHT * 3 - ICON_LINE_Y_MARGIN * 2) / 2 +
-		        i * (ICON_LINE_HEIGHT + ICON_LINE_Y_MARGIN);
-		int x = menu_icon_x + ICON_LINE_X_MARGIN;
-		int width = OVERLAY_MENU_ICON_SIZE - ICON_LINE_X_MARGIN * 2;
-		Draw_texture(var_square_image[0], menu_icon_line_color, x, y, width, ICON_LINE_HEIGHT);
-	}
+	u32 color;
+	if (nav_enabled) {
+		draw_nav_bar();
+		if (var_update_available || var_update_banner || var_new_feed_videos > 0) { // red dot on "More"
+			Draw_texture(var_square_image[0], DEF_DRAW_RED, 320 - 22, nav_top + 3, 7, 7);
+		}
+	} else {
+		color = holding_touch && in_icon(last_touch_x, last_touch_y) ? menu_icon_background_color_selected
+		                                                             : menu_icon_background_color;
+		Draw_texture(var_square_image[0], color, menu_icon_x, menu_icon_y, OVERLAY_MENU_ICON_SIZE, OVERLAY_MENU_ICON_SIZE);
+		for (int i = 0; i < 3; i++) {
+			int y = menu_icon_y + (float)(OVERLAY_MENU_ICON_SIZE - ICON_LINE_HEIGHT * 3 - ICON_LINE_Y_MARGIN * 2) / 2 +
+			        i * (ICON_LINE_HEIGHT + ICON_LINE_Y_MARGIN);
+			int x = menu_icon_x + ICON_LINE_X_MARGIN;
+			int width = OVERLAY_MENU_ICON_SIZE - ICON_LINE_X_MARGIN * 2;
+			Draw_texture(var_square_image[0], menu_icon_line_color, x, y, width, ICON_LINE_HEIGHT);
+		}
 
-	if (var_update_available || var_update_banner || var_new_feed_videos > 0) { // red dot : an update is available / news about an update
-		Draw_texture(var_square_image[0], DEF_DRAW_RED, menu_icon_x + OVERLAY_MENU_ICON_SIZE - 10, menu_icon_y + 2, 8, 8);
+		if (var_update_available || var_update_banner || var_new_feed_videos > 0) { // red dot : an update is available / news about an update
+			Draw_texture(var_square_image[0], DEF_DRAW_RED, menu_icon_x + OVERLAY_MENU_ICON_SIZE - 10, menu_icon_y + 2, 8, 8);
+		}
 	}
 
 	// ease the menu in/out (entries slide in from the right edge)
@@ -98,7 +197,7 @@ void draw_overlay_menu(int y) {
 		int y_base = menu_icon_y - contents.size() * CONTENT_HEIGHT;
 		int slide = (int)((1 - menu_anim) * CONTENT_WIDTH);
 		for (int i = 0; i < (int)contents.size(); i++) {
-			color = holding_touch && content_at(last_touch_x, last_touch_y) == i
+			u32 color = holding_touch && content_at(last_touch_x, last_touch_y) == i
 			            ? menu_content_background_color_selected
 			            : menu_content_background_color;
 			Draw_texture(var_square_image[0], color, 320 - CONTENT_WIDTH + slide, y_base + i * CONTENT_HEIGHT,
@@ -131,13 +230,13 @@ void update_overlay_menu(Hid_info *key) {
 	if (var_new_feed_videos > 0 && global_current_scene != SceneType::HOME) {
 		contents.push_back({std::to_string(var_new_feed_videos) + " " + tr("new videos", "vídeos nuevos"), Content::Type::HOME});
 	}
-	if (global_current_scene != SceneType::HOME) {
+	if (!nav_enabled && global_current_scene != SceneType::HOME) {
 		contents.push_back({LOCALIZED(HOME), Content::Type::HOME});
 	}
-	if (global_current_scene != SceneType::SEARCH) {
+	if (!nav_enabled && global_current_scene != SceneType::SEARCH) {
 		contents.push_back({LOCALIZED(GOTO_SEARCH), Content::Type::SEARCH});
 	}
-	if (global_current_scene != SceneType::LIBRARY) {
+	if (!nav_enabled && global_current_scene != SceneType::LIBRARY) {
 		int queued = play_queue_size();
 		contents.push_back({queued ? "Biblioteca (" + std::to_string(queued) + ")" : std::string("Biblioteca"),
 		                    Content::Type::LIBRARY});
@@ -168,6 +267,22 @@ void update_overlay_menu(Hid_info *key) {
 					menu_status = OPEN;
 				} else {
 					menu_status = CLOSED;
+				}
+			} else if (nav_at(last_touch_x, last_touch_y) != -1) { // an item of the navigation bar
+				int item = nav_at(last_touch_x, last_touch_y);
+				menu_status = CLOSED;
+				if (item == 0) {
+					global_intent.next_scene = SceneType::HOME;
+					global_intent.arg = "";
+				} else if (item == 1) {
+					global_intent.next_scene = SceneType::SEARCH;
+					global_intent.arg = "";
+				} else if (item == 2) {
+					global_intent.next_scene = SceneType::LIBRARY;
+					global_intent.arg = Library_is_offline_mode() ? "queue" : "";
+				} else if (item == 3) {
+					global_intent.next_scene = SceneType::LIBRARY;
+					global_intent.arg = "offline";
 				}
 			} else if (menu_status != CLOSED && content_at(last_touch_x, last_touch_y) != -1) {
 				int id = content_at(last_touch_x, last_touch_y);
@@ -225,6 +340,8 @@ void update_overlay_menu(Hid_info *key) {
 		if (key->p_touch) {
 			if (in_icon(key->touch_x, key->touch_y)) {
 				holding_touch = true;
+			} else if (nav_at(key->touch_x, key->touch_y) != -1) {
+				holding_touch = true;
 			} else if (menu_status != CLOSED && content_at(key->touch_x, key->touch_y) != -1) {
 				holding_touch = true;
 			} else {
@@ -254,6 +371,7 @@ void close_overlay_menu() {
 	var_need_refresh = true;
 }
 void overlay_menu_on_resume() {
+	nav_enabled = false; // scenes that have the navigation bar turn it on again every frame
 	last_touch_x = -1;
 	last_touch_y = -1;
 	menu_status = CLOSED;

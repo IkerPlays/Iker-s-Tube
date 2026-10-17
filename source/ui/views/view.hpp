@@ -25,6 +25,7 @@ struct View {
 	bool scrolled = false;
 	int view_holding_time = 0;
 	double touch_darkness = 0;
+	float corner_radius = 0; // > 0 : the background has rounded corners
 	std::function<u32(const View &)> get_background_color;
 	bool is_visible = true;
 	bool is_touchable = true;
@@ -46,6 +47,10 @@ struct View {
 	}
 	virtual View *set_get_background_color(std::function<u32(const View &)> get_background_color) {
 		this->get_background_color = get_background_color;
+		return this;
+	}
+	virtual View *set_corner_radius(float radius) {
+		this->corner_radius = radius;
 		return this;
 	}
 	virtual View *set_is_visible(bool is_visible) {
@@ -80,7 +85,11 @@ struct View {
 	virtual void draw_background() const {
 		u32 color = get_background_color ? get_background_color(*this) : background_color;
 		if (color >> 24) {
-			Draw_texture(var_square_image[0], color, (int)x0, (int)y0, (int)get_width(), (int)get_height());
+			if (corner_radius > 0) {
+				Draw_round_rect((int)x0, (int)y0, (int)get_width(), (int)get_height(), corner_radius, color);
+			} else {
+				Draw_texture(var_square_image[0], color, (int)x0, (int)y0, (int)get_width(), (int)get_height());
+			}
 		}
 	}
 	void draw() const {

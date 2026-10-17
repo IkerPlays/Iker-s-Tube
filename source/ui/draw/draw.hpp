@@ -44,6 +44,9 @@ void Draw_texture(C2D_Image image, float x, float y, float x_size, float y_size)
 
 void Draw_texture(C2D_Image image, int abgr8888, float x, float y, float x_size, float y_size);
 
+// filled rectangle with rounded corners (radius r, in pixels)
+void Draw_round_rect(float x, float y, float w, float h, float r, int abgr8888);
+
 void Draw_line(float x_0, float y_0, int abgr8888_0, float x_1, float y_1, int abgr8888_1, float width);
 
 void Draw_debug_info(void);
