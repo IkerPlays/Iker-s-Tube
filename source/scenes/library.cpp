@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "ui/qr_popup.hpp"
 #include <vector>
 #include <string>
 #include <cstdlib>
@@ -116,6 +117,10 @@ static void add_to_playlist_dialog(const FavoriteVideo &video) {
 	show_dialog(options);
 }
 
+static std::string share_url(const std::string &url_or_id) {
+	return url_or_id.find("://") != std::string::npos ? url_or_id : "https://www.youtube.com/watch?v=" + url_or_id;
+}
+
 static FavoriteVideo video_from_url(const std::string &url, const std::string &title) {
 	FavoriteVideo v;
 	v.id = youtube_get_video_id_by_url(url);
@@ -215,7 +220,8 @@ static void build_queue(VerticalListView *list) {
 			    rebuild_request = true;
 		    })
 		    ->add_on_long_hold(35, [i, url, title](View &) {
-			    show_dialog({make_option(tr("Move up", "Subir"), [i]() { play_queue_move(i, -1); }),
+			    show_dialog({make_option(tr("QR code", "Código QR"), [url]() { qr_popup_show(share_url(url)); }),
+			                 make_option(tr("Move up", "Subir"), [i]() { play_queue_move(i, -1); }),
 			                 make_option(tr("Move down", "Bajar"), [i]() { play_queue_move(i, 1); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [url, title]() { pending_action = [url, title]() { add_to_playlist_dialog(video_from_url(url, title)); }; }),
 			                 make_option(tr("Remove from queue", "Quitar de la cola"), [i]() { play_queue_remove_at(i); })});
@@ -245,6 +251,7 @@ static void build_favorites(VerticalListView *list) {
 		    ->add_on_long_hold(35, [id, url, v](View &) {
 			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
+			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Remove from favorites", "Quitar de favoritos"), [id]() { favorites_remove(id); })});
 		    });
 		list->views.push_back(view);
@@ -313,6 +320,7 @@ static void build_playlists(VerticalListView *list) {
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [index, id, url, v](View &) {
 			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Remove from list", "Quitar de la lista"), [index, id]() { playlist_remove(index, id); })});
 		    });
 		list->views.push_back(view);
@@ -381,6 +389,7 @@ void Library_draw(void) {
 
 		main_view->draw();
 		on_long_tap_dialog->draw();
+		qr_popup_draw();
 
 		if (video_playing_bar_show) {
 			video_draw_playing_bar();
@@ -405,7 +414,9 @@ void Library_draw(void) {
 	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
 	} else {
-		if (on_long_tap_dialog->is_visible) {
+		if (qr_popup_update(key)) {
+			// the QR popup takes the input while it is open
+		} else if (on_long_tap_dialog->is_visible) {
 			on_long_tap_dialog->update(key);
 		} else {
 			update_overlay_menu(&key);

@@ -436,6 +436,16 @@ void Menu_get_system_info(void) {
 		var_wifi_signal = 8;
 	}
 
+	{ // reconnect : if the Wi-Fi drops while a video plays, ask the system to bring it back (every 8 s)
+		static u64 last_reconnect_try = 0;
+		u64 now_ms = osGetTime();
+		if (var_wifi_state != 2 && video_is_playing() && !var_app_suspended && now_ms - last_reconnect_try > 8000) {
+			last_reconnect_try = now_ms;
+			Util_cset_set_wifi_state(true);
+			logger.info("wifi", "connection lost during playback, trying to reconnect");
+		}
+	}
+
 	// Get time
 	time_t unixTime = time(NULL);
 	struct tm *timeStruct = gmtime((const time_t *)&unixTime);
