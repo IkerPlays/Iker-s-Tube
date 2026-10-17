@@ -695,6 +695,36 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Subtitles
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return "Small"; },
+							(std::function<std::string ()>) []() { return "Normal"; },
+							(std::function<std::string ()>) []() { return "Large"; }
+						}, var_caption_size)
+						->set_title([](const SelectorView &) { return "Subtitle size"; })
+						->set_on_change([](const SelectorView &view) {
+							if (var_caption_size != view.selected_button) {
+								var_caption_size = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return "White"; },
+							(std::function<std::string ()>) []() { return "Yellow"; },
+							(std::function<std::string ()>) []() { return "Cyan"; },
+							(std::function<std::string ()>) []() { return "Green"; }
+						}, var_caption_color)
+						->set_title([](const SelectorView &) { return "Subtitle color"; })
+						->set_on_change([](const SelectorView &view) {
+							if (var_caption_color != view.selected_button) {
+								var_caption_color = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
 					// Large thumbnails
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

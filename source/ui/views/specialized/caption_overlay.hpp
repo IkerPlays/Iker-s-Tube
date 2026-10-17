@@ -92,13 +92,19 @@ struct CaptionOverlayView : public FixedSizeView {
 			lines.pop_back();
 		}
 
-		float start_y = 240 - 10 - DEFAULT_FONT_INTERVAL * lines.size();
+		static const float sizes[3] = {0.42f, 0.5f, 0.62f};
+		static const u32 colors[4] = {0xFFFFFFFF, 0xFF00E5FF, 0xFFFFFF40, 0xFF60FF60};
+		const float size = sizes[std::max(0, std::min(2, var_caption_size))];
+		const u32 color = colors[std::max(0, std::min(3, var_caption_color))];
+		const float interval = DEFAULT_FONT_INTERVAL * size / 0.5f;
+
+		float start_y = 240 - 10 - interval * lines.size();
 		for (size_t i = 0; i < lines.size(); i++) {
-			float width = Draw_get_width(lines[i], 0.5);
+			float width = Draw_get_width(lines[i], size);
 
 			Draw_texture(var_square_image[0], 0xBB000000, (400 - width) / 2 - OVERLAY_SIDE_MARGIN,
-			             start_y + i * DEFAULT_FONT_INTERVAL, width + OVERLAY_SIDE_MARGIN * 2, DEFAULT_FONT_INTERVAL);
-			Draw(lines[i], (400 - width) / 2, start_y + i * DEFAULT_FONT_INTERVAL - 2, 0.5, 0.5, (u32)-1);
+			             start_y + i * interval, width + OVERLAY_SIDE_MARGIN * 2, interval);
+			Draw(lines[i], (400 - width) / 2, start_y + i * interval - 2, size, size, color);
 		}
 	}
 	void update_(Hid_info key) override {}
