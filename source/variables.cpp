@@ -19,6 +19,7 @@ int var_new_feed_videos = 0;
 bool var_mark_watched = true;
 bool var_offline_autodelete = false;
 bool var_hide_shorts = false;
+int var_sponsorblock = 0;
 bool var_hide_watched = false;
 bool var_welcome_done = false;
 int var_custom_hue = 200;

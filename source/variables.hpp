@@ -33,6 +33,7 @@ extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
+extern int var_sponsorblock;  // 0 off, 1 skip sponsors, 2 skip sponsors, self promotion, intros and outros (SponsorBlock)
 extern bool var_hide_shorts;  // leave the Shorts out of the search results and the home feed
 extern bool var_hide_watched; // leave the videos that are in the watch history out of them
 extern bool var_offline_autodelete; // delete a saved video / audio after it was watched until the end

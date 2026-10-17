@@ -1,10 +1,3 @@
 Devbuild notes
 
-Fixes from a code review of everything added since 1.0.2:
-- A failed or cancelled download no longer deletes the files of a copy that was already saved: the new files are written next to the old ones and replace them only when all parts are complete.
-- A saved video with sound in one file can now be played as audio only.
-- The saved copy that replaces a video without internet is no longer remembered under the online address (it could keep pointing to a deleted file).
-- Deleting a download first deletes its files and only then removes it from the list, so a file that cannot be deleted is not left behind unlisted.
-- The bottom bar no longer piles up screens: its items start the history again from Home, and tapping Downloads or Library works even after you changed the tab inside the Library.
-- The comment error details and the video used by the comment actions are now shared safely between threads.
-- The unexpected-closure notice is shown after the loading screen so it is still visible.
+- New setting SponsorBlock (display section): Off, Sponsors, or All. While a video plays, the parts that the SponsorBlock community marked (sponsors; All also self promotion, interaction reminders, intros and outros) are skipped automatically with a notice, and they can be skipped again if you seek back. Only the first 4 characters of the SHA-256 of the video id are sent to sponsor.ajay.app (the privacy mode of its API). It is off by default and does nothing for saved videos without internet.

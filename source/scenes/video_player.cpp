@@ -11,6 +11,7 @@
 #include "data_io/bookmarks.hpp"
 #include "scenes/account_tasks.hpp"
 #include "scenes/offline_tasks.hpp"
+#include "youtube_parser/sponsorblock.hpp"
 #include "data_io/offline.hpp"
 #include "ui/notice.hpp"
 #include "ui/ui.hpp"
@@ -382,7 +383,56 @@ static void channel_speed_tick() {
 	}
 }
 
+// SponsorBlock : the marked parts of the playing video are skipped (setting in the playback options)
+static Mutex sb_lock;
+static std::vector<std::pair<double, double>> sb_segments;
+static std::vector<bool> sb_done; // the segment was already skipped (it can be skipped again after seeking back)
+static std::string sb_for_id;
+
+static void sb_load_task(void *arg) {
+	std::string *video_id = (std::string *)arg;
+	std::vector<std::pair<double, double>> segments;
+	bool ok = sponsorblock_load(*video_id, var_sponsorblock, segments);
+	sb_lock.lock();
+	if (sb_for_id == *video_id) {
+		sb_segments = segments;
+		sb_done.assign(segments.size(), false);
+	}
+	sb_lock.unlock();
+	if (ok && segments.size()) logger.info("player", "SponsorBlock : " + std::to_string(segments.size()) + " segment(s)");
+	delete video_id;
+}
+
+static void sponsorblock_tick(const std::string &id) {
+	static std::string loaded_id;
+	if (id != loaded_id) { // another video : forget the segments and ask for the new ones
+		loaded_id = id;
+		sb_lock.lock();
+		sb_segments.clear();
+		sb_done.clear();
+		sb_for_id = id;
+		sb_lock.unlock();
+		if (var_sponsorblock && id != "" && var_wifi_state == 2 && playing_video_info.url.compare(0, 8, "offline:") != 0) {
+			queue_async_task(sb_load_task, new std::string(id));
+		}
+	}
+	if (!var_sponsorblock || !vid_play_request || vid_pausing) return;
+	sb_lock.lock();
+	for (size_t i = 0; i < sb_segments.size() && i < sb_done.size(); i++) {
+		double start = sb_segments[i].first, stop = sb_segments[i].second;
+		if (!sb_done[i] && vid_current_pos >= start && vid_current_pos < stop - 1) {
+			sb_done[i] = true;
+			send_seek_request_wo_lock(stop); // called while small_resource_lock is already held
+			notice_show(tr("Skipped a marked part (SponsorBlock)", "Parte marcada saltada (SponsorBlock)"));
+		} else if (sb_done[i] && vid_current_pos < start - 2) {
+			sb_done[i] = false; // the user went back : it may be skipped again
+		}
+	}
+	sb_lock.unlock();
+}
+
 static void ab_loop_tick() {
+	sponsorblock_tick(playing_video_info.id);
 	static std::string tracked_id;
 	if (playing_video_info.id != tracked_id) {
 		tracked_id = playing_video_info.id;

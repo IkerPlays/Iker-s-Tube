@@ -689,6 +689,21 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// SponsorBlock
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return tr("Sponsors", "Patrocinios"); },
+							(std::function<std::string ()>) []() { return tr("All", "Todo"); }
+						}, var_sponsorblock)
+						->set_title([](const SelectorView &) { return tr("SponsorBlock: skip marked parts", "SponsorBlock: saltar partes marcadas"); })
+						->set_info([](const SelectorView &) { return tr("Skips sponsors (All: also self promotion, intros and outros) marked by the community. Only a part of the video id hash is sent to sponsor.ajay.app.", "Salta los patrocinios (Todo: también autopromoción, intros y finales) marcados por la comunidad. Solo se envía una parte del hash del ID a sponsor.ajay.app."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_sponsorblock != view.selected_button) {
+								var_sponsorblock = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Hide Shorts / watched videos in search and home
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

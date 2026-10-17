@@ -351,6 +351,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"No downloads match.", {"Aucun téléchargement ne correspond.", "Keine Downloads passen.", "Nessun download corrisponde.", "Nenhum download corresponde.", "一致するダウンロードはありません。"}},
 	    {"Saved offline", {"Enregistré hors ligne", "Offline gespeichert", "Salvato offline", "Salvo offline", "オフライン保存済み"}},
 	    {"Connection problem, trying again...", {"Problème de connexion, nouvel essai...", "Verbindungsproblem, versuche es erneut...", "Problema di connessione, riprovo...", "Problema de conexão, tentando de novo...", "接続エラー、再試行中..."}},
+	    {"Sponsors", {"Parrainages", "Sponsoren", "Sponsor", "Patrocínios", "スポンサー"}},
+	    {"All", {"Tout", "Alle", "Tutto", "Tudo", "すべて"}},
+	    {"SponsorBlock: skip marked parts", {"SponsorBlock : sauter les parties signalées", "SponsorBlock: markierte Teile überspringen", "SponsorBlock: salta le parti segnalate", "SponsorBlock: pular partes marcadas", "SponsorBlock：マークされた部分をスキップ"}},
+	    {"Skips sponsors (All: also self promotion, intros and outros) marked by the community. Only a part of the video id hash is sent to sponsor.ajay.app.", {"Saute les parrainages (Tout : aussi autopromotion, intros et outros) signalés par la communauté. Seule une partie du hash de l'ID est envoyée à sponsor.ajay.app.", "Überspringt von der Community markierte Sponsoren (Alle: auch Eigenwerbung, Intros und Outros). Nur ein Teil des Hashs der Video-ID wird an sponsor.ajay.app gesendet.", "Salta gli sponsor (Tutto: anche autopromozione, intro e outro) segnalati dalla community. A sponsor.ajay.app viene inviata solo una parte dell'hash dell'ID.", "Pula patrocínios (Tudo: também autopromoção, intros e outros) marcados pela comunidade. Só uma parte do hash do ID é enviada a sponsor.ajay.app.", "コミュニティがマークしたスポンサー（すべて：自己宣伝、イントロ、アウトロも）をスキップします。sponsor.ajay.appには動画IDのハッシュの一部だけを送信します。"}},
+	    {"Skipped a marked part (SponsorBlock)", {"Partie signalée sautée (SponsorBlock)", "Markierter Teil übersprungen (SponsorBlock)", "Parte segnalata saltata (SponsorBlock)", "Parte marcada pulada (SponsorBlock)", "マークされた部分をスキップ (SponsorBlock)"}},
 	};
 	return table;
 }
