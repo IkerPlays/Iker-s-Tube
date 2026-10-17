@@ -350,6 +350,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Clear", {"Effacer", "Löschen", "Cancella", "Limpar", "消去"}},
 	    {"No downloads match.", {"Aucun téléchargement ne correspond.", "Keine Downloads passen.", "Nessun download corrisponde.", "Nenhum download corresponde.", "一致するダウンロードはありません。"}},
 	    {"Saved offline", {"Enregistré hors ligne", "Offline gespeichert", "Salvato offline", "Salvo offline", "オフライン保存済み"}},
+	    {"Connection problem, trying again...", {"Problème de connexion, nouvel essai...", "Verbindungsproblem, versuche es erneut...", "Problema di connessione, riprovo...", "Problema de conexão, tentando de novo...", "接続エラー、再試行中..."}},
 	};
 	return table;
 }

@@ -1,4 +1,3 @@
 Devbuild notes
 
-- Downloads screen: with more than 3 saved items a Search downloads button filters the list by title or channel (Clear removes the filter).
-- Video page: the Save video button reads Saved offline when that video is already on the SD card.
+- Downloads: a Wi-Fi hiccup no longer ruins a download. A failed chunk is asked again up to 5 times, waiting a little more each time, and the file keeps what was already downloaded. A notice says when it is trying again.

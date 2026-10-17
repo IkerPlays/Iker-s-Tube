@@ -54,6 +54,7 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 	FILE *file = fopen(tmp_path.c_str(), "wb");
 	bool ok = file != NULL;
 	u64 total = 0, done = 0;
+	int failures = 0; // in a row
 	const u64 CHUNK = 1024 * 1024;
 	while (ok) {
 		if (download_cancel) {
@@ -64,9 +65,16 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 		auto result = session.perform(HttpRequest::GET(part.url, {{"Range", "bytes=" + std::to_string(done) + "-" + std::to_string(end)}}));
 		if (result.fail || !result.status_code_is_success() || result.data.empty()) {
 			logger.warning("offline", "download failed at " + std::to_string(done) + " : http " + std::to_string(result.status_code) + " " + result.error);
-			ok = false;
-			break;
+			// a Wi-Fi hiccup : wait a little and ask the same chunk again (the file keeps what was already written)
+			if (++failures >= 5 || download_cancel) {
+				ok = false;
+				break;
+			}
+			notice_show(tr("Connection problem, trying again...", "Problema de conexión, reintentando..."));
+			svcSleepThread((s64)failures * 2000000000LL);
+			continue;
 		}
+		failures = 0;
 		if (total == 0) {
 			auto content_range = result.get_header("Content-Range");
 			size_t slash = content_range.find('/');
