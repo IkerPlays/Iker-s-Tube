@@ -210,6 +210,12 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Working...", {"En cours...", "Wird gesendet...", "Invio...", "Enviando...", "送信中..."}},
 	    {"Write a comment", {"Écrire un commentaire", "Kommentar schreiben", "Scrivi un commento", "Escrever um comentário", "コメントを書く"}},
 	    {"Write a reply", {"Écrire une réponse", "Antwort schreiben", "Scrivi una risposta", "Escrever uma resposta", "返信を書く"}},
+	    {"Your account", {"Votre compte", "Dein Konto", "Il tuo account", "Sua conta", "アカウント"}},
+	    {"Recommended for you", {"Recommandé pour vous", "Für dich empfohlen", "Consigliati per te", "Recomendados para você", "おすすめ"}},
+	    {"Notifications", {"Notifications", "Benachrichtigungen", "Notifiche", "Notificações", "通知"}},
+	    {"Loading...", {"Chargement...", "Lädt...", "Caricamento...", "Carregando...", "読み込み中..."}},
+	    {"Could not load it from your account", {"Impossible de charger depuis votre compte", "Vom Konto konnte nichts geladen werden", "Impossibile caricare dal tuo account", "Não foi possível carregar da sua conta", "アカウントから読み込めませんでした"}},
+	    {"No videos found", {"Aucune vidéo trouvée", "Keine Videos gefunden", "Nessun video trovato", "Nenhum vídeo encontrado", "動画が見つかりません"}},
 	};
 	return table;
 }

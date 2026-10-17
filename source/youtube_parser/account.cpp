@@ -1,6 +1,7 @@
 #include "headers.hpp"
 #include <map>
 #include <regex>
+#include <algorithm>
 #include "youtube_parser/account.hpp"
 #include "oauth/oauth.hpp"
 #include "internal_common.hpp"
@@ -46,8 +47,38 @@ static std::string text_after(const std::string &body, size_t from, size_t to, c
 	size_t p = body.find(key, from);
 	if (p == std::string::npos || p >= to) return "";
 	p += key.size();
-	size_t e = body.find('"', p);
-	return e == std::string::npos ? "" : body.substr(p, e - p);
+	size_t e = p;
+	while (e < body.size() && body[e] != '"') {
+		if (body[e] == '\\') e++; // escaped character (\" or \u0026 ...)
+		e++;
+	}
+	if (e >= body.size()) return "";
+	// unescape the common sequences so that titles read normally
+	std::string raw = body.substr(p, e - p), res;
+	for (size_t i = 0; i < raw.size(); i++) {
+		if (raw[i] == '\\' && i + 1 < raw.size()) {
+			char c = raw[i + 1];
+			if (c == '"' || c == '\\' || c == '/') res += c, i++;
+			else if (c == 'n') res += ' ', i++;
+			else if (c == 'u' && i + 5 < raw.size()) {
+				unsigned cp = (unsigned)strtoul(raw.substr(i + 2, 4).c_str(), NULL, 16);
+				i += 5;
+				if (cp >= 0xD800 && cp < 0xDC00 && i + 6 < raw.size() && raw[i + 1] == '\\' && raw[i + 2] == 'u') { // surrogate pair
+					unsigned low = (unsigned)strtoul(raw.substr(i + 3, 4).c_str(), NULL, 16);
+					cp = 0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00);
+					i += 6;
+				}
+				if (cp < 0x80) res += (char)cp;
+				else if (cp < 0x800) res += (char)(0xC0 | (cp >> 6)), res += (char)(0x80 | (cp & 0x3F));
+				else if (cp < 0x10000) res += (char)(0xE0 | (cp >> 12)), res += (char)(0x80 | ((cp >> 6) & 0x3F)), res += (char)(0x80 | (cp & 0x3F));
+				else res += (char)(0xF0 | (cp >> 18)), res += (char)(0x80 | ((cp >> 12) & 0x3F)), res += (char)(0x80 | ((cp >> 6) & 0x3F)), res += (char)(0x80 | (cp & 0x3F));
+			}
+			else res += raw[i];
+		} else {
+			res += raw[i];
+		}
+	}
+	return res;
 }
 
 bool youtube_account_like(const std::string &video_id, int rating) {
@@ -153,4 +184,68 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
 	return account_post("comment/create_comment_reply",
 	                    "\"commentText\": \"" + json_escape(text) + "\", \"createReplyParams\": \"" + json_escape(params) + "\"")
 	    .first;
+}
+
+// Recommendations / notifications : the answers are minified JSON, the fields of each video are read as text.
+static bool is_video_id(const std::string &s) {
+	if (s.size() != 11) return false;
+	for (char c : s) {
+		if (!(isalnum((unsigned char)c) || c == '-' || c == '_')) return false;
+	}
+	return true;
+}
+
+bool youtube_account_recommendations(std::vector<YouTubeVideoSuccinct> &out) {
+	auto r = account_post("browse", "\"browseId\": \"FEwhat_to_watch\"");
+	if (!r.first) return false;
+	const std::string &json = r.second;
+	const std::string marker = "\"videoId\":\"";
+	std::vector<std::string> seen;
+	size_t pos = 0;
+	while ((pos = json.find(marker, pos)) != std::string::npos && out.size() < 40) {
+		size_t id_start = pos + marker.size();
+		std::string id = json.substr(id_start, 11);
+		pos = id_start + 11;
+		if (!is_video_id(id) || std::find(seen.begin(), seen.end(), id) != seen.end()) continue;
+		seen.push_back(id);
+		size_t end = std::min(json.size(), pos + 2500);
+		YouTubeVideoSuccinct v;
+		v.title = text_after(json, pos, end, "\"title\":{\"runs\":[{\"text\":\"");
+		if (v.title == "") v.title = text_after(json, pos, end, "\"title\":{\"simpleText\":\"");
+		if (v.title == "") v.title = text_after(json, pos, end, "\"headline\":{\"runs\":[{\"text\":\"");
+		if (v.title == "") continue;
+		v.author = text_after(json, pos, end, "\"shortBylineText\":{\"runs\":[{\"text\":\"");
+		v.duration_text = text_after(json, pos, end, "\"lengthText\":{\"simpleText\":\"");
+		v.url = youtube_get_video_url_by_id(id);
+		v.thumbnail_url = youtube_get_video_thumbnail_url_by_id(id);
+		out.push_back(v);
+	}
+	logger.info("account", "recommendations : " + std::to_string(out.size()));
+	return true;
+}
+
+bool youtube_account_notifications(std::vector<YouTubeVideoSuccinct> &out) {
+	auto r = account_post("notification/get_notification_menu", "\"notificationsMenuRequestType\": \"NOTIFICATIONS_MENU_REQUEST_TYPE_INBOX\"");
+	if (!r.first) return false;
+	const std::string &json = r.second;
+	const std::string marker = "\"notificationRenderer\"";
+	size_t pos = 0;
+	while ((pos = json.find(marker, pos)) != std::string::npos && out.size() < 40) {
+		size_t next = json.find(marker, pos + marker.size());
+		size_t end = next == std::string::npos ? json.size() : next;
+		pos += marker.size();
+		YouTubeVideoSuccinct v;
+		v.title = text_after(json, pos, end, "\"shortMessage\":{\"simpleText\":\"");
+		std::string id = text_after(json, pos, end, "\"videoId\":\"");
+		if (!is_video_id(id)) {
+			size_t w = json.find("watch?v=", pos);
+			if (w != std::string::npos && w < end) id = json.substr(w + 8, 11);
+		}
+		if (v.title == "" || !is_video_id(id)) continue;
+		v.url = youtube_get_video_url_by_id(id);
+		v.thumbnail_url = youtube_get_video_thumbnail_url_by_id(id);
+		out.push_back(v);
+	}
+	logger.info("account", "notifications : " + std::to_string(out.size()));
+	return true;
 }

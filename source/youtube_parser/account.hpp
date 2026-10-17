@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "youtube_parser/parser.hpp"
 
 // Actions on the signed-in YouTube account (OAuth login needed). They block on the network : call them from a worker thread.
 // All of them return false when there is no login or YouTube refused the request.
@@ -9,6 +10,10 @@ struct AccountPlaylist {
 	std::string title;
 	bool has_video = false; // the video is already in this playlist
 };
+
+// the videos YouTube recommends to the account and the videos of its notification inbox (title + url + author when known)
+bool youtube_account_recommendations(std::vector<YouTubeVideoSuccinct> &out);
+bool youtube_account_notifications(std::vector<YouTubeVideoSuccinct> &out);
 
 bool youtube_account_like(const std::string &video_id, int rating); // 1 like, -1 dislike, 0 remove the rating
 bool youtube_account_subscribe(const std::string &channel_id, bool subscribe);

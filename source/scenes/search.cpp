@@ -18,6 +18,9 @@
 #include "data_io/last_played.hpp"
 #include "data_io/history.hpp"
 #include "ui/qr_scan.hpp"
+#include "ui/notice.hpp"
+#include "scenes/account_tasks.hpp"
+#include "youtube_parser/account.hpp"
 
 #define SEARCH_BOX_MARGIN 4
 #define SEARCH_ROW_HEIGHT 25
@@ -142,6 +145,8 @@ static std::string search_filter_name(int i) {
 	return tr(en[i], search_filters[i].name);
 }
 static int search_filter_index = 0;
+static int account_feed_kind = 0; // 1 : recommendations, 2 : notifications of the YouTube account
+static void load_account_feed(void *);
 static bool history_clear_request = false;
 static bool qr_scan_pending = false;
 
@@ -207,6 +212,29 @@ static void show_search_history() {
 				                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
 				                                      ->set_on_view_released([author](View &) { start_search(author); }));
 			}
+		}
+	}
+	{ // your YouTube account : recommendations and notifications (OAuth login needed)
+		result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+		                                      ->set_text(tr("Your account", "Tu cuenta"))
+		                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+		                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+		for (int kind = 1; kind <= 2; kind++) {
+			result_list_view->views.push_back(
+			    (new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+			        ->set_text(kind == 1 ? tr("Recommended for you", "Recomendados para ti") : tr("Notifications", "Notificaciones"))
+			        ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+			        ->set_y_alignment(TextView::YAlign::CENTER)
+			        ->set_get_text_color([]() { return COLOR_ACCENT; })
+			        ->set_get_background_color(View::STANDARD_BACKGROUND)
+			        ->set_on_view_released([kind](View &) {
+				        if (!account_ready()) return;
+				        account_feed_kind = kind;
+				        if (!is_async_task_running(load_account_feed)) {
+					        notice_show(tr("Loading...", "Cargando..."));
+					        queue_async_task(load_account_feed, NULL);
+				        }
+			        }));
 		}
 	}
 	result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
@@ -440,6 +468,32 @@ static std::pair<int *, std::string *> get_thumbnail_info_from_view(View *view) 
 	usleep(1000000);
 	return {NULL, NULL};
 }
+static void load_account_feed(void *) {
+	std::vector<YouTubeVideoSuccinct> videos;
+	bool ok = account_feed_kind == 1 ? youtube_account_recommendations(videos) : youtube_account_notifications(videos);
+	std::vector<View *> views;
+	for (auto &video : videos) {
+		views.push_back(result_item_to_view(YouTubeSuccinctItem(video)));
+	}
+	resource_lock.lock();
+	if (exiting) {
+		resource_lock.unlock();
+		return;
+	}
+	if (views.size()) {
+		result_list_view->recursive_delete_subviews();
+		result_list_view->views = views;
+		search_done = true; // the history list must not be rebuilt on top of it
+	}
+	var_need_refresh = true;
+	resource_lock.unlock();
+	if (!ok) {
+		notice_show(tr("Could not load it from your account", "No se pudo cargar de tu cuenta"));
+	} else if (videos.empty()) {
+		notice_show(tr("No videos found", "No se encontraron vídeos"));
+	}
+}
+
 static void load_search_results(void *) {
 	// pre-access processing
 	resource_lock.lock();
@@ -688,6 +742,7 @@ void Search_draw(void) {
 			Util_err_draw();
 		}
 
+		notice_draw(RESULT_Y_HIGH);
 		Draw_touch_pos();
 
 		Draw_apply_draw();
