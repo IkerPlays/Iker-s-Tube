@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/play_queue.hpp"
 #include <vector>
 #include <string>
 #include <set>
@@ -311,7 +312,18 @@ void Channel_init(void) {
 	        ->set_on_view_released([stream](View &) { clicked_url = stream.url; });
     }
 
-    View *shorts2view(const YouTubeVideoSuccinct &shorts) {
+    // the shorts that follow this one in the list (they are queued when the first one is opened and the queue is empty,
+    // so the shorts play one after another)
+    static std::vector<std::pair<std::string, std::string>>
+    shorts_followers(const std::vector<YouTubeVideoSuccinct> &list, size_t index) {
+	    std::vector<std::pair<std::string, std::string>> res;
+	    for (size_t i = index + 1; i < list.size() && res.size() < 15; i++) {
+		    res.push_back({list[i].url, list[i].title});
+	    }
+	    return res;
+    }
+    View *shorts2view(const YouTubeVideoSuccinct &shorts,
+                      const std::vector<std::pair<std::string, std::string>> &followers = {}) {
 	    return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
 	        ->set_title_lines(truncate_str(shorts.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5))
 	        ->set_thumbnail_url(shorts.thumbnail_url)
@@ -319,7 +331,12 @@ void Channel_init(void) {
 	        ->set_bottom_right_overlay("")
 	        ->auto_grid(shorts.title)
 	        ->set_get_background_color(View::STANDARD_BACKGROUND)
-	        ->set_on_view_released([shorts](View &) { clicked_url = shorts.url; });
+	        ->set_on_view_released([shorts, followers](View &) {
+		        if (play_queue_size() == 0) {
+			        for (auto &f : followers) play_queue_toggle(f.first, f.second);
+		        }
+		        clicked_url = shorts.url;
+	        });
     }
     View *playlist2view(const YouTubePlaylistSuccinct &playlist) {
 	    return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
@@ -611,8 +628,8 @@ void Channel_init(void) {
 	    shorts_list_view->recursive_delete_subviews();
 	    if (result.shorts.size() > 0) {
 		    std::vector<View *> shorts_views;
-		    for (auto shorts : result.shorts) {
-			    shorts_views.push_back(shorts2view(shorts));
+		    for (size_t i = 0; i < result.shorts.size(); i++) {
+			    shorts_views.push_back(shorts2view(result.shorts[i], shorts_followers(result.shorts, i)));
 		    }
 		    shorts_list_view->set_views(shorts_views);
 		    if (result.error != "" || result.has_more_shorts()) {
@@ -842,8 +859,8 @@ void Channel_init(void) {
 
 	    logger.info("channel-shorts", "truncate start");
 	    std::vector<View *> shorts_views;
-	    for (auto shorts : shorts_result.shorts) {
-		    shorts_views.push_back(shorts2view(shorts));
+	    for (size_t i = 0; i < shorts_result.shorts.size(); i++) {
+		    shorts_views.push_back(shorts2view(shorts_result.shorts[i], shorts_followers(shorts_result.shorts, i)));
 	    }
 	    logger.info("channel-shorts", "truncate end");
 
@@ -905,7 +922,7 @@ void Channel_init(void) {
 	    logger.info("channel-shorts-more", "truncate start");
 	    std::vector<View *> new_shorts_views;
 	    for (size_t i = channel_info.shorts.size(); i < new_result.shorts.size(); i++) {
-		    new_shorts_views.push_back(shorts2view(new_result.shorts[i]));
+		    new_shorts_views.push_back(shorts2view(new_result.shorts[i], shorts_followers(new_result.shorts, i)));
 	    }
 	    logger.info("channel-shorts-more", "truncate end");
 
