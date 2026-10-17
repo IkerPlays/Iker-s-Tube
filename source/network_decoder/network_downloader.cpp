@@ -519,7 +519,13 @@ void NetworkStreamDownloader::downloader_thread() {
 					continue;
 				}
 				fseek(local_file, 0, SEEK_END);
-				u64 total = (u64)ftell(local_file);
+				long local_size = ftell(local_file);
+				if (local_size < 0) {
+					fclose(local_file);
+					cur_stream->error = true;
+					continue;
+				}
+				u64 total = (u64)local_size;
 				if (cur_stream->len == 0) {
 					cur_stream->len = total;
 					cur_stream->block_num = NetworkStream::get_block_num(total);

@@ -82,5 +82,9 @@ void offline_download_async(const std::string &id, const std::string &title, con
 	download_running = true;
 	notice_show(tr("Downloading audio: 0%", "Descargando audio: 0%"));
 	// its own thread : the shared async task thread must stay free for loading pages while the file downloads
-	threadCreate(download_task, new DownloadJob{id, title, author, audio_url}, DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, -1, true);
+	DownloadJob *job = new DownloadJob{id, title, author, audio_url};
+	if (!threadCreate(download_task, job, DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, -1, true)) {
+		delete job;
+		download_running = false;
+	}
 }

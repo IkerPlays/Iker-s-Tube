@@ -854,19 +854,19 @@ debug_info_view =
                              ->set_get_background_color(View::STANDARD_BACKGROUND)})
             ->set_draw_order({3, 0, 1, 2, 4}));
     equalizer_popup_view->set_is_visible(false);
-    text_popup_view = new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
+    if (!text_popup_view) text_popup_view = new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
     text_popup_view->set_on_cancel([](OverlayView &view) {
 	    view.set_is_visible(false);
 	    var_need_refresh = true;
     });
     text_popup_view->set_is_visible(false);
-    account_pl_popup_view = new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
+    if (!account_pl_popup_view) account_pl_popup_view = new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
     account_pl_popup_view->set_on_cancel([](OverlayView &view) {
 	    view.set_is_visible(false);
 	    var_need_refresh = true;
     });
     account_pl_popup_view->set_is_visible(false);
-    comment_dialog = new OverlayDialogView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
+    if (!comment_dialog) comment_dialog = new OverlayDialogView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
     comment_dialog->set_is_visible(false);
     playlist_title_view =
         (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL);
