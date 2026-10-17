@@ -1,10 +1,6 @@
-## What's new
+Devbuild notes
 
-- **Fix: a new video starts at the beginning.** When you opened another video it could start at the minute of the previous one (the saved position was written under the new video by mistake). It now only starts from a saved minute if you really watched that same video before, and Settings has an option to always start from the beginning.
-- **YouTube account actions (OAuth login needed).** Like or dislike a video, save it to your account playlists, subscribe and unsubscribe (also on your account), write comments, and long press a comment to like it or reply to it. These actions talk to YouTube directly and could not be tested with a real account here, so tell me if one of them does not work.
-- **Translate.** Translate a video title and description, or a comment (long press it, Translate), into the language of the app. It uses the free Google Translate web endpoint, so it needs no key but can stop working if that service changes.
-- **Offline audio.** Save audio to the SD card from a video page (Save audio) and play it from the new Offline tab in the Library, without a connection.
-- **Play next.** Library lists have a Play next option that puts a video first in the queue.
-- **Shorts play one after another.** Opening a short from a channel queues the next ones (when the queue is empty).
-- **Premiere countdown.** Upcoming premieres and streams show a live countdown when YouTube gives the start time.
-- **Notices.** Short messages confirm what the account actions did.
+- Comments: "+ Comment" no longer says the comments must be opened first when they are already open.
+- Comments: replying to a comment and liking a comment find their token by the comment id, so they work on any comment of the first page.
+- Search: the account feed offers Recommended videos and your Notifications inbox.
+- Stable release notes for 1.0.2 are ready.
