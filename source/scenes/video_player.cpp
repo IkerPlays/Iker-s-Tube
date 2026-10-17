@@ -2584,7 +2584,29 @@ debug_info_view =
     u32 video_get_top_screen_background_color() {
 	    return vid_play_request && network_decoder.ready && !audio_only_mode ? DEF_DRAW_BLACK : DEFAULT_BACK_COLOR;
     }
+    // screensaver : after a minute of pause the logo bounces on a black screen (saves the screen from burn-in)
+    static bool screensaver_active() {
+	    static u64 paused_since = 0;
+	    if (vid_play_request && vid_pausing && !get_network_waiting_status()) {
+		    if (!paused_since) paused_since = osGetTime();
+	    } else {
+		    paused_since = 0;
+	    }
+	    return paused_since && osGetTime() - paused_since > 60000;
+    }
     void video_draw_video_frame() {
+	    if (screensaver_active()) {
+		    Draw_texture(var_square_image[0], DEF_DRAW_BLACK, 0, 0, 400, 240);
+		    auto wave = [](double t, double period, double lo, double hi) {
+			    double ph = fmod(t, period) / period; // 0..1
+			    double tri = ph < 0.5 ? ph * 2 : 2 - ph * 2;
+			    return lo + (hi - lo) * tri;
+		    };
+		    double t = osGetTime() / 1000.0;
+		    logo_draw(wave(t, 23, 90, 310), wave(t, 17, 80, 170));
+		    var_need_refresh = true;
+		    return;
+	    }
 	    int texture_index = !texture_index_head;
 	    if (vid_play_request && network_decoder.ready && !audio_only_mode) {
 		    Draw_texture(vid_image[texture_index].c2d, vid_x, vid_y, vid_tex_width[texture_index] * vid_zoom,

@@ -110,6 +110,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Home", {"Accueil", "Start", "Home", "Início", "ホーム"}},
 	    {"Search", {"Recherche", "Suche", "Cerca", "Pesquisa", "検索"}},
 	    {"Automatic theme by time", {"Thème automatique selon l'heure", "Automatisches Design nach Uhrzeit", "Tema automatico in base all'ora", "Tema automático por hora", "時間で自動テーマ"}},
+	    {"Save full log to the SD card", {"Enregistrer le journal complet sur la SD", "Vollständiges Protokoll auf SD speichern", "Salva il registro completo sulla SD", "Salvar o registro completo no SD", "完全なログをSDに保存"}},
+	    {"Could not write the log", {"Impossible d'écrire le journal", "Protokoll konnte nicht geschrieben werden", "Impossibile scrivere il registro", "Não foi possível gravar o registro", "ログを書き込めませんでした"}},
 	};
 	return table;
 }

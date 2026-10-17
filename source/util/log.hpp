@@ -94,6 +94,8 @@ class Logger {
 		return out;
 	}
 
+	bool save_full_log(); // writes the whole buffer to the SD card, returns false on failure
+
 	void update(Hid_info key); // called per frame
 	void draw();               // draw logs if `draw_enabled`
 	size_t get_memory_consumption();

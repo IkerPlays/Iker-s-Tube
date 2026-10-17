@@ -994,6 +994,24 @@ void Sem_init(void) {
 							if (2 >= (int) lines.size()) return "";
 							auto cut = truncate_str(lines[2], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
 						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Save full log to the SD card", "Guardar el registro completo en la SD"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							bool ok = logger.save_full_log();
+							toast_view
+								->set_text((std::function<std::string ()>) [ok] () { return ok ? std::string("sdmc:/3ds/IkersTube/log_full.txt") : tr("Could not write the log", "No se pudo escribir el registro"); })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 150;
+							var_need_refresh = true;
+						}),
 					// section: History
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text(tr("History", "Historial"))

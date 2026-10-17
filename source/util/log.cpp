@@ -1,6 +1,46 @@
 ﻿#include "headers.hpp"
 
+#include <sys/stat.h>
+#define LOG_DIR "sdmc:/3ds/IkersTube"
+#define LOG_PATH "sdmc:/3ds/IkersTube/log.txt"
+#define LOG_PREV_PATH "sdmc:/3ds/IkersTube/log_previous.txt"
+
 void Logger::init() { osTickCounterStart(&stopwatch); }
+
+// warnings and errors are also appended to the SD card so they can be shared when something fails
+static void append_to_log_file(const std::string &line) {
+	static bool first = true;
+	if (first) { // new session : keep the previous log as log_previous.txt
+		first = false;
+		mkdir("sdmc:/3ds", 0777);
+		mkdir(LOG_DIR, 0777);
+		remove(LOG_PREV_PATH);
+		rename(LOG_PATH, LOG_PREV_PATH);
+	}
+	FILE *f = fopen(LOG_PATH, "a");
+	if (f) {
+		fprintf(f, "%s\n", line.c_str());
+		fclose(f);
+	}
+}
+
+// writes everything buffered (all levels) to sdmc:/3ds/IkersTube/log_full.txt
+bool Logger::save_full_log() {
+	mkdir("sdmc:/3ds", 0777);
+	mkdir(LOG_DIR, 0777);
+	FILE *f = fopen(LOG_DIR "/log_full.txt", "w");
+	if (!f) {
+		return false;
+	}
+	content_lock.lock();
+	for (auto &entry : logs) {
+		const char *level = entry.level == LogLevel::ERROR ? "ERROR" : entry.level == LogLevel::WARNING ? "WARN " : entry.level == LogLevel::CAUTION ? "CAUT " : "INFO ";
+		fprintf(f, "%s %s\n", level, entry.str.c_str());
+	}
+	content_lock.unlock();
+	fclose(f);
+	return true;
+}
 void Logger::log(LogLevel level, const std::string &str) {
 	content_lock.lock();
 	// get time
@@ -19,6 +59,9 @@ void Logger::log(LogLevel level, const std::string &str) {
 	}
 	if (draw_enabled) {
 		var_need_refresh = true;
+	}
+	if (level == LogLevel::WARNING || level == LogLevel::ERROR) {
+		append_to_log_file(logs.back().str);
 	}
 	content_lock.unlock();
 }
