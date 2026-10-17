@@ -29,6 +29,7 @@ static volatile bool upload_running = false;
 
 static volatile int upload_percent = 0;
 static std::string upload_message; // result of the last upload (guarded by state_lock)
+static std::string last_uploaded_id; // the video of the last successful upload (guarded by state_lock)
 
 static bool pick_short = false;
 static bool pick_image = false; // choosing the thumbnail (an image) instead of a video
@@ -192,6 +193,7 @@ static void upload_thread(void *arg) {
 	if (ok) {
 		upload_message = tr("Uploaded: ", "Subido: ") + "youtube.com/watch?v=" + video_id + thumb_error;
 		stats_loaded = false; // the totals changed : reload them when the tab is shown again
+		last_uploaded_id = video_id;
 	} else {
 		upload_message = tr("Upload failed: ", "Error al subir: ") + error;
 		if (error.find("403") != std::string::npos || error.find("401") != std::string::npos) {
@@ -366,6 +368,12 @@ static std::vector<View *> build_dash() {
 		global_intent.arg = OAuth::get_user_channel_id();
 	}));
 	v.push_back(label([]() { return locked_copy(upload_message); }));
+	if (locked_copy(last_uploaded_id) != "") { // watch what was just uploaded
+		v.push_back(button([]() { return tr("Watch the uploaded video", "Ver el vídeo subido"); }, []() {
+			global_intent.next_scene = SceneType::VIDEO_PLAYER;
+			global_intent.arg = youtube_get_video_url_by_id(locked_copy(last_uploaded_id));
+		}));
+	}
 	return v;
 }
 

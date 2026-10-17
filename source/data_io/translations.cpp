@@ -316,6 +316,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"in 3ds/IkersTube (see STUDIO_SETUP.md)", {"dans 3ds/IkersTube (voir STUDIO_SETUP.md)", "in 3ds/IkersTube (siehe STUDIO_SETUP.md)", "in 3ds/IkersTube (vedi STUDIO_SETUP.md)", "em 3ds/IkersTube (veja STUDIO_SETUP.md)", "3ds/IkersTube内（STUDIO_SETUP.md参照）"}},
 	    {"Public videos only - sign in for Studio to edit", {"Vidéos publiques seulement - connectez-vous à Studio pour modifier", "Nur öffentliche Videos - zum Bearbeiten bei Studio anmelden", "Solo video pubblici - accedi a Studio per modificare", "Só vídeos públicos - entre no Studio para editar", "公開動画のみ - 編集にはStudioにログイン"}},
 	    {"Loading your account and data...", {"Chargement du compte et des données...", "Konto und Daten werden geladen...", "Caricamento di account e dati...", "Carregando conta e dados...", "アカウントとデータを読み込み中..."}},
+	    {"Watch the uploaded video", {"Voir la vidéo envoyée", "Hochgeladenes Video ansehen", "Guarda il video caricato", "Ver o vídeo enviado", "アップロードした動画を見る"}},
 	};
 	return table;
 }
