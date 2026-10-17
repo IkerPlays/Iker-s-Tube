@@ -3793,6 +3793,7 @@ debug_info_view =
 				    return out != "";
 			    };
 			    std::string comments_token = cur_video_info.comments_account_token();
+			    youtube_account_set_video(cur_video_info.id); // the account requests may need the video itself
 			    if (comment_write_request) {
 				    comment_write_request = false;
 				    std::string text;
@@ -3818,6 +3819,7 @@ debug_info_view =
 				        [](OverlayDialogView &, int button) {
 					        if (button == 0) {
 						        std::string token = cur_video_info.comments_account_token();
+						        youtube_account_set_video(cur_video_info.id);
 						        if (token == "") notice_show(tr("Open the comments first", "Abre antes los comentarios"));
 						        else account_comment_like_async(token, comment_target_id);
 					        } else if (button == 1) {

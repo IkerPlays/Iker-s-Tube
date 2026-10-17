@@ -26,3 +26,7 @@ bool youtube_account_comment_create(const std::string &comments_token, const std
 bool youtube_account_comment_like(const std::string &comments_token, const std::string &comment_id);
 bool youtube_account_comment_reply(const std::string &comments_token, const std::string &comment_id,
                                    const std::string &text);
+
+// why the last request failed (shown next to the error notices), and the video the comment actions work on
+std::string youtube_account_last_error();
+void youtube_account_set_video(const std::string &video_id);

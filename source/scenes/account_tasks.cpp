@@ -100,7 +100,8 @@ static void run_job(void *arg) {
 	if (ok && done != "") {
 		notice_show(done);
 	} else if (!ok) {
-		notice_show(failed);
+		std::string why = youtube_account_last_error();
+		notice_show(failed + (why != "" && job->type != TRANSLATE ? " (" + why.substr(0, 70) + ")" : ""));
 	}
 	delete job;
 }

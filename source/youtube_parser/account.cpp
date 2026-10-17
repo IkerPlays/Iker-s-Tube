@@ -2,6 +2,7 @@
 #include <map>
 #include <regex>
 #include <algorithm>
+#include <cstring>
 #include "youtube_parser/account.hpp"
 #include "oauth/oauth.hpp"
 #include "internal_common.hpp"
@@ -23,17 +24,31 @@ static std::string json_escape(const std::string &s) {
 	return out;
 }
 
+// The clients that the account requests can be sent as (the login works with several of them).
+static const char *CLIENTS[] = {
+    R"("clientName": "ANDROID_VR","clientVersion": "1.62.27")",                                  // 0
+    R"("clientName": "MWEB","clientVersion": "2.20241202.07.00","utcOffsetMinutes": 0)",         // 1 (the comments come from it)
+    R"("clientName": "WEB","clientVersion": "2.20241126.01.00","utcOffsetMinutes": 0)",          // 2
+    R"("clientName": "TVHTML5","clientVersion": "7.20250101.00.00")",                            // 3
+    R"("clientName": "ANDROID","clientVersion": "19.51.37","androidSdkVersion": 34)",            // 4
+};
+static const int CLIENT_COUNT = sizeof CLIENTS / sizeof CLIENTS[0];
+
+static std::string last_error; // what the last failed request said (endpoint, client, HTTP status, start of the answer)
+static std::string context_video_id; // the video whose comments are being used
+
+std::string youtube_account_last_error() { return last_error; }
+void youtube_account_set_video(const std::string &video_id) { context_video_id = video_id; }
+
 // POST to /youtubei/v1/<endpoint> as the signed-in user. `fields` is the part of the JSON body after the context
 // (for example `"videoId":"abc"`). Returns {ok, body}.
 static std::pair<bool, std::string> account_post(const std::string &endpoint, const std::string &fields, int client = 0) {
 	if (!OAuth::is_authenticated()) {
+		last_error = "not signed in";
 		return {false, ""};
 	}
-	// 0 : ANDROID_VR, 1 : MWEB (the comments tokens of the app come from MWEB)
-	const char *client_json = client == 1
-	                              ? R"("clientName": "MWEB","clientVersion": "2.20241202.07.00","utcOffsetMinutes": 0)"
-	                              : R"("clientName": "ANDROID_VR","clientVersion": "1.62.27")";
-	std::string body = std::string(R"({"context": {"client": {"hl": "%0","gl": "%1",)") + client_json + R"(}}, %2})";
+	if (client < 0 || client >= CLIENT_COUNT) client = 0;
+	std::string body = std::string(R"({"context": {"client": {"hl": "%0","gl": "%1",)") + CLIENTS[client] + R"(}}, %2})";
 	body = std::regex_replace(body, std::regex("%0"), language_code);
 	body = std::regex_replace(body, std::regex("%1"), country_code);
 	size_t pos = body.find("%2");
@@ -42,8 +57,15 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
 	auto response = http_post_json(get_innertube_api_url(endpoint), body, headers);
 	bool ok = response.first && response.second.find("\"error\":{") == std::string::npos;
-	logger.info("account", endpoint + " -> " + (ok ? "ok" : "failed : " + response.second.substr(0, 300)));
-	if (!ok) logger.warning("account", endpoint + " failed (client " + std::to_string(client) + ")");
+	if (!ok) {
+		std::string msg;
+		size_t m = response.second.find("\"message\"");
+		if (m != std::string::npos) msg = response.second.substr(m, 90);
+		last_error = endpoint + "/c" + std::to_string(client) + " " + (response.first ? msg : response.second.substr(0, 60));
+		logger.warning("account", "failed : " + last_error + " | " + response.second.substr(0, 300));
+	} else {
+		logger.info("account", endpoint + " ok (client " + std::to_string(client) + ")");
+	}
 	return {ok, response.second};
 }
 
@@ -136,30 +158,74 @@ bool youtube_account_playlist_edit(const std::string &playlist_id, const std::st
 }
 
 // The comment section as the signed-in user sees it : it contains the tokens that allow writing, replying and liking.
+// The login does not work the same with every YouTube client, so several are tried (the one that worked last time first),
+// first with the continuation token of the page and then, if that is refused, by asking the client for the video itself.
 static volatile int comment_client = 1; // the client that last returned a usable comment section
-static bool fetch_comment_section(const std::string &token, std::string &json) {
-	for (int attempt = 0; attempt < 2; attempt++) {
-		int client = attempt == 0 ? comment_client : 1 - comment_client;
-		auto r = account_post("next", "\"continuation\": \"" + json_escape(token) + "\"", client);
-		json = r.second;
-		if (r.first && json.find("createCommentParams") != std::string::npos) {
-			comment_client = client;
-			return true;
-		}
-		if (r.first && attempt == 1) { // other actions (like, reply) do not need createCommentParams
-			comment_client = client; // the tokens belong to this client
-			return true;
+
+static bool comment_section_usable(const std::string &json, bool need_params) {
+	if (need_params) return json.find("createCommentParams") != std::string::npos;
+	return json.find("likeCommand") != std::string::npos || json.find("replyCommand") != std::string::npos ||
+	       json.find("\"commentId\"") != std::string::npos;
+}
+
+static std::vector<std::string> continuation_tokens(const std::string &json, size_t max) {
+	std::vector<std::string> out;
+	const char *keys[] = {"\"token\":\"", "\"continuation\":\""};
+	for (const char *key : keys) {
+		size_t pos = 0;
+		while (out.size() < max && (pos = json.find(key, pos)) != std::string::npos) {
+			std::string t = text_after(json, pos, json.size(), key);
+			pos += strlen(key);
+			if (t.size() > 40 && std::find(out.begin(), out.end(), t) == out.end()) out.push_back(t);
 		}
 	}
+	return out;
+}
+
+static bool fetch_comment_section(const std::string &token, std::string &json, bool need_params) {
+	int order[4] = {comment_client, 1, 0, 3};
+	std::vector<int> clients;
+	for (int c : order) {
+		if (std::find(clients.begin(), clients.end(), c) == clients.end()) clients.push_back(c);
+	}
+	for (int client : clients) {
+		auto r = account_post("next", "\"continuation\": \"" + json_escape(token) + "\"", client);
+		if (r.first && comment_section_usable(r.second, need_params)) {
+			comment_client = client;
+			json = r.second;
+			return true;
+		}
+		if (!r.first) continue; // this client does not take the login (or the token) : the next one
+		if (context_video_id != "") { // the page of the video as this client sees it has its own comment tokens
+			auto page = account_post("next", "\"videoId\": \"" + json_escape(context_video_id) + "\"", client);
+			if (!page.first) continue;
+			if (comment_section_usable(page.second, need_params)) {
+				comment_client = client;
+				json = page.second;
+				return true;
+			}
+			for (auto &t : continuation_tokens(page.second, 3)) {
+				auto section = account_post("next", "\"continuation\": \"" + json_escape(t) + "\"", client);
+				if (section.first && comment_section_usable(section.second, need_params)) {
+					comment_client = client;
+					json = section.second;
+					return true;
+				}
+			}
+		}
+	}
+	if (last_error == "" ) last_error = "no comment section";
+	logger.warning("account", "no usable comment section in any client");
 	return false;
 }
 
 bool youtube_account_comment_create(const std::string &comments_token, const std::string &text) {
 	std::string json;
-	if (comments_token == "" || !fetch_comment_section(comments_token, json)) return false;
+	if (comments_token == "" || !fetch_comment_section(comments_token, json, true)) return false;
 	size_t end = json.size();
 	std::string params = text_after(json, 0, end, "\"createCommentParams\":\"");
 	if (params == "") {
+		last_error = "no createCommentParams";
 		logger.warning("account", "no createCommentParams in the comment section");
 		return false;
 	}
@@ -225,7 +291,7 @@ static std::string find_comment_token(const std::string &json, const std::string
 
 bool youtube_account_comment_like(const std::string &comments_token, const std::string &comment_id) {
 	std::string json;
-	if (comments_token == "" || !fetch_comment_section(comments_token, json)) return false;
+	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
 	std::string action = find_comment_token(json, "\"likeCommand\"", 1500, "\"action\":\"", comment_id);
 	if (action == "") { // older layout : the action sits inside the comment itself
 		size_t p = json.find("\"commentId\":\"" + comment_id + "\"");
@@ -241,7 +307,7 @@ bool youtube_account_comment_like(const std::string &comments_token, const std::
 bool youtube_account_comment_reply(const std::string &comments_token, const std::string &comment_id,
                                    const std::string &text) {
 	std::string json;
-	if (comments_token == "" || !fetch_comment_section(comments_token, json)) return false;
+	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
 	std::string params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createReplyParams\":\"", comment_id);
 	if (params == "") params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createCommentReplyParams\":\"", comment_id);
 	if (params == "") {

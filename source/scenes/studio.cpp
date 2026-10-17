@@ -4,6 +4,7 @@
 #include "data_io/string_resource.hpp"
 #include "youtube_parser/studio.hpp"
 #include "youtube_parser/account.hpp"
+#include "youtube_parser/studio_auth.hpp"
 #include "oauth/oauth.hpp"
 #include "ui/ui.hpp"
 #include "ui/notice.hpp"
@@ -37,6 +38,7 @@ static std::string form_thumb;  // path of the chosen thumbnail, "" : none
 static std::vector<StudioVideo> my_videos;
 static volatile bool my_loading = false;
 static std::string my_error;
+static bool my_public_only = false; // the list is the public one (no Studio login)
 static StudioVideo sel_video;
 static bool delete_armed = false; // the first tap on Delete only asks for a second one
 static std::string pick_dir = "sdmc:/";
@@ -233,6 +235,65 @@ static void new_playlist_task(void *arg) {
 	delete job;
 }
 
+// ---- Studio login (own Google Cloud client, see Documentation/STUDIO_SETUP.md) ----
+static volatile bool login_running = false;
+static std::string login_text; // what to do (guarded by state_lock)
+
+static void set_login_text(const std::string &t) {
+	LightLock_Lock(&state_lock);
+	login_text = t;
+	LightLock_Unlock(&state_lock);
+	mode_dirty = true;
+	var_need_refresh = true;
+}
+
+static void login_thread(void *) {
+	StudioDeviceCode code;
+	std::string error;
+	if (!studio_auth_request_code(code, error)) {
+		set_login_text(tr("Could not start the login: ", "No se pudo iniciar el acceso: ") + error);
+		login_running = false;
+		return;
+	}
+	set_login_text(tr("Open ", "Abre ") + code.url + tr(" and type ", " y escribe ") + code.user_code);
+	u64 start = osGetTime();
+	while (true) {
+		svcSleepThread((s64)code.interval * 1000000000LL);
+		if (osGetTime() - start > (u64)(code.expires_in > 0 ? code.expires_in : 600) * 1000) {
+			set_login_text(tr("The code expired, try again", "El código caducó, inténtalo de nuevo"));
+			break;
+		}
+		int result = studio_auth_poll(code, error);
+		if (result == 1) {
+			set_login_text("");
+			notice_show(tr("Studio connected", "Studio conectado"));
+			stats_loaded = false;
+			break;
+		}
+		if (result < 0) {
+			set_login_text(tr("Login failed: ", "Falló el acceso: ") + error);
+			break;
+		}
+	}
+	login_running = false;
+}
+
+static void start_login() {
+	if (login_running) return;
+	login_running = true;
+	set_login_text(tr("Asking for a code...", "Pidiendo un código..."));
+	if (!threadCreate(login_thread, NULL, 64 * 1024, 0x30, -1, true)) {
+		login_running = false;
+		set_login_text(tr("Could not start the login", "No se pudo iniciar el acceso"));
+	}
+}
+
+static bool studio_ready_or_notice() {
+	if (studio_auth_signed_in()) return true;
+	notice_show(tr("Sign in for Studio first (Studio tab)", "Inicia sesión en Studio primero (pestaña Studio)"));
+	return false;
+}
+
 static std::vector<View *> build_dash() {
 	std::vector<View *> v;
 	v.push_back((new TextView(0, 0, WIDTH, 24))
@@ -258,16 +319,30 @@ static std::vector<View *> build_dash() {
 		return err == "" ? std::string("") : tr("Statistics unavailable (", "Estadísticas no disponibles (") + err + ")";
 	}));
 	v.push_back(button([]() { return LOCALIZED(RELOAD); }, []() { start_stats_load(); }));
+	if (!studio_auth_has_client()) { // uploading and editing need the owner's own Google Cloud client
+		v.push_back(label([]() { return tr("To upload or edit: create studio_client.txt", "Para subir o editar: crea studio_client.txt"); }));
+		v.push_back(label([]() { return tr("in 3ds/IkersTube (see STUDIO_SETUP.md)", "en 3ds/IkersTube (mira STUDIO_SETUP.md)"); }));
+	} else if (!studio_auth_signed_in()) {
+		v.push_back(button([]() { return login_running ? tr("Waiting for the login...", "Esperando el acceso...") : tr("Sign in for Studio", "Iniciar sesión en Studio"); },
+		                   []() { start_login(); }));
+		v.push_back(label([]() { return locked_copy(login_text); }));
+	} else {
+		v.push_back(button([]() { return tr("Studio connected - sign out", "Studio conectado - cerrar sesión"); }, []() {
+			studio_auth_sign_out();
+			mode_dirty = true;
+			var_need_refresh = true;
+		}));
+	}
 	v.push_back(button([]() { return upload_running ? tr("Uploading: ", "Subiendo: ") + std::to_string(upload_percent) + "%"
 	                                                  : tr("Upload a video", "Subir un vídeo"); },
 	                   []() {
-		                   if (upload_running) return;
+		                   if (upload_running || !studio_ready_or_notice()) return;
 		                   pick_short = false;
 		                   pick_image = false;
 		                   go(MODE_PICK);
 	                   }));
 	v.push_back(button([]() { return tr("Upload a Short", "Subir un Short"); }, []() {
-		if (upload_running) return;
+		if (upload_running || !studio_ready_or_notice()) return;
 		pick_short = true;
 		pick_image = false;
 		go(MODE_PICK);
@@ -394,10 +469,19 @@ static std::vector<View *> build_form() {
 static void load_my_videos_task(void *) {
 	std::vector<StudioVideo> list;
 	std::string error;
-	bool ok = youtube_studio_list_videos(list, error);
+	bool ok;
+	if (studio_auth_signed_in()) {
+		ok = youtube_studio_list_videos(list, error);
+	} else { // without the Studio login only the public videos of the channel page can be listed (no editing)
+		YouTubeChannelDetail channel = youtube_load_channel_page(OAuth::get_user_channel_id());
+		ok = channel.error == "";
+		error = channel.error;
+		for (auto &video : channel.videos) list.push_back({youtube_get_video_id_by_url(video.url), video.title, "public"});
+	}
 	LightLock_Lock(&state_lock);
 	my_videos = list;
 	my_error = ok ? "" : error;
+	my_public_only = !studio_auth_signed_in();
 	LightLock_Unlock(&state_lock);
 	my_loading = false;
 	mode_dirty = true;
@@ -446,6 +530,7 @@ static void edit_task(void *arg) {
 }
 
 static void edit_async(int action, const std::string &id, const std::string &value) {
+	if (!studio_ready_or_notice()) return;
 	notice_show(tr("Working...", "Trabajando..."));
 	queue_async_task(edit_task, new EditJob{action, id, value});
 }
@@ -456,7 +541,9 @@ static std::vector<View *> build_myvideos() {
 	v.push_back(label([]() {
 		if (my_loading) return tr("Loading ...", "Cargando ...");
 		std::string err = locked_copy(my_error);
-		return err == "" ? tr("Tap a video to edit it", "Toca un vídeo para editarlo") : tr("Could not load: ", "No se pudo cargar: ") + err;
+		if (err != "") return tr("Could not load: ", "No se pudo cargar: ") + err;
+		return my_public_only ? tr("Public videos only - sign in for Studio to edit", "Solo vídeos públicos - inicia sesión en Studio para editar")
+		                      : tr("Tap a video to edit it", "Toca un vídeo para editarlo");
 	}));
 	std::vector<StudioVideo> list;
 	LightLock_Lock(&state_lock);

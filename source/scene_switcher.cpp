@@ -48,14 +48,37 @@ void Menu_worker_thread(void *arg);
 	} while (0)
 
 
-// Boot splash : the app logo and name.
+// Boot splash : the Homebrew mark (shown while the app starts), then a 3 second loading screen at the end of the start.
 static void Menu_draw_splash() {
+	Draw_frame_ready();
+	Draw_screen_ready(1, 0xFF000000);
+	Draw_screen_ready(2, 0xFF000000);
+	Draw_screen_ready(0, 0xFF000000);
+	Draw_x_centered("Homebrew", 0, 400, 88, 1.3, 1.3, 0xFFFFFFFF);
+	Draw_x_centered("Nintendo 3DS", 0, 400, 128, 0.5, 0.5, 0xFF909090);
+	Draw_apply_draw();
+}
+
+static void Menu_draw_loading(float progress, const std::string &text) {
 	Draw_frame_ready();
 	Draw_screen_ready(1, 0xFF181212);
 	Draw_screen_ready(2, 0xFF181212);
 	Draw_screen_ready(0, 0xFF181212);
-	logo_draw(200, 120);
+	Draw_x_centered(text, 0, 400, 96, 0.6, 0.6, 0xFFFFFFFF);
+	Draw_texture(var_square_image[0], 0xFF3A3030, 100, 126, 200, 6);
+	Draw_texture(var_square_image[0], COLOR_ACCENT, 100, 126, 200 * std::min(1.0f, std::max(0.0f, progress)), 6);
 	Draw_apply_draw();
+}
+
+// the account (OAuth) and the rest of the data have a moment to load before the first screen
+static void Menu_loading_screen(int milliseconds) {
+	u64 start = osGetTime();
+	std::string text = tr("Loading your account and data...", "Cargando tu cuenta y datos...");
+	while (osGetTime() - start < (u64)milliseconds) {
+		Menu_draw_loading((float)(osGetTime() - start) / milliseconds, text);
+		usleep(30000);
+	}
+	Menu_draw_loading(1.0f, text);
 }
 
 #define AUTO_BACKUP_MARK "sdmc:/3ds/IkersTube/backup/last_auto.txt"
@@ -141,12 +164,8 @@ void Menu_init(void) {
 	}
 
 	LOG_IF_ERROR(Draw_init(var_model != CFG_MODEL_2DS).code);
+	Menu_draw_splash(); // drawn twice : both buffers must have it so it does not flash
 	Menu_draw_splash();
-	Draw_frame_ready();
-	Draw_screen_ready(0, DEF_DRAW_BLACK); // Black prevents flashing.
-	Draw_screen_ready(1, DEF_DRAW_BLACK); // Same here
-	Draw_screen_ready(2, DEF_DRAW_BLACK); // Same here
-	Draw_apply_draw();
 
 	Util_expl_init();
 	Extfont_init();
@@ -233,6 +252,8 @@ void Menu_init(void) {
 		}
 	}
 	queue_async_task(auto_backup_task, NULL); // a backup of the user data once a week
+
+	Menu_loading_screen(3000);
 
 	logger.info(DEF_MENU_INIT_STR, "Initialized.");
 }

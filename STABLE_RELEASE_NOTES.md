@@ -19,7 +19,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Screensaver.** The logo bounces on a black top screen after a minute of pause.
 
 ### Studio
-- **Studio tab** next to Home, Subscribed and New: your subscribers, total views and total videos, and upload a video or a Short from any folder of the SD card with title, description, category, thumbnail and visibility, edit your uploads (visibility, title, delete), create playlists and open your channel. Needs the OAuth login.
+- **Studio tab** next to Home, Subscribed and New: your subscribers, total views and total videos, and upload a video or a Short from any folder of the SD card with title, description, category, thumbnail and visibility, edit your uploads (visibility, title, delete), create playlists and open your channel. The statistics need only the OAuth login; uploads and edits need your own Google Cloud client (see Documentation/STUDIO_SETUP.md).
 
 ### Library and search
 - **Library.** Queue, favorites with tags, playlists, Watch later and the new Offline tab. Sort and filter favorites and Watch later, play next from any list and a check mark on videos you already watched.
@@ -32,6 +32,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **QR codes** of any video (including the current moment), also from the queue, favorites and playlists.
 
 ### Look and settings
+- **Start screen.** The Homebrew mark and a 3 second loading screen with a progress bar.
 - **Bottom bar and pill tabs.** A navigation bar with icons (Home, Search, Library, Downloads, More) and rounded pill tabs.
 - **Themes.** Six themes plus a custom color, a high contrast mode, text size, large thumbnails and an optional background picture from the SD card.
 - **Settings in sections** with a start screen, automatic theme by time of day, data saver, a data limit warning, statistics, backup export and import, and the first launch opens the settings.

@@ -2,8 +2,10 @@
 #include "youtube_parser/studio.hpp"
 #include "youtube_parser/internal_common.hpp"
 #include "oauth/oauth.hpp"
+#include "youtube_parser/studio_auth.hpp"
 #include <sys/stat.h>
 #include <algorithm>
+#include <cstring>
 
 static std::string json_quote(const std::string &s) {
 	std::string out = "\"";
@@ -53,27 +55,59 @@ static NetworkSessionList &studio_session() {
 	return session;
 }
 
+// the text of a field written like  "viewCountText":"1,234 views"  without its unit
+static std::string count_text(const std::string &json, const std::string &key) {
+	size_t p = json.find("\"" + key + "\":\"");
+	if (p == std::string::npos) return "";
+	p += key.size() + 4;
+	size_t e = json.find('"', p);
+	if (e == std::string::npos) return "";
+	std::string t = json.substr(p, e - p);
+	for (const char *unit : {" views", " view", " videos", " video", " subscribers", " subscriber"}) {
+		size_t u = t.find(unit);
+		if (u != std::string::npos && u + strlen(unit) == t.size()) t.erase(u);
+	}
+	return t;
+}
+
+// The totals come from the public About page of the channel (no Data API needed) : the channel page has the continuation
+// tokens, one of them opens the About panel with the totals.
 StudioStats youtube_studio_stats() {
 	StudioStats res;
-	if (!OAuth::is_authenticated()) {
-		res.error = "not signed in";
+	std::string channel = OAuth::get_user_channel_id();
+	if (channel == "") {
+		res.error = "channel unknown (sign in again)";
 		return res;
 	}
-	auto r = studio_session().perform(HttpRequest::GET("https://www.googleapis.com/youtube/v3/channels?part=statistics&mine=true",
-	                                                 {{"Authorization", "Bearer " + OAuth::get_access_token()}}));
-	std::string body(r.data.begin(), r.data.end());
-	unsigned long long views = 0, subs = 0, videos = 0;
-	if (!r.fail && r.status_code_is_success() && number_field(body, "viewCount", views)) {
-		res.views = short_number(views);
-		if (number_field(body, "subscriberCount", subs)) res.subscribers = short_number(subs);
-		if (number_field(body, "videoCount", videos)) res.videos = short_number(videos);
-		return res;
-	}
-	logger.warning("studio", "channels statistics failed : http " + std::to_string(r.status_code) + " " + r.error + " " +
-	                             body.substr(0, 300));
-	// the subscribers are known from the login
 	if (OAuth::get_user_subscriber_count() != "") res.subscribers = OAuth::get_user_subscriber_count();
-	res.error = r.fail ? r.error : "http " + std::to_string(r.status_code);
+	auto browse = [&](const std::string &fields) {
+		std::string body = std::string(R"({"context": {"client": {"hl": "en","gl": "US","clientName": "MWEB","clientVersion": "2.20241202.07.00"}}, )") + fields + "}";
+		auto r = studio_session().perform(
+		    HttpRequest::POST(get_innertube_api_url("browse"), {{"Content-Type", "application/json"}}, body));
+		return std::string(r.data.begin(), r.data.end());
+	};
+	std::string page = browse("\"browseId\": \"" + channel + "\"");
+	std::vector<std::string> tokens;
+	const std::string key = "\"continuationCommand\":{\"token\":\"";
+	for (size_t pos = 0; tokens.size() < 6 && (pos = page.find(key, pos)) != std::string::npos;) {
+		pos += key.size();
+		size_t e = page.find('"', pos);
+		if (e == std::string::npos) break;
+		std::string t = page.substr(pos, e - pos);
+		if (std::find(tokens.begin(), tokens.end(), t) == tokens.end()) tokens.push_back(t);
+	}
+	for (auto &token : tokens) {
+		std::string about = browse("\"continuation\": \"" + token + "\"");
+		if (about.find("aboutChannelViewModel") == std::string::npos) continue;
+		std::string views = count_text(about, "viewCountText"), videos = count_text(about, "videoCountText"),
+		            subs = count_text(about, "subscriberCountText");
+		if (views != "") res.views = views;
+		if (videos != "") res.videos = videos;
+		if (subs != "") res.subscribers = subs;
+		return res;
+	}
+	logger.warning("studio", "no About panel found for the channel " + channel + " (" + std::to_string(tokens.size()) + " tokens)");
+	res.error = "no About data";
 	return res;
 }
 
@@ -92,7 +126,7 @@ static std::string mime_of(const std::string &path) {
 bool youtube_studio_upload(const std::string &path, const std::string &title, const std::string &description,
                            const std::string &privacy, bool is_short, const std::string &category_id,
                            const std::function<void(u64, u64)> &progress, std::string &video_id, std::string &error) {
-	if (!OAuth::is_authenticated()) {
+	if (studio_bearer_token() == "") {
 		error = "not signed in";
 		return false;
 	}
@@ -124,7 +158,7 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 	                   ", \"selfDeclaredMadeForKids\": false}}";
 	auto init = session.perform(HttpRequest::POST(
 	    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
-	    {{"Authorization", "Bearer " + OAuth::get_access_token()},
+	    {{"Authorization", "Bearer " + studio_bearer_token()},
 	     {"Content-Type", "application/json; charset=UTF-8"},
 	     {"X-Upload-Content-Length", std::to_string(total)},
 	     {"X-Upload-Content-Type", mime_of(path)}},
@@ -157,7 +191,7 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 		auto r = session.perform(HttpRequest{"PUT",
 		                                     upload_url,
 		                                     HttpRequest::default_headers_added(
-		                                         {{"Authorization", "Bearer " + OAuth::get_access_token()},
+		                                         {{"Authorization", "Bearer " + studio_bearer_token()},
 		                                          {"Content-Type", mime_of(path)},
 		                                          {"Content-Range", "bytes " + std::to_string(offset) + "-" +
 		                                                                std::to_string(offset + len - 1) + "/" +
@@ -197,7 +231,7 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 		svcSleepThread((s64)failures * 1000000000LL); // back off before trying again
 		// ask the server how much it has before sending again
 		auto q = session.perform(HttpRequest{"PUT", upload_url,
-		                                     HttpRequest::default_headers_added({{"Authorization", "Bearer " + OAuth::get_access_token()},
+		                                     HttpRequest::default_headers_added({{"Authorization", "Bearer " + studio_bearer_token()},
 		                                                                         {"Content-Range", "bytes */" + std::to_string(total)}}),
 		                                     "", false});
 		if (!q.fail && (q.status_code == 200 || q.status_code == 201)) { // the upload had finished, only its answer was lost
@@ -278,7 +312,7 @@ static std::string api_error(const NetworkResult &r, const std::string &body) {
 
 static NetworkResult api_request(const std::string &method, const std::string &url, const std::string &body,
                                  const std::string &content_type, std::string &out_body) {
-	std::map<std::string, std::string> headers = {{"Authorization", "Bearer " + OAuth::get_access_token()}};
+	std::map<std::string, std::string> headers = {{"Authorization", "Bearer " + studio_bearer_token()}};
 	if (content_type != "") headers["Content-Type"] = content_type;
 	NetworkResult r = studio_session().perform(
 	    HttpRequest{method, url, HttpRequest::default_headers_added(headers), body, false});
@@ -287,7 +321,7 @@ static NetworkResult api_request(const std::string &method, const std::string &u
 }
 
 bool youtube_studio_list_videos(std::vector<StudioVideo> &out, std::string &error) {
-	if (!OAuth::is_authenticated()) {
+	if (studio_bearer_token() == "") {
 		error = "not signed in";
 		return false;
 	}

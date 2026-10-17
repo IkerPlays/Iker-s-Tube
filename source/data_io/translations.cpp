@@ -300,6 +300,22 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Could not create the playlist", {"Impossible de créer la liste", "Playlist konnte nicht erstellt werden", "Impossibile creare la playlist", "Não foi possível criar a lista", "リストを作成できません"}},
 	    {"Pinned", {"Épinglé", "Angeheftet", "Fissato", "Fixado", "固定"}},
 	    {"Play all", {"Tout lire", "Alle abspielen", "Riproduci tutto", "Reproduzir tudo", "すべて再生"}},
+	    {"Studio connected", {"Studio connecté", "Studio verbunden", "Studio connesso", "Studio conectado", "Studio接続済み"}},
+	    {"Studio connected - sign out", {"Studio connecté - se déconnecter", "Studio verbunden - abmelden", "Studio connesso - esci", "Studio conectado - sair", "Studio接続済み - ログアウト"}},
+	    {"Sign in for Studio", {"Se connecter à Studio", "Bei Studio anmelden", "Accedi a Studio", "Entrar no Studio", "Studioにログイン"}},
+	    {"Waiting for the login...", {"En attente de la connexion...", "Warte auf die Anmeldung...", "In attesa dell'accesso...", "Aguardando o login...", "ログイン待ち..."}},
+	    {"Asking for a code...", {"Demande d'un code...", "Code wird angefordert...", "Richiesta del codice...", "Pedindo um código...", "コードを要求中..."}},
+	    {"Could not start the login: ", {"Impossible de lancer la connexion : ", "Anmeldung konnte nicht gestartet werden: ", "Impossibile avviare l'accesso: ", "Não foi possível iniciar o login: ", "ログインを開始できません: "}},
+	    {"Open ", {"Ouvrez ", "Öffne ", "Apri ", "Abra ", "開く: "}},
+	    {" and type ", {" et saisissez ", " und gib ein ", " e digita ", " e digite ", " 、入力: "}},
+	    {"The code expired, try again", {"Le code a expiré, réessayez", "Der Code ist abgelaufen, versuche es erneut", "Il codice è scaduto, riprova", "O código expirou, tente de novo", "コードの期限切れです。もう一度"}},
+	    {"Login failed: ", {"Échec de la connexion : ", "Anmeldung fehlgeschlagen: ", "Accesso non riuscito: ", "Falha no login: ", "ログイン失敗: "}},
+	    {"Could not start the login", {"Impossible de lancer la connexion", "Anmeldung konnte nicht gestartet werden", "Impossibile avviare l'accesso", "Não foi possível iniciar o login", "ログインを開始できません"}},
+	    {"Sign in for Studio first (Studio tab)", {"Connectez-vous d'abord à Studio (onglet Studio)", "Melde dich zuerst bei Studio an (Studio-Tab)", "Accedi prima a Studio (scheda Studio)", "Entre primeiro no Studio (aba Studio)", "先にStudioにログイン（Studioタブ）"}},
+	    {"To upload or edit: create studio_client.txt", {"Pour envoyer ou modifier : créez studio_client.txt", "Zum Hochladen/Bearbeiten: studio_client.txt anlegen", "Per caricare o modificare: crea studio_client.txt", "Para enviar ou editar: crie studio_client.txt", "アップロード/編集: studio_client.txtを作成"}},
+	    {"in 3ds/IkersTube (see STUDIO_SETUP.md)", {"dans 3ds/IkersTube (voir STUDIO_SETUP.md)", "in 3ds/IkersTube (siehe STUDIO_SETUP.md)", "in 3ds/IkersTube (vedi STUDIO_SETUP.md)", "em 3ds/IkersTube (veja STUDIO_SETUP.md)", "3ds/IkersTube内（STUDIO_SETUP.md参照）"}},
+	    {"Public videos only - sign in for Studio to edit", {"Vidéos publiques seulement - connectez-vous à Studio pour modifier", "Nur öffentliche Videos - zum Bearbeiten bei Studio anmelden", "Solo video pubblici - accedi a Studio per modificare", "Só vídeos públicos - entre no Studio para editar", "公開動画のみ - 編集にはStudioにログイン"}},
+	    {"Loading your account and data...", {"Chargement du compte et des données...", "Konto und Daten werden geladen...", "Caricamento di account e dati...", "Carregando conta e dados...", "アカウントとデータを読み込み中..."}},
 	};
 	return table;
 }
