@@ -15,6 +15,7 @@
 #include "network_decoder/network_io.hpp"
 #include "util/async_task.hpp"
 #include "data_io/search_history.hpp"
+#include "data_io/history.hpp"
 #include "ui/qr_scan.hpp"
 
 #define SEARCH_BOX_MARGIN 4
@@ -178,6 +179,33 @@ static void show_search_history() {
 		                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
 		                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                                      ->set_on_view_released([query](View &) { start_search(query); }));
+	}
+	// Discover : more from the channels you watched most recently
+	{
+		auto watched = get_valid_watch_history();
+		std::sort(watched.begin(), watched.end(),
+		          [](const HistoryVideo &x, const HistoryVideo &y) { return x.last_watch_time > y.last_watch_time; });
+		std::vector<std::string> authors;
+		for (auto &v : watched) {
+			if (v.author_name != "" && std::find(authors.begin(), authors.end(), v.author_name) == authors.end()) {
+				authors.push_back(v.author_name);
+			}
+			if (authors.size() >= 3) break;
+		}
+		if (authors.size()) {
+			result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+			                                      ->set_text(tr("Discover", "Descubrir"))
+			                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+			                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+			for (auto &author : authors) {
+				result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+				                                      ->set_text(truncate_search_text_for_display(tr("More from ", "Más de ") + author, 300, 0.55))
+				                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+				                                      ->set_y_alignment(TextView::YAlign::CENTER)
+				                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+				                                      ->set_on_view_released([author](View &) { start_search(author); }));
+			}
+		}
 	}
 	result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
 	                                      ->set_text(tr("Scan a QR code (camera)", "Escanear un código QR (cámara)"))

@@ -91,6 +91,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"not connected", {"non connecté", "nicht verbunden", "non connesso", "sem conexão", "未接続"}},
 	    {"or the queue (long press).", {"ou la file (appui long).", "oder die Warteschlange (lang drücken).", "o la coda (pressione lunga).", "ou a fila (toque longo).", "またはキュー（長押し）から。"}},
 	    {"to add it.", {"pour l'ajouter.", "um es hinzuzufügen.", "per aggiungerlo.", "para adicioná-lo.", "追加します。"}},
+	    {"Discover", {"Découvrir", "Entdecken", "Scopri", "Descobrir", "おすすめ"}},
+	    {"More from ", {"Plus de ", "Mehr von ", "Altro da ", "Mais de ", "もっと見る："}},
+	    {"Sort: ", {"Tri : ", "Sortierung: ", "Ordine: ", "Ordem: ", "並び順："}},
+	    {"Top", {"Populaires", "Beliebt", "Popolari", "Populares", "人気"}},
+	    {"Newest", {"Récents", "Neueste", "Recenti", "Recentes", "新しい順"}},
 	};
 	return table;
 }
