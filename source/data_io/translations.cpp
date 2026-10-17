@@ -207,7 +207,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Translate", {"Traduire", "Übersetzen", "Traduci", "Traduzir", "翻訳"}},
 	    {"Translating...", {"Traduction...", "Übersetze...", "Traduzione...", "Traduzindo...", "翻訳中..."}},
 	    {"Unsubscribed on your account", {"Désabonné sur votre compte", "Auf deinem Konto abbestellt", "Iscrizione annullata sul tuo account", "Inscrição cancelada na sua conta", "アカウントで登録解除しました"}},
-	    {"Working...", {"En cours...", "Wird gesendet...", "Invio...", "Enviando...", "送信中..."}},
+	    {"Working...", {"En cours...", "Arbeite...", "Elaborazione...", "Trabalhando...", "処理中..."}},
 	    {"Write a comment", {"Écrire un commentaire", "Kommentar schreiben", "Scrivi un commento", "Escrever um comentário", "コメントを書く"}},
 	    {"Write a reply", {"Écrire une réponse", "Antwort schreiben", "Scrivi una risposta", "Escrever uma resposta", "返信を書く"}},
 	    {"Your account", {"Votre compte", "Dein Konto", "Il tuo account", "Sua conta", "アカウント"}},
@@ -282,6 +282,19 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Could not load the video", {"Impossible de charger la vidéo", "Video konnte nicht geladen werden", "Impossibile caricare il video", "Não foi possível carregar o vídeo", "動画を読み込めません"}},
 	    {"Loading the video...", {"Chargement de la vidéo...", "Video wird geladen...", "Caricamento del video...", "Carregando o vídeo...", "動画を読み込み中..."}},
 	    {"No connection - saved downloads still play", {"Pas de connexion - les téléchargements restent lisibles", "Keine Verbindung - gespeicherte Downloads laufen weiter", "Nessuna connessione - i download salvati si vedono", "Sem conexão - os downloads salvos ainda tocam", "接続なし - 保存済みは再生できます"}},
+	    {"Thumbnail: ", {"Miniature : ", "Vorschaubild: ", "Miniatura: ", "Miniatura: ", "サムネイル："}},
+	    {"Setting the thumbnail...", {"Ajout de la miniature...", "Vorschaubild wird gesetzt...", "Imposto la miniatura...", "Definindo a miniatura...", "サムネイルを設定中..."}},
+	    {" (thumbnail failed: ", {" (échec de la miniature : ", " (Vorschaubild fehlgeschlagen: ", " (miniatura non riuscita: ", " (falha na miniatura: ", " (サムネイル失敗: "}},
+	    {"Done", {"Terminé", "Fertig", "Fatto", "Pronto", "完了"}},
+	    {"Could not change it: ", {"Impossible de modifier : ", "Änderung nicht möglich: ", "Impossibile modificare: ", "Não foi possível alterar: ", "変更できません: "}},
+	    {"Back", {"Retour", "Zurück", "Indietro", "Voltar", "戻る"}},
+	    {"Tap a video to edit it", {"Touchez une vidéo pour la modifier", "Tippe auf ein Video, um es zu bearbeiten", "Tocca un video per modificarlo", "Toque num vídeo para editá-lo", "動画をタップして編集"}},
+	    {"Could not load: ", {"Impossible de charger : ", "Laden nicht möglich: ", "Impossibile caricare: ", "Não foi possível carregar: ", "読み込めません: "}},
+	    {"Change the title", {"Changer le titre", "Titel ändern", "Cambia il titolo", "Mudar o título", "タイトルを変更"}},
+	    {"Watch it", {"La regarder", "Ansehen", "Guardalo", "Assistir", "見る"}},
+	    {"Tap again to DELETE it for good", {"Touchez encore pour la SUPPRIMER définitivement", "Nochmal tippen zum endgültigen LÖSCHEN", "Tocca ancora per ELIMINARLO per sempre", "Toque de novo para APAGAR de vez", "もう一度タップで完全に削除"}},
+	    {"Delete", {"Supprimer", "Löschen", "Elimina", "Apagar", "削除"}},
+	    {"Edit my uploads", {"Modifier mes envois", "Meine Uploads bearbeiten", "Modifica i miei caricamenti", "Editar meus envios", "アップロードを編集"}},
 	};
 	return table;
 }

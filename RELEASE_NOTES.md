@@ -1,4 +1,5 @@
 Devbuild notes
 
-- Offline from the lists: long press a video in Favorites, Watch later or a playlist and choose Save video offline or Save audio offline. The app loads the video in the background and adds it to the download queue, no need to open it first.
-- When the console has no internet connection, a red strip above the bottom bar says so and reminds that saved downloads still play.
+- Studio: Edit my uploads lists your latest 25 uploads. Tap one to change its visibility (private, unlisted, public), change its title, watch it in the app or delete it (two taps). It uses the YouTube Data API with your login: if YouTube refuses it, the reason is shown.
+- Studio: the upload form has a Thumbnail button to pick a .jpg or .png (up to 2 MB) from the SD card; it is set right after the upload (YouTube may require a verified account for custom thumbnails).
+- Library: the long press menu of the queue also has Save video offline and Save audio offline.

@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 
-enum StudioMode { MODE_DASH, MODE_PICK, MODE_FORM };
+enum StudioMode { MODE_DASH, MODE_PICK, MODE_FORM, MODE_MYVIDEOS, MODE_VIDEO };
 
 static CustomView *root = NULL;
 static ScrollView *content = NULL;
@@ -29,6 +29,15 @@ static volatile int upload_percent = 0;
 static std::string upload_message; // result of the last upload (guarded by state_lock)
 
 static bool pick_short = false;
+static bool pick_image = false; // choosing the thumbnail (an image) instead of a video
+static std::string form_thumb;  // path of the chosen thumbnail, "" : none
+
+// your uploads (loaded from the Data API) and the one that is open
+static std::vector<StudioVideo> my_videos;
+static volatile bool my_loading = false;
+static std::string my_error;
+static StudioVideo sel_video;
+static bool delete_armed = false; // the first tap on Delete only asks for a second one
 static std::string pick_dir = "sdmc:/";
 static std::string form_path, form_title, form_desc;
 static int form_privacy = 0; // 0 private, 1 unlisted, 2 public
@@ -70,6 +79,8 @@ static void start_stats_load() {
 	stats_loading = true;
 	queue_async_task(load_stats_task, NULL);
 }
+
+static void start_my_videos_load();
 
 static void go(StudioMode m) {
 	mode = m;
@@ -120,6 +131,14 @@ static View *button(const std::function<std::string()> &text, std::function<void
 	    ->set_on_view_released([on_release](View &) { on_release(); });
 }
 
+static bool is_image_file(const std::string &name) {
+	size_t dot = name.find_last_of('.');
+	if (dot == std::string::npos) return false;
+	std::string ext = name.substr(dot + 1);
+	for (auto &c : ext) c = tolower(c);
+	return ext == "jpg" || ext == "jpeg" || ext == "png";
+}
+
 static bool is_video_file(const std::string &name) {
 	size_t dot = name.find_last_of('.');
 	if (dot == std::string::npos) return false;
@@ -138,7 +157,7 @@ static std::string parent_dir(const std::string &dir) {
 }
 
 struct UploadJob {
-	std::string path, title, description, privacy, category_id;
+	std::string path, title, description, privacy, category_id, thumb_path;
 	bool is_short;
 };
 
@@ -157,9 +176,18 @@ static void upload_thread(void *arg) {
 		                                }
 	                                },
 	                                video_id, error);
+	std::string thumb_error;
+	if (ok && job->thumb_path != "" && video_id != "") {
+		notice_show(tr("Setting the thumbnail...", "Poniendo la miniatura..."));
+		if (!youtube_studio_set_thumbnail(video_id, job->thumb_path, thumb_error)) {
+			thumb_error = tr(" (thumbnail failed: ", " (falló la miniatura: ") + thumb_error + ")";
+		} else {
+			thumb_error = "";
+		}
+	}
 	LightLock_Lock(&state_lock);
 	if (ok) {
-		upload_message = tr("Uploaded: ", "Subido: ") + "youtube.com/watch?v=" + video_id;
+		upload_message = tr("Uploaded: ", "Subido: ") + "youtube.com/watch?v=" + video_id + thumb_error;
 		stats_loaded = false; // the totals changed : reload them when the tab is shown again
 	} else {
 		upload_message = tr("Upload failed: ", "Error al subir: ") + error;
@@ -176,7 +204,7 @@ static void upload_thread(void *arg) {
 
 static void start_upload() {
 	if (upload_running) return;
-	UploadJob *job = new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_short};
+	UploadJob *job = new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_short};
 	for (auto &c : job->privacy) c = tolower(c);
 	upload_running = true;
 	upload_percent = 0;
@@ -223,12 +251,18 @@ static std::vector<View *> build_dash() {
 	                   []() {
 		                   if (upload_running) return;
 		                   pick_short = false;
+		                   pick_image = false;
 		                   go(MODE_PICK);
 	                   }));
 	v.push_back(button([]() { return tr("Upload a Short", "Subir un Short"); }, []() {
 		if (upload_running) return;
 		pick_short = true;
+		pick_image = false;
 		go(MODE_PICK);
+	}));
+	v.push_back(button([]() { return tr("Edit my uploads", "Editar mis subidas"); }, []() {
+		start_my_videos_load();
+		go(MODE_MYVIDEOS);
 	}));
 	v.push_back(button([]() { return tr("My channel and videos", "Mi canal y vídeos"); }, []() {
 		if (OAuth::get_user_channel_id() == "") {
@@ -244,7 +278,7 @@ static std::vector<View *> build_dash() {
 
 static std::vector<View *> build_pick() {
 	std::vector<View *> v;
-	v.push_back(button([]() { return LOCALIZED(CANCEL); }, []() { go(MODE_DASH); }));
+	v.push_back(button([]() { return LOCALIZED(CANCEL); }, []() { go(pick_image ? MODE_FORM : MODE_DASH); }));
 	v.push_back(label([]() { return pick_dir; }));
 	if (pick_dir != "sdmc:/") {
 		v.push_back(button([]() { return std::string("[..]"); }, []() {
@@ -261,7 +295,7 @@ static std::vector<View *> build_pick() {
 			if (name == "." || name == ".." || name[0] == '.') continue;
 			if (entry->d_type == DT_DIR) {
 				dirs.push_back(name);
-			} else if (is_video_file(name)) {
+			} else if (pick_image ? is_image_file(name) : is_video_file(name)) {
 				files.push_back(name);
 			}
 			if (dirs.size() + files.size() > 400) break;
@@ -283,12 +317,19 @@ static std::vector<View *> build_pick() {
 		u64 size = stat(path.c_str(), &st) == 0 ? (u64)st.st_size : 0;
 		std::string text = name + " (" + std::to_string(size / (1024 * 1024)) + " MB)";
 		v.push_back(button([text]() { return text; }, [name, path]() {
+			if (pick_image) { // the thumbnail : back to the form of the video
+				form_thumb = path;
+				pick_image = false;
+				go(MODE_FORM);
+				return;
+			}
 			form_path = path;
 			form_title = name.substr(0, name.find_last_of('.'));
 			if (form_title.size() > 95) form_title.resize(95);
 			form_desc = "";
 			form_privacy = 0;
 			form_category = 0;
+			form_thumb = "";
 			form_short = pick_short;
 			go(MODE_FORM);
 		}));
@@ -321,8 +362,136 @@ static std::vector<View *> build_form() {
 		                   form_category = (form_category + 1) % category_count;
 		                   var_need_refresh = true;
 	                   }));
+	v.push_back(button([]() { return tr("Thumbnail: ", "Miniatura: ") + (form_thumb == "" ? std::string("-") : form_thumb.substr(form_thumb.find_last_of('/') + 1)); },
+	                   []() {
+		                   pick_image = true;
+		                   go(MODE_PICK);
+	                   }));
 	v.push_back(button([]() { return tr("Upload", "Subir"); }, []() { start_upload(); }));
 	v.push_back(button([]() { return LOCALIZED(CANCEL); }, []() { go(MODE_DASH); }));
+	return v;
+}
+
+// ---- your uploads ----
+static void load_my_videos_task(void *) {
+	std::vector<StudioVideo> list;
+	std::string error;
+	bool ok = youtube_studio_list_videos(list, error);
+	LightLock_Lock(&state_lock);
+	my_videos = list;
+	my_error = ok ? "" : error;
+	LightLock_Unlock(&state_lock);
+	my_loading = false;
+	mode_dirty = true;
+	var_need_refresh = true;
+}
+
+static void start_my_videos_load() {
+	if (my_loading || !OAuth::is_authenticated()) return;
+	my_loading = true;
+	queue_async_task(load_my_videos_task, NULL);
+}
+
+struct EditJob {
+	int action; // 0 privacy, 1 title, 2 delete
+	std::string id, value;
+};
+
+static void edit_task(void *arg) {
+	EditJob *job = (EditJob *)arg;
+	std::string error;
+	bool ok = job->action == 0   ? youtube_studio_set_privacy(job->id, job->value, error)
+	          : job->action == 1 ? youtube_studio_set_title(job->id, job->value, error)
+	                             : youtube_studio_delete(job->id, error);
+	if (ok) {
+		LightLock_Lock(&state_lock);
+		for (size_t i = 0; i < my_videos.size(); i++) {
+			if (my_videos[i].id != job->id) continue;
+			if (job->action == 0) my_videos[i].privacy = job->value;
+			if (job->action == 1) my_videos[i].title = job->value;
+			if (job->action == 2) my_videos.erase(my_videos.begin() + i);
+			break;
+		}
+		if (sel_video.id == job->id) {
+			if (job->action == 0) sel_video.privacy = job->value;
+			if (job->action == 1) sel_video.title = job->value;
+		}
+		LightLock_Unlock(&state_lock);
+		notice_show(tr("Done", "Hecho"));
+		if (job->action == 2) go(MODE_MYVIDEOS);
+	} else {
+		notice_show(tr("Could not change it: ", "No se pudo cambiar: ") + error);
+	}
+	mode_dirty = true;
+	var_need_refresh = true;
+	delete job;
+}
+
+static void edit_async(int action, const std::string &id, const std::string &value) {
+	notice_show(tr("Working...", "Trabajando..."));
+	queue_async_task(edit_task, new EditJob{action, id, value});
+}
+
+static std::vector<View *> build_myvideos() {
+	std::vector<View *> v;
+	v.push_back(button([]() { return tr("Back", "Atrás"); }, []() { go(MODE_DASH); }));
+	v.push_back(label([]() {
+		if (my_loading) return tr("Loading ...", "Cargando ...");
+		std::string err = locked_copy(my_error);
+		return err == "" ? tr("Tap a video to edit it", "Toca un vídeo para editarlo") : tr("Could not load: ", "No se pudo cargar: ") + err;
+	}));
+	std::vector<StudioVideo> list;
+	LightLock_Lock(&state_lock);
+	list = my_videos;
+	LightLock_Unlock(&state_lock);
+	for (auto &video : list) {
+		StudioVideo copy = video;
+		std::string text = "[" + (copy.privacy == "public" ? tr("Public", "Público") : copy.privacy == "unlisted" ? tr("Unlisted", "No listado") : tr("Private", "Privado")) + "] " + copy.title;
+		if (text.size() > 44) text = text.substr(0, 44) + "..";
+		v.push_back(button([text]() { return text; }, [copy]() {
+			LightLock_Lock(&state_lock);
+			sel_video = copy;
+			LightLock_Unlock(&state_lock);
+			delete_armed = false;
+			go(MODE_VIDEO);
+		}));
+	}
+	return v;
+}
+
+static std::vector<View *> build_video() {
+	std::vector<View *> v;
+	v.push_back(button([]() { return tr("Back", "Atrás"); }, []() { go(MODE_MYVIDEOS); }));
+	v.push_back(label([]() {
+		std::string title = locked_copy(sel_video.title);
+		return title.size() > 46 ? title.substr(0, 46) + ".." : title;
+	}));
+	v.push_back(button([]() {
+		std::string p = locked_copy(sel_video.privacy);
+		return tr("Visibility: ", "Visibilidad: ") + (p == "public" ? tr("Public", "Público") : p == "unlisted" ? tr("Unlisted", "No listado") : tr("Private", "Privado"));
+	}, []() {
+		std::string p = locked_copy(sel_video.privacy);
+		std::string next = p == "private" ? "unlisted" : p == "unlisted" ? "public" : "private";
+		edit_async(0, locked_copy(sel_video.id), next);
+	}));
+	v.push_back(button([]() { return tr("Change the title", "Cambiar el título"); }, []() {
+		std::string out;
+		if (ask_text(tr("Title", "Título"), locked_copy(sel_video.title), 95, false, out)) edit_async(1, locked_copy(sel_video.id), out);
+		var_need_refresh = true;
+	}));
+	v.push_back(button([]() { return tr("Watch it", "Verlo"); }, []() {
+		global_intent.next_scene = SceneType::VIDEO_PLAYER;
+		global_intent.arg = youtube_get_video_url_by_id(locked_copy(sel_video.id));
+	}));
+	v.push_back(button([]() { return delete_armed ? tr("Tap again to DELETE it for good", "Toca otra vez para BORRARLO") : tr("Delete", "Borrar"); }, []() {
+		if (!delete_armed) {
+			delete_armed = true;
+			var_need_refresh = true;
+			return;
+		}
+		delete_armed = false;
+		edit_async(2, locked_copy(sel_video.id), "");
+	}));
 	return v;
 }
 
@@ -332,7 +501,11 @@ static void rebuild() {
 		delete content;
 		content = NULL;
 	}
-	std::vector<View *> rows = mode == MODE_DASH ? build_dash() : mode == MODE_PICK ? build_pick() : build_form();
+	std::vector<View *> rows = mode == MODE_DASH       ? build_dash()
+	                          : mode == MODE_PICK     ? build_pick()
+	                          : mode == MODE_FORM     ? build_form()
+	                          : mode == MODE_MYVIDEOS ? build_myvideos()
+	                                                  : build_video();
 	content = (new ScrollView(0, 0, 320, root ? root->height : 200))
 	              ->set_views({(new VerticalListView(0, 0, 320))->set_margin(SMALL_MARGIN)->set_views(rows)});
 	mode_dirty = false;

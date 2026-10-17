@@ -289,6 +289,8 @@ static void build_queue(VerticalListView *list) {
 		    ->add_on_long_hold(35, [i, url, title](View &) {
 			    show_dialog({make_option(tr("QR code", "Código QR"), [url]() { qr_popup_show(share_url(url)); }),
 			                 make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
+			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [url, title]() { offline_save_by_id_async(youtube_get_video_id_by_url(url), title, "", true); }),
+			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [url, title]() { offline_save_by_id_async(youtube_get_video_id_by_url(url), title, "", false); }),
 			                 make_option(tr("Move up", "Subir"), [i]() { play_queue_move(i, -1); }),
 			                 make_option(tr("Move down", "Bajar"), [i]() { play_queue_move(i, 1); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [url, title]() { pending_action = [url, title]() { add_to_playlist_dialog(video_from_url(url, title)); }; }),

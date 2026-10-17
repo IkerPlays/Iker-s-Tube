@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <functional>
+#include <vector>
 #include <3ds.h>
 
 // YouTube Studio : channel statistics and video uploads of the signed-in account. These block on the network, so call
@@ -19,3 +20,14 @@ StudioStats youtube_studio_stats();
 bool youtube_studio_upload(const std::string &path, const std::string &title, const std::string &description,
                            const std::string &privacy, bool is_short, const std::string &category_id,
                            const std::function<void(u64, u64)> &progress, std::string &video_id, std::string &error);
+
+// ---- your uploaded videos (YouTube Data API, same login) ----
+struct StudioVideo {
+	std::string id, title, privacy; // privacy : "public", "unlisted" or "private"
+};
+bool youtube_studio_list_videos(std::vector<StudioVideo> &out, std::string &error); // the latest 25 uploads
+bool youtube_studio_set_privacy(const std::string &video_id, const std::string &privacy, std::string &error);
+bool youtube_studio_set_title(const std::string &video_id, const std::string &title, std::string &error);
+bool youtube_studio_delete(const std::string &video_id, std::string &error);
+// custom thumbnail from a .jpg / .png file on the SD card (max 2 MB). The account must be verified by YouTube.
+bool youtube_studio_set_thumbnail(const std::string &video_id, const std::string &path, std::string &error);
