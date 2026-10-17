@@ -9,6 +9,7 @@
 #include "data_io/favorites.hpp"
 #include "ui/qr_popup.hpp"
 #include "data_io/bookmarks.hpp"
+#include "data_io/channel_prefs.hpp"
 #include "data_io/watch_later.hpp"
 #include <sstream>
 #include "util/timestamp_parser.hpp"
@@ -312,6 +313,21 @@ static void rebuild_bookmarks_list() {
 		        }));
 	}
 	bookmarks_list_view->views.push_back((new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+}
+
+// applies the speed remembered for the channel of the playing video once its decoder is ready
+static void channel_speed_tick() {
+	static std::string applied_for;
+	if (!network_decoder.ready || playing_video_info.id == "" || applied_for == playing_video_info.id) return;
+	applied_for = playing_video_info.id;
+	double speed = channel_speed_get(playing_video_info.author.id);
+	if (speed <= 0) speed = 1.0;
+	if (speed != quick_speed) {
+		quick_speed = speed;
+		network_decoder.set_tempo(quick_speed);
+		if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+		var_need_refresh = true;
+	}
 }
 
 static void ab_loop_tick() {
@@ -1402,6 +1418,7 @@ debug_info_view =
 					                           for (int k = 0; k < 7; k++) if (steps[k] <= quick_speed + 0.01) i = k;
 					                           quick_speed = steps[(i + 1) % 7];
 					                           network_decoder.set_tempo(quick_speed);
+					                           channel_speed_set(playing_video_info.author.id, quick_speed); // remembered for this channel
 					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
 					                           var_need_refresh = true;
 				                           }),
@@ -3350,6 +3367,7 @@ debug_info_view =
 		    update_overlay_menu(&key);
 		    auto_quality_tick();
 		    ab_loop_tick();
+		    channel_speed_tick();
 
 		    if (mini_player_update(key)) {
 			    // the mini player is open : it takes all the input
