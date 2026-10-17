@@ -10,6 +10,12 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Custom idle background** from a picture on the SD card.
 - **Long videos fixed.** Videos over an hour that only have a combined audio and video stream now play instead of failing with "No valid stream url extracted".
 - **Network resilience and diagnostics.** Retries when the host name cannot be resolved right after the Wi-Fi connects, and clearer details in the log when a video cannot be played.
+- **Starts at the beginning.** Fixed a bug where a new video could start at the minute of the previous video, and added an option to always start from the beginning.
+- **Account actions.** Like and dislike, save to your YouTube playlists, subscribe on your account, write, like and reply to comments (OAuth login needed).
+- **Translate** titles, descriptions and comments into the language of the app.
+- **Offline audio.** Save audio to the SD card and play it without a connection from the Offline tab.
+- **Queue and shorts.** Play next from library lists and shorts that play one after another.
+- **Premiere countdown** for upcoming videos.
 - **Crash report file.** An unexpected abort now leaves sdmc:/3ds/IkersTube/crash.txt on the SD card so it can be diagnosed.
 - **Stability fixes.** A freeze with the A-B loop, a crash risk with bookmarks and several unchecked cases that could close the app.
 - **Continue watching and first launch.** Resume the last video from Search or at start, and the settings open on the first launch.
