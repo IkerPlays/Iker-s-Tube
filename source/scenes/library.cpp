@@ -347,6 +347,62 @@ static void pull_watch_later_task(void *) {
 	}
 }
 
+// ---- liked videos of the account (read from YouTube) ----
+static Mutex resource_lock_lib;
+static std::vector<FavoriteVideo> liked_videos;
+static bool liked_loaded = false, liked_failed = false, liked_loading = false;
+static void load_liked_task(void *) {
+	std::vector<FavoriteVideo> videos;
+	bool ok = account_playlist_videos("VLLL", videos);
+	resource_lock_lib.lock();
+	liked_videos = videos;
+	liked_loaded = ok;
+	liked_failed = !ok;
+	liked_loading = false;
+	resource_lock_lib.unlock();
+	rebuild_request = true;
+	var_need_refresh = true;
+}
+
+static void build_liked(VerticalListView *list) {
+	if (!OAuth::is_authenticated()) {
+		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 3))
+		                          ->set_text_lines(std::vector<std::string>{tr("Sign in to see the videos", "Inicia sesión para ver los vídeos"), tr("you liked on YouTube.", "que te gustan en YouTube.")})
+		                          ->set_x_alignment(TextView::XAlign::CENTER)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+		return;
+	}
+	resource_lock_lib.lock();
+	if (!liked_loaded && !liked_failed && !liked_loading) {
+		liked_loading = true;
+		queue_async_task(load_liked_task, NULL);
+	}
+	std::vector<FavoriteVideo> videos = filter_and_sort(liked_videos);
+	bool loading = liked_loading, failed = liked_failed;
+	resource_lock_lib.unlock();
+	add_sort_filter_row(list);
+	for (auto &v : videos) {
+		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
+		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
+		view->set_get_background_color(button_background)
+		    ->set_on_view_released([url](View &) { clicked_url = url; })
+		    ->add_on_long_hold(35, [id, url, v](View &) {
+			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
+			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
+			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
+			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); })});
+		    });
+		list->views.push_back(view);
+	}
+	if (!videos.size()) {
+		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 3))
+		                          ->set_text(loading ? tr("Loading...", "Cargando...") : failed ? tr("Could not load your liked videos", "No se pudieron cargar tus Me gusta") : tr("No liked videos.", "Sin vídeos con Me gusta."))
+		                          ->set_x_alignment(TextView::XAlign::CENTER)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
+}
+
 static void build_watch_later(VerticalListView *list) {
 	static bool pulled_this_session = false; // YouTube's Watch later list is downloaded once per session (OAuth only)
 	if (!pulled_this_session && OAuth::is_authenticated()) {
@@ -601,6 +657,8 @@ static void rebuild_views() {
 		build_queue(list);
 	} else if (mode == 3) {
 		build_watch_later(list);
+	} else if (mode == 5) {
+		build_liked(list);
 	} else if (mode == 4) {
 		build_offline(list);
 	} else if (mode == 1) {
@@ -620,7 +678,8 @@ static void rebuild_views() {
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Favorites", "Favoritos")); },
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Playlists", "Listas")); },
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Later", "Luego")); },
-	                                                               (std::function<std::string()>)[]() { return std::string("Offline"); }},
+	                                                               (std::function<std::string()>)[]() { return std::string("Offline"); },
+	                                                               (std::function<std::string()>)[]() { return std::string(tr("Liked", "Me gusta")); }},
 	                                                              mode)
 	                                                  ->set_on_change([](const SelectorView &view) {
 		                                                  mode = view.selected_button;

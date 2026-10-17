@@ -35,6 +35,36 @@ static std::string text_after(const std::string &body, size_t from, size_t to, c
 	return e == std::string::npos ? "" : body.substr(p, e - p);
 }
 
+// The videos of one of the account's playlists ("VLLL" = liked videos, "VLWL" = watch later); false if the request failed.
+bool account_playlist_videos(const std::string &browse_id, std::vector<FavoriteVideo> &videos) {
+	if (!OAuth::is_authenticated()) return false;
+	std::string body =
+	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android","osVersion": "14"}}, "browseId": "%2"})";
+	body = std::regex_replace(body, std::regex("%0"), language_code);
+	body = std::regex_replace(body, std::regex("%1"), country_code);
+	body = std::regex_replace(body, std::regex("%2"), browse_id);
+	std::map<std::string, std::string> headers;
+	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	auto response = http_post_json(get_innertube_api_url("browse"), body, headers);
+	if (!response.first) return false;
+	const std::string &json = response.second;
+	size_t pos = 0;
+	while ((pos = json.find("\"playlistVideoRenderer\"", pos)) != std::string::npos) {
+		size_t next = json.find("\"playlistVideoRenderer\"", pos + 20);
+		size_t end = next == std::string::npos ? json.size() : next;
+		FavoriteVideo v;
+		v.id = text_after(json, pos, end, "\"videoId\":\"");
+		v.title = text_after(json, pos, end, "\"title\":{\"runs\":[{\"text\":\"");
+		v.author = text_after(json, pos, end, "\"shortBylineText\":{\"runs\":[{\"text\":\"");
+		v.length_text = text_after(json, pos, end, "\"lengthText\":{\"accessibility\":{\"accessibilityData\":{\"label\":\"");
+		std::string simple = text_after(json, pos, end, "\"lengthText\":{\"simpleText\":\"");
+		if (simple != "") v.length_text = simple;
+		if (v.id != "" && v.title != "") videos.push_back(v);
+		pos += 20;
+	}
+	return true;
+}
+
 int watch_later_pull_remote() {
 	if (!OAuth::is_authenticated()) {
 		return -1;

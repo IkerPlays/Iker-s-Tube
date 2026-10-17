@@ -190,7 +190,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Downloading audio: ", {"Téléchargement de l'audio : ", "Audio wird geladen: ", "Download audio: ", "Baixando áudio: ", "音声をダウンロード中："}},
 	    {"Downloading audio: 0%", {"Téléchargement de l'audio : 0%", "Audio wird geladen: 0%", "Download audio: 0%", "Baixando áudio: 0%", "音声をダウンロード中：0%"}},
 	    {"Like", {"J'aime", "Gefällt mir", "Mi piace", "Curtir", "高評価"}},
-	    {"Liked", {"J'aime envoyé", "Like gesendet", "Mi piace inviato", "Curtida enviada", "高評価しました"}},
+	    {"Liked", {"J'aime", "Gefällt mir", "Piaciuti", "Curtidos", "高評価"}},
 	    {"My list", {"Ma liste", "Meine Liste", "La mia lista", "Minha lista", "マイリスト"}},
 	    {"No playlists found in your account", {"Aucune liste dans votre compte", "Keine Playlists in deinem Konto", "Nessuna playlist nel tuo account", "Nenhuma lista na sua conta", "アカウントにリストがありません"}},
 	    {"Open the comments first", {"Ouvrez d'abord les commentaires", "Öffne zuerst die Kommentare", "Apri prima i commenti", "Abra os comentários primeiro", "先にコメントを開いてください"}},
@@ -213,7 +213,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Your account", {"Votre compte", "Dein Konto", "Il tuo account", "Sua conta", "アカウント"}},
 	    {"Recommended for you", {"Recommandé pour vous", "Für dich empfohlen", "Consigliati per te", "Recomendados para você", "おすすめ"}},
 	    {"Notifications", {"Notifications", "Benachrichtigungen", "Notifiche", "Notificações", "通知"}},
-	    {"Loading...", {"Chargement...", "Lädt...", "Caricamento...", "Carregando...", "読み込み中..."}},
+	    {"Loading...", {"Chargement...", "Laden...", "Caricamento...", "Carregando...", "読み込み中..."}},
 	    {"Could not load it from your account", {"Impossible de charger depuis votre compte", "Vom Konto konnte nichts geladen werden", "Impossibile caricare dal tuo account", "Não foi possível carregar da sua conta", "アカウントから読み込めませんでした"}},
 	    {"No videos found", {"Aucune vidéo trouvée", "Keine Videos gefunden", "Nessun video trovato", "Nenhum vídeo encontrado", "動画が見つかりません"}},
 	    {"Could not start the upload", {"Impossible de lancer l'envoi", "Upload konnte nicht gestartet werden", "Impossibile avviare il caricamento", "Não foi possível iniciar o envio", "アップロードを開始できません"}},
@@ -415,6 +415,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {" videos, about ", {" vidéos, environ ", " Videos, etwa ", " video, circa ", " vídeos, cerca de ", " 本、約 "}},
 	    {"On your phone or computer open:", {"Sur le téléphone ou l'ordinateur, ouvrez :", "Öffne am Handy oder Computer:", "Sul telefono o computer apri:", "No celular ou computador abra:", "スマホかPCで開く："}},
 	    {"and type the code: ", {"et saisissez le code : ", "und gib den Code ein: ", "e scrivi il codice: ", "e digite o código: ", "コードを入力： "}},
+	    {"Sign in to see the videos", {"Connectez-vous pour voir les vidéos", "Melde dich an, um die Videos zu sehen", "Accedi per vedere i video", "Entre para ver os vídeos", "ログインして動画を表示"}},
+	    {"you liked on YouTube.", {"que vous avez aimées sur YouTube.", "die dir auf YouTube gefallen.", "che ti sono piaciuti su YouTube.", "que você curtiu no YouTube.", "YouTubeで高評価した動画。"}},
+	    {"Could not load your liked videos", {"Impossible de charger vos vidéos aimées", "Gefällt-mir-Videos konnten nicht geladen werden", "Impossibile caricare i video piaciuti", "Não foi possível carregar seus vídeos curtidos", "高評価の動画を読み込めませんでした"}},
+	    {"No liked videos.", {"Aucune vidéo aimée.", "Keine Videos mit Gefällt mir.", "Nessun video piaciuto.", "Nenhum vídeo curtido.", "高評価の動画はありません。"}},
 	};
 	return table;
 }

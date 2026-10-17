@@ -19,3 +19,6 @@ int watch_later_merge(const std::vector<FavoriteVideo> &videos);
 
 // Adds or removes the video in the YouTube "Watch later" playlist (needs the OAuth login; no-op otherwise). Call from a worker thread.
 void watch_later_sync_remote(const std::string &video_id, bool add);
+
+// The videos of one of the account's YouTube playlists ("VLLL" liked videos, "VLWL" watch later). Worker thread only.
+bool account_playlist_videos(const std::string &browse_id, std::vector<FavoriteVideo> &videos);
