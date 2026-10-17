@@ -1,0 +1,126 @@
+name: Stable release
+
+# Builds Iker's Tube and publishes a normal (non pre-release) GitHub release : the app installs it automatically.
+# Run it by hand : Actions > "Stable release" > Run workflow, and type the version (for example 1.0.0).
+# The notes come from STABLE_RELEASE_NOTES.md : edit that file (English, plain text) BEFORE running it.
+# Devbuilds are NOT affected : build.yml keeps publishing them automatically on every push to main.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, as MAJOR.MINOR.PATCH (for example 1.0.0)"
+        required: true
+        type: string
+      draft:
+        description: "Publish as a draft first (review it on GitHub, then press Publish)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write # needed to publish the release
+
+concurrency:
+  group: stable-release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Run this workflow from the main branch (selected: $GITHUB_REF)."
+            exit 1
+          fi
+          version="${INPUT_VERSION#v}"
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version must look like 1.0.0 (got '$INPUT_VERSION')."
+            exit 1
+          fi
+          if gh release view "v$version" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::error::Release v$version already exists. Delete it first or pick another version."
+            exit 1
+          fi
+          if [ ! -s STABLE_RELEASE_NOTES.md ]; then
+            echo "::error::STABLE_RELEASE_NOTES.md is missing or empty."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System tools
+        run: |
+          apt-get update
+          apt-get install -y git make cmake g++ gcc
+
+      - name: Build makerom and bannertool
+        run: |
+          git clone --depth 1 https://github.com/3DSGuy/Project_CTR.git /tmp/ctr
+          make -C /tmp/ctr/makerom deps
+          make -C /tmp/ctr/makerom -j"$(nproc)"
+          cp /tmp/ctr/makerom/bin/makerom /usr/local/bin/
+          git clone --depth 1 https://github.com/carstene1ns/3ds-bannertool.git /tmp/bannertool
+          cmake -S /tmp/bannertool -B /tmp/bannertool/b
+          make -C /tmp/bannertool/b -j"$(nproc)"
+          cp /tmp/bannertool/b/bannertool /usr/local/bin/
+
+      # The version has no "-dev" suffix : the app sees it as a stable release.
+      - name: Build .3dsx and .cia
+        run: make MAKEROM=makerom BANNERTOOL=bannertool IKT_VERSION=${{ needs.check.outputs.version }}
+
+      - name: Collect files
+        run: |
+          mkdir dist
+          cp IkersTube_dev.cia dist/IkersTube.cia
+          cp IkersTube.3dsx dist/IkersTube.3dsx
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IkersTube-release
+          path: dist/
+
+  publish:
+    needs: [check, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: IkersTube-release
+          path: dist
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.check.outputs.version }}
+          DRAFT: ${{ inputs.draft }}
+        run: |
+          {
+            echo "# Iker's Tube ${VERSION}"
+            echo
+            cat STABLE_RELEASE_NOTES.md
+            echo
+            echo "---"
+            echo "Built from commit \`${GITHUB_SHA::7}\`. Install \`IkersTube.cia\` with FBI, or run \`IkersTube.3dsx\` from the Homebrew Launcher."
+          } > notes.md
+          extra=""
+          if [ "$DRAFT" = "true" ]; then extra="--draft"; fi
+          gh release create "v${VERSION}" dist/IkersTube.cia dist/IkersTube.3dsx \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest $extra \
+            --title "Iker's Tube ${VERSION}" \
+            --notes-file notes.md

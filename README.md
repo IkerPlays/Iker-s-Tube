@@ -18,6 +18,16 @@ Basado en [FourthTube](https://github.com/erievs/FourthTube) (que viene de Third
 - Si publicas tú un release normal (con `.cia` y `.3dsx`, p. ej. tag `v1.1`), la app lo ofrece cuando su versión es
   mayor que la instalada. La versión de los builds es `VERSION` + número de build (p. ej. `1.0.14`).
 
+## Cómo sacar un release grande (estable)
+1. Edita `STABLE_RELEASE_NOTES.md` (inglés, texto plano): son las notas del release.
+2. En GitHub: **Actions → Stable release → Run workflow**, desde la rama `main`, y escribe la versión (por ejemplo `1.0.0`).
+   Marca *draft* si quieres revisarlo antes de publicarlo.
+3. El workflow compila, crea el release `v1.0.0` (no pre-release) con `IkersTube.cia` e `IkersTube.3dsx`, y la app
+   lo instala **automáticamente** al abrirse. Falla si esa versión ya existe.
+
+Las devbuilds (`build.yml`) siguen saliendo solas en cada push a `main`, como pre-release, y la app solo las ofrece.
+Tras publicar un estable, las devbuilds siguientes pasan solas a la versión siguiente (`1.0.1-dev.N`).
+
 ## Aviso
 YouTube cambia su API a menudo y puede bloquear clientes. Si un vídeo no carga, prueba otro cliente en
 Ajustes. Esta app no ha sido probada por el autor en todas las situaciones; reporta fallos en Issues.
