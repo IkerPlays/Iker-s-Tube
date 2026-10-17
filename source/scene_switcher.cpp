@@ -511,12 +511,25 @@ void Menu_worker_thread(void *arg) {
 			count = 0;
 		}
 
+		if (video_is_playing()) {
+			var_total_play_seconds += 0.05;
+		}
+		{ // data limit : warn once per session when it is exceeded
+			static const u64 limits_mb[6] = {0, 100, 250, 500, 1000, 2000};
+			static bool limit_warned = false;
+			u64 limit = limits_mb[var_data_limit_index] * 1024 * 1024;
+			if (limit && !limit_warned && var_data_session_bytes > limit) {
+				limit_warned = true;
+				var_update_banner = tr_static("Data limit reached", "Límite de datos alcanzado");
+				var_need_refresh = true;
+			}
+		}
 		{ // save the data usage counter every ~5 minutes
 			static int save_counter = 0;
 			static u64 last_saved_bytes = 0;
 			if (++save_counter >= 6000) {
 				save_counter = 0;
-				if (var_data_session_bytes != last_saved_bytes) {
+				if (var_data_session_bytes != last_saved_bytes || var_total_play_seconds > 0) {
 					last_saved_bytes = var_data_session_bytes;
 					misc_tasks_request(TASK_SAVE_SETTINGS);
 				}

@@ -1781,6 +1781,9 @@ debug_info_view =
     if (var_auto_quality && var_auto_quality_cap > 0 && wanted_quality > var_auto_quality_cap) {
 	    wanted_quality = var_auto_quality_cap;
     }
+    if (var_data_saver && wanted_quality > 240) {
+	    wanted_quality = 240;
+    }
     if (var_video_quality == 0) {
 	    audio_only_mode = true;
     } else {

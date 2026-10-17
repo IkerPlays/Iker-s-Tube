@@ -71,6 +71,9 @@ void load_settings() {
 	var_start_scene = std::max(0, std::min(2, load_int("start_scene", 0)));
 	var_auto_theme = load_int("auto_theme", 0);
 	var_grid_view = load_int("grid_view", 0);
+	var_data_saver = load_int("data_saver", 0);
+	var_data_limit_index = std::max(0, std::min(5, load_int("data_limit_index", 0)));
+	var_total_play_seconds = load_double("total_play_seconds", 0.0);
 	var_theme = std::max(0, std::min(5, load_int("color_theme", 0)));
 	var_large_thumbnails = load_int("large_thumbnails", 0);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
@@ -129,6 +132,9 @@ void save_settings() {
 	add_int("hide_pointer", var_hide_pointer);
 	add_int("dark_theme", var_night_mode);
 	add_int("color_theme", var_theme);
+	add_int("data_saver", var_data_saver);
+	add_int("data_limit_index", var_data_limit_index);
+	add_double("total_play_seconds", var_total_play_seconds);
 	add_int("grid_view", var_grid_view);
 	add_int("start_scene", var_start_scene);
 	add_int("auto_theme", var_auto_theme);

@@ -1,4 +1,5 @@
 // clang-format off
+#include "data_io/backup.hpp"
 #include "headers.hpp"
 #include <functional>
 #include <sstream>
@@ -1026,6 +1027,102 @@ void Sem_init(void) {
 								->set_is_visible(true);
 							toast_frames_left = 150;
 							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Export backup to the SD card", "Exportar copia a la SD"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							int count = backup_export();
+							std::string message = count < 0 ? tr("SD card error or no backup found", "Error de la SD o no hay copia") : std::to_string(count) + " " + tr("files saved (sdmc:/3ds/IkersTube/backup)", "archivos guardados (sdmc:/3ds/IkersTube/backup)");
+							toast_view
+								->set_text((std::function<std::string ()>) [message] () { return message; })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 180;
+							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Import backup (restart the app after)", "Importar copia (reinicia la app después)"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							int count = backup_import();
+							std::string message = count < 0 ? tr("SD card error or no backup found", "Error de la SD o no hay copia") : std::to_string(count) + " " + tr("files restored - restart the app", "archivos restaurados - reinicia la app");
+							toast_view
+								->set_text((std::function<std::string ()>) [message] () { return message; })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 180;
+							var_need_refresh = true;
+						}),
+					// Data saver
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_data_saver)
+						->set_title([](const SelectorView &) { return tr("Data saver", "Ahorro de datos"); })
+						->set_info([](const SelectorView &) { return tr("Limits videos to 240p and does not download thumbnails.", "Limita los vídeos a 240p y no descarga miniaturas."); })
+						->set_popup_height(50)
+						->set_on_change([](const SelectorView &view) {
+							if (var_data_saver != view.selected_button) {
+								var_data_saver = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// Data limit
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return std::string("100 MB"); },
+							(std::function<std::string ()>) []() { return std::string("250 MB"); },
+							(std::function<std::string ()>) []() { return std::string("500 MB"); },
+							(std::function<std::string ()>) []() { return std::string("1 GB"); },
+							(std::function<std::string ()>) []() { return std::string("2 GB"); }
+						}, var_data_limit_index)
+						->set_title([](const SelectorView &) { return tr("Data limit per session", "Límite de datos por sesión"); })
+						->set_info([](const SelectorView &) { return tr("Shows a warning (red dot in Settings) when this session downloads more than the limit.", "Avisa (punto rojo en Ajustes) cuando esta sesión descarga más que el límite."); })
+						->set_popup_height(60)
+						->set_on_change([](const SelectorView &view) {
+							if (var_data_limit_index != view.selected_button) {
+								var_data_limit_index = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// statistics
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Statistics", "Estadísticas"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							int total = (int) var_total_play_seconds;
+							return tr("Time playing: ", "Tiempo reproduciendo: ") + std::to_string(total / 3600) + " h " + std::to_string(total / 60 % 60) + " min";
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							return tr("Videos in the history: ", "Vídeos en el historial: ") + std::to_string(get_valid_watch_history().size());
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							std::map<std::string, int> counts;
+							for (auto &v : get_valid_watch_history()) if (v.author_name != "") counts[v.author_name] += std::max(1, v.my_view_count);
+							std::string best; int best_count = 0;
+							for (auto &c : counts) if (c.second > best_count) best = c.first, best_count = c.second;
+							if (best == "") return tr("Most watched channel: -", "Canal más visto: -");
+							return truncate_str(tr("Most watched channel: ", "Canal más visto: ") + best, 310, 1, 0.5, 0.5).at(0);
 						}),
 					// section: History
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))

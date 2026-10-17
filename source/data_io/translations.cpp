@@ -120,6 +120,21 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Audio/video sync: ", {"Synchro audio/vidéo : ", "Audio/Video-Sync: ", "Sincronia audio/video: ", "Sincronia áudio/vídeo: ", "音声/映像の同期："}},
 	    {"Grid of thumbnails", {"Grille de miniatures", "Raster der Vorschaubilder", "Griglia di miniature", "Grade de miniaturas", "サムネイルをグリッド表示"}},
 	    {"Search results as a grid with two columns. Applies to new searches.", {"Résultats de recherche en grille de deux colonnes. S'applique aux nouvelles recherches.", "Suchergebnisse als Raster mit zwei Spalten. Gilt für neue Suchen.", "Risultati di ricerca in una griglia a due colonne. Si applica alle nuove ricerche.", "Resultados da pesquisa em grade de duas colunas. Aplica-se às novas pesquisas.", "検索結果を2列のグリッドで表示。新しい検索から適用されます。"}},
+	    {"Export backup to the SD card", {"Exporter la sauvegarde sur la SD", "Backup auf SD exportieren", "Esporta il backup sulla SD", "Exportar backup para o SD", "バックアップをSDに書き出す"}},
+	    {"Import backup (restart the app after)", {"Importer la sauvegarde (relancer ensuite)", "Backup importieren (danach App neu starten)", "Importa il backup (poi riavvia l'app)", "Importar backup (reinicie o app depois)", "バックアップを読み込む（その後再起動）"}},
+	    {"files saved (sdmc:/3ds/IkersTube/backup)", {"fichiers enregistrés (sdmc:/3ds/IkersTube/backup)", "Dateien gespeichert (sdmc:/3ds/IkersTube/backup)", "file salvati (sdmc:/3ds/IkersTube/backup)", "arquivos salvos (sdmc:/3ds/IkersTube/backup)", "件を保存しました (sdmc:/3ds/IkersTube/backup)"}},
+	    {"files restored - restart the app", {"fichiers restaurés - relancez l'appli", "Dateien wiederhergestellt - App neu starten", "file ripristinati - riavvia l'app", "arquivos restaurados - reinicie o app", "件を復元しました - 再起動してください"}},
+	    {"SD card error or no backup found", {"Erreur SD ou aucune sauvegarde", "SD-Fehler oder kein Backup gefunden", "Errore SD o nessun backup", "Erro no SD ou sem backup", "SDエラーまたはバックアップなし"}},
+	    {"Data saver", {"Économiseur de données", "Datensparmodus", "Risparmio dati", "Economia de dados", "データ節約"}},
+	    {"Limits videos to 240p and does not download thumbnails.", {"Limite les vidéos à 240p et ne télécharge pas les miniatures.", "Begrenzt Videos auf 240p und lädt keine Vorschaubilder.", "Limita i video a 240p e non scarica le miniature.", "Limita os vídeos a 240p e não baixa miniaturas.", "動画を240pに制限し、サムネイルを読み込みません。"}},
+	    {"Data limit per session", {"Limite de données par session", "Datenlimit pro Sitzung", "Limite dati per sessione", "Limite de dados por sessão", "セッションごとのデータ上限"}},
+	    {"Shows a warning (red dot in Settings) when this session downloads more than the limit.", {"Affiche un avertissement (point rouge dans les Réglages) quand la session dépasse la limite.", "Zeigt eine Warnung (roter Punkt in den Einstellungen), wenn die Sitzung das Limit überschreitet.", "Mostra un avviso (punto rosso nelle Impostazioni) quando la sessione supera il limite.", "Mostra um aviso (ponto vermelho nos Ajustes) quando a sessão passa do limite.", "上限を超えると警告（設定に赤い点）を表示します。"}},
+	    {"Statistics", {"Statistiques", "Statistiken", "Statistiche", "Estatísticas", "統計"}},
+	    {"Time playing: ", {"Temps de lecture : ", "Wiedergabezeit: ", "Tempo di riproduzione: ", "Tempo reproduzindo: ", "再生時間："}},
+	    {"Videos in the history: ", {"Vidéos dans l'historique : ", "Videos im Verlauf: ", "Video nella cronologia: ", "Vídeos no histórico: ", "履歴の動画数："}},
+	    {"Most watched channel: -", {"Chaîne la plus regardée : -", "Meistgesehener Kanal: -", "Canale più guardato: -", "Canal mais assistido: -", "最も見たチャンネル：-"}},
+	    {"Most watched channel: ", {"Chaîne la plus regardée : ", "Meistgesehener Kanal: ", "Canale più guardato: ", "Canal mais assistido: ", "最も見たチャンネル："}},
+	    {"Data limit reached", {"Limite de données atteinte", "Datenlimit erreicht", "Limite dati raggiunto", "Limite de dados atingido", "データ上限に達しました"}},
 	};
 	return table;
 }

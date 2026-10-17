@@ -22,6 +22,9 @@ extern int var_text_scale; // 0 small, 1 normal, 2 large (global text size)
 extern int var_start_scene; // 0 home, 1 library, 2 search : screen opened at start
 extern bool var_auto_theme; // dark theme at night, light during the day
 extern bool var_grid_view; // video lists as a grid of thumbnails (search results)
+extern bool var_data_saver; // limits the quality to 240p and does not download thumbnails
+extern int var_data_limit_index; // 0 off, then 100 MB, 250 MB, 500 MB, 1 GB, 2 GB (session)
+extern double var_total_play_seconds; // statistics : time spent playing
 extern int var_theme;             // color theme index (see colors.hpp)
 extern bool var_large_thumbnails; // bigger thumbnails in video lists
 extern bool var_disable_pull_to_refresh;

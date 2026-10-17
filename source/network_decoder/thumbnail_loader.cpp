@@ -52,7 +52,7 @@ struct URLStatus {
 static std::map<std::string, URLStatus> requested_urls;
 
 int thumbnail_request(const std::string &url, SceneType scene_id, int priority, ThumbnailType type) {
-	if (url == "") {
+	if (url == "" || var_data_saver) { // data saver : no thumbnails
 		return -1;
 	}
 	int handle;
