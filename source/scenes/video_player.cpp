@@ -7,6 +7,7 @@
 #include "scenes/video_player.hpp"
 #include "util/play_queue.hpp"
 #include "data_io/favorites.hpp"
+#include "ui/qr_popup.hpp"
 #include "data_io/resume_position.hpp"
 #include "scenes/home.hpp"
 #include "ui/overlay.hpp"
@@ -1167,9 +1168,22 @@ debug_info_view =
 					        }
 				        });
 
-				    main_tab_views.push_back(
-				        (new HorizontalListView(0, 0, 20))
-				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)), play_button, reload_button, favorite_button}));
+				    TextView *qr_button = (new TextView(0, 0, 50, 20));
+				    qr_button->set_text("QR")
+				        ->set_x_alignment(TextView::XAlign::CENTER)
+				        ->set_get_background_color(View::STANDARD_BACKGROUND)
+				        ->set_on_view_released([](View &) {
+					        if (cur_video_info.id != "") {
+						        qr_popup_show("https://www.youtube.com/watch?v=" + cur_video_info.id);
+					        }
+				        });
+				    play_button->set_width(75);
+				    reload_button->set_width(75);
+				    favorite_button->set_width(85);
+
+				    main_tab_views.push_back((new HorizontalListView(0, 0, 20))
+				                                 ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)), play_button,
+				                                              reload_button, favorite_button, qr_button}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 			    }
@@ -2606,6 +2620,7 @@ debug_info_view =
 		    video_draw_playing_bar();
 		    draw_overlay_menu(240 - VIDEO_PLAYING_BAR_HEIGHT - TAB_SELECTOR_HEIGHT - OVERLAY_MENU_ICON_SIZE);
 		    equalizer_popup_view->draw();
+		    qr_popup_draw();
 		    small_resource_lock.unlock();
 
 		    if (Util_expl_query_show_flag()) {
@@ -2707,7 +2722,9 @@ debug_info_view =
 
 		    update_overlay_menu(&key);
 
-		    if (equalizer_popup_view->is_visible) {
+		    if (qr_popup_update(key)) {
+			    // the QR popup is open : it takes all the input
+		    } else if (equalizer_popup_view->is_visible) {
 			    equalizer_popup_view->update(key);
 		    } else {
 			    main_view->update(key);
