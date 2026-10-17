@@ -553,6 +553,119 @@ void Sem_init(void) {
 			// Tab #1 : UI/Display
 			(new ScrollView(0, 0, 320, 0))
 				->set_views({
+					// section: Appearance
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Appearance", "Apariencia"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
+					// Dark theme
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_night_mode)
+						->set_title([](const SelectorView &) { return LOCALIZED(DARK_THEME); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_night_mode != view.selected_button) {
+								var_night_mode = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// Color theme
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return "Ruby"; },
+							(std::function<std::string ()>) []() { return "Ocean"; },
+							(std::function<std::string ()>) []() { return "Forest"; },
+							(std::function<std::string ()>) []() { return "Violet"; },
+							(std::function<std::string ()>) []() { return "Amber"; },
+							(std::function<std::string ()>) []() { return "AMOLED"; }
+						}, var_theme)
+						->set_title([](const SelectorView &) { return tr("Color theme", "Tema de color"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_theme != view.selected_button) {
+								var_theme = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					// Global text size
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
+							(std::function<std::string ()>) []() { return std::string("Normal"); },
+							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
+						}, var_text_scale)
+						->set_title([](const SelectorView &) { return tr("Text size", "Tamaño de letra"); })
+						->set_info([](const SelectorView &) { return tr("Applies to the whole app. Lists already on screen update when you reopen them.", "Se aplica a toda la app. Las listas ya abiertas se actualizan al volver a abrirlas."); })
+						->set_popup_height(60)
+						->set_on_change([](const SelectorView &view) {
+							if (var_text_scale != view.selected_button) {
+								var_text_scale = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					// Large thumbnails
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_large_thumbnails)
+						->set_title([](const SelectorView &) { return tr("Large thumbnails", "Miniaturas grandes"); })
+						->set_info([](const SelectorView &) { return tr("Applies to lists opened from now on.", "Se aplica a las listas que abras a partir de ahora."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_large_thumbnails != view.selected_button) {
+								var_large_thumbnails = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// Hide pointer option
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_hide_pointer)
+						->set_title([](const SelectorView &) { return LOCALIZED(HIDE_POINTER); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_hide_pointer != view.selected_button) {
+								var_hide_pointer = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// full screen mode
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_full_screen_mode)
+						->set_title([](const SelectorView &) { return LOCALIZED(FULL_SCREEN_MODE); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_full_screen_mode != view.selected_button) {
+								var_full_screen_mode = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// show full dislike/like
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_full_dislike_like_count)
+						->set_title([](const SelectorView &) { return LOCALIZED(SHOW_FULL_DISLIKE); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_full_dislike_like_count != view.selected_button) {
+								var_full_dislike_like_count = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// section: Language
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Language", "Idioma"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
 					// UI language
 					(new GridSelectorView(0, 0, 320, 70, false))
 						->set_texts({
@@ -593,6 +706,12 @@ void Sem_init(void) {
 								youtube_change_content_language(var_lang_content);
 							}
 						}),
+					// section: Screen and battery
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Screen and battery", "Pantalla y batería"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
 					// LCD Brightness
 					(new BarView(0, 0, 320, 40))
 						->set_values_sync(15, 163, &var_lcd_brightness)
@@ -622,28 +741,6 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
-					// audio-only playback : screens off after a few seconds (listen with the console closed)
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
-							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_audio_screens_off)
-						->set_title([](const SelectorView &) { return std::string(tr("Audio only: turn screens off", "Solo audio: apagar pantallas")); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_audio_screens_off != view.selected_button) {
-								var_audio_screens_off = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-							}
-						}),
-					// data usage
-					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
-						->set_text((std::function<std::string ()>) [] () -> std::string {
-							return tr("Data downloaded (session): ", "Datos descargados (sesión): ") + format_data_size((double) var_data_session_bytes);
-						}),
-					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
-						->set_text((std::function<std::string ()>) [] () -> std::string {
-							return tr("Data downloaded (total): ", "Datos descargados (total): ") + format_data_size(var_data_total_bytes + (double) var_data_session_bytes);
-						}),
 					// Auto-dim
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
@@ -659,185 +756,25 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
-					// network status and last errors
-					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
-						->set_text((std::function<std::string ()>) [] () -> std::string {
-							std::string state = tr("Wi-Fi: ", "Wi-Fi: ");
-							if (var_wifi_state != 2) return state + tr("not connected", "sin conexión");
-							int level = *(u8 *)0x1FF81066;
-							return state + tr("connected, signal ", "conectado, señal ") + std::to_string(level) + "/3";
-						}),
-					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-						->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
-						->set_text((std::function<std::string ()>) [] () -> std::string { return tr("Last warnings and errors:", "Últimos avisos y errores:"); }),
-					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
-						->set_text((std::function<std::string ()>) [] () -> std::string {
-							auto lines = logger.recent(LogLevel::WARNING, 3);
-							if (0 >= (int) lines.size()) return "";
-							auto cut = truncate_str(lines[0], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
-						}),
-					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
-						->set_text((std::function<std::string ()>) [] () -> std::string {
-							auto lines = logger.recent(LogLevel::WARNING, 3);
-							if (1 >= (int) lines.size()) return "";
-							auto cut = truncate_str(lines[1], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
-						}),
-					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
-						->set_text((std::function<std::string ()>) [] () -> std::string {
-							auto lines = logger.recent(LogLevel::WARNING, 3);
-							if (2 >= (int) lines.size()) return "";
-							auto cut = truncate_str(lines[2], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
-						}),
-					// full screen mode
+					// audio-only playback : screens off after a few seconds (listen with the console closed)
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_full_screen_mode)
-						->set_title([](const SelectorView &) { return LOCALIZED(FULL_SCREEN_MODE); })
+						}, var_audio_screens_off)
+						->set_title([](const SelectorView &) { return std::string(tr("Audio only: turn screens off", "Solo audio: apagar pantallas")); })
 						->set_on_change([](const SelectorView &view) {
-							if (var_full_screen_mode != view.selected_button) {
-								var_full_screen_mode = view.selected_button;
+							if (var_audio_screens_off != view.selected_button) {
+								var_audio_screens_off = view.selected_button;
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
-					// show full dislike/like
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
-							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_full_dislike_like_count)
-						->set_title([](const SelectorView &) { return LOCALIZED(SHOW_FULL_DISLIKE); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_full_dislike_like_count != view.selected_button) {
-								var_full_dislike_like_count = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-							}
-						}),
-					// Hide pointer option
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
-							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_hide_pointer)
-						->set_title([](const SelectorView &) { return LOCALIZED(HIDE_POINTER); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_hide_pointer != view.selected_button) {
-								var_hide_pointer = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-							}
-						}),
-					// Dark theme
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
-							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_night_mode)
-						->set_title([](const SelectorView &) { return LOCALIZED(DARK_THEME); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_night_mode != view.selected_button) {
-								var_night_mode = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-							}
-						}),
-					// Global text size
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
-							(std::function<std::string ()>) []() { return std::string("Normal"); },
-							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
-						}, var_text_scale)
-						->set_title([](const SelectorView &) { return tr("Text size", "Tamaño de letra"); })
-						->set_info([](const SelectorView &) { return tr("Applies to the whole app. Lists already on screen update when you reopen them.", "Se aplica a toda la app. Las listas ya abiertas se actualizan al volver a abrirlas."); })
-						->set_popup_height(60)
-						->set_on_change([](const SelectorView &view) {
-							if (var_text_scale != view.selected_button) {
-								var_text_scale = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-								var_need_refresh = true;
-							}
-						}),
-					// Color theme
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return "Ruby"; },
-							(std::function<std::string ()>) []() { return "Ocean"; },
-							(std::function<std::string ()>) []() { return "Forest"; },
-							(std::function<std::string ()>) []() { return "Violet"; },
-							(std::function<std::string ()>) []() { return "Amber"; },
-							(std::function<std::string ()>) []() { return "AMOLED"; }
-						}, var_theme)
-						->set_title([](const SelectorView &) { return tr("Color theme", "Tema de color"); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_theme != view.selected_button) {
-								var_theme = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-								var_need_refresh = true;
-							}
-						}),
-					// Automatic quality
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
-							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_auto_quality)
-						->set_title([](const SelectorView &) { return tr("Automatic quality", "Calidad automática"); })
-						->set_info([](const SelectorView &) { return tr("Lowers the quality of the next videos if playback keeps stalling, raises it again when the connection is stable.", "Baja la calidad de los siguientes vídeos si la reproducción se atasca y la sube de nuevo cuando la conexión es estable."); })
-						->set_popup_height(70)
-						->set_on_change([](const SelectorView &view) {
-							if (var_auto_quality != view.selected_button) {
-								var_auto_quality = view.selected_button;
-								var_auto_quality_cap = 0;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-							}
-						}),
-					// Subtitles
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
-							(std::function<std::string ()>) []() { return "Normal"; },
-							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
-						}, var_caption_size)
-						->set_title([](const SelectorView &) { return tr("Subtitle size", "Tamaño de subtítulos"); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_caption_size != view.selected_button) {
-								var_caption_size = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-								var_need_refresh = true;
-							}
-						}),
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return tr("White", "Blanco"); },
-							(std::function<std::string ()>) []() { return tr("Yellow", "Amarillo"); },
-							(std::function<std::string ()>) []() { return tr("Cyan", "Cian"); },
-							(std::function<std::string ()>) []() { return tr("Green", "Verde"); }
-						}, var_caption_color)
-						->set_title([](const SelectorView &) { return tr("Subtitle color", "Color de subtítulos"); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_caption_color != view.selected_button) {
-								var_caption_color = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-								var_need_refresh = true;
-							}
-						}),
-					// Large thumbnails
-					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
-							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
-						}, var_large_thumbnails)
-						->set_title([](const SelectorView &) { return tr("Large thumbnails", "Miniaturas grandes"); })
-						->set_info([](const SelectorView &) { return tr("Applies to lists opened from now on.", "Se aplica a las listas que abras a partir de ahora."); })
-						->set_on_change([](const SelectorView &view) {
-							if (var_large_thumbnails != view.selected_button) {
-								var_large_thumbnails = view.selected_button;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-							}
-						}),
+					// section: Navigation
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Navigation", "Navegación"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
 					// Disable pull to refresh
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
@@ -887,6 +824,64 @@ void Sem_init(void) {
 			// Tab #2 : Playback
 			(new ScrollView(0, 0, 320, 0))
 				->set_views({
+					// section: Quality and subtitles
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Quality and subtitles", "Calidad y subtítulos"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
+					// Automatic quality
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_auto_quality)
+						->set_title([](const SelectorView &) { return tr("Automatic quality", "Calidad automática"); })
+						->set_info([](const SelectorView &) { return tr("Lowers the quality of the next videos if playback keeps stalling, raises it again when the connection is stable.", "Baja la calidad de los siguientes vídeos si la reproducción se atasca y la sube de nuevo cuando la conexión es estable."); })
+						->set_popup_height(70)
+						->set_on_change([](const SelectorView &view) {
+							if (var_auto_quality != view.selected_button) {
+								var_auto_quality = view.selected_button;
+								var_auto_quality_cap = 0;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					// Subtitles
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
+							(std::function<std::string ()>) []() { return "Normal"; },
+							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
+						}, var_caption_size)
+						->set_title([](const SelectorView &) { return tr("Subtitle size", "Tamaño de subtítulos"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_caption_size != view.selected_button) {
+								var_caption_size = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("White", "Blanco"); },
+							(std::function<std::string ()>) []() { return tr("Yellow", "Amarillo"); },
+							(std::function<std::string ()>) []() { return tr("Cyan", "Cian"); },
+							(std::function<std::string ()>) []() { return tr("Green", "Verde"); }
+						}, var_caption_color)
+						->set_title([](const SelectorView &) { return tr("Subtitle color", "Color de subtítulos"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_caption_color != view.selected_button) {
+								var_caption_color = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					// section: Player
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Player", "Reproductor"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
 					// Autoplay
 					(new SelectorView(0, 0, 320, 35, false))
 						->set_texts({
@@ -925,6 +920,59 @@ void Sem_init(void) {
 			// Tab #3 : Data
 			(new ScrollView(0, 0, 320, 0))
 				->set_views({
+					// section: Network
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("Network", "Red"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
+					// data usage
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							return tr("Data downloaded (session): ", "Datos descargados (sesión): ") + format_data_size((double) var_data_session_bytes);
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							return tr("Data downloaded (total): ", "Datos descargados (total): ") + format_data_size(var_data_total_bytes + (double) var_data_session_bytes);
+						}),
+					// network status and last errors
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							std::string state = tr("Wi-Fi: ", "Wi-Fi: ");
+							if (var_wifi_state != 2) return state + tr("not connected", "sin conexión");
+							int level = *(u8 *)0x1FF81066;
+							return state + tr("connected, signal ", "conectado, señal ") + std::to_string(level) + "/3";
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string { return tr("Last warnings and errors:", "Últimos avisos y errores:"); }),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							auto lines = logger.recent(LogLevel::WARNING, 3);
+							if (0 >= (int) lines.size()) return "";
+							auto cut = truncate_str(lines[0], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							auto lines = logger.recent(LogLevel::WARNING, 3);
+							if (1 >= (int) lines.size()) return "";
+							auto cut = truncate_str(lines[1], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+						->set_font_size(0.4, DEFAULT_FONT_INTERVAL)
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							auto lines = logger.recent(LogLevel::WARNING, 3);
+							if (2 >= (int) lines.size()) return "";
+							auto cut = truncate_str(lines[2], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
+						}),
+					// section: History
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text(tr("History", "Historial"))
+						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+						->set_text_offset(0, -2)
+						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
 					// History recording
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
