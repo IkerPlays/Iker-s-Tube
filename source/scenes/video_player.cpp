@@ -21,6 +21,7 @@
 #include "data_io/channel_volume.hpp"
 #include "data_io/watch_later.hpp"
 #include "youtube_parser/live_chat.hpp"
+#include "youtube_parser/studio_auth.hpp"
 #include <sstream>
 #include "util/timestamp_parser.hpp"
 #include "ui/logo_draw.hpp"
@@ -4212,7 +4213,7 @@ static void autoplay_countdown_tick() {
 			    if (comment_write_request) {
 				    comment_write_request = false;
 				    std::string text;
-				    if (comments_token == "") {
+				    if (comments_token == "" && !studio_auth_signed_in()) {
 					    notice_show(tr("Open the comments first", "Abre antes los comentarios"));
 				    } else if (account_ready() && ask_comment_text(tr("Write a comment", "Escribe un comentario"), text)) {
 					    account_comment_async(comments_token, text);
@@ -4255,7 +4256,7 @@ static void autoplay_countdown_tick() {
 					        } else if (button == 2 && own_comment) {
 						        std::string token = comment_actions_token(comment_target_id);
 						        youtube_account_set_video(cur_video_info.id);
-						        if (token == "") notice_show(tr("Open the comments first", "Abre antes los comentarios"));
+						        if (token == "" && !studio_auth_signed_in()) notice_show(tr("Open the comments first", "Abre antes los comentarios"));
 						        else account_comment_delete_async(token, comment_target_id);
 					        } else if (button == 2) {
 						        for (auto &c : cur_video_info.comments) { // the text of the long pressed comment
