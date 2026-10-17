@@ -13,10 +13,21 @@
 - **Audio-only screen.** A clean top screen with the title, author, time and a progress bar.
 - **Data usage counter.** Settings show how much data this session and the whole install have used.
 
-- **Spinning logo cube.** The idle top screen now shows a rotating cube with "Iker's Tube" and the app logo on its sides.
 - **Text size.** A global small / normal / large text size in Settings.
 - **Dim while playing.** Optional: the bottom screen gets dark after 20 seconds without touch while a video plays.
 - **Network and error info.** Settings show the Wi-Fi state and the last warnings and errors.
+
+- **Player tools.** Buttons to jump 10 seconds back or forward, an A-B loop for repeating a section, and a tappable chapter list taken from the video description.
+- **Equalizer presets.** Flat, Bass, Voice and Treble in the equalizer.
+- **Seek preview.** While dragging the progress bar you see a thumbnail of the moment you are jumping to (when YouTube provides it).
+- **Comments.** Sort comments by top or newest.
+- **Discover.** The search screen suggests more from the channels you watched recently.
+- **QR sharing from the library.** Long press a video in the queue, favorites or a playlist to show its QR code.
+- **Wi-Fi reconnect.** If the connection drops during playback the app asks the console to reconnect.
+- **Auto-restart after updates.** When an update is installed as a CIA the app now restarts by itself.
+- **Settings in sections.** Options are grouped under clear headings in the right tab.
+- **More languages.** The new texts are translated to French, German, Italian, Portuguese and Japanese too.
+- **New idle screen.** The spinning cube is gone: the top screen now shows the logo.
 
 ## Improvements
 

@@ -142,6 +142,7 @@ struct YouTubeVideoDetail {
 	std::string comment_continue_token;
 	int comment_continue_type; // -1 : unavailable, 0 : using watch_comments, 1 : using innertube
 	bool comments_disabled;
+	std::string storyboard_spec; // preview thumbnails of the seek bar (empty if YouTube does not offer them)
 	std::string comment_sort_tokens[2]; // 0 : top comments, 1 : newest first (empty if unknown)
 	int comment_sort_type = 0;
 

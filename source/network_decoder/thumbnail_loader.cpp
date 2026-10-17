@@ -209,6 +209,33 @@ bool thumbnail_draw(int handle, int x_offset, int y_offset, int x_len, int y_len
 	return res;
 }
 
+bool thumbnail_draw_part(int handle, int src_x, int src_y, int src_w, int src_h, float x_offset, float y_offset,
+                         float x_len, float y_len) {
+	if (handle == -1) {
+		return false;
+	}
+	bool res = false;
+	resource_lock.lock();
+	std::string url = requests[handle].url;
+	if (requested_urls.count(url) && requested_urls[url].is_loaded) {
+		LoadedThumbnail thumbnail = requested_urls[url].data;
+		if (src_x >= 0 && src_y >= 0 && src_x + src_w <= thumbnail.image_width && src_y + src_h <= thumbnail.image_height) {
+			Tex3DS_SubTexture sub = *thumbnail.data.c2d.subtex;
+			sub.width = (u16)src_w;
+			sub.height = (u16)src_h;
+			sub.left = src_x / (float)thumbnail.texture_width;
+			sub.right = (src_x + src_w) / (float)thumbnail.texture_width;
+			sub.top = 1.0f - src_y / (float)thumbnail.texture_height;
+			sub.bottom = 1.0f - (src_y + src_h) / (float)thumbnail.texture_height;
+			C2D_Image part = {thumbnail.data.c2d.tex, &sub};
+			Draw_texture(part, x_offset, y_offset, x_len, y_len);
+			res = true;
+		}
+	}
+	resource_lock.unlock();
+	return res;
+}
+
 static std::vector<u8> http_get(const std::string &url, int &status_code) {
 	std::vector<u8> res;
 	resource_lock.lock();

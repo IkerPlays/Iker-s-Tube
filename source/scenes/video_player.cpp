@@ -2160,6 +2160,92 @@ debug_info_view =
     constexpr int MAXIMIZE_ICON_WIDTH = 28;
     constexpr int TIME_STR_RIGHT_MARGIN = 2;
     constexpr int TIME_STR_LEFT_MARGIN = 3;
+    // seek preview : YouTube storyboards are sheets of small frames, one frame every few seconds
+    struct StoryboardLevel {
+        int w, h, count, cols, rows, interval_ms;
+        std::string name, sigh;
+    };
+    static std::string sb_spec_parsed;
+    static std::string sb_base_url;
+    static StoryboardLevel sb_level;
+    static int sb_level_index = -1;
+    static int sb_handle = -1;
+    static int sb_sheet = -1;
+    static std::string sb_vid_id;
+    static bool storyboard_prepare(const std::string &spec) {
+	    if (spec != sb_spec_parsed) {
+		    sb_spec_parsed = spec;
+		    sb_level_index = -1;
+		    if (sb_handle != -1) thumbnail_cancel_request(sb_handle);
+		    sb_handle = -1;
+		    sb_sheet = -1;
+		    std::vector<std::string> parts;
+		    size_t start = 0;
+		    while (true) {
+			    size_t bar = spec.find('|', start);
+			    parts.push_back(spec.substr(start, bar == std::string::npos ? std::string::npos : bar - start));
+			    if (bar == std::string::npos) break;
+			    start = bar + 1;
+		    }
+		    if (parts.size() < 2) return false;
+		    sb_base_url = parts[0];
+		    int best_diff = 1 << 30;
+		    for (size_t i = 1; i < parts.size(); i++) {
+			    std::vector<std::string> f;
+			    size_t s = 0;
+			    while (true) {
+				    size_t h = parts[i].find('#', s);
+				    f.push_back(parts[i].substr(s, h == std::string::npos ? std::string::npos : h - s));
+				    if (h == std::string::npos) break;
+				    s = h + 1;
+			    }
+			    if (f.size() < 8) continue;
+			    StoryboardLevel lv = {atoi(f[0].c_str()), atoi(f[1].c_str()), atoi(f[2].c_str()), atoi(f[3].c_str()),
+			                          atoi(f[4].c_str()), atoi(f[5].c_str()), f[6], f[7]};
+			    if (lv.w <= 0 || lv.h <= 0 || lv.cols <= 0 || lv.rows <= 0 || lv.interval_ms <= 0) continue;
+			    int diff = std::abs(lv.w - 160); // about 160 px wide frames are enough for a small preview
+			    if (diff < best_diff) {
+				    best_diff = diff;
+				    sb_level = lv;
+				    sb_level_index = (int)i - 1;
+			    }
+		    }
+	    }
+	    return sb_level_index >= 0;
+    }
+    static void draw_seek_preview(double timestamp, float bar_x, float y_top) {
+	    if (!storyboard_prepare(playing_video_info.storyboard_spec)) return;
+	    int frame = std::min<int>(sb_level.count - 1, std::max<int>(0, (int)(timestamp * 1000 / sb_level.interval_ms)));
+	    int per_sheet = sb_level.cols * sb_level.rows;
+	    int sheet = frame / per_sheet;
+	    if (sheet != sb_sheet || sb_handle == -1) {
+		    std::string url = sb_base_url;
+		    auto replace_all = [&](const std::string &from, const std::string &to) {
+			    size_t pos = 0;
+			    while ((pos = url.find(from, pos)) != std::string::npos) {
+				    url.replace(pos, from.size(), to);
+				    pos += to.size();
+			    }
+		    };
+		    std::string name = sb_level.name;
+		    size_t m = name.find("$M");
+		    if (m != std::string::npos) name.replace(m, 2, std::to_string(sheet));
+		    replace_all("$L", std::to_string(sb_level_index));
+		    replace_all("$N", name);
+		    url += "&sigh=" + sb_level.sigh;
+		    if (sb_handle != -1) thumbnail_cancel_request(sb_handle);
+		    sb_handle = thumbnail_request(url, global_current_scene, PRIORITY_FOREGROUND);
+		    sb_sheet = sheet;
+	    }
+	    int within = frame % per_sheet;
+	    const float draw_w = 96, draw_h = draw_w * sb_level.h / sb_level.w;
+	    float x = std::min(320 - draw_w - 2, std::max(2.0f, bar_x - draw_w / 2));
+	    float y = y_top - draw_h - 4;
+	    Draw_texture(var_square_image[0], DEF_DRAW_BLACK, x - 2, y - 2, draw_w + 4, draw_h + 4);
+	    thumbnail_draw_part(sb_handle, (within % sb_level.cols) * sb_level.w, (within / sb_level.cols) * sb_level.h,
+	                        sb_level.w, sb_level.h, x, y, draw_w, draw_h);
+    }
+
     void video_draw_playing_bar() {
 	    // draw
 	    float y_l = 240 - VIDEO_PLAYING_BAR_HEIGHT;
@@ -2210,6 +2296,9 @@ debug_info_view =
 	    Draw(time_str1, bar_x_r + TIME_STR_LEFT_MARGIN + (time_str_w - time_str1_w) / 2, y_center - 2, SMALL_FONT_SIZE,
 	         SMALL_FONT_SIZE, DEF_DRAW_WHITE);
 	    Draw_texture(var_square_image[0], DEF_DRAW_LIGHT_GRAY, bar_x_l, y_center - 2, bar_x_r - bar_x_l, 4);
+	    if (bar_grabbed && vid_duration != 0) {
+		    draw_seek_preview(bar_timestamp, bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_l);
+	    }
 	    if (vid_duration != 0) {
 		    Draw_texture(var_square_image[0], 0xFF3333D0, bar_x_l, y_center - 2, (bar_x_r - bar_x_l) * vid_progress, 4);
 		    C2D_DrawCircleSolid(bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_center, 0, bar_grabbed ? 6 : 4,

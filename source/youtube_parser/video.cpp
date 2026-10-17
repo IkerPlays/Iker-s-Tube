@@ -144,6 +144,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	    [&]() { return http_post_json(get_innertube_api_url("player"), captions_content, caption_headers); },
 	    [&](Document &, RJson mweb_data) {
 		    RJson captions = mweb_data["captions"]["playerCaptionsTracklistRenderer"];
+		    res.storyboard_spec = mweb_data["storyboards"]["playerStoryboardSpecRenderer"]["spec"].string_value();
 
 		    for (auto base_lang : captions["captionTracks"].array_items()) {
 			    YouTubeVideoDetail::CaptionBaseLanguage cur_lang;

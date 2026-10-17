@@ -29,6 +29,9 @@ int thumbnail_get_status_code(int handle);
 void thumbnail_get_dimensions(int handle, int *width, int *height);
 
 bool thumbnail_draw(int handle, int x_offset, int y_offset, int x_len, int y_len);
+// draws only the part (src_x, src_y, src_w, src_h) of the thumbnail, in pixels of the original picture
+bool thumbnail_draw_part(int handle, int src_x, int src_y, int src_w, int src_h, float x_offset, float y_offset,
+                         float x_len, float y_len);
 
 void thumbnail_downloader_thread_func(void *arg);
 void thumbnail_downloader_thread_exit_request(void);
