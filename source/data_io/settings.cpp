@@ -74,10 +74,10 @@ void load_settings() {
 	var_data_saver = load_int("data_saver", 0);
 	var_data_limit_index = std::max(0, std::min(5, load_int("data_limit_index", 0)));
 	var_total_play_seconds = load_double("total_play_seconds", 0.0);
-	var_button_x = std::max(0, std::min(6, load_int("button_x", 1)));
-	var_button_y = std::max(0, std::min(6, load_int("button_y", 4)));
-	var_button_l = std::max(0, std::min(6, load_int("button_l", 3)));
-	var_button_r = std::max(0, std::min(6, load_int("button_r", 2)));
+	var_button_x = std::max(0, std::min(10, load_int("button_x", 1)));
+	var_button_y = std::max(0, std::min(10, load_int("button_y", 4)));
+	var_button_l = std::max(0, std::min(10, load_int("button_l", 3)));
+	var_button_r = std::max(0, std::min(10, load_int("button_r", 2)));
 	var_left_handed = load_int("left_handed", 0);
 	var_custom_hue = std::max(0, std::min(359, load_int("custom_hue", 200)));
 	var_high_contrast = load_int("high_contrast", 0);

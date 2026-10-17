@@ -976,7 +976,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
 							(std::function<std::string ()>) []() { return std::string("Mini player"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
-							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); }
+							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
+							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
+							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
+							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
 						}, var_button_x)
 						->set_title([](const SelectorView &) { return tr("Button X in the player", "Botón X en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -993,7 +997,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
 							(std::function<std::string ()>) []() { return std::string("Mini player"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
-							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); }
+							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
+							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
+							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
+							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
 						}, var_button_y)
 						->set_title([](const SelectorView &) { return tr("Button Y in the player", "Botón Y en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1010,7 +1018,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
 							(std::function<std::string ()>) []() { return std::string("Mini player"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
-							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); }
+							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
+							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
+							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
+							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
 						}, var_button_l)
 						->set_title([](const SelectorView &) { return tr("Button L in the player", "Botón L en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1027,7 +1039,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
 							(std::function<std::string ()>) []() { return std::string("Mini player"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
-							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); }
+							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
+							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
+							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
+							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
 						}, var_button_r)
 						->set_title([](const SelectorView &) { return tr("Button R in the player", "Botón R en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {

@@ -1,3 +1,3 @@
 Devbuild notes
 
-- New setting SponsorBlock (display section): Off, Sponsors, or All. While a video plays, the parts that the SponsorBlock community marked (sponsors; All also self promotion, interaction reminders, intros and outros) are skipped automatically with a notice, and they can be skipped again if you seek back. Only the first 4 characters of the SHA-256 of the video id are sent to sponsor.ajay.app (the privacy mode of its API). It is off by default and does nothing for saved videos without internet.
+- Player buttons: the actions you can give to X, Y, L and R now include Volume +, Volume -, Brightness + and Brightness - (Settings, Playback). Volume uses the same boost as the mini player and is remembered per channel; brightness changes both screens. Each press shows the new level.

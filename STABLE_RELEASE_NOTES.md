@@ -30,6 +30,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Collaboration videos.** Tap the author of a video with several channels to see all of them (icon, handle, subscribers), open any, or long press one to subscribe.
 - **Comments.** Sending, replying and liking try several YouTube clients, and a failure now shows the reason on screen. Pinned and creator-hearted comments are marked.
 - **SponsorBlock.** An optional setting skips the parts of a video that the community marked as sponsors (or also self promotion, intros and outros).
+- **Volume and brightness buttons.** X, Y, L and R can be set to volume +/- and brightness +/-.
 - **Chapters** show as ticks on the buffering bar, and the last subtitle language is preselected.
 
 ### Library and reliability

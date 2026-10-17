@@ -3007,6 +3007,7 @@ debug_info_view =
 	    if (network_decoder.ready) send_seek_request_wo_lock(0);
     }
     // actions that can be bound to X / Y (called outside of the view update, so the locking variants are fine)
+    static void mini_set_volume(double v);
     static void run_button_action(int action) {
 	    switch (action) {
 	    case 1:
@@ -3029,6 +3030,20 @@ debug_info_view =
 	    case 6:
 		    stop_after_video = !stop_after_video;
 		    break;
+	    case 7:
+	    case 8: { // volume (the same preamp as the mini player, remembered for the channel)
+		    mini_set_volume(mini_volume + (action == 7 ? 0.15 : -0.15));
+		    notice_show(tr("Volume ", "Volumen ") + std::to_string((int)(mini_volume * 100 + 0.5)) + "%");
+		    break;
+	    }
+	    case 9:
+	    case 10: { // brightness of the screens
+		    var_lcd_brightness = std::max(15, std::min(163, var_lcd_brightness + (action == 9 ? 14 : -14)));
+		    misc_tasks_request(TASK_CHANGE_BRIGHTNESS);
+		    misc_tasks_request(TASK_SAVE_SETTINGS);
+		    notice_show(tr("Brightness ", "Brillo ") + std::to_string((var_lcd_brightness - 15) * 100 / 148) + "%");
+		    break;
+	    }
 	    }
 	    var_need_refresh = true;
     }
