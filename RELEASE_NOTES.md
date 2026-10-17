@@ -1,5 +1,6 @@
 ## What's new
 
+- **Fix: videos failing with "No valid stream url extracted".** A mistake in the previous stability changes made the player forget the audio and combined stream addresses right before starting the decoder, so every video failed. They are read correctly again, together with the other stream settings, under one lock.
 - **Long videos without separate audio.** Videos longer than an hour that YouTube offers only as a single combined stream (no separate audio) failed with "No valid stream url extracted". The combined stream is now kept in that case, and the other player clients are tried first to find a separate audio stream. log.txt also lists the audio formats YouTube offered when none is usable.
 - **Better error details.** When a video cannot be played, log.txt now says why (YouTube status and reason, how many streams were found), and the "No valid stream url" message lists what was available.
 - **Network retry.** A request that fails because the host name cannot be resolved is tried again up to three times, which covers the first seconds after the Wi-Fi connects.

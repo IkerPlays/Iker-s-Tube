@@ -2871,33 +2871,37 @@ debug_info_view =
 			    network_waiting_status = "Reading Stream";
 			    // snapshot of the urls : the async thread may replace playing_video_info while the decoder starts
 			    std::string snap_video_url, snap_audio_url, snap_both_url;
+			    int snap_fragment_len = -1;
+			    bool snap_ts_adjust = false;
 			    {
 				    small_resource_lock.lock();
 				    auto url_it = playing_video_info.video_stream_urls.find((int)video_p_value);
 				    if (url_it != playing_video_info.video_stream_urls.end()) snap_video_url = url_it->second;
-				    snap_audio_url = snap_audio_url;
-				    snap_both_url = snap_both_url;
+				    snap_audio_url = playing_video_info.audio_stream_url;
+				    snap_both_url = playing_video_info.both_stream_url;
+				    snap_fragment_len = playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1;
+				    snap_ts_adjust = playing_video_info.needs_timestamp_adjusting();
 				    small_resource_lock.unlock();
 			    }
 			    if (audio_only_mode) {
 				    result = network_decoder.init(
 				        snap_audio_url, stream_downloader,
-				        playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1,
-				        playing_video_info.needs_timestamp_adjusting(), var_is_new3ds);
+				        snap_fragment_len,
+				        snap_ts_adjust, var_is_new3ds);
 			    } else if (snap_video_url != "" &&
 			               snap_audio_url != "") {
 				    result = network_decoder.init(
 				        snap_video_url, snap_audio_url,
 				        stream_downloader,
-				        playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1,
-				        playing_video_info.needs_timestamp_adjusting(),
+				        snap_fragment_len,
+				        snap_ts_adjust,
 				        var_is_new3ds && (video_p_value == 360 || video_p_value == 480));
 			    } else if ((video_p_value == 360 || video_p_value == 480) && snap_both_url != "") {
 				    // itag 18 (both_stream) of a long video takes too much time and sometimes leads to a crash
 				    result = network_decoder.init(
 				        snap_both_url, stream_downloader,
-				        playing_video_info.is_livestream ? playing_video_info.stream_fragment_len : -1,
-				        playing_video_info.needs_timestamp_adjusting(), var_is_new3ds);
+				        snap_fragment_len,
+				        snap_ts_adjust, var_is_new3ds);
 			    } else {
 				    result.code = -1;
 				    result.string = "YouTube parser error";
