@@ -299,6 +299,25 @@ static OverlayDialogView *comment_dialog = NULL; // Like / Reply / Cancel for a 
 static std::string comment_menu_request; // id of the comment that was long pressed (handled after the view update)
 static std::string comment_target_id; // comment chosen in the dialog
 static bool comment_reply_request = false;
+// the subtitle language of the last time (sdmc:/3ds/IkersTube/caption_lang.txt)
+static std::string caption_lang_remembered() {
+	char buf[32] = {0};
+	FILE *f = fopen("sdmc:/3ds/IkersTube/caption_lang.txt", "r");
+	if (!f) return "";
+	if (!fgets(buf, sizeof buf, f)) buf[0] = 0;
+	fclose(f);
+	std::string s = buf;
+	while (s.size() && (s.back() == '\n' || s.back() == '\r')) s.pop_back();
+	return s;
+}
+static void caption_lang_remember(const std::string &id) {
+	if (id == "" || id.size() > 30) return;
+	FILE *f = fopen("sdmc:/3ds/IkersTube/caption_lang.txt", "w");
+	if (!f) return;
+	fprintf(f, "%s\n", id.c_str());
+	fclose(f);
+}
+
 static bool stop_after_video = false; // do not continue with the queue / autoplay when the current video ends
 static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
@@ -1818,6 +1837,12 @@ debug_info_view =
 
 		    selected_base_lang =
 		        tmp_video_info.caption_base_languages.size() ? tmp_video_info.caption_base_languages[0].id : "";
+		    { // the language chosen the last time is preselected when this video has it
+			    std::string remembered = caption_lang_remembered();
+			    for (auto &lang : tmp_video_info.caption_base_languages) {
+				    if (remembered != "" && lang.id == remembered) selected_base_lang = lang.id;
+			    }
+		    }
 		    selected_translation_lang = "";
 
 		    int exit_button_height = DEFAULT_FONT_INTERVAL * 1.5;
@@ -1831,7 +1856,10 @@ debug_info_view =
 		                             ->set_text_offset(0, -2.0)
 		                             ->set_background_color(COLOR_GRAY(0x80))
 		                             ->set_on_view_released(
-		                                 [](View &view) { queue_async_task(load_caption, &load_caption_arg); })})
+		                                 [](View &view) {
+			                                 caption_lang_remember(*load_caption_arg.first);
+			                                 queue_async_task(load_caption, &load_caption_arg);
+		                                 })})
 		            ->set_draw_order({1, 0});
 
 		    int language_selector_height = CONTENT_Y_HIGH - exit_button_view->get_height();

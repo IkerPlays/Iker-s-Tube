@@ -24,10 +24,28 @@ static volatile bool download_cancel = false;
 static volatile int download_percent = 0;
 static std::string download_title; // set before the thread starts, read by the UI
 
+static LightLock pending_lock;
+static std::vector<DownloadJob *> pending; // queued while a download runs
+static struct PendingLockInit {
+	PendingLockInit() { LightLock_Init(&pending_lock); }
+} pending_lock_init;
+
 bool offline_download_running() { return download_running; }
+int offline_download_queued() {
+	LightLock_Lock(&pending_lock);
+	int n = pending.size();
+	LightLock_Unlock(&pending_lock);
+	return n;
+}
 int offline_download_percent() { return download_percent; }
 std::string offline_download_title() { return download_title; }
-void offline_download_cancel() { download_cancel = true; }
+void offline_download_cancel() { // the running download and the queued ones
+	LightLock_Lock(&pending_lock);
+	for (auto job : pending) delete job;
+	pending.clear();
+	LightLock_Unlock(&pending_lock);
+	download_cancel = true;
+}
 
 // downloads one file in 1 MB ranged chunks into `<path>.part`, then renames it. `progress` gets 0..100.
 static bool download_part(NetworkSessionList &session, const DownloadPart &part, const std::function<void(int)> &progress) {
@@ -71,12 +89,10 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 	return false;
 }
 
-static void download_task(void *arg) {
-	DownloadJob *job = (DownloadJob *)arg;
-	static NetworkSessionList session;
-	if (!session.inited) {
-		session.init();
-	}
+static void run_job(DownloadJob *job, NetworkSessionList &session) {
+	download_title = job->title;
+	download_percent = 0;
+	download_cancel = false;
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
 	mkdir("sdmc:/3ds/IkersTube/offline", 0777);
@@ -108,7 +124,27 @@ static void download_task(void *arg) {
 		notice_show(download_cancel ? tr("Download cancelled", "Descarga cancelada") : tr("Could not download it", "No se pudo descargar"));
 	}
 	delete job;
-	download_running = false;
+}
+
+// runs the job it gets and then the ones that were queued while it ran
+static void download_task(void *arg) {
+	static NetworkSessionList session;
+	if (!session.inited) {
+		session.init();
+	}
+	DownloadJob *job = (DownloadJob *)arg;
+	while (job) {
+		run_job(job, session);
+		LightLock_Lock(&pending_lock);
+		if (pending.size()) {
+			job = pending.front();
+			pending.erase(pending.begin());
+		} else {
+			job = NULL;
+			download_running = false;
+		}
+		LightLock_Unlock(&pending_lock);
+	}
 }
 
 void offline_download_async(const std::string &id, const std::string &title, const std::string &author,
@@ -140,15 +176,18 @@ void offline_download_async(const std::string &id, const std::string &title, con
 		}
 		job->parts = {{audio_url, offline_file_path(id)}};
 	}
-	if (download_running) {
-		delete job;
-		notice_show(tr("Another download is still running", "Ya hay una descarga en curso"));
+	LightLock_Lock(&pending_lock);
+	if (download_running) { // it will be downloaded after the current one
+		pending.push_back(job);
+		int queued = pending.size();
+		LightLock_Unlock(&pending_lock);
+		notice_show(tr("Added to the download queue: ", "Añadido a la cola de descargas: ") + std::to_string(queued));
 		return;
 	}
 	download_running = true;
-	download_cancel = false;
-	download_percent = 0;
 	download_title = title;
+	download_percent = 0;
+	LightLock_Unlock(&pending_lock);
 	notice_show(tr("Downloading: 0%", "Descargando: 0%"));
 	// its own thread : the shared async task thread must stay free for loading pages while the file downloads
 	if (!threadCreate(download_task, job, DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, -1, true)) {

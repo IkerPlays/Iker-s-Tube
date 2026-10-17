@@ -265,6 +265,18 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Download cancelled", {"Téléchargement annulé", "Download abgebrochen", "Download annullato", "Download cancelado", "ダウンロードを中止しました"}},
 	    {"My channel and videos", {"Ma chaîne et mes vidéos", "Mein Kanal und Videos", "Il mio canale e i video", "Meu canal e vídeos", "マイチャンネルと動画"}},
 	    {"Your channel is not known yet", {"Votre chaîne n'est pas encore connue", "Dein Kanal ist noch nicht bekannt", "Il tuo canale non è ancora noto", "Seu canal ainda não é conhecido", "チャンネルがまだ不明です"}},
+	    {"Category: ", {"Catégorie : ", "Kategorie: ", "Categoria: ", "Categoria: ", "カテゴリ："}},
+	    {"Added to the download queue: ", {"Ajouté à la file de téléchargement : ", "Zur Download-Warteschlange hinzugefügt: ", "Aggiunto alla coda di download: ", "Adicionado à fila de downloads: ", "ダウンロードキューに追加: "}},
+	    {"People & Blogs", {"Personnes et blogs", "Menschen & Blogs", "Persone e blog", "Pessoas e blogs", "ブログ"}},
+	    {"Entertainment", {"Divertissement", "Unterhaltung", "Intrattenimento", "Entretenimento", "エンタメ"}},
+	    {"Education", {"Éducation", "Bildung", "Istruzione", "Educação", "教育"}},
+	    {"How-to & Style", {"Conseils et style", "Anleitungen & Stil", "Guide e stile", "Guias e estilo", "ハウツーとスタイル"}},
+	    {"Science & Technology", {"Science et technologie", "Wissenschaft & Technik", "Scienza e tecnologia", "Ciência e tecnologia", "科学と技術"}},
+	    {"Comedy", {"Humour", "Comedy", "Commedia", "Comédia", "コメディ"}},
+	    {"Film & Animation", {"Films et animation", "Film & Animation", "Film e animazione", "Filmes e animação", "映画とアニメ"}},
+	    {"Sports", {"Sports", "Sport", "Sport", "Esportes", "スポーツ"}},
+	    {"News & Politics", {"Actualités et politique", "Nachrichten & Politik", "Notizie e politica", "Notícias e política", "ニュースと政治"}},
+	    {"Travel & Events", {"Voyages et événements", "Reisen & Events", "Viaggi ed eventi", "Viagens e eventos", "旅行とイベント"}},
 	};
 	return table;
 }

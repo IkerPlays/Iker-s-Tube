@@ -32,9 +32,21 @@ static bool pick_short = false;
 static std::string pick_dir = "sdmc:/";
 static std::string form_path, form_title, form_desc;
 static int form_privacy = 0; // 0 private, 1 unlisted, 2 public
+static int form_category = 0; // index in categories[]
 static bool form_short = false;
 
 static const double WIDTH = 300;
+
+struct Category {
+	const char *id, *en, *es;
+};
+static const Category categories[] = {{"22", "People & Blogs", "Gente y blogs"}, {"10", "Music", "Música"},
+                                      {"20", "Gaming", "Videojuegos"},          {"24", "Entertainment", "Entretenimiento"},
+                                      {"27", "Education", "Educación"},         {"26", "How-to & Style", "Cómo hacer y estilo"},
+                                      {"28", "Science & Technology", "Ciencia y tecnología"}, {"23", "Comedy", "Comedia"},
+                                      {"1", "Film & Animation", "Cine y animación"}, {"17", "Sports", "Deportes"},
+                                      {"25", "News & Politics", "Noticias y política"}, {"19", "Travel & Events", "Viajes y eventos"}};
+static const int category_count = sizeof categories / sizeof categories[0];
 
 static std::string locked_copy(const std::string &s) {
 	LightLock_Lock(&state_lock);
@@ -126,7 +138,7 @@ static std::string parent_dir(const std::string &dir) {
 }
 
 struct UploadJob {
-	std::string path, title, description, privacy;
+	std::string path, title, description, privacy, category_id;
 	bool is_short;
 };
 
@@ -134,7 +146,7 @@ static void upload_thread(void *arg) {
 	UploadJob *job = (UploadJob *)arg;
 	std::string video_id, error;
 	int last_notice = -1;
-	bool ok = youtube_studio_upload(job->path, job->title, job->description, job->privacy, job->is_short,
+	bool ok = youtube_studio_upload(job->path, job->title, job->description, job->privacy, job->is_short, job->category_id,
 	                                [&](u64 done, u64 total) {
 		                                int percent = total ? (int)(done * 100 / total) : 0;
 		                                upload_percent = percent;
@@ -164,7 +176,7 @@ static void upload_thread(void *arg) {
 
 static void start_upload() {
 	if (upload_running) return;
-	UploadJob *job = new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), form_short};
+	UploadJob *job = new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_short};
 	for (auto &c : job->privacy) c = tolower(c);
 	upload_running = true;
 	upload_percent = 0;
@@ -276,6 +288,7 @@ static std::vector<View *> build_pick() {
 			if (form_title.size() > 95) form_title.resize(95);
 			form_desc = "";
 			form_privacy = 0;
+			form_category = 0;
 			form_short = pick_short;
 			go(MODE_FORM);
 		}));
@@ -303,6 +316,11 @@ static std::vector<View *> build_form() {
 		form_privacy = (form_privacy + 1) % 3;
 		var_need_refresh = true;
 	}));
+	v.push_back(button([]() { return tr("Category: ", "Categoría: ") + tr(categories[form_category].en, categories[form_category].es); },
+	                   []() {
+		                   form_category = (form_category + 1) % category_count;
+		                   var_need_refresh = true;
+	                   }));
 	v.push_back(button([]() { return tr("Upload", "Subir"); }, []() { start_upload(); }));
 	v.push_back(button([]() { return LOCALIZED(CANCEL); }, []() { go(MODE_DASH); }));
 	return v;

@@ -90,8 +90,8 @@ static std::string mime_of(const std::string &path) {
 }
 
 bool youtube_studio_upload(const std::string &path, const std::string &title, const std::string &description,
-                           const std::string &privacy, bool is_short, const std::function<void(u64, u64)> &progress,
-                           std::string &video_id, std::string &error) {
+                           const std::string &privacy, bool is_short, const std::string &category_id,
+                           const std::function<void(u64, u64)> &progress, std::string &video_id, std::string &error) {
 	if (!OAuth::is_authenticated()) {
 		error = "not signed in";
 		return false;
@@ -120,7 +120,7 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 		if (full_description.find("#Shorts") == std::string::npos) full_description += (full_description == "" ? "" : "\n") + std::string("#Shorts");
 	}
 	std::string meta = "{\"snippet\": {\"title\": " + json_quote(full_title) + ", \"description\": " + json_quote(full_description) +
-	                   ", \"categoryId\": \"22\"}, \"status\": {\"privacyStatus\": " + json_quote(privacy) +
+	                   ", \"categoryId\": " + json_quote(category_id) + "}, \"status\": {\"privacyStatus\": " + json_quote(privacy) +
 	                   ", \"selfDeclaredMadeForKids\": false}}";
 	auto init = session.perform(HttpRequest::POST(
 	    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",

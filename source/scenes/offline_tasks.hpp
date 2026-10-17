@@ -7,6 +7,7 @@
 //  - only `both_url`           : one file that already has the sound (360p)
 // `quality` is the height of the video that is saved (video_url / both_url).
 bool offline_download_running();
+int offline_download_queued();      // downloads waiting for the running one
 int offline_download_percent();     // 0..100 of the running download
 std::string offline_download_title(); // title of the running download
 void offline_download_cancel();       // stops the running download and deletes the partial files

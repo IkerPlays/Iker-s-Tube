@@ -405,8 +405,9 @@ static void build_offline(VerticalListView *list) {
 		list->views.push_back((new TextView(0, 0, 320, 22))
 		                          ->set_text((std::function<std::string()>)[]() {
 			                          if (!offline_download_running()) return tr("No download running", "Ninguna descarga en curso");
-			                          return tr("Downloading ", "Descargando ") + std::to_string(offline_download_percent()) + "% - " +
-			                                 tr("tap to cancel", "toca para cancelar");
+			                          int queued = offline_download_queued();
+			                          return tr("Downloading ", "Descargando ") + std::to_string(offline_download_percent()) + "%" +
+			                                 (queued ? " (+" + std::to_string(queued) + ")" : "") + " - " + tr("tap to cancel", "toca para cancelar");
 		                          })
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 		                          ->set_y_alignment(TextView::YAlign::CENTER)
