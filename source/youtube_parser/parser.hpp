@@ -82,6 +82,7 @@ struct YouTubeVideoDetail {
 	};
 	LivestreamType livestream_type;
 	bool is_upcoming = false;
+	long long upcoming_start_time = 0; // unix time of a scheduled premiere / live stream (0 : unknown)
 	std::string playability_status;
 	std::string playability_reason;
 	int stream_fragment_len = 0; // used only for livestreams

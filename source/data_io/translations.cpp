@@ -168,6 +168,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Delete from the SD card", {"Supprimer de la SD", "Von der SD löschen", "Elimina dalla SD", "Apagar do SD", "SDから削除"}},
 	    {"No saved audio yet.", {"Aucun audio enregistré.", "Noch kein Audio gespeichert.", "Nessun audio salvato.", "Nenhum áudio salvo ainda.", "保存した音声はありません。"}},
 	    {"Use Save audio inside a video.", {"Utilisez Enregistrer l'audio dans une vidéo.", "Nutze „Audio speichern“ in einem Video.", "Usa Salva audio dentro un video.", "Use Salvar áudio dentro de um vídeo.", "動画内の「音声を保存」を使ってください。"}},
+	    {"starting now", {"commence maintenant", "startet jetzt", "inizia ora", "começando agora", "まもなく開始"}},
+	    {"Starts in ", {"Commence dans ", "Startet in ", "Inizia tra ", "Começa em ", "開始まで "}},
 	};
 	return table;
 }

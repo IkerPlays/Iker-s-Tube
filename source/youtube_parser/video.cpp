@@ -17,6 +17,14 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	res.playability_status = player_response["playabilityStatus"]["status"].string_value();
 	res.playability_reason = player_response["playabilityStatus"]["reason"].string_value();
 	res.is_upcoming = player_response["videoDetails"]["isUpcoming"].bool_value();
+	{
+		std::string start = player_response["playabilityStatus"]["liveStreamability"]["liveStreamabilityRenderer"]["offlineSlate"]
+		                                   ["liveStreamOfflineSlateRenderer"]["scheduledStartTime"]
+		                                       .string_value();
+		if (start != "") {
+			res.upcoming_start_time = strtoll(start.c_str(), NULL, 10);
+		}
+	}
 	res.livestream_type = player_response["videoDetails"]["isLiveContent"].bool_value()
 	                          ? YouTubeVideoDetail::LivestreamType::LIVESTREAM
 	                          : YouTubeVideoDetail::LivestreamType::PREMIERE;

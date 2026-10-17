@@ -1481,7 +1481,17 @@ debug_info_view =
 			        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; })};
 			    if (tmp_video_info.is_upcoming) {
 				    std::vector<View *> add_views = {
-				        (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))->set_text(tmp_video_info.playability_reason),
+				        (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+				            ->set_text((std::function<std::string()>)[reason = tmp_video_info.playability_reason,
+				                                                      start = tmp_video_info.upcoming_start_time]() -> std::string {
+					            if (start <= 0) return reason;
+					            long long left = start - (long long)time(NULL);
+					            if (left <= 0) return reason + " (" + tr("starting now", "empieza ya") + ")";
+					            char buf[32];
+					            snprintf(buf, sizeof buf, "%lld:%02lld:%02lld", left / 3600, left / 60 % 60, left % 60);
+					            var_need_refresh = true; // the countdown keeps changing
+					            return tr("Starts in ", "Empieza en ") + buf;
+				            }),
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; })};
 				    main_tab_views.insert(main_tab_views.end(), add_views.begin(), add_views.end());
 			    }
