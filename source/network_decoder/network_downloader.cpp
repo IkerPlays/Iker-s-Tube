@@ -509,6 +509,42 @@ void NetworkStreamDownloader::downloader_thread() {
 			// Util_log_save("net/dl", "dl next : " + std::to_string(cur_stream_index) + " " +
 			// std::to_string(block_reading));
 
+			if (cur_stream->url.compare(0, 6, "local:") == 0) {
+				// a file of the SD card (offline playback) : blocks are read from the file instead of the network
+				std::string path = cur_stream->url.substr(6);
+				FILE *local_file = fopen(path.c_str(), "rb");
+				if (!local_file) {
+					logger.error("net/dl", "cannot open the local file : " + path);
+					cur_stream->error = true;
+					continue;
+				}
+				fseek(local_file, 0, SEEK_END);
+				u64 total = (u64)ftell(local_file);
+				if (cur_stream->len == 0) {
+					cur_stream->len = total;
+					cur_stream->block_num = NetworkStream::get_block_num(total);
+				}
+				u64 local_start = block_reading * BLOCK_SIZE;
+				if (local_start >= total) {
+					fclose(local_file);
+					cur_stream->error = true;
+					continue;
+				}
+				u64 local_end = std::min((block_reading + 1) * BLOCK_SIZE, total);
+				std::vector<u8> local_data(local_end - local_start);
+				fseek(local_file, (long)local_start, SEEK_SET);
+				size_t got = fread(local_data.data(), 1, local_data.size(), local_file);
+				fclose(local_file);
+				if (got != local_data.size()) {
+					register_failure(cur_stream, "local file read failed");
+					continue;
+				}
+				cur_stream->retry_cnt_left = NetworkStream::RETRY_CNT_MAX;
+				cur_stream->set_data(block_reading, std::move(local_data));
+				cur_stream->ready = true;
+				continue;
+			}
+
 			u64 start = block_reading * BLOCK_SIZE;
 			u64 end = cur_stream->ready ? std::min((block_reading + 1) * BLOCK_SIZE, cur_stream->len)
 			                            : (block_reading + 1) * BLOCK_SIZE;

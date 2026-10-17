@@ -10,6 +10,8 @@
 #include "ui/qr_popup.hpp"
 #include "data_io/bookmarks.hpp"
 #include "scenes/account_tasks.hpp"
+#include "scenes/offline_tasks.hpp"
+#include "data_io/offline.hpp"
 #include "ui/notice.hpp"
 #include "ui/ui.hpp"
 #include "data_io/channel_prefs.hpp"
@@ -399,6 +401,27 @@ static std::vector<View *> make_eq_preset_buttons() {
 	};
 	return {button([]() { return tr("Flat", "Plano"); }, flat), button([]() { return std::string("Bass"); }, bass),
 	        button([]() { return tr("Voice", "Voz"); }, voice), button([]() { return std::string("Treble"); }, treble)};
+}
+
+// builds the video info of an offline item (its audio is read from the SD card through the "local:" stream prefix)
+static YouTubeVideoDetail offline_video_info(const std::string &id) {
+	YouTubeVideoDetail info;
+	OfflineItem item;
+	info.id = id;
+	info.url = "offline:" + id;
+	if (!offline_get(id, item)) {
+		info.error = "offline item not found";
+		return info;
+	}
+	info.title = item.title;
+	info.author.name = item.author;
+	info.playability_status = "OK";
+	info.audio_stream_url = "local:" + offline_file_path(id);
+	info.both_stream_url = info.audio_stream_url;
+	info.succinct_thumbnail_url = youtube_get_video_thumbnail_url_by_id(id);
+	info.comment_continue_type = -1;
+	info.comments_disabled = true;
+	return info;
 }
 
 // popup with a long text in a scroll view (used for translations)
@@ -1297,7 +1320,11 @@ debug_info_view =
 	    if (need_loading) {
 		    logger.info("player/load-v", "request : " + url);
 		    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
-		    tmp_video_info = youtube_load_video_page(url);
+		    if (url.compare(0, 8, "offline:") == 0) { // audio saved on the SD card : no network needed
+			    tmp_video_info = offline_video_info(url.substr(8));
+		    } else {
+			    tmp_video_info = youtube_load_video_page(url);
+		    }
 		    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
 		    // the user asked for another video while this one was loading : drop this result, the new request is queued
@@ -1626,11 +1653,17 @@ debug_info_view =
 				                     []() {
 					                     return stop_after_video ? tr("Stop after: yes", "Parar al acabar: sí") : tr("Stop after video", "Parar al acabar");
 				                     },
-				                     180,
+				                     110,
 				                     []() {
 					                     stop_after_video = !stop_after_video;
 					                     var_need_refresh = true;
-				                     })}));
+				                     }),
+				                 make_tool([]() { return tr("Save audio", "Guardar audio"); }, 90,
+				                           []() {
+					                           if (cur_video_info.id != "")
+						                           offline_download_async(cur_video_info.id, cur_video_info.title, cur_video_info.author.name,
+						                                                  cur_video_info.audio_stream_url);
+				                           })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
 				    main_tab_views.push_back(
 				        (new HorizontalListView(0, 0, 20))
@@ -2013,7 +2046,13 @@ debug_info_view =
     if (var_data_saver && wanted_quality > 240) {
 	    wanted_quality = 240;
     }
-    if (var_video_quality == 0) {
+    const bool offline_video = tmp_video_info.audio_stream_url.compare(0, 6, "local:") == 0;
+    if (offline_video) {
+	    audio_only_mode = true; // saved audio has no video
+    } else if (var_video_quality != 0) {
+	    audio_only_mode = false; // a previous video (offline or without video streams) must not keep this one audio-only
+    }
+    if (var_video_quality == 0 || offline_video) {
 	    audio_only_mode = true;
     } else {
 	    if (!audio_only_mode && !is_available(wanted_quality)) {
