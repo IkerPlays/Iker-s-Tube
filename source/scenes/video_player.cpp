@@ -683,6 +683,59 @@ static void show_live_chat() {
 	var_need_refresh = true;
 }
 
+// the links of the description : tap one to get its QR code and open it on the phone
+static void show_description_links() {
+	std::vector<std::string> links;
+	const std::string &d = cur_video_info.description;
+	for (size_t p = 0; (p = d.find("http", p)) != std::string::npos;) {
+		if (d.compare(p, 7, "http://") != 0 && d.compare(p, 8, "https://") != 0) {
+			p += 4;
+			continue;
+		}
+		size_t e = p;
+		while (e < d.size() && !isspace((unsigned char)d[e]) && d[e] != '"' && d[e] != '<' && d[e] != ')') e++;
+		std::string url = d.substr(p, e - p);
+		while (!url.empty() && (url.back() == '.' || url.back() == ',' || url.back() == ';')) url.pop_back();
+		if (url.size() > 10 && std::find(links.begin(), links.end(), url) == links.end()) links.push_back(url);
+		p = e;
+	}
+	if (links.empty()) {
+		notice_show(tr("No links in the description", "Sin enlaces en la descripción"));
+		return;
+	}
+	const int width = 300;
+	VerticalListView *list = new VerticalListView(0, 0, width);
+	for (auto &url : links) {
+		list->views.push_back((new TextView(0, 0, width, 24))
+		                          ->set_text(truncate_first_line(url, width - 8, 0.5))
+		                          ->set_y_alignment(TextView::YAlign::CENTER)
+		                          ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                          ->set_on_view_released([url](View &) { qr_popup_show(url); }));
+	}
+	int list_height = std::min<int>(24 * 6, (int)links.size() * 24);
+	account_pl_popup_view->recursive_delete_subviews();
+	account_pl_popup_view->set_subview(
+	    (new VerticalListView(0, 0, width))
+	        ->set_views({(new TextView(0, 0, width, 22))
+	                         ->set_text(tr("Links (tap for the QR)", "Enlaces (toca para el QR)"))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
+	                     (new ScrollView(0, 0, width, list_height))
+	                         ->set_views({list})
+	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
+	                     (new TextView(0, 0, width, 22))
+	                         ->set_text(LOCALIZED(CLOSE))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                         ->set_on_view_released([](View &) {
+		                         account_pl_popup_view->set_is_visible(false);
+		                         var_need_refresh = true;
+	                         })})
+	        ->set_draw_order({1, 0, 2}));
+	account_pl_popup_view->set_is_visible(true);
+	var_need_refresh = true;
+}
+
 static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &channels) {
 	collab_shown = channels;
 	const int width = 300;
@@ -1973,7 +2026,29 @@ debug_info_view =
 						                                   chat_request = true;
 						                                   var_need_refresh = true;
 					                                   }
-				                                   })}));
+				                                   }),
+				                         make_tool([]() { return tr("Audio language", "Idioma del audio"); }, 110,
+				                                   []() {
+					                                   auto &tracks = cur_video_info.audio_tracks;
+					                                   if (tracks.size() < 2) {
+						                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio"));
+						                                   return;
+					                                   }
+					                                   size_t current = 0;
+					                                   for (size_t i = 0; i < tracks.size(); i++) {
+						                                   if (tracks[i].selected) current = i;
+					                                   }
+					                                   size_t next = (current + 1) % tracks.size();
+					                                   youtube_audio_lang_set(tracks[next].lang); // remembered for the next videos
+					                                   notice_show(tr("Audio: ", "Audio: ") + tracks[next].name.substr(0, 30));
+					                                   if (!is_async_task_running(load_video_page)) {
+						                                   seek_at_init_request = vid_current_pos;
+						                                   send_change_video_request_wo_lock(cur_playing_url, true, false, true);
+						                                   video_retry_left = MAX_RETRY_CNT;
+					                                   }
+				                                   }),
+				                         make_tool([]() { return tr("Links", "Enlaces"); }, 70,
+				                                   []() { if (cur_video_info.description != "") show_description_links(); })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
 				    main_tab_views.push_back(
 				        (new HorizontalListView(0, 0, 20))

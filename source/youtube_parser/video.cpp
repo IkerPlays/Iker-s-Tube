@@ -83,9 +83,47 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	// audio
 	{
 		res.audio_stream_url = "";
+		res.audio_tracks.clear();
+		std::string wanted_lang = youtube_audio_lang_get();
+		int chosen = -1;
+		bool chosen_default = false;
 		for (auto i : audio_formats) {
-			if (i["itag"].int_value() == 140) {
-				res.audio_stream_url = i["url"].string_value();
+			if (!i.has_key("audioTrack")) continue;
+			std::string id = i["audioTrack"]["id"].string_value();
+			std::string lang = id.substr(0, id.find('.'));
+			bool already = false;
+			for (auto &t : res.audio_tracks) {
+				if (t.lang == lang) already = true;
+			}
+			if (already && i["itag"].int_value() != 140) continue; // one stream per language (the 128 kbps AAC if there)
+			bool is_default = i["audioTrack"]["audioIsDefault"].bool_value();
+			if (already) {
+				for (size_t k = 0; k < res.audio_tracks.size(); k++) {
+					if (res.audio_tracks[k].lang == lang) res.audio_tracks[k].url = i["url"].string_value();
+				}
+				continue;
+			}
+			YouTubeVideoDetail::AudioTrack track;
+			track.lang = lang;
+			track.name = i["audioTrack"]["displayName"].string_value();
+			track.url = i["url"].string_value();
+			res.audio_tracks.push_back(track);
+			if (lang == wanted_lang && wanted_lang != "") chosen = (int)res.audio_tracks.size() - 1;
+			else if (is_default && chosen < 0) chosen = (int)res.audio_tracks.size() - 1, chosen_default = true;
+		}
+		(void)chosen_default;
+		if (res.audio_tracks.size() > 1 && chosen >= 0) {
+			res.audio_stream_url = res.audio_tracks[chosen].url;
+			res.audio_tracks[chosen].selected = true;
+		} else {
+			res.audio_tracks.clear(); // a single track : nothing to choose
+		}
+		if (res.audio_stream_url == "") {
+			for (auto i : audio_formats) {
+				if (i["itag"].int_value() == 140) {
+					res.audio_stream_url = i["url"].string_value();
+					break;
+				}
 			}
 		}
 
@@ -1306,4 +1344,21 @@ bool youtube_load_collaborators(const std::string &video_id, std::vector<YouTube
 	}
 	if (out.empty()) error = "no channels found";
 	return !out.empty();
+}
+
+std::string youtube_audio_lang_get() {
+	char buf[16] = {0};
+	FILE *f = fopen("sdmc:/3ds/IkersTube/audio_lang.txt", "r");
+	if (!f) return "";
+	if (!fgets(buf, sizeof buf, f)) buf[0] = 0;
+	fclose(f);
+	std::string v = buf;
+	while (v.size() && (v.back() == '\n' || v.back() == '\r')) v.pop_back();
+	return v;
+}
+void youtube_audio_lang_set(const std::string &lang) {
+	FILE *f = fopen("sdmc:/3ds/IkersTube/audio_lang.txt", "w");
+	if (!f) return;
+	fprintf(f, "%s\n", lang.c_str());
+	fclose(f);
 }

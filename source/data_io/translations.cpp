@@ -435,6 +435,12 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"The chat stopped (no connection?)", {"Le chat s'est arrêté (pas de connexion ?)", "Der Chat wurde beendet (keine Verbindung?)", "La chat si è fermata (nessuna connessione?)", "O chat parou (sem conexão?)", "チャットが停止しました（接続なし？）"}},
 	    {"Could not start the chat", {"Impossible de démarrer le chat", "Chat konnte nicht gestartet werden", "Impossibile avviare la chat", "Não foi possível iniciar o chat", "チャットを開始できませんでした"}},
 	    {"Loading the chat...", {"Chargement du chat...", "Chat wird geladen...", "Caricamento della chat...", "Carregando o chat...", "チャットを読み込み中..."}},
+	    {"Links", {"Liens", "Links", "Link", "Links", "リンク"}},
+	    {"No links in the description", {"Aucun lien dans la description", "Keine Links in der Beschreibung", "Nessun link nella descrizione", "Nenhum link na descrição", "説明にリンクはありません"}},
+	    {"Links (tap for the QR)", {"Liens (touchez pour le QR)", "Links (antippen für den QR)", "Link (tocca per il QR)", "Links (toque para o QR)", "リンク（タップでQR）"}},
+	    {"Audio language", {"Langue audio", "Audiosprache", "Lingua audio", "Idioma do áudio", "音声言語"}},
+	    {"This video has only one audio track", {"Cette vidéo n'a qu'une piste audio", "Dieses Video hat nur eine Tonspur", "Questo video ha una sola traccia audio", "Este vídeo tem apenas uma faixa de áudio", "この動画には音声トラックが1つだけです"}},
+	    {"Audio: ", {"Audio : ", "Audio: ", "Audio: ", "Áudio: ", "音声："}},
 	};
 	return table;
 }

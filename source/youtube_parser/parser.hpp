@@ -72,6 +72,12 @@ struct YouTubeVideoDetail {
 	std::string id;
 	std::string succinct_thumbnail_url;
 	std::string audio_stream_url;
+	struct AudioTrack { // dubbed / original audio of the video (only when YouTube offers several)
+		std::string name, lang; // "Spanish (Latin America)", "es"
+		std::string url;
+		bool selected = false;
+	};
+	std::vector<AudioTrack> audio_tracks;
 	std::map<int, std::string> video_stream_urls; // first : video size (144p, 240p, 360p ...)
 	std::string both_stream_url;
 	int duration_ms = 0;
@@ -305,3 +311,7 @@ struct YouTubeDislikeData {
 	double rating;
 	int64_t view_count;
 };
+
+// The language the audio should be in when the video has several tracks ("" : the original one). Kept in sdmc:/3ds/IkersTube/audio_lang.txt.
+std::string youtube_audio_lang_get();
+void youtube_audio_lang_set(const std::string &lang);
