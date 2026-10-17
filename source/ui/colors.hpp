@@ -27,9 +27,12 @@
 #define COLOR_LIGHT_BLUE 0xFFEEAAAA
 #define COLOR_LIGHT_GREEN 0xFFAAEEAA
 
-// Color themes: accent, dark background, dark light0, light1, light2
-#define THEME_COUNT 6
-static const unsigned int theme_accent_table[THEME_COUNT] = {0xFF4B4BFF, 0xFFFF9A3C, 0xFF50C850, 0xFFE0509B, 0xFF30A0FF, 0xFF4B4BFF};
+#include <math.h>
+extern int var_theme;
+extern int var_custom_hue;
+// Color themes: accent, dark background, dark light0, light1, light2 (the last theme is built from var_custom_hue)
+#define THEME_COUNT 7
+static const unsigned int theme_accent_table[THEME_COUNT] = {0xFF4B4BFF, 0xFFFF9A3C, 0xFF50C850, 0xFFE0509B, 0xFF30A0FF, 0xFF4B4BFF, 0};
 static const unsigned int theme_back_table[THEME_COUNT][4] = {
     {0xFF181212, 0xFF281E1E, 0xFF403030, 0xFF2A2058}, // Ruby
     {0xFF2A1810, 0xFF3A2418, 0xFF553A2A, 0xFF603A1E}, // Ocean
@@ -37,16 +40,43 @@ static const unsigned int theme_back_table[THEME_COUNT][4] = {
     {0xFF1E1218, 0xFF2E1E28, 0xFF483050, 0xFF58204A}, // Violet
     {0xFF10161C, 0xFF1C2630, 0xFF2E3C4A, 0xFF1E4A66}, // Amber
     {0xFF000000, 0xFF101010, 0xFF282828, 0xFF2A2058}, // AMOLED
+    {0, 0, 0, 0},                                      // Custom (computed)
 };
-#define COLOR_LINK (theme_accent_table[var_theme])
+// HSV (h in degrees, s and v in 0..1) to an opaque ABGR color
+static inline unsigned int theme_hsv(int h, float s, float v) {
+	h = ((h % 360) + 360) % 360;
+	float hp = h / 60.0f;
+	float c = v * s, x = c * (1 - fabsf(fmodf(hp, 2.0f) - 1)), m = v - c;
+	float r = 0, g = 0, b = 0;
+	switch (h / 60) {
+	case 0: r = c, g = x; break;
+	case 1: r = x, g = c; break;
+	case 2: g = c, b = x; break;
+	case 3: g = x, b = c; break;
+	case 4: r = x, b = c; break;
+	default: r = c, b = x; break;
+	}
+	return 0xFF000000 | ((unsigned int)((b + m) * 255) << 16) | ((unsigned int)((g + m) * 255) << 8) | (unsigned int)((r + m) * 255);
+}
+static inline unsigned int theme_accent() {
+	return var_theme == 6 ? theme_hsv(var_custom_hue, 0.72f, 1.0f) : theme_accent_table[var_theme];
+}
+static inline unsigned int theme_back(int level) {
+	if (var_theme == 6) {
+		static const float values[4] = {0.08f, 0.14f, 0.22f, 0.32f};
+		return theme_hsv(var_custom_hue, level == 3 ? 0.75f : 0.35f, values[level]);
+	}
+	return theme_back_table[var_theme][level];
+}
+#define COLOR_LINK (theme_accent())
 
 #define DEFAULT_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xFF) : COLOR_GRAY(0x00))
-#define LIGHT0_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xCC) : COLOR_GRAY(0x33))
-#define LIGHT1_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xA0) : COLOR_GRAY(0x77))
+#define LIGHT0_TEXT_COLOR (var_high_contrast ? DEFAULT_TEXT_COLOR : (var_night_mode ? COLOR_GRAY(0xCC) : COLOR_GRAY(0x33)))
+#define LIGHT1_TEXT_COLOR (var_high_contrast ? DEFAULT_TEXT_COLOR : (var_night_mode ? COLOR_GRAY(0xA0) : COLOR_GRAY(0x77)))
 // Iker's Tube palette : slightly blue dark theme, red accent (colors are ABGR)
-#define COLOR_ACCENT (theme_accent_table[var_theme])
-#define DEFAULT_BACK_COLOR (var_night_mode ? theme_back_table[var_theme][0] : COLOR_GRAY(0xFF))
-#define LIGHT0_BACK_COLOR (var_night_mode ? theme_back_table[var_theme][1] : COLOR_GRAY(0xEE))
-#define LIGHT1_BACK_COLOR (var_night_mode ? theme_back_table[var_theme][2] : COLOR_GRAY(0xD0))
-#define LIGHT2_BACK_COLOR (var_night_mode ? theme_back_table[var_theme][3] : COLOR_GRAY(0xB8))
+#define COLOR_ACCENT (theme_accent())
+#define DEFAULT_BACK_COLOR (var_night_mode ? (var_high_contrast ? 0xFF000000u : theme_back(0)) : COLOR_GRAY(0xFF))
+#define LIGHT0_BACK_COLOR (var_night_mode ? theme_back(1) : COLOR_GRAY(0xEE))
+#define LIGHT1_BACK_COLOR (var_night_mode ? theme_back(2) : COLOR_GRAY(0xD0))
+#define LIGHT2_BACK_COLOR (var_night_mode ? theme_back(3) : COLOR_GRAY(0xB8))
 #define LIGHT3_BACK_COLOR COLOR_ACCENT

@@ -144,6 +144,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Button X in the player", {"Bouton X dans le lecteur", "X-Taste im Player", "Pulsante X nel lettore", "Botão X no reprodutor", "プレーヤーのXボタン"}},
 	    {"Button Y in the player", {"Bouton Y dans le lecteur", "Y-Taste im Player", "Pulsante Y nel lettore", "Botão Y no reprodutor", "プレーヤーのYボタン"}},
 	    {"Left-handed mini player", {"Mini-lecteur gaucher", "Mini-Player für Linkshänder", "Mini player per mancini", "Mini player para canhotos", "左利き用ミニプレーヤー"}},
+	    {"Custom", {"Perso", "Eigenes", "Personale", "Próprio", "カスタム"}},
+	    {"Custom theme color (hue): ", {"Couleur du thème perso (teinte) : ", "Farbe des eigenen Themas (Farbton): ", "Colore del tema personale (tonalità): ", "Cor do tema próprio (tom): ", "カスタムテーマの色（色相）："}},
+	    {"High contrast", {"Contraste élevé", "Hoher Kontrast", "Alto contrasto", "Alto contraste", "ハイコントラスト"}},
 	};
 	return table;
 }

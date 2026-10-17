@@ -77,7 +77,9 @@ void load_settings() {
 	var_button_x = std::max(0, std::min(6, load_int("button_x", 1)));
 	var_button_y = std::max(0, std::min(6, load_int("button_y", 4)));
 	var_left_handed = load_int("left_handed", 0);
-	var_theme = std::max(0, std::min(5, load_int("color_theme", 0)));
+	var_custom_hue = std::max(0, std::min(359, load_int("custom_hue", 200)));
+	var_high_contrast = load_int("high_contrast", 0);
+	var_theme = std::max(0, std::min(6, load_int("color_theme", 0)));
 	var_large_thumbnails = load_int("large_thumbnails", 0);
 	var_disable_pull_to_refresh = load_int("disable_pull_to_refresh", 0);
 	var_community_image_size =
@@ -135,6 +137,8 @@ void save_settings() {
 	add_int("hide_pointer", var_hide_pointer);
 	add_int("dark_theme", var_night_mode);
 	add_int("color_theme", var_theme);
+	add_int("custom_hue", var_custom_hue);
+	add_int("high_contrast", var_high_contrast);
 	add_int("button_x", var_button_x);
 	add_int("button_y", var_button_y);
 	add_int("left_handed", var_left_handed);

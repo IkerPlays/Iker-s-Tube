@@ -210,6 +210,8 @@ std::string install_update(NetworkSessionList &session_list) {
 	return "";
 }
 
+static double var_custom_hue_double = 200; // BarView works on doubles
+
 static void update_worker_thread_func(void *) {
 	logger.info("updater", "Thread started.");
 	
@@ -538,6 +540,7 @@ void Sem_init(void) {
 	Result_with_string result;
 	
 	load_settings();
+	var_custom_hue_double = var_custom_hue;
 	load_string_resources(var_lang);
 	
 	popup_view = new OverlayDialogView(0, 0, 320, 240);
@@ -608,12 +611,33 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return "Forest"; },
 							(std::function<std::string ()>) []() { return "Violet"; },
 							(std::function<std::string ()>) []() { return "Amber"; },
-							(std::function<std::string ()>) []() { return "AMOLED"; }
+							(std::function<std::string ()>) []() { return "AMOLED"; },
+							(std::function<std::string ()>) []() { return tr("Custom", "Propio"); }
 						}, var_theme)
 						->set_title([](const SelectorView &) { return tr("Color theme", "Tema de color"); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_theme != view.selected_button) {
 								var_theme = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					// Custom accent color
+					(new BarView(0, 0, 320, 40))
+						->set_values_sync(0, 359, &var_custom_hue_double)
+						->set_title([] (const BarView &view) { return tr("Custom theme color (hue): ", "Color del tema propio (tono): ") + std::to_string((int) var_custom_hue_double); })
+						->set_while_holding([] (BarView &view) { var_custom_hue = (int) var_custom_hue_double; var_need_refresh = true; })
+						->set_on_release([] (const BarView &view) { var_custom_hue = (int) var_custom_hue_double; misc_tasks_request(TASK_SAVE_SETTINGS); var_need_refresh = true; }),
+					// High contrast
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_high_contrast)
+						->set_title([](const SelectorView &) { return tr("High contrast", "Alto contraste"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_high_contrast != view.selected_button) {
+								var_high_contrast = view.selected_button;
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 								var_need_refresh = true;
 							}

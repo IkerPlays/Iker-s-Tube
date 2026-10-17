@@ -28,6 +28,8 @@ extern double var_total_play_seconds; // statistics : time spent playing
 extern int var_button_x; // action of the X button in the player (0 none, 1 +30 s, 2 next in queue, 3 restart, 4 mini player, 5 bookmark, 6 stop after this video)
 extern int var_button_y; // same for Y
 extern bool var_left_handed; // mirrors the mini player controls
+extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
+extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern int var_theme;             // color theme index (see colors.hpp)
 extern bool var_large_thumbnails; // bigger thumbnails in video lists
 extern bool var_disable_pull_to_refresh;
