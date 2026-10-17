@@ -8,6 +8,7 @@
 #include "util/play_queue.hpp"
 #include "data_io/favorites.hpp"
 #include "ui/qr_popup.hpp"
+#include "ui/logo_cube.hpp"
 #include "data_io/resume_position.hpp"
 #include "scenes/home.hpp"
 #include "ui/overlay.hpp"
@@ -2131,7 +2132,7 @@ debug_info_view =
 		    Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, 40, 188, 320, 6);
 		    Draw_texture(var_square_image[0], COLOR_ACCENT, 40, 188, 320 * pos / dur, 6);
 	    } else {
-		    Draw_texture(vid_banner[var_night_mode], 0, 15, 400, 225);
+		    logo_cube_draw(200, 128, 62);
 	    }
     }
     void video_draw_top_screen() {
