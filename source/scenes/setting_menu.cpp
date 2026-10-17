@@ -9,6 +9,7 @@
 #include "data_io/history.hpp"
 #include "util/misc_tasks.hpp"
 #include "scenes/setting_menu.hpp"
+#include "system/report.hpp"
 #include "util/app_version.hpp"
 #include "scenes/home.hpp"
 #include "scenes/video_player.hpp"
@@ -1239,6 +1240,24 @@ void Sem_init(void) {
 							bool ok = logger.save_full_log();
 							toast_view
 								->set_text((std::function<std::string ()>) [ok] () { return ok ? std::string("sdmc:/3ds/IkersTube/log_full.txt") : tr("Could not write the log", "No se pudo escribir el registro"); })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 150;
+							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Create a report to send", "Crear un informe para enviar"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							bool ok = report_create();
+							toast_view
+								->set_text((std::function<std::string ()>) [ok] () { return ok ? std::string("sdmc:/3ds/IkersTube/report.txt") : tr("Could not write the report", "No se pudo escribir el informe"); })
 								->set_x_alignment(TextView::XAlign::CENTER)
 								->set_text_offset(0, -1)
 								->set_get_text_color([] () { return (u32) -1; })

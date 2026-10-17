@@ -374,6 +374,15 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Incognito", {"Privé", "Inkognito", "Incognito", "Anônimo", "シークレット"}},
 	    {"Incognito mode", {"Navigation privée", "Inkognito-Modus", "Modalità incognito", "Modo anônimo", "シークレットモード"}},
 	    {"Nothing is remembered: no watch history, searches, resume points or last video. Also in the More menu.", {"Rien n'est mémorisé : ni historique, ni recherches, ni reprises, ni dernière vidéo. Aussi dans le menu Plus.", "Nichts wird gespeichert: kein Verlauf, keine Suchen, keine Fortsetzungspunkte, kein letztes Video. Auch im Menü Mehr.", "Non si ricorda nulla: né cronologia, né ricerche, né punti di ripresa, né ultimo video. Anche nel menu Altro.", "Nada é lembrado: nem histórico, nem buscas, nem pontos de retomada, nem último vídeo. Também no menu Mais.", "何も記録しません：履歴、検索、再開位置、最後の動画。「その他」メニューにもあります。"}},
+	    {"Welcome to Iker's Tube!", {"Bienvenue sur Iker's Tube !", "Willkommen bei Iker's Tube!", "Benvenuto su Iker's Tube!", "Bem-vindo ao Iker's Tube!", "Iker's Tubeへようこそ！"}},
+	    {"Bottom bar: Home, Search, Library,", {"Barre du bas : Accueil, Recherche, Bibliothèque,", "Untere Leiste: Start, Suche, Bibliothek,", "Barra in basso: Home, Cerca, Libreria,", "Barra de baixo: Início, Busca, Biblioteca,", "下のバー：ホーム、検索、ライブラリ、"}},
+	    {"Downloads and More (settings, menu).", {"Téléchargements et Plus (réglages, menu).", "Downloads und Mehr (Einstellungen, Menü).", "Download e Altro (impostazioni, menu).", "Downloads e Mais (ajustes, menu).", "ダウンロードとその他（設定、メニュー）。"}},
+	    {"Long press a video to queue it.", {"Appui long sur une vidéo pour la mettre en file.", "Video lange drücken, um sie einzureihen.", "Pressione lunga su un video per metterlo in coda.", "Segure um vídeo para pô-lo na fila.", "動画を長押しでキューに追加。"}},
+	    {"In a video: Save video / Save audio", {"Dans une vidéo : Enregistrer vidéo / audio", "In einem Video: Video / Audio speichern", "In un video: Salva video / audio", "Num vídeo: Salvar vídeo / áudio", "動画内：動画／音声を保存"}},
+	    {"to watch it without internet.", {"pour la voir sans internet.", "um es ohne Internet zu sehen.", "per guardarlo senza internet.", "para ver sem internet.", "ネットなしで見られます。"}},
+	    {"The Studio tab is for your channel.", {"L'onglet Studio sert à votre chaîne.", "Der Studio-Tab ist für deinen Kanal.", "La scheda Studio è per il tuo canale.", "A aba Studio é para o seu canal.", "Studioタブはあなたのチャンネル用です。"}},
+	    {"Create a report to send", {"Créer un rapport à envoyer", "Bericht zum Senden erstellen", "Crea un rapporto da inviare", "Criar um relatório para enviar", "送信用レポートを作成"}},
+	    {"Could not write the report", {"Impossible d'écrire le rapport", "Bericht konnte nicht geschrieben werden", "Impossibile scrivere il rapporto", "Não foi possível gravar o relatório", "レポートを書き込めません"}},
 	};
 	return table;
 }

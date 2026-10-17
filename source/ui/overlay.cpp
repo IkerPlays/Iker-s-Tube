@@ -229,8 +229,49 @@ void draw_overlay_menu(int y) {
 		dialog_view->draw();
 	}
 }
+// the first-use tour : a dialog with the main things of the app, shown once on the Home screen
+static void show_first_use_tour() {
+	dialog_view->get_message_view()
+	    ->set_text_lines(std::vector<std::string>{tr("Welcome to Iker's Tube!", "¡Bienvenido a Iker's Tube!"),
+	                                              tr("Bottom bar: Home, Search, Library,", "Barra de abajo: Inicio, Buscar, Biblioteca,"),
+	                                              tr("Downloads and More (settings, menu).", "Descargas y Más (ajustes, menú)."),
+	                                              tr("Long press a video to queue it.", "Mantén pulsado un vídeo para encolarlo."),
+	                                              tr("In a video: Save video / Save audio", "En un vídeo: Guardar vídeo / audio"),
+	                                              tr("to watch it without internet.", "para verlo sin internet."),
+	                                              tr("The Studio tab is for your channel.", "La pestaña Studio es para tu canal.")})
+	    ->update_y_range(0, DEFAULT_FONT_INTERVAL * 7 + 6);
+	dialog_view->set_buttons<std::function<std::string()>>({[]() { return LOCALIZED(OK); }}, [](OverlayDialogView &, int) {
+		menu_status = CLOSED;
+		var_tour_done = true;
+		misc_tasks_request(TASK_SAVE_SETTINGS);
+		var_need_refresh = true;
+		return true;
+	});
+	dialog_view->set_on_cancel([](OverlayView &view) {
+		menu_status = CLOSED;
+		var_tour_done = true;
+		misc_tasks_request(TASK_SAVE_SETTINGS);
+		view.set_is_visible(false);
+		var_need_refresh = true;
+	});
+	dialog_view->set_is_visible(true);
+	menu_status = CONFIRMING_CLOSE;
+	var_need_refresh = true;
+}
+
 void update_overlay_menu(Hid_info *key) {
 	static bool exit_confirmed = false;
+	{ // the tour comes after the Home screen has been there for a moment (the very first start goes to Settings first)
+		static int home_frames = 0;
+		if (!var_tour_done && nav_enabled && global_current_scene == SceneType::HOME && menu_status == CLOSED) {
+			if (++home_frames > 60) {
+				home_frames = 0;
+				show_first_use_tour();
+			}
+		} else {
+			home_frames = 0;
+		}
+	}
 	static SceneType prev_scene = SceneType::SEARCH;
 	if (prev_scene != global_current_scene) {
 		var_need_refresh = true;
