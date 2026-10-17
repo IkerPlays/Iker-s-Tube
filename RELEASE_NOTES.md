@@ -1,5 +1,7 @@
 ## What's new
 
+- **Better error details.** When a video cannot be played, log.txt now says why (YouTube status and reason, how many streams were found), and the "No valid stream url" message lists what was available.
+- **Network retry.** A request that fails because the host name cannot be resolved is tried again up to three times, which covers the first seconds after the Wi-Fi connects.
 - **Crash report file.** If the app aborts because of an unexpected error, it now writes sdmc:/3ds/IkersTube/crash.txt (error type, version and a list of code addresses) so the exact place can be found. Send that file together with log.txt after a crash.
 - **Freeze fix.** The automatic quality check could wait for the video decoder while holding a lock the decoder needed.
 - **Stability.** A full crash review of the player, downloader, thumbnails and parser. Fixed: a freeze when an A-B loop reached its end point; chapters reading uninitialized values; a crash after changing the comment sort; a possible crash when memory runs out while creating thumbnails or textures; unbounded memory growth of the page cache; unsafe access to the stream URLs while a video starts; short reads ending a video early; out-of-range reads in the playlist tab, the JSON parser and the thumbnail list; the mini player and QR popup handling a key twice; and several uninitialized fields.

@@ -258,9 +258,17 @@ NetworkResult NetworkSessionList::perform(const HttpRequest &request) {
 		return result;
 	}
 
-	this->curl_add_request(request, &result);
-	this->curl_perform_requests();
-	this->curl_clear_requests();
+	// right after the Wi-Fi connects the DNS can fail for a few seconds : try again a couple of times
+	for (int attempt = 0; attempt < 3; attempt++) {
+		result = NetworkResult();
+		this->curl_add_request(request, &result);
+		this->curl_perform_requests();
+		this->curl_clear_requests();
+		if (!result.fail || exiting || result.error.find("resolve") == std::string::npos) {
+			break;
+		}
+		usleep(800000);
+	}
 	return result;
 }
 std::vector<NetworkResult> NetworkSessionList::perform(const std::vector<HttpRequest> &requests) {

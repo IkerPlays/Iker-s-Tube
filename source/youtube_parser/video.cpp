@@ -757,6 +757,12 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 	if (success) {
 		debug_info(res.title.empty() ? "preason: " + res.playability_reason : res.title);
 	}
+	if (!res.is_playable() && res.error != "cancelled") { // goes to log.txt : why this video cannot be played
+		logger.warning("player", "not playable : id=" + res.id + " status=" + res.playability_status + " reason=" +
+		                             res.playability_reason + " streams=" + std::to_string(res.video_stream_urls.size()) +
+		                             " audio=" + std::to_string(res.audio_stream_url != "") + " both=" +
+		                             std::to_string(res.both_stream_url != "") + " error=" + res.error);
+	}
 
 	return res;
 }

@@ -2900,6 +2900,16 @@ debug_info_view =
 				    result.code = -1;
 				    result.string = "YouTube parser error";
 				    result.error_description = "No valid stream url extracted";
+				    { // details for the log and for the error message : what was available when this happened
+					    std::string details = "quality=" + std::to_string((int)video_p_value) + " audio_only=" + std::to_string(audio_only_mode) +
+					                          " video_url=" + std::to_string(snap_video_url != "") + " audio_url=" + std::to_string(snap_audio_url != "") +
+					                          " both_url=" + std::to_string(snap_both_url != "");
+					    small_resource_lock.lock();
+					    details += " status=" + playing_video_info.playability_status + " streams=" + std::to_string(playing_video_info.video_stream_urls.size());
+					    small_resource_lock.unlock();
+					    logger.warning("player", "no valid stream : " + details);
+					    result.error_description += "\n" + details;
+				    }
 			    }
 
 			    logger.info(DEF_SAPP0_DECODE_THREAD_STR,
