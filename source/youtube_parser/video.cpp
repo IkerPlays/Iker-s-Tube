@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <random>
 #include "../oauth/oauth.hpp"
+#include "account.hpp"
 #include "../system/file.hpp"
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
@@ -677,10 +678,23 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 		}
 	}
 
+	std::string playback_url; // the address that tells YouTube the video was watched (signed-in only)
 	if (success) {
 		for (int i = 0; i < 2; i++) {
 			if (!results[i].data.empty()) {
 				results[i].data.push_back('\0');
+				if (i == 1 && use_android_vr && !var_incognito) {
+					std::string raw((char *)&results[i].data[0]);
+					size_t k = raw.find("\"videostatsPlaybackUrl\"");
+					size_t b = k == std::string::npos ? k : raw.find("\"baseUrl\"", k);
+					if (b != std::string::npos && b - k < 60) {
+						size_t q1 = raw.find('"', b + 9), q2 = q1 == std::string::npos ? q1 : raw.find('"', q1 + 1);
+						if (q2 != std::string::npos) {
+							playback_url = raw.substr(q1 + 1, q2 - q1 - 1);
+							for (size_t u; (u = playback_url.find("\\u0026")) != std::string::npos;) playback_url.replace(u, 6, "&");
+						}
+					}
+				}
 				parse_json_destructive((char *)&results[i].data[0],
 				                       [&](Document &json_root, RJson data) {
 					                       if (i == 0) {
@@ -780,6 +794,9 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 		video.last_watch_time = time(NULL);
 		add_watched_video(video);
 		misc_tasks_request(TASK_SAVE_HISTORY);
+		if (playback_url != "" && !var_incognito) { // your real YouTube history (and the recommendations) learn from it
+			youtube_account_mark_watched(playback_url);
+		}
 	}
 
 	if (success) {

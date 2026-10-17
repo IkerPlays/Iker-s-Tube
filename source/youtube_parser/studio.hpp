@@ -40,3 +40,9 @@ bool youtube_studio_video_stats(const std::string &video_id, std::string &views,
 bool youtube_studio_delete(const std::string &video_id, std::string &error);
 // custom thumbnail from a .jpg / .png file on the SD card (max 2 MB). The account must be verified by YouTube.
 bool youtube_studio_set_thumbnail(const std::string &video_id, const std::string &path, std::string &error);
+
+// ---- comments and ratings through the Data API (needs the Studio login) ----
+bool youtube_studio_comment_insert(const std::string &video_id, const std::string &text, std::string &error);
+bool youtube_studio_comment_reply(const std::string &parent_id, const std::string &text, std::string &error); // parent : top-level comment id
+bool youtube_studio_comment_delete(const std::string &comment_id, std::string &error);
+bool youtube_studio_rate(const std::string &video_id, const std::string &rating, std::string &error); // "like", "dislike" or "none"

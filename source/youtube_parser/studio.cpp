@@ -581,6 +581,41 @@ bool youtube_studio_delete(const std::string &video_id, std::string &error) {
 	return true;
 }
 
+// ---- comments, ratings and lists through the Data API (more reliable than the app login for writing) ----
+static bool api_json(const std::string &method, const std::string &url, const std::string &body, std::string &error, std::string *out = NULL) {
+	if (studio_bearer_token() == "") {
+		error = "not signed in for Studio";
+		return false;
+	}
+	std::string answer;
+	auto r = api_request(method, url, body, body != "" ? "application/json" : "", answer);
+	if (out) *out = answer;
+	if (r.fail || !r.status_code_is_success()) {
+		error = api_error(r, answer);
+		logger.warning("studio", method + " " + url.substr(0, 70) + " failed : " + error);
+		return false;
+	}
+	return true;
+}
+
+bool youtube_studio_comment_insert(const std::string &video_id, const std::string &text, std::string &error) {
+	return api_json("POST", "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet",
+	                "{\"snippet\": {\"videoId\": " + json_quote(video_id) + ", \"topLevelComment\": {\"snippet\": {\"textOriginal\": " + json_quote(text) + "}}}}", error);
+}
+
+bool youtube_studio_comment_reply(const std::string &parent_id, const std::string &text, std::string &error) {
+	return api_json("POST", "https://www.googleapis.com/youtube/v3/comments?part=snippet",
+	                "{\"snippet\": {\"parentId\": " + json_quote(parent_id) + ", \"textOriginal\": " + json_quote(text) + "}}", error);
+}
+
+bool youtube_studio_comment_delete(const std::string &comment_id, std::string &error) {
+	return api_json("DELETE", "https://www.googleapis.com/youtube/v3/comments?id=" + comment_id, "", error);
+}
+
+bool youtube_studio_rate(const std::string &video_id, const std::string &rating, std::string &error) {
+	return api_json("POST", "https://www.googleapis.com/youtube/v3/videos/rate?id=" + video_id + "&rating=" + rating, "", error);
+}
+
 bool youtube_studio_set_thumbnail(const std::string &video_id, const std::string &path, std::string &error) {
 	struct stat st;
 	if (stat(path.c_str(), &st) != 0 || st.st_size <= 0 || st.st_size > 2 * 1024 * 1024) {

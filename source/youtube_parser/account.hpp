@@ -37,3 +37,6 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
 // why the last request failed (shown next to the error notices), and the video the comment actions work on
 std::string youtube_account_last_error();
 void youtube_account_set_video(const std::string &video_id);
+
+// Marks the video as watched in the YouTube history of the account (no-op without login). Blocks : call from a worker thread.
+void youtube_account_mark_watched(const std::string &playback_url);

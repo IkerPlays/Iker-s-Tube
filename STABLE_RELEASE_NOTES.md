@@ -49,6 +49,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Scheduled publishing.** Studio upload has Publish: now, 1 hour, 3 hours, 1 day, 3 days or 1 week; the time comes from the internet (the console clock has no reliable time zone).
 - **Usage statistics.** The Data tab of Settings shows how many videos you watched and about how many hours.
 - **Shorts feed.** The Shorts shortcut in Explore plays the whole list one after another in a shuffled loop.
+- **Comments and history through your account.** Posting, replying and deleting comments use the YouTube Data API when Studio is connected. Watched videos are reported to your YouTube history.
 
 ## Installing
 

@@ -1,4 +1,6 @@
 #include "headers.hpp"
+#include "youtube_parser/studio.hpp"
+#include "youtube_parser/studio_auth.hpp"
 #include <map>
 #include <regex>
 #include <algorithm>
@@ -137,7 +139,10 @@ static std::string text_after(const std::string &body, size_t from, size_t to, c
 
 bool youtube_account_like(const std::string &video_id, int rating) {
 	const char *endpoint = rating > 0 ? "like/like" : rating < 0 ? "like/dislike" : "like/removelike";
-	return account_post(endpoint, "\"target\": {\"videoId\": \"" + json_escape(video_id) + "\"}").first;
+	if (account_post(endpoint, "\"target\": {\"videoId\": \"" + json_escape(video_id) + "\"}").first) return true;
+	std::string err; // the app login refused it : the Data API with the Studio login
+	if (studio_auth_signed_in() && youtube_studio_rate(video_id, rating > 0 ? "like" : rating < 0 ? "dislike" : "none", err)) return true;
+	return false;
 }
 
 bool youtube_account_subscribe(const std::string &channel_id, bool subscribe) {
@@ -248,7 +253,15 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 	return false;
 }
 
+// Writing through the Data API with the Studio login : the app login (YouTube TV) is often refused for comments.
+static bool studio_ready() { return studio_auth_signed_in(); }
+
 bool youtube_account_comment_create(const std::string &comments_token, const std::string &text) {
+	std::string video = get_context_video(), err;
+	if (studio_ready() && video != "") {
+		if (youtube_studio_comment_insert(video, text, err)) return true;
+		set_last_error("data api: " + err);
+	}
 	std::string json;
 	if (comments_token == "" || !fetch_comment_section(comments_token, json, true)) return false;
 	size_t end = json.size();
@@ -334,6 +347,8 @@ bool youtube_account_comment_like(const std::string &comments_token, const std::
 }
 
 bool youtube_account_comment_delete(const std::string &comments_token, const std::string &comment_id) {
+	std::string err;
+	if (studio_ready() && comment_id != "" && youtube_studio_comment_delete(comment_id, err)) return true;
 	std::string json;
 	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
 	// the menu of an own comment has an entry with the DELETE icon, followed by the action that does it
@@ -359,6 +374,11 @@ bool youtube_account_comment_delete(const std::string &comments_token, const std
 
 bool youtube_account_comment_reply(const std::string &comments_token, const std::string &comment_id,
                                    const std::string &text) {
+	std::string err;
+	if (studio_ready() && comment_id != "") {
+		if (youtube_studio_comment_reply(comment_id, text, err)) return true;
+		set_last_error("data api: " + err);
+	}
 	std::string json;
 	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
 	std::string params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createReplyParams\":\"", comment_id);
@@ -493,4 +513,16 @@ bool youtube_account_notifications(std::vector<YouTubeVideoSuccinct> &out) {
 	}
 	logger.info("account", "notifications : " + std::to_string(out.size()));
 	return true;
+}
+
+// Tells YouTube the video was watched (the "videostatsPlaybackUrl" of the player answer + a random client playback nonce).
+void youtube_account_mark_watched(const std::string &playback_url) {
+	if (!OAuth::is_authenticated() || playback_url == "") return;
+	static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+	std::string cpn;
+	for (int i = 0; i < 16; i++) cpn += alphabet[rand() % 64];
+	std::map<std::string, std::string> headers;
+	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	auto r = http_get(playback_url + "&ver=2&cpn=" + cpn, headers);
+	logger.info("account", std::string("history ping ") + (r.first ? "ok" : "failed"));
 }
