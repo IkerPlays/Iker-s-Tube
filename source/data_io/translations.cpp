@@ -411,6 +411,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"in 3 days", {"dans 3 jours", "in 3 Tagen", "tra 3 giorni", "em 3 dias", "3日後"}},
 	    {"in 1 week", {"dans 1 semaine", "in 1 Woche", "tra 1 settimana", "em 1 semana", "1週間後"}},
 	    {"could not get the time from the internet", {"impossible d'obtenir l'heure sur Internet", "Uhrzeit konnte nicht aus dem Internet geholt werden", "impossibile ottenere l'ora da Internet", "não foi possível obter a hora da internet", "インターネットから時刻を取得できませんでした"}},
+	    {"Watched: ", {"Vu : ", "Gesehen: ", "Visti: ", "Assistidos: ", "視聴: "}},
+	    {" videos, about ", {" vidéos, environ ", " Videos, etwa ", " video, circa ", " vídeos, cerca de ", " 本、約 "}},
 	};
 	return table;
 }

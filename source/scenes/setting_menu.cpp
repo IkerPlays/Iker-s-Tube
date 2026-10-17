@@ -1216,6 +1216,23 @@ void Sem_init(void) {
 						->set_text((std::function<std::string ()>) [] () -> std::string {
 							return tr("Data downloaded (total): ", "Datos descargados (total): ") + format_data_size(var_data_total_bytes + (double) var_data_session_bytes);
 						}),
+					// usage statistics from the watch history
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							std::vector<HistoryVideo> list = get_valid_watch_history();
+							long long seconds = 0;
+							for (auto &v : list) { // "H:MM:SS" or "M:SS"
+								int part[3] = {0, 0, 0}, n = 0;
+								long long value = 0;
+								for (char c : v.length_text + ":") {
+									if (c >= '0' && c <= '9') value = value * 10 + (c - '0');
+									else if (c == ':' && n < 3) part[n++] = (int) value, value = 0;
+								}
+								if (n == 3) seconds += part[0] * 3600 + part[1] * 60 + part[2];
+								else if (n == 2) seconds += part[0] * 60 + part[1];
+							}
+							return tr("Watched: ", "Visto: ") + std::to_string(list.size()) + tr(" videos, about ", " vídeos, unas ") + std::to_string(seconds / 3600) + " h";
+						}),
 					// network status and last errors
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
 						->set_text((std::function<std::string ()>) [] () -> std::string {
