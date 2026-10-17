@@ -9,6 +9,9 @@
 #include "data_io/favorites.hpp"
 #include "ui/qr_popup.hpp"
 #include "data_io/bookmarks.hpp"
+#include "scenes/account_tasks.hpp"
+#include "ui/notice.hpp"
+#include "ui/ui.hpp"
 #include "data_io/channel_prefs.hpp"
 #include "data_io/last_played.hpp"
 #include "data_io/channel_volume.hpp"
@@ -146,19 +149,25 @@ ScrollView *suggestion_tab_view;
 
 // comment tab
 static void comment_sort_clicked();
-View *comments_top_view = (new TextView(0, 0, 320, 20))
-                              ->set_text((std::function<std::string()>)[]() -> std::string {
-	                              if (cur_video_info.comment_sort_tokens[0] == "" && cur_video_info.comment_sort_tokens[1] == "") {
-		                              return "";
-	                              }
-	                              return tr("Sort: ", "Orden: ") + (cur_video_info.comment_sort_type == 0 ? tr("Top", "Populares") : tr("Newest", "Recientes")) + "  >";
-                              })
-                              ->set_x_alignment(TextView::XAlign::CENTER)
-                              ->set_y_alignment(TextView::YAlign::CENTER)
-                              ->set_get_background_color(View::STANDARD_BACKGROUND)
-                              ->set_on_view_released([](View &) {
-	                              comment_sort_clicked();
-                              });
+static bool comment_write_request = false; // set by the "+ Comment" button, handled after the view update
+View *comments_top_view = (new HorizontalListView(0, 0, 20))
+                              ->set_views({(new TextView(0, 0, 200, 20))
+                                               ->set_text((std::function<std::string()>)[]() -> std::string {
+	                                               if (cur_video_info.comment_sort_tokens[0] == "" && cur_video_info.comment_sort_tokens[1] == "") {
+		                                               return "";
+	                                               }
+	                                               return tr("Sort: ", "Orden: ") + (cur_video_info.comment_sort_type == 0 ? tr("Top", "Populares") : tr("Newest", "Recientes")) + "  >";
+                                               })
+                                               ->set_x_alignment(TextView::XAlign::CENTER)
+                                               ->set_y_alignment(TextView::YAlign::CENTER)
+                                               ->set_get_background_color(View::STANDARD_BACKGROUND)
+                                               ->set_on_view_released([](View &) { comment_sort_clicked(); }),
+                                           (new TextView(0, 0, 120, 20))
+                                               ->set_text((std::function<std::string()>)[]() -> std::string { return tr("+ Comment", "+ Comentar"); })
+                                               ->set_x_alignment(TextView::XAlign::CENTER)
+                                               ->set_y_alignment(TextView::YAlign::CENTER)
+                                               ->set_get_background_color(View::STANDARD_BACKGROUND)
+                                               ->set_on_view_released([](View &) { comment_write_request = true; })});
 VerticalListView *comments_main_view = new VerticalListView(0, 0, 320);
 View *comments_bottom_view = new EmptyView(0, 0, 320, 0);
 ScrollView *comment_tab_view = NULL;
@@ -282,6 +291,11 @@ static std::string pending_bookmarks_video_id;
 static double quick_speed = 1.0;
 static BarView *speed_bar_view = NULL;
 static bool mini_visible = false;
+static OverlayView *account_pl_popup_view = NULL; // list of the playlists of the YouTube account
+static OverlayDialogView *comment_dialog = NULL; // Like / Reply / Cancel for a comment
+static std::string comment_menu_request; // id of the comment that was long pressed (handled after the view update)
+static std::string comment_target_id; // comment chosen in the dialog
+static bool comment_reply_request = false;
 static bool stop_after_video = false; // do not continue with the queue / autoplay when the current video ends
 static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
@@ -384,6 +398,46 @@ static std::vector<View *> make_eq_preset_buttons() {
 	};
 	return {button([]() { return tr("Flat", "Plano"); }, flat), button([]() { return std::string("Bass"); }, bass),
 	        button([]() { return tr("Voice", "Voz"); }, voice), button([]() { return std::string("Treble"); }, treble)};
+}
+
+// popup with the playlists of the YouTube account : tapping one adds / removes the video
+static void show_account_playlists(const std::string &video_id, const std::vector<AccountPlaylist> &lists) {
+	const int width = 260;
+	std::vector<View *> items;
+	for (auto &p : lists) {
+		AccountPlaylist copy = p;
+		items.push_back((new TextView(0, 0, width, 22))
+		                    ->set_text(std::string(p.has_video ? "[x] " : "[ ] ") + truncate_first_line(p.title, width - 30, 0.5))
+		                    ->set_y_alignment(TextView::YAlign::CENTER)
+		                    ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                    ->set_on_view_released([copy, video_id](View &) {
+			                    account_playlist_edit_async(copy.id, video_id, !copy.has_video);
+			                    account_pl_popup_view->set_is_visible(false);
+			                    var_need_refresh = true;
+		                    }));
+	}
+	int list_height = std::min<int>(150, (int)items.size() * 22);
+	account_pl_popup_view->recursive_delete_subviews();
+	account_pl_popup_view->set_subview(
+	    (new VerticalListView(0, 0, width))
+	        ->set_views({(new TextView(0, 0, width, 22))
+	                         ->set_text(tr("Save to my list", "Guardar en mi lista"))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
+	                     (new ScrollView(0, 0, width, list_height))
+	                         ->set_views({(new VerticalListView(0, 0, width))->set_views(items)})
+	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
+	                     (new TextView(0, 0, width, 22))
+	                         ->set_text(LOCALIZED(CLOSE))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                         ->set_on_view_released([](View &) {
+		                         account_pl_popup_view->set_is_visible(false);
+		                         var_need_refresh = true;
+	                         })})
+	        ->set_draw_order({1, 0, 2}));
+	account_pl_popup_view->set_is_visible(true);
+	var_need_refresh = true;
 }
 
 // Sound profiles : an equalizer curve plus a volume, for one tap
@@ -737,6 +791,14 @@ debug_info_view =
                              ->set_get_background_color(View::STANDARD_BACKGROUND)})
             ->set_draw_order({3, 0, 1, 2, 4}));
     equalizer_popup_view->set_is_visible(false);
+    account_pl_popup_view = new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
+    account_pl_popup_view->set_on_cancel([](OverlayView &view) {
+	    view.set_is_visible(false);
+	    var_need_refresh = true;
+    });
+    account_pl_popup_view->set_is_visible(false);
+    comment_dialog = new OverlayDialogView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
+    comment_dialog->set_is_visible(false);
     playlist_title_view =
         (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL);
     playlist_author_view =
@@ -1101,6 +1163,15 @@ debug_info_view =
 		            var_need_refresh = true;
 	            });
 
+	    {
+		    std::string cid = comment.id; // long press : like / reply with the YouTube account
+		    result->add_on_long_hold(35, [cid](View &view) {
+			    comment_menu_request = cid;
+			    view.reset_holding_status();
+			    var_need_refresh = true;
+		    });
+	    }
+
 	    for (size_t i = 0; i < comment.replies.size(); i++) {
 		    auto &cur_reply = comment.replies[i];
 		    auto &cur_content = cur_reply.content;
@@ -1330,6 +1401,7 @@ debug_info_view =
 					                           }
 					                           misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 					                           Home_update_local_channels();
+					                           account_subscribe_async(author_id, !cur_subscribed); // also on the YouTube account when signed in
 					                           var_need_refresh = true;
 				                           }
 			                           })}),
@@ -1513,6 +1585,16 @@ debug_info_view =
 					                     stop_after_video = !stop_after_video;
 					                     var_need_refresh = true;
 				                     })}));
+				    // fourth row : actions on your YouTube account (OAuth login needed)
+				    main_tab_views.push_back(
+				        (new HorizontalListView(0, 0, 20))
+				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)),
+				                         make_tool([]() { return tr("Like", "Me gusta"); }, 70,
+				                                   []() { if (cur_video_info.id != "") account_like_async(cur_video_info.id, 1); }),
+				                         make_tool([]() { return tr("Dislike", "No me gusta"); }, 80,
+				                                   []() { if (cur_video_info.id != "") account_like_async(cur_video_info.id, -1); }),
+				                         make_tool([]() { return tr("Save to my list", "Guardar en mi lista"); }, 140,
+				                                   []() { if (cur_video_info.id != "") account_playlists_async(cur_video_info.id); })}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 
@@ -3369,6 +3451,9 @@ debug_info_view =
 		    video_draw_playing_bar();
 		    draw_overlay_menu(240 - VIDEO_PLAYING_BAR_HEIGHT - TAB_SELECTOR_HEIGHT - OVERLAY_MENU_ICON_SIZE);
 		    equalizer_popup_view->draw();
+		    if (account_pl_popup_view->is_visible) account_pl_popup_view->draw();
+		    if (comment_dialog->is_visible) comment_dialog->draw();
+		    notice_draw(240 - VIDEO_PLAYING_BAR_HEIGHT);
 		    mini_player_draw();
 		    qr_popup_draw();
 		    small_resource_lock.unlock();
@@ -3481,6 +3566,10 @@ debug_info_view =
 			    popup_took_input = true; // the mini player is open : it takes all the input
 		    } else if (qr_popup_update(key)) {
 			    popup_took_input = true; // the QR popup is open : it takes all the input
+		    } else if (comment_dialog->is_visible) {
+			    comment_dialog->update(key);
+		    } else if (account_pl_popup_view->is_visible) {
+			    account_pl_popup_view->update(key);
 		    } else if (equalizer_popup_view->is_visible) {
 			    equalizer_popup_view->update(key);
 		    } else {
@@ -3505,6 +3594,68 @@ debug_info_view =
 		    small_resource_lock.unlock();
 		    if (popup_took_input) {
 			    key = Hid_info(); // nothing is pressed for the code below
+		    }
+
+		    {   // account actions that need the keyboard or a popup : handled here, outside of the view update
+			    std::string playlists_video_id;
+			    std::vector<AccountPlaylist> account_lists;
+			    if (account_playlists_take(playlists_video_id, account_lists)) {
+				    show_account_playlists(playlists_video_id, account_lists);
+			    }
+			    auto ask_comment_text = [](const std::string &hint, std::string &out) {
+				    SwkbdState keyboard;
+				    swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 500);
+				    swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY | SWKBD_PREDICTIVE_INPUT | SWKBD_MULTILINE);
+				    swkbdSetValidation(&keyboard, SWKBD_NOTEMPTY_NOTBLANK, 0, 0);
+				    swkbdSetHintText(&keyboard, hint.c_str());
+				    swkbdSetButton(&keyboard, SWKBD_BUTTON_LEFT, LOCALIZED(CANCEL).c_str(), false);
+				    swkbdSetButton(&keyboard, SWKBD_BUTTON_RIGHT, LOCALIZED(OK).c_str(), true);
+				    static char buffer[2048];
+				    buffer[0] = 0;
+				    video_set_skip_drawing(true);
+				    auto pressed = swkbdInputText(&keyboard, buffer, sizeof(buffer));
+				    video_set_skip_drawing(false);
+				    var_need_refresh = true;
+				    if (pressed != SWKBD_BUTTON_RIGHT) return false;
+				    out = buffer;
+				    return out != "";
+			    };
+			    std::string comments_token = cur_video_info.comment_sort_tokens[0];
+			    if (comment_write_request) {
+				    comment_write_request = false;
+				    std::string text;
+				    if (comments_token == "") {
+					    notice_show(tr("Open the comments first", "Abre antes los comentarios"));
+				    } else if (account_ready() && ask_comment_text(tr("Write a comment", "Escribe un comentario"), text)) {
+					    account_comment_async(comments_token, text);
+				    }
+			    }
+			    if (comment_reply_request) {
+				    comment_reply_request = false;
+				    std::string text;
+				    if (account_ready() && ask_comment_text(tr("Write a reply", "Escribe una respuesta"), text)) {
+					    account_comment_reply_async(comments_token, comment_target_id, text);
+				    }
+			    }
+			    if (comment_menu_request != "") {
+				    comment_target_id = comment_menu_request;
+				    comment_menu_request = "";
+				    comment_dialog->get_message_view()->set_text_lines(std::vector<std::string>{tr("Comment", "Comentario")})->update_y_range(0, 30);
+				    comment_dialog->set_buttons<std::function<std::string()>>(
+				        {[]() { return tr("Like", "Me gusta"); }, []() { return tr("Reply", "Responder"); }, []() { return LOCALIZED(CANCEL); }},
+				        [](OverlayDialogView &, int button) {
+					        if (button == 0) {
+						        std::string token = cur_video_info.comment_sort_tokens[0];
+						        if (token == "") notice_show(tr("Open the comments first", "Abre antes los comentarios"));
+						        else account_comment_like_async(token, comment_target_id);
+					        } else if (button == 1) {
+						        comment_reply_request = true;
+					        }
+					        return true;
+				        });
+				    comment_dialog->set_is_visible(true);
+				    var_need_refresh = true;
+			    }
 		    }
 
 		    if (bookmark_add_request) { // asked from a button : the keyboard must be opened outside of the view update
