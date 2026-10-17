@@ -4,6 +4,7 @@
 #include "ui/notice.hpp"
 #include "util/async_task.hpp"
 #include "data_io/string_resource.hpp"
+#include "youtube_parser/translate.hpp"
 
 struct AccountJob {
 	int type;
@@ -16,6 +17,8 @@ static Mutex result_lock;
 static bool playlists_ready = false;
 static std::string playlists_video_id;
 static std::vector<AccountPlaylist> playlists_result;
+static bool translation_ready = false;
+static std::string translation_title, translation_text;
 
 bool account_ready() {
 	if (OAuth::is_authenticated()) {
@@ -25,7 +28,7 @@ bool account_ready() {
 	return false;
 }
 
-enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY };
+enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE };
 
 static void run_job(void *arg) {
 	AccountJob *job = (AccountJob *)arg;
@@ -74,6 +77,20 @@ static void run_job(void *arg) {
 		done = tr("Comment liked", "Me gusta al comentario enviado");
 		failed = tr("Could not like the comment (it must be in the first page)", "No se pudo dar me gusta (debe estar en la primera página)");
 		break;
+	case TRANSLATE: {
+		std::string translated;
+		ok = translate_text(job->b, translated);
+		if (ok) {
+			result_lock.lock();
+			translation_title = job->a;
+			translation_text = translated;
+			translation_ready = true;
+			result_lock.unlock();
+			var_need_refresh = true;
+		}
+		failed = tr("Could not translate (no connection?)", "No se pudo traducir (¿sin conexión?)");
+		break;
+	}
 	case COMMENT_REPLY:
 		ok = youtube_account_comment_reply(job->a, job->b, job->c);
 		done = tr("Reply sent", "Respuesta enviada");
@@ -139,4 +156,23 @@ bool account_playlists_take(std::string &video_id, std::vector<AccountPlaylist> 
 	}
 	result_lock.unlock();
 	return ready && out.size();
+}
+
+void translate_async(const std::string &title, const std::string &text) {
+	if (text.empty()) return;
+	notice_show(tr("Translating...", "Traduciendo..."));
+	queue_async_task(run_job, new AccountJob{TRANSLATE, title, text, ""});
+}
+
+bool translation_take(std::string &title, std::string &text) {
+	bool ready;
+	result_lock.lock();
+	ready = translation_ready;
+	if (ready) {
+		title = translation_title;
+		text = translation_text;
+		translation_ready = false;
+	}
+	result_lock.unlock();
+	return ready;
 }

@@ -282,6 +282,7 @@ static void build_queue(VerticalListView *list) {
 		    })
 		    ->add_on_long_hold(35, [i, url, title](View &) {
 			    show_dialog({make_option(tr("QR code", "Código QR"), [url]() { qr_popup_show(share_url(url)); }),
+			                 make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
 			                 make_option(tr("Move up", "Subir"), [i]() { play_queue_move(i, -1); }),
 			                 make_option(tr("Move down", "Bajar"), [i]() { play_queue_move(i, 1); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [url, title]() { pending_action = [url, title]() { add_to_playlist_dialog(video_from_url(url, title)); }; }),
@@ -311,7 +312,8 @@ static void build_favorites(VerticalListView *list) {
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, v](View &) {
-			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
+			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Set tag...", "Poner etiqueta..."), [id]() { pending_action = [id]() { std::string tag; if (ask_text(tr("Tag", "Etiqueta").c_str(), tag)) { favorites_set_tag(id, tag); rebuild_request = true; } }; }),
@@ -349,7 +351,8 @@ static void build_watch_later(VerticalListView *list) {
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, v](View &) {
-			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
+			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Remove from watch later", "Quitar de ver más tarde"), [id]() { watch_later_remove(id); })});
@@ -419,7 +422,8 @@ static void build_playlists(VerticalListView *list) {
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [index, id, url, v](View &) {
-			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
+			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Remove from list", "Quitar de la lista"), [index, id]() { playlist_remove(index, id); })});
 		    });

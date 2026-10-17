@@ -6,6 +6,7 @@
 // "Play next" queue : long-press a video in any list to add it (long-press again to remove it).
 // When the current video ends, the queue is played before any autoplay suggestion.
 // Thread-safe (the UI thread edits it, the player thread consumes it).
+void play_queue_play_next(const std::string &url, const std::string &title); // puts it first in the queue (moves it if queued)
 bool play_queue_toggle(const std::string &url, const std::string &title); // returns true if it was added
 int play_queue_position(const std::string &url);                           // 1-based, 0 if not queued
 int play_queue_size();

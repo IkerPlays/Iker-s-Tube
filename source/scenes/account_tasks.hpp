@@ -13,5 +13,9 @@ void account_comment_async(const std::string &comments_token, const std::string 
 void account_comment_like_async(const std::string &comments_token, const std::string &comment_id);
 void account_comment_reply_async(const std::string &comments_token, const std::string &comment_id, const std::string &text);
 
+// translation of a text into the language of the app (Google Translate web endpoint)
+void translate_async(const std::string &title, const std::string &text);
+bool translation_take(std::string &title, std::string &text); // true once when a result is ready
+
 // result of account_playlists_async : taken by the UI thread
 bool account_playlists_take(std::string &video_id, std::vector<AccountPlaylist> &out);

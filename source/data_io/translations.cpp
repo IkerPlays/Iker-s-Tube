@@ -164,6 +164,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"new videos", {"nouvelles vidéos", "neue Videos", "nuovi video", "novos vídeos", "件の新着動画"}},
 	    {"Continue where I left off", {"Reprendre où je me suis arrêté", "Dort weitermachen, wo ich aufgehört habe", "Riprendi da dove ho lasciato", "Continuar de onde parei", "続きから再生"}},
 	    {"A video you watched before starts from the minute you stopped. Off : always from the beginning.", {"Une vidéo déjà vue reprend à la minute où vous vous êtes arrêté. Désactivé : toujours depuis le début.", "Ein bereits gesehenes Video startet an der Stelle, wo du aufgehört hast. Aus: immer von vorn.", "Un video già visto riparte dal minuto in cui ti sei fermato. Disattivato: sempre dall'inizio.", "Um vídeo já assistido começa no minuto em que você parou. Desativado: sempre do início.", "視聴済みの動画は止めた所から再生します。オフ：常に最初から。"}},
+	    {"Play next", {"Lire ensuite", "Als Nächstes abspielen", "Riproduci dopo", "Reproduzir a seguir", "次に再生"}},
 	};
 	return table;
 }

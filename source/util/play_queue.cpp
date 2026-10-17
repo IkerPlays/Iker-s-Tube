@@ -31,6 +31,17 @@ bool play_queue_toggle(const std::string &url, const std::string &title) {
 	queue_lock.unlock();
 	return added;
 }
+void play_queue_play_next(const std::string &url, const std::string &title) {
+	queue_lock.lock();
+	for (size_t i = 0; i < queue.size(); i++) {
+		if (queue[i].first == url) {
+			queue.erase(queue.begin() + i);
+			break;
+		}
+	}
+	queue.insert(queue.begin(), {url, title});
+	queue_lock.unlock();
+}
 int play_queue_position(const std::string &url) {
 	int res = 0;
 	queue_lock.lock();

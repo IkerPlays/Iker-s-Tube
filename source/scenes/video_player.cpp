@@ -291,6 +291,7 @@ static std::string pending_bookmarks_video_id;
 static double quick_speed = 1.0;
 static BarView *speed_bar_view = NULL;
 static bool mini_visible = false;
+static OverlayView *text_popup_view = NULL; // scrollable text (translations)
 static OverlayView *account_pl_popup_view = NULL; // list of the playlists of the YouTube account
 static OverlayDialogView *comment_dialog = NULL; // Like / Reply / Cancel for a comment
 static std::string comment_menu_request; // id of the comment that was long pressed (handled after the view update)
@@ -398,6 +399,45 @@ static std::vector<View *> make_eq_preset_buttons() {
 	};
 	return {button([]() { return tr("Flat", "Plano"); }, flat), button([]() { return std::string("Bass"); }, bass),
 	        button([]() { return tr("Voice", "Voz"); }, voice), button([]() { return std::string("Treble"); }, treble)};
+}
+
+// popup with a long text in a scroll view (used for translations)
+static void show_text_popup(const std::string &title, const std::string &text) {
+	const int width = 290;
+	std::vector<View *> lines;
+	size_t pos = 0;
+	while (pos <= text.size() && lines.size() < 120) {
+		size_t nl = text.find('\n', pos);
+		std::string line = text.substr(pos, nl == std::string::npos ? std::string::npos : nl - pos);
+		for (auto &part : truncate_str(line, width - 8, 6, 0.5, 0.5)) {
+			lines.push_back((new TextView(4, 0, width - 8, DEFAULT_FONT_INTERVAL))->set_text(part));
+		}
+		if (line.empty()) lines.push_back(new EmptyView(0, 0, width, DEFAULT_FONT_INTERVAL / 2));
+		if (nl == std::string::npos) break;
+		pos = nl + 1;
+	}
+	int body_height = 170;
+	text_popup_view->recursive_delete_subviews();
+	text_popup_view->set_subview(
+	    (new VerticalListView(0, 0, width))
+	        ->set_views({(new TextView(0, 0, width, 22))
+	                         ->set_text(title)
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
+	                     (new ScrollView(0, 0, width, body_height))
+	                         ->set_views({(new VerticalListView(0, 0, width))->set_views(lines)})
+	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
+	                     (new TextView(0, 0, width, 22))
+	                         ->set_text(LOCALIZED(CLOSE))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                         ->set_on_view_released([](View &) {
+		                         text_popup_view->set_is_visible(false);
+		                         var_need_refresh = true;
+	                         })})
+	        ->set_draw_order({1, 0, 2}));
+	text_popup_view->set_is_visible(true);
+	var_need_refresh = true;
 }
 
 // popup with the playlists of the YouTube account : tapping one adds / removes the video
@@ -791,6 +831,12 @@ debug_info_view =
                              ->set_get_background_color(View::STANDARD_BACKGROUND)})
             ->set_draw_order({3, 0, 1, 2, 4}));
     equalizer_popup_view->set_is_visible(false);
+    text_popup_view = new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
+    text_popup_view->set_on_cancel([](OverlayView &view) {
+	    view.set_is_visible(false);
+	    var_need_refresh = true;
+    });
+    text_popup_view->set_is_visible(false);
     account_pl_popup_view = new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT);
     account_pl_popup_view->set_on_cancel([](OverlayView &view) {
 	    view.set_is_visible(false);
@@ -1589,12 +1635,17 @@ debug_info_view =
 				    main_tab_views.push_back(
 				        (new HorizontalListView(0, 0, 20))
 				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)),
-				                         make_tool([]() { return tr("Like", "Me gusta"); }, 70,
+				                         make_tool([]() { return tr("Like", "Me gusta"); }, 60,
 				                                   []() { if (cur_video_info.id != "") account_like_async(cur_video_info.id, 1); }),
 				                         make_tool([]() { return tr("Dislike", "No me gusta"); }, 80,
 				                                   []() { if (cur_video_info.id != "") account_like_async(cur_video_info.id, -1); }),
-				                         make_tool([]() { return tr("Save to my list", "Guardar en mi lista"); }, 140,
-				                                   []() { if (cur_video_info.id != "") account_playlists_async(cur_video_info.id); })}));
+				                         make_tool([]() { return tr("My list", "Mi lista"); }, 70,
+				                                   []() { if (cur_video_info.id != "") account_playlists_async(cur_video_info.id); }),
+				                         make_tool([]() { return tr("Translate", "Traducir"); }, 80,
+				                                   []() {
+					                                   if (cur_video_info.title != "")
+						                                   translate_async(cur_video_info.title, cur_video_info.title + "\n\n" + cur_video_info.description);
+				                                   })}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 
@@ -3451,6 +3502,7 @@ debug_info_view =
 		    video_draw_playing_bar();
 		    draw_overlay_menu(240 - VIDEO_PLAYING_BAR_HEIGHT - TAB_SELECTOR_HEIGHT - OVERLAY_MENU_ICON_SIZE);
 		    equalizer_popup_view->draw();
+		    if (text_popup_view->is_visible) text_popup_view->draw();
 		    if (account_pl_popup_view->is_visible) account_pl_popup_view->draw();
 		    if (comment_dialog->is_visible) comment_dialog->draw();
 		    notice_draw(240 - VIDEO_PLAYING_BAR_HEIGHT);
@@ -3566,6 +3618,8 @@ debug_info_view =
 			    popup_took_input = true; // the mini player is open : it takes all the input
 		    } else if (qr_popup_update(key)) {
 			    popup_took_input = true; // the QR popup is open : it takes all the input
+		    } else if (text_popup_view->is_visible) {
+			    text_popup_view->update(key);
 		    } else if (comment_dialog->is_visible) {
 			    comment_dialog->update(key);
 		    } else if (account_pl_popup_view->is_visible) {
@@ -3601,6 +3655,10 @@ debug_info_view =
 			    std::vector<AccountPlaylist> account_lists;
 			    if (account_playlists_take(playlists_video_id, account_lists)) {
 				    show_account_playlists(playlists_video_id, account_lists);
+			    }
+			    std::string translation_title, translation_text;
+			    if (translation_take(translation_title, translation_text)) {
+				    show_text_popup(translation_title, translation_text);
 			    }
 			    auto ask_comment_text = [](const std::string &hint, std::string &out) {
 				    SwkbdState keyboard;
@@ -3642,7 +3700,7 @@ debug_info_view =
 				    comment_menu_request = "";
 				    comment_dialog->get_message_view()->set_text_lines(std::vector<std::string>{tr("Comment", "Comentario")})->update_y_range(0, 30);
 				    comment_dialog->set_buttons<std::function<std::string()>>(
-				        {[]() { return tr("Like", "Me gusta"); }, []() { return tr("Reply", "Responder"); }, []() { return LOCALIZED(CANCEL); }},
+				        {[]() { return tr("Like", "Me gusta"); }, []() { return tr("Reply", "Responder"); }, []() { return tr("Translate", "Traducir"); }, []() { return LOCALIZED(CANCEL); }},
 				        [](OverlayDialogView &, int button) {
 					        if (button == 0) {
 						        std::string token = cur_video_info.comment_sort_tokens[0];
@@ -3650,6 +3708,13 @@ debug_info_view =
 						        else account_comment_like_async(token, comment_target_id);
 					        } else if (button == 1) {
 						        comment_reply_request = true;
+					        } else if (button == 2) {
+						        for (auto &c : cur_video_info.comments) { // the text of the long pressed comment
+							        if (c.id == comment_target_id) {
+								        translate_async(c.author.name, c.content);
+								        break;
+							        }
+						        }
 					        }
 					        return true;
 				        });
