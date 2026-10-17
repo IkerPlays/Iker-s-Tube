@@ -35,7 +35,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Continue watching.** The first item of Home is the last video you played.
 - **Queue and backups.** The play queue survives a restart, your data is backed up on the SD card once a week, and the app tells you when the last run ended in a crash.
 - **Search.** Long press a recent search to forget it, and optional settings hide Shorts and already watched videos in search, home and the subscription feeds.
-- **Fixes from a code review.** Failed download threads no longer block later downloads, popups no longer leak on every visit, a failed read of an offline file no longer breaks playback, and uploads no longer clash with other network requests.
+- **Fixes from two code reviews.** A failed re-download no longer deletes a saved copy, saved videos with one file can play as audio, the bottom bar no longer piles up screens, the crash notice stays visible, comment details are shared safely between threads, Failed download threads no longer block later downloads, popups no longer leak on every visit, a failed read of an offline file no longer breaks playback, and uploads no longer clash with other network requests.
 
 ## Installing
 

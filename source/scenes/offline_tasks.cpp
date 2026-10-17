@@ -91,8 +91,7 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 	}
 	if (file) fclose(file);
 	if (ok && total && done >= total) {
-		remove(part.path.c_str());
-		return rename(tmp_path.c_str(), part.path.c_str()) == 0;
+		return true; // complete : stays as `<path>.part` until every part of the job is done (see run_job)
 	}
 	remove(tmp_path.c_str());
 	return false;
@@ -119,6 +118,12 @@ static void run_job(DownloadJob *job, NetworkSessionList &session) {
 			}
 		});
 	}
+	if (ok) { // every part is complete : only now the files of an older copy are replaced
+		for (auto &part : job->parts) {
+			remove(part.path.c_str());
+			if (rename((part.path + ".part").c_str(), part.path.c_str()) != 0) ok = false;
+		}
+	}
 	if (ok) {
 		OfflineItem item;
 		item.id = job->id;
@@ -129,7 +134,7 @@ static void run_job(DownloadJob *job, NetworkSessionList &session) {
 		offline_add(item);
 		notice_show(tr("Saved for offline viewing: ", "Guardado para ver sin conexión: ") + job->title.substr(0, 30));
 	} else {
-		for (auto &part : job->parts) remove(part.path.c_str());
+		for (auto &part : job->parts) remove((part.path + ".part").c_str()); // only the unfinished files : a saved copy stays
 		notice_show(download_cancel ? tr("Download cancelled", "Descarga cancelada") : tr("Could not download it", "No se pudo descargar"));
 	}
 	delete job;

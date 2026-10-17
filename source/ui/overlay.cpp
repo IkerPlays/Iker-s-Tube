@@ -279,6 +279,7 @@ void update_overlay_menu(Hid_info *key) {
 			} else if (nav_at(last_touch_x, last_touch_y) != -1) { // an item of the navigation bar
 				int item = nav_at(last_touch_x, last_touch_y);
 				menu_status = CLOSED;
+				global_intent_is_nav = true;
 				if (item == 0) {
 					global_intent.next_scene = SceneType::HOME;
 					global_intent.arg = "";

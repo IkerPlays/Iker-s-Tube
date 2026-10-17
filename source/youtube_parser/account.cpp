@@ -34,17 +34,44 @@ static const char *CLIENTS[] = {
 };
 static const int CLIENT_COUNT = sizeof CLIENTS / sizeof CLIENTS[0];
 
-static std::string last_error; // what the last failed request said (endpoint, client, HTTP status, start of the answer)
-static std::string context_video_id; // the video whose comments are being used
+// shared between the UI thread and the worker threads : always behind this lock
+static LightLock state_lock;
+static struct StateLockInit {
+	StateLockInit() { LightLock_Init(&state_lock); }
+} state_lock_init;
+static std::string last_error_text; // what the last failed request said (endpoint, client, HTTP status, start of the answer)
+static std::string context_video;   // the video whose comments are being used
 
-std::string youtube_account_last_error() { return last_error; }
-void youtube_account_set_video(const std::string &video_id) { context_video_id = video_id; }
+static void set_last_error(const std::string &text) {
+	LightLock_Lock(&state_lock);
+	last_error_text = text;
+	LightLock_Unlock(&state_lock);
+}
+static std::string get_last_error() {
+	LightLock_Lock(&state_lock);
+	std::string res = last_error_text;
+	LightLock_Unlock(&state_lock);
+	return res;
+}
+static std::string get_context_video() {
+	LightLock_Lock(&state_lock);
+	std::string res = context_video;
+	LightLock_Unlock(&state_lock);
+	return res;
+}
+
+std::string youtube_account_last_error() { return get_last_error(); }
+void youtube_account_set_video(const std::string &video_id) {
+	LightLock_Lock(&state_lock);
+	if (context_video != video_id) context_video = video_id; // (called every frame : assign only when it changed)
+	LightLock_Unlock(&state_lock);
+}
 
 // POST to /youtubei/v1/<endpoint> as the signed-in user. `fields` is the part of the JSON body after the context
 // (for example `"videoId":"abc"`). Returns {ok, body}.
 static std::pair<bool, std::string> account_post(const std::string &endpoint, const std::string &fields, int client = 0) {
 	if (!OAuth::is_authenticated()) {
-		last_error = "not signed in";
+		set_last_error("not signed in");
 		return {false, ""};
 	}
 	if (client < 0 || client >= CLIENT_COUNT) client = 0;
@@ -61,8 +88,9 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 		std::string msg;
 		size_t m = response.second.find("\"message\"");
 		if (m != std::string::npos) msg = response.second.substr(m, 90);
-		last_error = endpoint + "/c" + std::to_string(client) + " " + (response.first ? msg : response.second.substr(0, 60));
-		logger.warning("account", "failed : " + last_error + " | " + response.second.substr(0, 300));
+		std::string why = endpoint + "/c" + std::to_string(client) + " " + (response.first ? msg : response.second.substr(0, 60));
+		set_last_error(why);
+		logger.warning("account", "failed : " + why + " | " + response.second.substr(0, 300));
 	} else {
 		logger.info("account", endpoint + " ok (client " + std::to_string(client) + ")");
 	}
@@ -196,8 +224,9 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 			return true;
 		}
 		if (!r.first) continue; // this client does not take the login (or the token) : the next one
-		if (context_video_id != "") { // the page of the video as this client sees it has its own comment tokens
-			auto page = account_post("next", "\"videoId\": \"" + json_escape(context_video_id) + "\"", client);
+		std::string video_id = get_context_video();
+		if (video_id != "") { // the page of the video as this client sees it has its own comment tokens
+			auto page = account_post("next", "\"videoId\": \"" + json_escape(video_id) + "\"", client);
 			if (!page.first) continue;
 			if (comment_section_usable(page.second, need_params)) {
 				comment_client = client;
@@ -214,7 +243,7 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 			}
 		}
 	}
-	if (last_error == "" ) last_error = "no comment section";
+	if (get_last_error() == "") set_last_error("no comment section");
 	logger.warning("account", "no usable comment section in any client");
 	return false;
 }
@@ -225,7 +254,7 @@ bool youtube_account_comment_create(const std::string &comments_token, const std
 	size_t end = json.size();
 	std::string params = text_after(json, 0, end, "\"createCommentParams\":\"");
 	if (params == "") {
-		last_error = "no createCommentParams";
+		set_last_error("no createCommentParams");
 		logger.warning("account", "no createCommentParams in the comment section");
 		return false;
 	}

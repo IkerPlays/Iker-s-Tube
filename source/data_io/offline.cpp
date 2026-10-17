@@ -1,6 +1,7 @@
 #include "data_io/offline.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cstdio>
+#include <cerrno>
 #include <set>
 #include <cstdlib>
 #include <sys/stat.h>
@@ -109,16 +110,21 @@ void offline_add(const OfflineItem &item) {
 
 void offline_remove(const std::string &id) {
 	offline_lock.lock();
-	auto items = read_index();
-	for (size_t k = 0; k < items.size(); k++) {
-		if (items[k].id == id) {
-			items.erase(items.begin() + k);
-			break;
-		}
+	// the files go first : if one cannot be deleted (it may still be open) the entry stays instead of leaving an orphan file
+	bool removed = true;
+	for (const std::string &path : {offline_file_path(id), offline_video_path(id)}) {
+		if (remove(path.c_str()) != 0 && errno != ENOENT) removed = false;
 	}
-	write_index(items);
-	remove(offline_file_path(id).c_str());
-	remove(offline_video_path(id).c_str());
+	if (removed) {
+		auto items = read_index();
+		for (size_t k = 0; k < items.size(); k++) {
+			if (items[k].id == id) {
+				items.erase(items.begin() + k);
+				break;
+			}
+		}
+		write_index(items);
+	}
 	offline_lock.unlock();
 }
 

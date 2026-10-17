@@ -243,7 +243,11 @@ void Menu_init(void) {
 
 	Menu_get_system_info();
 
-	{ // the last run ended with an unexpected abort : say so once and keep the report as crash_last.txt
+	queue_async_task(auto_backup_task, NULL); // a backup of the user data once a week
+
+	Menu_loading_screen(3000);
+
+	{ // (after the loading screen, so the notice is still on when the first screen shows) the last run ended with an unexpected abort : say so once and keep the report as crash_last.txt
 		FILE *crash = fopen("sdmc:/3ds/IkersTube/crash.txt", "r");
 		if (crash) {
 			fclose(crash);
@@ -252,9 +256,6 @@ void Menu_init(void) {
 			notice_show(tr("The app closed unexpectedly last time (crash_last.txt)", "La app se cerró sola la última vez (crash_last.txt)"));
 		}
 	}
-	queue_async_task(auto_backup_task, NULL); // a backup of the user data once a week
-
-	Menu_loading_screen(3000);
 
 	logger.info(DEF_MENU_INIT_STR, "Initialized.");
 }
@@ -316,6 +317,7 @@ void Menu_exit(void) {
 }
 
 static std::vector<Intent> scene_stack = {{SceneType::HOME, ""}};
+bool global_intent_is_nav = false;
 
 bool Menu_main(void) {
 	Util_hid_update_key_state();
@@ -369,6 +371,7 @@ bool Menu_main(void) {
 	}
 
 	global_intent = Intent();
+	global_intent_is_nav = false;
 	if (global_current_scene == SceneType::VIDEO_PLAYER) {
 		VideoPlayer_draw();
 	} else if (global_current_scene == SceneType::SEARCH) {
@@ -429,11 +432,18 @@ bool Menu_main(void) {
 
 	if (global_intent.next_scene == SceneType::EXIT) {
 		return false;
-	} else if (global_intent.next_scene != SceneType::NO_CHANGE && global_intent != scene_stack.back()) {
-		if (scene_stack.size() >= 2 && global_intent == scene_stack[scene_stack.size() - 2]) {
+	} else if (global_intent.next_scene != SceneType::NO_CHANGE &&
+	           (global_intent_is_nav ? (global_intent.next_scene != global_current_scene || global_intent.next_scene == SceneType::LIBRARY)
+	                                 : global_intent != scene_stack.back())) {
+		if (global_intent_is_nav) { // a destination of the bottom bar : the stack starts again from Home
+			scene_stack.resize(1);
+			if (global_intent.next_scene != SceneType::HOME) scene_stack.push_back(global_intent);
+		} else if (scene_stack.size() >= 2 && global_intent == scene_stack[scene_stack.size() - 2]) {
 			global_intent.next_scene = SceneType::BACK;
 		}
-		if (global_intent.next_scene == SceneType::BACK) {
+		if (global_intent_is_nav) {
+			// (the stack is already set)
+		} else if (global_intent.next_scene == SceneType::BACK) {
 			if (scene_stack.size() >= 2) {
 				scene_stack.pop_back();
 			}

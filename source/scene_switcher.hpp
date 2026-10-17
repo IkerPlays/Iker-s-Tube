@@ -24,6 +24,9 @@ struct Intent {
 
 extern SceneType global_current_scene;
 extern Intent global_intent;
+// set together with global_intent by the bottom navigation bar : the destination replaces the scene stack (it is a root, not
+// a step forward), and it is switched to even if the intent is the same as the one on top (the Library keeps its tab inside)
+extern bool global_intent_is_nav;
 
 void Menu_init(void);
 

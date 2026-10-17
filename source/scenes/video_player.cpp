@@ -2100,7 +2100,9 @@ debug_info_view =
 	    return;
     }
     cur_video_info = tmp_video_info;
-    video_info_cache[url] = tmp_video_info;
+    if (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0) {
+	    video_info_cache[url] = tmp_video_info; // (not the saved copy that replaced an online video)
+    }
     while (video_info_cache.size() > 5) { // every cached page holds suggestions and comments : keep only a few
 	    auto victim = video_info_cache.begin();
 	    while (victim != video_info_cache.end() && (victim->first == url || victim->first == cur_displaying_url || victim->first == cur_playing_url)) ++victim;
@@ -2190,7 +2192,9 @@ debug_info_view =
 		    pending_offline_delete = "";
 	    }
 	    playing_video_info = tmp_video_info;
-	    video_info_cache[url] = tmp_video_info;
+	    if (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0) { // the saved copy that replaced an online video is not remembered under its address
+		    video_info_cache[url] = tmp_video_info;
+	    }
 	    vid_resume_id[0] = 0; // the old video may still be decoding : its position must not be saved for the new id.
 	                          // The decode thread sets the id when the new video really starts.
 
@@ -3254,7 +3258,7 @@ debug_info_view =
 			    }
 			    if (audio_only_mode) {
 				    result = network_decoder.init(
-				        snap_audio_url, stream_downloader,
+				        snap_audio_url != "" ? snap_audio_url : snap_both_url, stream_downloader,
 				        snap_fragment_len,
 				        snap_ts_adjust, var_is_new3ds);
 			    } else if (snap_video_url != "" &&
