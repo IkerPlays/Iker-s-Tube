@@ -1,3 +1,4 @@
 Devbuild notes
 
-- Two new settings (display section): Hide Shorts in search and home, and Hide watched videos in search and home. They leave those videos out of the search results and the home feed (also when more results load). Both are off by default and apply to lists loaded from then on.
+- Studio setup without files: the Google Cloud client for Studio can now be built into the app (GitHub secrets STUDIO_CLIENT_ID and STUDIO_CLIENT_SECRET, picked up by the next build), or set up in the Studio tab by scanning a QR with the camera or typing it. After that only Sign in for Studio is needed. See Documentation/STUDIO_SETUP.md.
+- Start screen: the fake Homebrew text is gone. The real Homebrew animation is the logo embedded in the .cia (it is played by the HOME Menu when the installed app is launched, before the app starts). The app shows the loading screen with its progress bar from the first moment and keeps it for 3 seconds at the end so the account and data finish loading.

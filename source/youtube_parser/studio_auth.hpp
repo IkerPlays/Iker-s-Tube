@@ -3,10 +3,14 @@
 
 // Studio needs the YouTube Data API, which the main OAuth login of the app (the one of the YouTube TV client) cannot use
 // (YouTube answers 403). So Studio has its own login with a Google Cloud OAuth client of the owner :
-// sdmc:/3ds/IkersTube/studio_client.txt has two lines, the client id and the client secret (see Documentation/STUDIO_SETUP.md).
+// The client comes with the app (build secrets) or is set up in the Studio tab (typed or scanned from a QR); it is kept in
+// sdmc:/3ds/IkersTube/studio_client.txt (two lines : client id, client secret). See Documentation/STUDIO_SETUP.md.
 // The refresh token is kept in sdmc:/3ds/IkersTube/studio_tokens.txt.
 
 bool studio_auth_has_client();
+bool studio_auth_client_built_in(); // the app was built with the client (nothing to set up)
+// saves a client set up on this console (typed or scanned from a QR) : returns false if something is missing
+bool studio_auth_set_client(const std::string &id, const std::string &secret);
 bool studio_auth_signed_in();
 std::string studio_auth_access_token(); // refreshed when it expired, "" if there is no Studio login
 void studio_auth_sign_out();

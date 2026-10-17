@@ -332,6 +332,14 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Yes, delete everything", {"Oui, tout supprimer", "Ja, alles löschen", "Sì, elimina tutto", "Sim, apagar tudo", "はい、すべて削除"}},
 	    {"Hide Shorts in search and home", {"Masquer les Shorts dans la recherche et l'accueil", "Shorts in Suche und Start ausblenden", "Nascondi gli Short in ricerca e home", "Ocultar Shorts na busca e no início", "検索とホームでショートを非表示"}},
 	    {"Hide watched videos in search and home", {"Masquer les vidéos vues dans la recherche et l'accueil", "Gesehene Videos in Suche und Start ausblenden", "Nascondi i video visti in ricerca e home", "Ocultar vídeos assistidos na busca e no início", "検索とホームで視聴済みを非表示"}},
+	    {"Set up by scanning a QR", {"Configurer en scannant un QR", "Per QR-Scan einrichten", "Configura scansionando un QR", "Configurar escaneando um QR", "QRをスキャンして設定"}},
+	    {"Set up by typing", {"Configurer en saisissant", "Per Eingabe einrichten", "Configura digitando", "Configurar digitando", "入力して設定"}},
+	    {"To upload or edit, set up the Studio client:", {"Pour envoyer ou modifier, configurez le client Studio :", "Zum Hochladen/Bearbeiten den Studio-Client einrichten:", "Per caricare o modificare, configura il client Studio:", "Para enviar ou editar, configure o cliente do Studio:", "アップロード/編集にはStudioクライアントを設定:"}},
+	    {"Studio client saved - now sign in", {"Client Studio enregistré - connectez-vous maintenant", "Studio-Client gespeichert - jetzt anmelden", "Client Studio salvato - ora accedi", "Cliente do Studio salvo - agora entre", "Studioクライアントを保存 - ログインしてください"}},
+	    {"The QR must have the client id and the secret", {"Le QR doit contenir l'ID client et le secret", "Der QR muss Client-ID und Secret enthalten", "Il QR deve avere l'ID client e il segreto", "O QR deve ter o ID do cliente e o segredo", "QRにはクライアントIDとシークレットが必要です"}},
+	    {"Client ID", {"ID client", "Client-ID", "ID client", "ID do cliente", "クライアントID"}},
+	    {"Client secret", {"Secret client", "Client-Secret", "Segreto client", "Segredo do cliente", "クライアントシークレット"}},
+	    {"Starting...", {"Démarrage...", "Starte...", "Avvio...", "Iniciando...", "起動中..."}},
 	};
 	return table;
 }

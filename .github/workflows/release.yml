@@ -80,7 +80,10 @@ jobs:
 
       # The version has no "-dev" suffix : the app sees it as a stable release.
       - name: Build .3dsx and .cia
-        run: make MAKEROM=makerom BANNERTOOL=bannertool IKT_VERSION=${{ needs.check.outputs.version }}
+        env:
+          STUDIO_CLIENT_ID: ${{ secrets.STUDIO_CLIENT_ID }}
+          STUDIO_CLIENT_SECRET: ${{ secrets.STUDIO_CLIENT_SECRET }}
+        run: make MAKEROM=makerom BANNERTOOL=bannertool IKT_VERSION=${{ needs.check.outputs.version }} IKT_STUDIO_CLIENT_ID="$STUDIO_CLIENT_ID" IKT_STUDIO_CLIENT_SECRET="$STUDIO_CLIENT_SECRET"
 
       - name: Collect files
         run: |

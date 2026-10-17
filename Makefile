@@ -76,7 +76,11 @@ CFLAGS	:= -Wall -Wextra -Wno-unused -Wno-psabi -O2 -mword-relocations \
 		$(ARCH) -DDEF_BUILD_TIME="\"$(TIME)\""
 
 IKT_VERSION ?= 1.0.0
-CFLAGS	+=	$(INCLUDE) -DARM11 -D__3DS__ -DCURL_STATICLIB -DIKT_VERSION="\"$(IKT_VERSION)\""
+# the Google Cloud OAuth client of the owner for Studio (YouTube Data API) : given by the build (GitHub secrets), empty otherwise
+IKT_STUDIO_CLIENT_ID ?=
+IKT_STUDIO_CLIENT_SECRET ?=
+CFLAGS	+=	$(INCLUDE) -DARM11 -D__3DS__ -DCURL_STATICLIB -DIKT_VERSION="\"$(IKT_VERSION)\"" \
+		-DSTUDIO_CLIENT_ID="\"$(IKT_STUDIO_CLIENT_ID)\"" -DSTUDIO_CLIENT_SECRET="\"$(IKT_STUDIO_CLIENT_SECRET)\""
 
 CXXFLAGS	:= $(CFLAGS) -fno-exceptions -funwind-tables -std=gnu++14
 

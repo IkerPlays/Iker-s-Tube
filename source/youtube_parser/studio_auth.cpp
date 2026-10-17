@@ -36,15 +36,24 @@ static std::string read_line(FILE *f) {
 	return trim(buf);
 }
 
+#ifndef STUDIO_CLIENT_ID
+#define STUDIO_CLIENT_ID ""
+#endif
+#ifndef STUDIO_CLIENT_SECRET
+#define STUDIO_CLIENT_SECRET ""
+#endif
+
 static void load_locked() {
 	if (loaded) return;
 	loaded = true;
+	client_id = STUDIO_CLIENT_ID; // built into the app (GitHub secrets of the build)
+	client_secret = STUDIO_CLIENT_SECRET;
 	FILE *f = fopen(CLIENT_PATH, "r");
-	if (f) {
+	if (f && (client_id == "" || client_secret == "")) { // or the one set up on this console
 		client_id = read_line(f);
 		client_secret = read_line(f);
-		fclose(f);
 	}
+	if (f) fclose(f);
 	f = fopen(TOKENS_PATH, "r");
 	if (f) {
 		refresh_token = read_line(f);
@@ -100,6 +109,25 @@ static NetworkResult post_form(const std::string &url, const std::string &body) 
 	return auth_session().perform(
 	    HttpRequest::POST(url, {{"Content-Type", "application/x-www-form-urlencoded"}}, body));
 }
+
+bool studio_auth_set_client(const std::string &id, const std::string &secret) {
+	std::string i = trim(id), s = trim(secret);
+	if (i == "" || s == "") return false;
+	mkdir("sdmc:/3ds", 0777);
+	mkdir("sdmc:/3ds/IkersTube", 0777);
+	FILE *f = fopen(CLIENT_PATH, "w");
+	if (!f) return false;
+	fprintf(f, "%s\n%s\n", i.c_str(), s.c_str());
+	fclose(f);
+	LightLock_Lock(&auth_lock);
+	loaded = false; // read again (the one built into the app still wins)
+	client_id = client_secret = refresh_token = access_token = "";
+	load_locked();
+	LightLock_Unlock(&auth_lock);
+	return true;
+}
+
+bool studio_auth_client_built_in() { return std::string(STUDIO_CLIENT_ID) != "" && std::string(STUDIO_CLIENT_SECRET) != ""; }
 
 bool studio_auth_has_client() {
 	LightLock_Lock(&auth_lock);

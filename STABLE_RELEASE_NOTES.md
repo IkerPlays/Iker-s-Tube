@@ -14,12 +14,12 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ### New look
 - **Bottom navigation bar** with icons (Home, Search, Library, Downloads, More) on the main screens.
 - **Pill tabs** in the accent color and rounded buttons.
-- **Start screen.** The Homebrew mark and a 3 second loading screen with a progress bar give the account and data time to load.
+- **Start screen.** A loading screen with a progress bar from the first moment, kept for 3 seconds at the end so the account and data load (the real Homebrew animation of the .cia is played by the HOME Menu before it).
 
 ### Studio
 - **Statistics kept.** The last numbers are saved and shown when they cannot be loaded.
 - **Statistics fixed.** Subscribers, total views and total videos come from the public About page of your channel, so they load without the Data API.
-- **Own Studio login.** Uploading and editing need the YouTube Data API, which the main login cannot use. Studio has its own sign-in with a Google Cloud client of yours (see Documentation/STUDIO_SETUP.md).
+- **Own Studio login.** Uploading and editing need the YouTube Data API, which the main login cannot use. Studio has its own sign-in with a Google Cloud client of yours, built into the app by the build secrets or set up in the Studio tab with a QR or by typing (see Documentation/STUDIO_SETUP.md).
 - **Upload with more options.** Category and custom thumbnail, a button to watch the uploaded video, and uploads run in their own network session.
 - **Edit my uploads.** Change visibility, title, delete, or watch your latest uploads (without the Studio login it lists your public videos). Create playlists and open your channel.
 

@@ -8,6 +8,7 @@
 #include "oauth/oauth.hpp"
 #include "ui/ui.hpp"
 #include "ui/notice.hpp"
+#include "ui/qr_scan.hpp"
 #include "util/async_task.hpp"
 #include <dirent.h>
 #include <sys/stat.h>
@@ -290,6 +291,27 @@ static void start_login() {
 	}
 }
 
+// "client_id client_secret" (separated by spaces, lines or commas) : saves them
+static void setup_client_from_text(const std::string &text) {
+	std::vector<std::string> parts;
+	std::string cur;
+	for (char c : text + "\n") {
+		if (isspace((unsigned char)c) || c == ',' || c == ';') {
+			if (cur != "") parts.push_back(cur);
+			cur = "";
+		} else {
+			cur += c;
+		}
+	}
+	if (parts.size() >= 2 && studio_auth_set_client(parts[0], parts[1])) {
+		notice_show(tr("Studio client saved - now sign in", "Cliente de Studio guardado - ahora inicia sesión"));
+	} else {
+		notice_show(tr("The QR must have the client id and the secret", "El QR debe tener el ID de cliente y el secreto"));
+	}
+	mode_dirty = true;
+	var_need_refresh = true;
+}
+
 static bool studio_ready_or_notice() {
 	if (studio_auth_signed_in()) return true;
 	notice_show(tr("Sign in for Studio first (Studio tab)", "Inicia sesión en Studio primero (pestaña Studio)"));
@@ -322,8 +344,21 @@ static std::vector<View *> build_dash() {
 	}));
 	v.push_back(button([]() { return LOCALIZED(RELOAD); }, []() { start_stats_load(); }));
 	if (!studio_auth_has_client()) { // uploading and editing need the owner's own Google Cloud client
-		v.push_back(label([]() { return tr("To upload or edit: create studio_client.txt", "Para subir o editar: crea studio_client.txt"); }));
-		v.push_back(label([]() { return tr("in 3ds/IkersTube (see STUDIO_SETUP.md)", "en 3ds/IkersTube (mira STUDIO_SETUP.md)"); }));
+		v.push_back(label([]() { return tr("To upload or edit, set up the Studio client:", "Para subir o editar, configura el cliente de Studio:"); }));
+		v.push_back(button([]() { return tr("Set up by scanning a QR", "Configurar escaneando un QR"); }, []() {
+			std::string scanned;
+			video_set_skip_drawing(true);
+			bool ok = qr_scan_run(scanned);
+			video_set_skip_drawing(false);
+			if (ok) setup_client_from_text(scanned);
+			var_need_refresh = true;
+		}));
+		v.push_back(button([]() { return tr("Set up by typing", "Configurar escribiendo"); }, []() {
+			std::string id, secret;
+			if (!ask_text(tr("Client ID", "ID de cliente"), "", 120, false, id)) return;
+			if (!ask_text(tr("Client secret", "Secreto de cliente"), "", 80, false, secret)) return;
+			setup_client_from_text(id + "\n" + secret);
+		}));
 	} else if (!studio_auth_signed_in()) {
 		v.push_back(button([]() { return login_running ? tr("Waiting for the login...", "Esperando el acceso...") : tr("Sign in for Studio", "Iniciar sesión en Studio"); },
 		                   []() { start_login(); }));

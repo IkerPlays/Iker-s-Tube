@@ -22,13 +22,27 @@ cliente OAuth tuyo de Google Cloud. Se hace una sola vez (unos 10 minutos, grati
 2. Tipo de aplicación: **Televisores y dispositivos de entrada limitada**.
 3. Copia el **ID de cliente** y el **Secreto de cliente**.
 
-## 4. Poner las claves en la 3DS
-Crea en la tarjeta SD el archivo `3ds/IkersTube/studio_client.txt` con **dos líneas**:
+## 4. Dar las claves a la app (elige UNA forma)
+
+**A) Que vengan dentro de la app (la más cómoda, sin tocar la 3DS).** En GitHub, en tu repositorio:
+"Settings" -> "Secrets and variables" -> "Actions" -> "New repository secret". Crea dos secretos:
+
+- `STUDIO_CLIENT_ID` = el ID de cliente
+- `STUDIO_CLIENT_SECRET` = el secreto de cliente
+
+Desde la siguiente versión que se construya (devbuild o estable) la app ya los lleva dentro y el Studio solo pide iniciar sesión.
+(Los secretos quedan dentro del programa publicado. Con este tipo de cliente Google lo permite: el "secreto" no es confidencial,
+y en modo pruebas solo pueden entrar las cuentas que añadiste como usuarios de prueba.)
+
+**B) Desde la propia 3DS, sin archivos.** En la pestaña Studio, "Configurar escaneando un QR" o "Configurar escribiendo".
+Para el QR, crea en cualquier generador de códigos QR uno con este texto (dos líneas) y escanéalo con la cámara de la 3DS:
 
 ```
 ID_DE_CLIENTE.apps.googleusercontent.com
 SECRETO_DE_CLIENTE
 ```
+
+La app lo guarda en la SD (`3ds/IkersTube/studio_client.txt`). Ya no hace falta crear ese archivo a mano.
 
 ## 5. Iniciar sesión en Studio
 1. En la app, pestaña **Studio** -> **Iniciar sesión en Studio**.
