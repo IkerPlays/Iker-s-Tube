@@ -1,31 +1,13 @@
 Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of FourthTube and ThirdTube (GPLv3).
 
-## What's new since the last stable release (1.0.0)
+## What's new since the last stable release (1.0.1)
 
-- **Listen with the console closed.** Audio-only playback turns the screens off after a few seconds to save battery.
-- **Color themes, text size and large thumbnails.** Six color themes, a global small / normal / large text size and an optional large-thumbnail mode.
-- **Subtitles.** Better caption loading (more formats, retries) plus size and color settings.
-- **Automatic quality.** The next videos start at a lower quality if playback keeps stalling, and go back up when the connection is stable.
-- **Search.** Keyboard suggestions from your history, Explore shortcuts (Music, Trending, Gaming, Live, Movie trailers, News) and a Discover section based on the channels you watched.
-- **QR codes.** Show a QR code of any video (video page, queue, favorites, playlists) and scan QR codes with the camera to open links.
-- **Player tools.** Jump 10 seconds back or forward, A-B loop, tappable chapters, equalizer presets and a thumbnail preview while dragging the progress bar.
-- **Comments.** Sort by top or newest.
-- **More reliable.** Wi-Fi reconnect during playback, automatic restart after installing an update, update screen with a short summary of the notes.
-- **Settings.** Grouped into sections, with data usage, Wi-Fi status and the latest warnings and errors.
-- **Languages.** The new texts are available in English, Spanish, French, German, Italian, Portuguese and Japanese.
-- **Watch later.** A Later tab in the Library and a Later button on the video page, mirrored to your YouTube Watch later playlist when you are signed in with OAuth.
-- **Mini player.** Big controls on the bottom screen (previous, play/pause, next, volume) with swipe gestures, to listen with the console in your pocket.
-- **More player tools.** Quick speed button (50% to 200%), named bookmarks, next chapter button and a logo screensaver when a video stays paused.
-- **Grid of thumbnails.** Optional two-column grid for search results.
-- **Start screen and automatic theme.** Choose the screen the app opens on and let the theme follow the time of day.
-- **Log files.** Warnings and errors are saved to the SD card, plus a button to save the full log.
 - **Backup and statistics.** Export and import your data (favorites, watch later, playlists, bookmarks, history, subscriptions, settings) and see your total playing time and most watched channel.
 - **Data saver.** 240p videos without thumbnails, plus a per-session data limit warning.
 - **Grid of thumbnails everywhere.** Search, channel pages and the home feed.
 - **Watch later sync (download).** The Later tab also pulls your YouTube Watch later playlist when you are signed in.
 - **Personal controls.** Choose what X and Y do in the player, left-handed mini player, speed remembered per channel, skip 30 s and stop after this video.
 - **Custom idle background** from a picture on the SD card.
-- **Logo.** New static logo on the idle screen and boot screen.
 
 ## Installing
 
