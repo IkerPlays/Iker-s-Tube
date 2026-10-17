@@ -220,6 +220,8 @@ static void load_more_suggestions(void *);
 static void load_more_replies(void *);
 static void load_caption(void *);
 
+static bool net_waiting_snapshot = false; // get_network_waiting_status() taken outside small_resource_lock (lock order)
+
 // Automatic quality : if playback stalls repeatedly the quality cap for the next videos goes one step down,
 // after a few minutes of smooth playback it goes one step up again.
 static void auto_quality_tick() {
@@ -238,7 +240,7 @@ static void auto_quality_tick() {
 		lowered_for_this_video = false;
 	}
 	time_t now = time(NULL);
-	bool waiting = get_network_waiting_status() != NULL;
+	bool waiting = net_waiting_snapshot; // read before the lock : get_network_waiting_status() takes the decoder lock
 	if (!vid_play_request || vid_pausing || !waiting) {
 		stall_since = 0;
 		if (smooth_since && now - smooth_since >= 240 && var_auto_quality_cap > 0) {
@@ -3370,6 +3372,7 @@ debug_info_view =
 	    } else if (Util_expl_query_show_flag()) {
 		    Util_expl_main(key);
 	    } else {
+		    net_waiting_snapshot = get_network_waiting_status() != NULL;
 		    /* ****************************** LOCK START ******************************  */
 		    small_resource_lock.lock();
 

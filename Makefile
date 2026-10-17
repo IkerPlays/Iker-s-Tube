@@ -78,7 +78,7 @@ CFLAGS	:= -Wall -Wextra -Wno-unused -Wno-psabi -O2 -mword-relocations \
 IKT_VERSION ?= 1.0.0
 CFLAGS	+=	$(INCLUDE) -DARM11 -D__3DS__ -DCURL_STATICLIB -DIKT_VERSION="\"$(IKT_VERSION)\""
 
-CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=gnu++14
+CXXFLAGS	:= $(CFLAGS) -fno-exceptions -funwind-tables -std=gnu++14
 
 ASFLAGS	:= $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs $(ARCH) -Wl,--allow-multiple-definition,-Map,$(notdir $*.map)

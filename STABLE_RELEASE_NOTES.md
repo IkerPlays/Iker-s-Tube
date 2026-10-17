@@ -8,6 +8,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Watch later sync (download).** The Later tab also pulls your YouTube Watch later playlist when you are signed in.
 - **Personal controls.** Choose what X and Y do in the player, left-handed mini player, speed remembered per channel, skip 30 s and stop after this video.
 - **Custom idle background** from a picture on the SD card.
+- **Crash report file.** An unexpected abort now leaves sdmc:/3ds/IkersTube/crash.txt on the SD card so it can be diagnosed.
 - **Stability fixes.** A freeze with the A-B loop, a crash risk with bookmarks and several unchecked cases that could close the app.
 - **Continue watching and first launch.** Resume the last video from Search or at start, and the settings open on the first launch.
 - **Library tools.** Sort, filter and tag favorites and Watch later, check marks on watched videos, and a red dot for new subscription videos.

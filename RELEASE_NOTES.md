@@ -1,5 +1,7 @@
 ## What's new
 
+- **Crash report file.** If the app aborts because of an unexpected error, it now writes sdmc:/3ds/IkersTube/crash.txt (error type, version and a list of code addresses) so the exact place can be found. Send that file together with log.txt after a crash.
+- **Freeze fix.** The automatic quality check could wait for the video decoder while holding a lock the decoder needed.
 - **Stability.** A full crash review of the player, downloader, thumbnails and parser. Fixed: a freeze when an A-B loop reached its end point; chapters reading uninitialized values; a crash after changing the comment sort; a possible crash when memory runs out while creating thumbnails or textures; unbounded memory growth of the page cache; unsafe access to the stream URLs while a video starts; short reads ending a video early; out-of-range reads in the playlist tab, the JSON parser and the thumbnail list; the mini player and QR popup handling a key twice; and several uninitialized fields.
 - **Continue watching.** The Search screen shows the last video you played, and you can make the app open it at start (Settings, Start screen, Last video).
 - **First launch.** The very first time the app opens, Settings appear so you can pick language, theme and quality.

@@ -86,6 +86,8 @@ bool qr_scan_run(std::string &out) {
 			Draw_apply_draw();
 		}
 		CAMU_StopCapture(PORT_CAM1);
+		CAMU_ClearBuffer(PORT_CAM1);
+		svcSleepThread(150000000LL); // let a pending transfer into cam_buf finish before the buffer is freed
 		CAMU_Activate(SELECT_NONE);
 	}
 
