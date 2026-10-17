@@ -112,6 +112,12 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Automatic theme by time", {"Thème automatique selon l'heure", "Automatisches Design nach Uhrzeit", "Tema automatico in base all'ora", "Tema automático por hora", "時間で自動テーマ"}},
 	    {"Save full log to the SD card", {"Enregistrer le journal complet sur la SD", "Vollständiges Protokoll auf SD speichern", "Salva il registro completo sulla SD", "Salvar o registro completo no SD", "完全なログをSDに保存"}},
 	    {"Could not write the log", {"Impossible d'écrire le journal", "Protokoll konnte nicht geschrieben werden", "Impossibile scrivere il registro", "Não foi possível gravar o registro", "ログを書き込めませんでした"}},
+	    {"Updating...", {"Mise à jour...", "Aktualisiere...", "Aggiornamento...", "Atualizando...", "更新中..."}},
+	    {"Updated: restart the app", {"Mis à jour : relancez l'appli", "Aktualisiert: App neu starten", "Aggiornato: riavvia l'app", "Atualizado: reinicie o app", "更新完了：アプリを再起動してください"}},
+	    {"Restarting...", {"Redémarrage...", "Neustart...", "Riavvio...", "Reiniciando...", "再起動中..."}},
+	    {"Update failed", {"Échec de la mise à jour", "Update fehlgeschlagen", "Aggiornamento non riuscito", "Falha na atualização", "更新に失敗しました"}},
+	    {"http 404 : private repository or no releases", {"http 404 : dépôt privé ou sans versions", "http 404: privates Repository oder keine Releases", "http 404: repository privato o senza release", "http 404: repositório privado ou sem releases", "http 404：非公開リポジトリまたはリリースなし"}},
+	    {"Audio/video sync: ", {"Synchro audio/vidéo : ", "Audio/Video-Sync: ", "Sincronia audio/video: ", "Sincronia áudio/vídeo: ", "音声/映像の同期："}},
 	};
 	return table;
 }

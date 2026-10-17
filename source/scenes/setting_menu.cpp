@@ -370,12 +370,12 @@ static void update_worker_thread_func(void *) {
 						static bool auto_install_tried = false; // never loop : one automatic attempt per session
 						if (update_available && auto_install && !auto_install_tried) {
 							auto_install_tried = true;
-							var_update_banner = "Actualizando...";
+							var_update_banner = tr_static("Updating...", "Actualizando...");
 							update_state = UpdateState::INSTALLING;
 						}
 					}
 				}
-			} else new_error_message = result.status_code == 404 ? "http 404 : repo privado o sin releases" : "http returned " + std::to_string(result.status_code);
+			} else new_error_message = result.status_code == 404 ? tr("http 404 : private repository or no releases", "http 404 : repo privado o sin releases") : "http returned " + std::to_string(result.status_code);
 			if (!check_success) update_state = UpdateState::FAILED_CHECKING;
 			if (new_error_message != "") {
 				resource_lock.lock();
@@ -387,10 +387,10 @@ static void update_worker_thread_func(void *) {
 			std::string error = install_update(session_list);
 			if (error == "") {
 				update_state = UpdateState::SUCCEEDED_INSTALLING, var_update_available = false, var_need_refresh = true;
-				var_update_banner = "Actualizado: reinicia la app";
+				var_update_banner = tr_static("Updated: restart the app", "Actualizado: reinicia la app");
 				installed_version_str = next_version_str; // not offered again before the restart
 				if (!is_3dsx) { // installed as a CIA : relaunch the app by itself to finish the update
-					var_update_banner = "Reiniciando...";
+					var_update_banner = tr_static("Restarting...", "Reiniciando...");
 					misc_tasks_request(TASK_SAVE_SETTINGS);
 					usleep(1500000); // let the settings be written
 					u64 program_id = 0x000400000F1A0200ULL; // 00040000 + (unique id 0xF1A02 << 8)
@@ -400,10 +400,10 @@ static void update_worker_thread_func(void *) {
 						APT_DoApplicationJump(jump_param, sizeof(jump_param), jump_hmac);
 						usleep(5000000);
 					}
-					var_update_banner = "Actualizado: reinicia la app"; // the jump didn't happen
+					var_update_banner = tr_static("Updated: restart the app", "Actualizado: reinicia la app"); // the jump didn't happen
 				}
 			} else {
-				var_update_banner = "Error al actualizar";
+				var_update_banner = tr_static("Update failed", "Error al actualizar");
 				resource_lock.lock();
 				update_error_message = error;
 				resource_lock.unlock();
@@ -940,7 +940,7 @@ void Sem_init(void) {
 						->set_title([] (const BarView &view) {
 							char ms_str[24];
 							snprintf(ms_str, 24, "%+d ms", (int) var_av_sync_ms);
-							return std::string("Sincronia audio/video : ") + ms_str;
+							return tr("Audio/video sync: ", "Sincronía audio/vídeo: ") + ms_str;
 						})
 						->set_on_release([] (const BarView &view) { misc_tasks_request(TASK_SAVE_SETTINGS); })
 				}),

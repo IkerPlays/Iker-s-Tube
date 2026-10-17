@@ -97,3 +97,13 @@ std::string tr(const char *en, const char *es) {
 	}
 	return en;
 }
+
+const char *tr_static(const char *en, const char *es) {
+	static std::map<std::string, std::string> cache;
+	std::string key = var_lang + "|" + en;
+	auto it = cache.find(key);
+	if (it == cache.end()) {
+		it = cache.emplace(key, tr(en, es)).first;
+	}
+	return it->second.c_str();
+}

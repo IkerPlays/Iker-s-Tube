@@ -12,3 +12,6 @@ std::string loading_text();
 
 // Text for the features added by Iker's Tube : Spanish when the app language is Spanish, English otherwise.
 std::string tr(const char *en, const char *es);
+
+// Same as tr() but the returned pointer stays valid forever (for `const char *` variables).
+const char *tr_static(const char *en, const char *es);
