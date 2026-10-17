@@ -8,6 +8,8 @@
 #include "util/play_queue.hpp"
 #include "data_io/favorites.hpp"
 #include "ui/qr_popup.hpp"
+#include "data_io/bookmarks.hpp"
+#include "data_io/watch_later.hpp"
 #include <sstream>
 #include "util/timestamp_parser.hpp"
 #include "ui/logo_draw.hpp"
@@ -265,10 +267,51 @@ static void auto_quality_tick() {
 	}
 }
 
+static std::vector<std::pair<double, std::string>> current_chapters; // chapters of the displayed video (from its description)
+static VerticalListView *bookmarks_list_view = NULL; // rebuilt outside of the view updates
+static bool bookmarks_rebuild_request = false, bookmark_add_request = false;
+static std::string bookmarks_video_id;
+static double quick_speed = 1.0;
+static BarView *speed_bar_view = NULL;
+static bool mini_visible = false;
+static void mini_player_draw();
+static bool mini_player_update(Hid_info key);
+
 static double *eq_values_ptr = NULL; // the equalizer bar values (set up in VideoPlayer_init)
 
 // A-B loop : repeat a section of the playing video (a < 0 : not set, b < 0 : only the start is set)
 static double ab_loop_a = -1, ab_loop_b = -1;
+
+static void rebuild_bookmarks_list() {
+	if (!bookmarks_list_view) return;
+	bookmarks_list_view->recursive_delete_subviews();
+	auto marks = bookmarks_get(bookmarks_video_id);
+	if (marks.empty()) return;
+	bookmarks_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+	                                         ->set_text(tr("Bookmarks (long press to delete)", "Marcadores (pulsación larga: borrar)"))
+	                                         ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+	                                         ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+	for (size_t i = 0; i < marks.size(); i++) {
+		double t = marks[i].time;
+		std::string id = bookmarks_video_id;
+		bookmarks_list_view->views.push_back(
+		    (new TextView(SMALL_MARGIN, 0, 320 - SMALL_MARGIN * 2, 22))
+		        ->set_text(Util_convert_seconds_to_time(t) + "  " + marks[i].name)
+		        ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+		        ->set_y_alignment(TextView::YAlign::CENTER)
+		        ->set_get_background_color(View::STANDARD_BACKGROUND)
+		        ->set_on_view_released([t](View &) {
+			        if (network_decoder.ready && cur_video_info.id == playing_video_info.id) send_seek_request_wo_lock(t);
+		        })
+		        ->add_on_long_hold(35, [id, i](View &view) {
+			        bookmark_remove(id, i);
+			        view.reset_holding_status();
+			        bookmarks_rebuild_request = true;
+			        var_need_refresh = true;
+		        }));
+	}
+	bookmarks_list_view->views.push_back((new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+}
 
 static void ab_loop_tick() {
 	static std::string tracked_id;
@@ -533,7 +576,7 @@ debug_info_view =
 	}
 	network_decoder.set_preamp(volume);
 	                 }),
-	             (new BarView(0, 0, 260, 30)) // speed
+	             (speed_bar_view = new BarView(0, 0, 260, 30)) // speed
 	                 ->set_values(0.25, 1.5, 1.0)
 	                 ->set_title([](const BarView &view) {
 	return LOCALIZED(SPEED) + " : " + std::to_string((int)std::round(view.get_value() * 100)) + "%";
@@ -848,6 +891,7 @@ debug_info_view =
     void VideoPlayer_suspend(void) {
 	    vid_thread_suspend = true;
 	    vid_main_run = false;
+	    mini_visible = false;
     }
     void VideoPlayer_resume(std::string arg) {
 	    if (arg != "") {
@@ -1344,6 +1388,49 @@ debug_info_view =
 					                             }
 					                             var_need_refresh = true;
 				                             })}));
+				    // second row : quick speed, next chapter, watch later, bookmark, mini player
+				    auto is_current = []() { return network_decoder.ready && cur_video_info.id == playing_video_info.id; };
+				    main_tab_views.push_back(
+				        (new HorizontalListView(0, 0, 20))
+				            ->set_views(
+				                {(new EmptyView(0, 0, SMALL_MARGIN, 20)),
+				                 make_tool([]() { return std::to_string((int)std::round(quick_speed * 100)) + "%"; }, 52,
+				                           []() {
+					                           static const double steps[] = {0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0};
+					                           int i = 0;
+					                           for (int k = 0; k < 7; k++) if (steps[k] <= quick_speed + 0.01) i = k;
+					                           quick_speed = steps[(i + 1) % 7];
+					                           network_decoder.set_tempo(quick_speed);
+					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+					                           var_need_refresh = true;
+				                           }),
+				                 make_tool([]() { return tr("Chap >>", "Cap >>"); }, 60,
+				                           [is_current]() {
+					                           if (!is_current()) return;
+					                           for (auto &chapter : current_chapters) {
+						                           if (chapter.first > vid_current_pos + 1) {
+							                           send_seek_request_wo_lock(chapter.first);
+							                           break;
+						                           }
+					                           }
+				                           }),
+				                 make_tool([]() { return watch_later_contains(cur_video_info.id) ? tr("Later: yes", "Luego: sí") : tr("Later", "Luego"); }, 68,
+				                           []() {
+					                           if (cur_video_info.id != "" && cur_video_info.title != "") {
+						                           FavoriteVideo v;
+						                           v.id = cur_video_info.id;
+						                           v.title = cur_video_info.title;
+						                           v.author = cur_video_info.author.name;
+						                           v.length_text = Util_convert_seconds_to_time((double)cur_video_info.duration_ms / 1000);
+						                           watch_later_toggle(v);
+						                           var_need_refresh = true;
+					                           }
+				                           }),
+				                 make_tool([]() { return tr("+Mark", "+Marca"); }, 56,
+				                           [is_current]() {
+					                           if (is_current()) bookmark_add_request = true;
+				                           }),
+				                 make_tool([]() { return std::string("Mini"); }, 50, []() { mini_visible = true; var_need_refresh = true; })}));
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 
@@ -1363,6 +1450,12 @@ debug_info_view =
 						    }
 					    }
 				    }
+				    current_chapters = chapters.size() >= 2 ? chapters : decltype(chapters)();
+				    // bookmarks of this video (the list is refilled whenever one is added or removed)
+				    bookmarks_video_id = tmp_video_info.id;
+				    bookmarks_list_view = new VerticalListView(0, 0, 320);
+				    bookmarks_rebuild_request = true;
+				    main_tab_views.push_back(bookmarks_list_view);
 				    if (chapters.size() >= 2) {
 					    main_tab_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
 					                                 ->set_text(tr("Chapters", "Capítulos"))
@@ -2365,6 +2458,116 @@ debug_info_view =
 	    last_touch_y = key.touch_y;
     }
     } // namespace Bar
+
+    // ***** mini player : big controls on the bottom screen to listen with the console in the pocket *****
+    static void toggle_pause() {
+	    if (!vid_play_request) return;
+	    if (vid_pausing) {
+		    if (!vid_pausing_seek) Util_speaker_resume(0);
+		    if (eof_reached) send_seek_request_wo_lock(0);
+		    vid_pausing = false;
+	    } else {
+		    if (!vid_pausing_seek) Util_speaker_pause(0);
+		    vid_pausing = true;
+	    }
+    }
+    static void mini_next() {
+	    std::string queued_url;
+	    if (play_queue_pop(queued_url)) send_change_video_request_wo_lock(queued_url, true, false, false);
+    }
+    static void mini_restart() {
+	    if (network_decoder.ready) send_seek_request_wo_lock(0);
+    }
+    static double mini_volume = 1.0;
+    static void mini_set_volume(double v) {
+	    mini_volume = std::min(3.0, std::max(0.1, v));
+	    network_decoder.set_preamp(mini_volume);
+	    var_need_refresh = true;
+    }
+    static void mini_player_draw() {
+	    if (!mini_visible) return;
+	    Draw_texture(var_square_image[0], DEFAULT_BACK_COLOR, 0, 0, 320, 240);
+	    auto lines = truncate_str(playing_video_info.title, 290, 2, 0.55, 0.55);
+	    float y = 8;
+	    for (auto &line : lines) {
+		    Draw_xy_centered(line, 0, 320, y, y + 20, 0.55, 0.55, DEFAULT_TEXT_COLOR);
+		    y += 20;
+	    }
+	    Draw_xy_centered(playing_video_info.author.name, 0, 320, y, y + 18, 0.45, 0.45, LIGHT1_TEXT_COLOR);
+	    // progress
+	    double dur = vid_duration > 0 ? vid_duration : 1;
+	    double pos = std::min(dur, std::max(0.0, vid_current_pos));
+	    Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, 20, 80, 280, 6);
+	    Draw_texture(var_square_image[0], COLOR_ACCENT, 20, 80, 280 * pos / dur, 6);
+	    Draw_xy_centered(Util_convert_seconds_to_time(pos) + " / " + Util_convert_seconds_to_time(vid_duration), 0, 320,
+	                     88, 106, 0.45, 0.45, LIGHT0_TEXT_COLOR);
+	    // buttons : previous (restart) / play-pause / next in queue
+	    const u32 btn = LIGHT1_BACK_COLOR;
+	    Draw_texture(var_square_image[0], btn, 20, 115, 80, 60);
+	    Draw_texture(var_square_image[0], COLOR_ACCENT, 120, 115, 80, 60);
+	    Draw_texture(var_square_image[0], btn, 220, 115, 80, 60);
+	    u32 ic = DEF_DRAW_WHITE;
+	    C2D_DrawTriangle(72, 130, ic, 72, 160, ic, 50, 145, ic, 0); // |<
+	    C2D_DrawRectSolid(44, 130, 0, 4, 30, ic);
+	    C2D_DrawTriangle(228, 130, ic, 228, 160, ic, 250, 145, ic, 0); // >|
+	    C2D_DrawRectSolid(252, 130, 0, 4, 30, ic);
+	    if (vid_pausing || !vid_play_request) {
+		    C2D_DrawTriangle(150, 128, ic, 150, 162, ic, 176, 145, ic, 0);
+	    } else {
+		    C2D_DrawRectSolid(148, 128, 0, 7, 34, ic);
+		    C2D_DrawRectSolid(165, 128, 0, 7, 34, ic);
+	    }
+	    // volume
+	    Draw_texture(var_square_image[0], btn, 20, 190, 50, 36);
+	    Draw_texture(var_square_image[0], btn, 250, 190, 50, 36);
+	    Draw_xy_centered("-", 20, 70, 190, 226, 0.9, 0.9, DEFAULT_TEXT_COLOR);
+	    Draw_xy_centered("+", 250, 300, 190, 226, 0.9, 0.9, DEFAULT_TEXT_COLOR);
+	    Draw_xy_centered(tr("Volume ", "Volumen ") + std::to_string((int)std::round(mini_volume * 100)) + "%", 70, 250, 190,
+	                     226, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+	    Draw_xy_centered("X", 290, 320, 0, 24, 0.6, 0.6, LIGHT1_TEXT_COLOR);
+	    if (!vid_pausing && vid_play_request) var_need_refresh = true; // keep the time moving
+    }
+    static bool mini_player_update(Hid_info key) {
+	    if (!mini_visible) return false;
+	    static int start_x = -1, start_y = -1, last_x = -1, last_y = -1;
+	    if (key.p_b) {
+		    mini_visible = false;
+		    var_need_refresh = true;
+		    return true;
+	    }
+	    if (key.p_a) toggle_pause();
+	    if (key.p_r) mini_next();
+	    if (key.p_l) mini_restart();
+	    if (key.p_touch) {
+		    start_x = last_x = key.touch_x;
+		    start_y = last_y = key.touch_y;
+	    } else if (key.touch_x != -1) {
+		    last_x = key.touch_x;
+		    last_y = key.touch_y;
+	    } else if (start_x != -1) { // released
+		    int dx = last_x - start_x, dy = last_y - start_y;
+		    if (std::abs(dx) > 70 && std::abs(dy) < 40) { // swipe : left = next in the queue, right = restart
+			    dx < 0 ? mini_next() : mini_restart();
+		    } else if (std::abs(dx) < 12 && std::abs(dy) < 12) {
+			    int x = start_x, y = start_y;
+			    if (x >= 290 && y < 30) {
+				    mini_visible = false;
+			    } else if (y >= 115 && y < 175) {
+				    if (x >= 20 && x < 100) mini_restart();
+				    else if (x >= 120 && x < 200) toggle_pause();
+				    else if (x >= 220 && x < 300) mini_next();
+			    } else if (y >= 190 && y < 226) {
+				    if (x >= 20 && x < 70) mini_set_volume(mini_volume / 1.25);
+				    else if (x >= 250 && x < 300) mini_set_volume(mini_volume * 1.25);
+			    } else if (y >= 70 && y < 100 && x >= 20 && x < 300 && network_decoder.ready) {
+				    send_seek_request_wo_lock(vid_duration * (x - 20) / 280.0);
+			    }
+		    }
+		    var_need_refresh = true;
+		    start_x = -1;
+	    }
+	    return true;
+    }
     void video_update_playing_bar(Hid_info key) { Bar::video_update_playing_bar(key); }
     void video_draw_playing_bar() { Bar::video_draw_playing_bar(); }
 
@@ -2962,6 +3165,7 @@ debug_info_view =
 		    video_draw_playing_bar();
 		    draw_overlay_menu(240 - VIDEO_PLAYING_BAR_HEIGHT - TAB_SELECTOR_HEIGHT - OVERLAY_MENU_ICON_SIZE);
 		    equalizer_popup_view->draw();
+		    mini_player_draw();
 		    qr_popup_draw();
 		    small_resource_lock.unlock();
 
@@ -3066,7 +3270,9 @@ debug_info_view =
 		    auto_quality_tick();
 		    ab_loop_tick();
 
-		    if (qr_popup_update(key)) {
+		    if (mini_player_update(key)) {
+			    // the mini player is open : it takes all the input
+		    } else if (qr_popup_update(key)) {
 			    // the QR popup is open : it takes all the input
 		    } else if (equalizer_popup_view->is_visible) {
 			    equalizer_popup_view->update(key);
@@ -3084,8 +3290,32 @@ debug_info_view =
 			    global_intent.arg = suggestion_clicked_url;
 			    suggestion_clicked_url = "";
 		    }
+		    if (bookmarks_rebuild_request && bookmarks_video_id == cur_video_info.id) {
+			    bookmarks_rebuild_request = false;
+			    rebuild_bookmarks_list();
+		    }
 
 		    small_resource_lock.unlock();
+
+		    if (bookmark_add_request) { // asked from a button : the keyboard must be opened outside of the view update
+			    bookmark_add_request = false;
+			    std::string vid = playing_video_info.id;
+			    double at = vid_current_pos;
+			    SwkbdState keyboard;
+			    swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 40);
+			    swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY);
+			    swkbdSetHintText(&keyboard, tr("Bookmark name", "Nombre del marcador").c_str());
+			    swkbdSetInitialText(&keyboard, "");
+			    char name[64] = {0};
+			    video_set_skip_drawing(true);
+			    auto pressed = swkbdInputText(&keyboard, name, sizeof(name));
+			    video_set_skip_drawing(false);
+			    if (pressed == SWKBD_BUTTON_RIGHT && vid != "") {
+				    bookmark_add(vid, at, name[0] ? name : Util_convert_seconds_to_time(at));
+				    bookmarks_rebuild_request = true;
+			    }
+			    var_need_refresh = true;
+		    }
 		    /* ****************************** LOCK END ******************************  */
 
 		    if (video_playing_bar_show) {

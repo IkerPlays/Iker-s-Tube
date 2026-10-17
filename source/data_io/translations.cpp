@@ -96,6 +96,20 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Sort: ", {"Tri : ", "Sortierung: ", "Ordine: ", "Ordem: ", "並び順："}},
 	    {"Top", {"Populaires", "Beliebt", "Popolari", "Populares", "人気"}},
 	    {"Newest", {"Récents", "Neueste", "Recenti", "Recentes", "新しい順"}},
+	    {"Chap >>", {"Chap >>", "Kap >>", "Cap >>", "Cap >>", "次章 >>"}},
+	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
+	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
+	    {"+Mark", {"+Marque", "+Marke", "+Segn.", "+Marca", "+しおり"}},
+	    {"Bookmarks (long press to delete)", {"Marque-pages (appui long : supprimer)", "Lesezeichen (lang drücken: löschen)", "Segnalibri (pressione lunga: elimina)", "Marcadores (toque longo: apagar)", "しおり（長押しで削除）"}},
+	    {"Bookmark name", {"Nom du marque-page", "Name des Lesezeichens", "Nome del segnalibro", "Nome do marcador", "しおりの名前"}},
+	    {"Volume ", {"Volume ", "Lautstärke ", "Volume ", "Volume ", "音量 "}},
+	    {"Nothing to watch later yet.", {"Rien à regarder plus tard.", "Noch nichts für später.", "Niente da guardare dopo.", "Nada para ver depois.", "後で見る動画はありません。"}},
+	    {"Use the Later button inside", {"Utilisez le bouton Plus tard dans", "Benutze die Später-Taste in", "Usa il pulsante Dopo dentro", "Use o botão Depois dentro de", "動画内の「後で」ボタンを"}},
+	    {"Remove from watch later", {"Retirer de À regarder plus tard", "Aus Später ansehen entfernen", "Rimuovi da Guarda dopo", "Remover de Ver depois", "後で見るから削除"}},
+	    {"Start screen", {"Écran de démarrage", "Startbildschirm", "Schermata iniziale", "Tela inicial", "起動画面"}},
+	    {"Home", {"Accueil", "Start", "Home", "Início", "ホーム"}},
+	    {"Search", {"Recherche", "Suche", "Cerca", "Pesquisa", "検索"}},
+	    {"Automatic theme by time", {"Thème automatique selon l'heure", "Automatisches Design nach Uhrzeit", "Tema automatico in base all'ora", "Tema automático por hora", "時間で自動テーマ"}},
 	};
 	return table;
 }

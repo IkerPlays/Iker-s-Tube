@@ -171,6 +171,11 @@ void Menu_init(void) {
 	// add here
 	Home_init(); // first running
 	global_current_scene = SceneType::HOME;
+	if (var_start_scene == 1) {
+		global_intent.next_scene = SceneType::LIBRARY;
+	} else if (var_start_scene == 2) {
+		global_intent.next_scene = SceneType::SEARCH;
+	}
 
 	thumbnail_downloader_thread = threadCreate(thumbnail_downloader_thread_func, (void *)(""), DEF_STACKSIZE,
 	                                           DEF_THREAD_PRIORITY_NORMAL, 0, false);
@@ -434,6 +439,14 @@ void Menu_get_system_info(void) {
 	var_wifi_state = *(u8 *)0x1FF81067;
 	if (var_wifi_state != 2) {
 		var_wifi_signal = 8;
+	}
+
+	if (var_auto_theme) { // dark theme from 19:00 to 07:00
+		bool night = var_hours >= 19 || var_hours < 7;
+		if (night != var_night_mode) {
+			var_night_mode = night;
+			var_need_refresh = true;
+		}
 	}
 
 	{ // reconnect : if the Wi-Fi drops while a video plays, ask the system to bring it back (every 8 s)

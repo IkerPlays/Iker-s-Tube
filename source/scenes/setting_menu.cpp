@@ -559,6 +559,33 @@ void Sem_init(void) {
 						->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
 						->set_text_offset(0, -2)
 						->set_get_text_color([]() { return (u32) COLOR_ACCENT; }),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Home", "Inicio"); },
+							(std::function<std::string ()>) []() { return tr("Library", "Biblioteca"); },
+							(std::function<std::string ()>) []() { return tr("Search", "Búsqueda"); }
+						}, var_start_scene)
+						->set_title([](const SelectorView &) { return tr("Start screen", "Pantalla de inicio"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_start_scene != view.selected_button) {
+								var_start_scene = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_auto_theme)
+						->set_title([](const SelectorView &) { return tr("Automatic theme by time", "Tema automático por hora"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_auto_theme != view.selected_button) {
+								var_auto_theme = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
 					// Dark theme
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

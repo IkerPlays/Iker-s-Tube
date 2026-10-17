@@ -1,5 +1,6 @@
 #include "headers.hpp"
 #include "ui/qr_popup.hpp"
+#include "data_io/watch_later.hpp"
 #include <vector>
 #include <string>
 #include <cstdlib>
@@ -22,7 +23,7 @@ bool thread_suspend = false;
 bool already_init = false;
 bool exiting = false;
 
-int mode = 0;           // 0 : queue, 1 : favorites, 2 : playlists
+int mode = 0;           // 0 : queue, 1 : favorites, 2 : playlists, 3 : watch later
 int open_playlist = -1; // playlists mode : index of the opened playlist (-1 : list of playlists)
 bool playlist_repeat = false;
 bool rebuild_request = false;
@@ -177,6 +178,7 @@ void Library_init(void) {
 	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
 	on_long_tap_dialog->set_is_visible(false);
 	favorites_load();
+	watch_later_load();
 	Library_resume("");
 	already_init = true;
 }
@@ -194,6 +196,8 @@ void Library_resume(std::string arg) {
 		mode = 0;
 	} else if (arg == "playlists") {
 		mode = 2, open_playlist = -1;
+	} else if (arg == "later") {
+		mode = 3, open_playlist = -1;
 	}
 	if (main_view) {
 		main_view->on_resume();
@@ -259,6 +263,29 @@ static void build_favorites(VerticalListView *list) {
 	if (!favs.size()) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
 		                          ->set_text_lines(std::vector<std::string>{tr("You have no favorites yet.", "Aún no tienes favoritos."), tr("Use the Favorite button inside", "Usa el botón Favorito dentro"), tr("a video.", "de un vídeo.")})
+		                          ->set_x_alignment(TextView::XAlign::CENTER)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
+}
+
+static void build_watch_later(VerticalListView *list) {
+	auto favs = watch_later_get();
+	for (auto &v : favs) {
+		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
+		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
+		view->set_get_background_color(button_background)
+		    ->set_on_view_released([url](View &) { clicked_url = url; })
+		    ->add_on_long_hold(35, [id, url, v](View &) {
+			    show_dialog({make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
+			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
+			                 make_option(tr("Remove from watch later", "Quitar de ver más tarde"), [id]() { watch_later_remove(id); })});
+		    });
+		list->views.push_back(view);
+	}
+	if (!favs.size()) {
+		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
+		                          ->set_text_lines(std::vector<std::string>{tr("Nothing to watch later yet.", "Nada para ver más tarde."), tr("Use the Later button inside", "Usa el botón Luego dentro"), tr("a video.", "de un vídeo.")})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
@@ -344,13 +371,15 @@ static void rebuild_views() {
 	                             ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::LIBRARY);
 	if (mode == 0) {
 		build_queue(list);
+	} else if (mode == 3) {
+		build_watch_later(list);
 	} else if (mode == 1) {
 		build_favorites(list);
 	} else {
 		build_playlists(list);
 	}
 
-	constexpr int selector_width = 210;
+	constexpr int selector_width = 250;
 	main_view = (new ScrollView(0, 0, 320, 240))
 	                ->set_views({(new HorizontalListView(0, 0, MIDDLE_FONT_INTERVAL))
 	                                 ->set_views({(new TextView(0, 0, 320 - selector_width, MIDDLE_FONT_INTERVAL))
@@ -359,7 +388,8 @@ static void rebuild_views() {
 	                                              (new SelectorView(0, 0, selector_width, MIDDLE_FONT_INTERVAL, false))
 	                                                  ->set_texts({(std::function<std::string()>)[]() { return std::string(tr("Queue", "Cola")); },
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Favorites", "Favoritos")); },
-	                                                               (std::function<std::string()>)[]() { return std::string(tr("Playlists", "Listas")); }},
+	                                                               (std::function<std::string()>)[]() { return std::string(tr("Playlists", "Listas")); },
+	                                                               (std::function<std::string()>)[]() { return std::string(tr("Later", "Luego")); }},
 	                                                              mode)
 	                                                  ->set_on_change([](const SelectorView &view) {
 		                                                  mode = view.selected_button;
