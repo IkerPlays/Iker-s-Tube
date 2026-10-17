@@ -52,6 +52,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Comments and history through your account.** Posting, replying and deleting comments use the YouTube Data API when Studio is connected. Watched videos are reported to your YouTube history.
 - **Liked tab.** The Library shows the videos you liked on YouTube.
 - **Live and upcoming in the feed.** The subscriptions feed puts live streams first, then upcoming premieres with the time left, and warns when one starts within 15 minutes.
+- **Live chat.** Read the chat of a live stream from the player tools, and write in it with the Studio login.
 
 ## Installing
 

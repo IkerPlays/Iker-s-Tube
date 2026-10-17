@@ -20,6 +20,7 @@
 #include "data_io/last_played.hpp"
 #include "data_io/channel_volume.hpp"
 #include "data_io/watch_later.hpp"
+#include "youtube_parser/live_chat.hpp"
 #include <sstream>
 #include "util/timestamp_parser.hpp"
 #include "ui/logo_draw.hpp"
@@ -602,6 +603,8 @@ static std::string collab_request_id; // set by the author row of a collaboratio
 static Mutex collab_lock;
 static std::vector<YouTubeChannelSuccinct> collab_result;
 static bool collab_ready = false;
+static bool chat_request = false, chat_write_request = false; // live chat : open the screen / write a message
+static unsigned chat_shown_version = 0;
 static bool collab_refresh_request = false; // a channel of the screen was (un)subscribed : redraw its texts
 static std::vector<YouTubeChannelSuccinct> collab_shown; // the channels of the screen that is open
 
@@ -632,6 +635,52 @@ static bool collab_take(std::vector<YouTubeChannelSuccinct> &out) {
 	}
 	collab_lock.unlock();
 	return ready && out.size();
+}
+
+// the live chat on the popup : newest message first (so no scrolling is needed)
+static void show_live_chat() {
+	const int width = 300;
+	chat_shown_version = live_chat_version();
+	VerticalListView *list = new VerticalListView(0, 0, width);
+	std::string status = live_chat_status();
+	if (status != "") {
+		list->views.push_back((new TextView(0, 0, width, 22))->set_text(status)->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
+	for (auto &m : live_chat_latest(14)) {
+		std::vector<std::string> lines = truncate_str(m.author + ": " + m.text, width - 8, 2, 0.5, 0.5);
+		list->views.push_back((new TextView(4, 0, width - 4, DEFAULT_FONT_INTERVAL * (int)std::max<size_t>(1, lines.size()) + 2))
+		                          ->set_text_lines(lines)
+		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
+	int list_height = 240 - VIDEO_PLAYING_BAR_HEIGHT - 80;
+	account_pl_popup_view->recursive_delete_subviews();
+	account_pl_popup_view->set_subview(
+	    (new VerticalListView(0, 0, width))
+	        ->set_views({(new TextView(0, 0, width, 22))
+	                         ->set_text(tr("Live chat", "Chat en directo"))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
+	                     (new ScrollView(0, 0, width, list_height))
+	                         ->set_views({list})
+	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
+	                     (new HorizontalListView(0, 0, 22))
+	                         ->set_views({(new TextView(0, 0, width / 2, 22))
+	                                          ->set_text(tr("Write", "Escribir"))
+	                                          ->set_x_alignment(TextView::XAlign::CENTER)
+	                                          ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                                          ->set_on_view_released([](View &) { chat_write_request = true; }),
+	                                      (new TextView(0, 0, width / 2, 22))
+	                                          ->set_text(LOCALIZED(CLOSE))
+	                                          ->set_x_alignment(TextView::XAlign::CENTER)
+	                                          ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                                          ->set_on_view_released([](View &) {
+		                                          live_chat_close();
+		                                          account_pl_popup_view->set_is_visible(false);
+		                                          var_need_refresh = true;
+	                                          })})})
+	        ->set_draw_order({1, 0, 2}));
+	account_pl_popup_view->set_is_visible(true);
+	var_need_refresh = true;
 }
 
 static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &channels) {
@@ -1912,6 +1961,19 @@ debug_info_view =
 					                                                  cur_video_info.audio_stream_url, true, video_url,
 					                                                  var_is_new3ds ? cur_video_info.both_stream_url : "", quality);
 				                           })}));
+				    // live chat (live streams) and the screens of the video's extra information
+				    main_tab_views.push_back(
+				        (new HorizontalListView(0, 0, 20))
+				            ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)),
+				                         make_tool([]() { return tr("Live chat", "Chat en directo"); }, 100,
+				                                   []() {
+					                                   if (!cur_video_info.is_livestream) {
+						                                   notice_show(tr("This video is not a live stream", "Este vídeo no es un directo"));
+					                                   } else if (cur_video_info.id != "") {
+						                                   chat_request = true;
+						                                   var_need_refresh = true;
+					                                   }
+				                                   })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
 				    main_tab_views.push_back(
 				        (new HorizontalListView(0, 0, 20))
@@ -4033,6 +4095,14 @@ static void autoplay_countdown_tick() {
 				    notice_show(tr("Loading the channels...", "Cargando los canales..."));
 				    queue_async_task(load_collab_task, id);
 			    }
+			    if (chat_request) {
+				    chat_request = false;
+				    live_chat_open(cur_video_info.id);
+				    show_live_chat();
+			    } else if (live_chat_is_open()) {
+				    if (!account_pl_popup_view->is_visible) live_chat_close(); // the screen was left with B
+				    else if (live_chat_version() != chat_shown_version) show_live_chat();
+			    }
 			    std::vector<YouTubeChannelSuccinct> collab_list;
 			    if (collab_take(collab_list)) {
 				    show_collab_channels(collab_list);
@@ -4078,6 +4148,13 @@ static void autoplay_countdown_tick() {
 				    std::string text;
 				    if (account_ready() && ask_comment_text(tr("Write a reply", "Escribe una respuesta"), text)) {
 					    account_comment_reply_async(comment_actions_token(comment_target_id), comment_target_id, text);
+				    }
+			    }
+			    if (chat_write_request) {
+				    chat_write_request = false;
+				    std::string text;
+				    if (account_ready() && ask_comment_text(tr("Write in the chat", "Escribe en el chat"), text)) {
+					    account_live_chat_async(cur_video_info.id, text);
 				    }
 			    }
 			    if (comment_menu_request != "") {

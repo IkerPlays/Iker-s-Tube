@@ -63,6 +63,7 @@ static std::string get_context_video() {
 }
 
 std::string youtube_account_last_error() { return get_last_error(); }
+void youtube_account_set_error(const std::string &text) { set_last_error(text); }
 void youtube_account_set_video(const std::string &video_id) {
 	LightLock_Lock(&state_lock);
 	if (context_video != video_id) context_video = video_id; // (called every frame : assign only when it changed)

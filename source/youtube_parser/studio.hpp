@@ -46,3 +46,4 @@ bool youtube_studio_comment_insert(const std::string &video_id, const std::strin
 bool youtube_studio_comment_reply(const std::string &parent_id, const std::string &text, std::string &error); // parent : top-level comment id
 bool youtube_studio_comment_delete(const std::string &comment_id, std::string &error);
 bool youtube_studio_rate(const std::string &video_id, const std::string &rating, std::string &error); // "like", "dislike" or "none"
+bool youtube_studio_live_chat_send(const std::string &video_id, const std::string &text, std::string &error); // needs the Studio login

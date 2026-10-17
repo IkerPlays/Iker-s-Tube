@@ -22,3 +22,5 @@ bool translation_take(std::string &title, std::string &text); // true once when 
 
 // result of account_playlists_async : taken by the UI thread
 bool account_playlists_take(std::string &video_id, std::vector<AccountPlaylist> &out);
+
+void account_live_chat_async(const std::string &video_id, const std::string &text); // writes in the live chat (Studio login)

@@ -5,6 +5,7 @@
 #include "util/async_task.hpp"
 #include "data_io/string_resource.hpp"
 #include "youtube_parser/translate.hpp"
+#include "youtube_parser/live_chat.hpp"
 
 struct AccountJob {
 	int type;
@@ -28,7 +29,7 @@ bool account_ready() {
 	return false;
 }
 
-enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL };
+enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL, LIVE_CHAT };
 
 static void run_job(void *arg) {
 	AccountJob *job = (AccountJob *)arg;
@@ -101,6 +102,14 @@ static void run_job(void *arg) {
 		done = job->number == 0 ? tr("Notifications: all", "Notificaciones: todas") : job->number == 1 ? tr("Notifications: personalized", "Notificaciones: personalizadas") : tr("Notifications: none", "Notificaciones: ninguna");
 		failed = tr("Could not change the bell", "No se pudo cambiar la campana");
 		break;
+	case LIVE_CHAT: {
+		std::string error;
+		ok = live_chat_send(job->a, job->b, error);
+		if (!ok) youtube_account_set_error(error);
+		done = tr("Message sent", "Mensaje enviado");
+		failed = tr("Could not send the message (Studio login needed)", "No se pudo enviar (hace falta el login de Studio)");
+		break;
+	}
 	case COMMENT_DELETE:
 		ok = youtube_account_comment_delete(job->a, job->b);
 		done = tr("Comment deleted", "Comentario borrado");
@@ -167,6 +176,10 @@ void account_bell_async(const std::string &channel_id, int level) {
 	AccountJob *j = new AccountJob{BELL, channel_id, "", ""};
 	j->number = level;
 	queue_job(j);
+}
+void account_live_chat_async(const std::string &video_id, const std::string &text) {
+	if (!account_ready()) return;
+	queue_job(new AccountJob{LIVE_CHAT, video_id, text, ""});
 }
 void account_comment_delete_async(const std::string &comments_token, const std::string &comment_id) {
 	if (!account_ready()) return;

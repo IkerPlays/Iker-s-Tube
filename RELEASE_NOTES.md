@@ -1,4 +1,3 @@
 Devbuild notes
 
-- Library: new Liked tab with the videos you liked on YouTube (needs the login).
-- Subscriptions feed (signed in): live streams go first with a LIVE tag, then upcoming premieres and streams ordered by start time with how long is left. A notice appears when one starts within 15 minutes.
+- Live chat: a new Live chat tool in the player (live streams only) opens the chat of the stream, newest message first, refreshed every few seconds. Write sends a message (needs the Studio login). If YouTube changes its chat format it may show nothing: the screen says why.

@@ -40,3 +40,4 @@ void youtube_account_set_video(const std::string &video_id);
 
 // Marks the video as watched in the YouTube history of the account (no-op without login). Blocks : call from a worker thread.
 void youtube_account_mark_watched(const std::string &playback_url);
+void youtube_account_set_error(const std::string &text); // lets other modules show their failure reason too

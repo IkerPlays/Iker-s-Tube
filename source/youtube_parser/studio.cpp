@@ -612,6 +612,19 @@ bool youtube_studio_comment_delete(const std::string &comment_id, std::string &e
 	return api_json("DELETE", "https://www.googleapis.com/youtube/v3/comments?id=" + comment_id, "", error);
 }
 
+bool youtube_studio_live_chat_send(const std::string &video_id, const std::string &text, std::string &error) {
+	std::string answer;
+	if (!api_json("GET", "https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=" + video_id, "", error, &answer)) return false;
+	size_t p = answer.find("\"activeLiveChatId\"");
+	std::string chat_id = p == std::string::npos ? "" : raw_string(answer, p, "activeLiveChatId");
+	if (chat_id == "") {
+		error = "this video has no active chat";
+		return false;
+	}
+	return api_json("POST", "https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet",
+	                "{\"snippet\": {\"liveChatId\": " + json_quote(chat_id) + ", \"type\": \"textMessageEvent\", \"textMessageDetails\": {\"messageText\": " + json_quote(text) + "}}}", error);
+}
+
 bool youtube_studio_rate(const std::string &video_id, const std::string &rating, std::string &error) {
 	return api_json("POST", "https://www.googleapis.com/youtube/v3/videos/rate?id=" + video_id + "&rating=" + rating, "", error);
 }

@@ -425,6 +425,16 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Upcoming: ", {"À venir : ", "Demnächst: ", "Prossimamente: ", "Em breve: ", "まもなく："}},
 	    {" d", {" j", " T", " g", " d", " 日"}},
 	    {"Starting soon: ", {"Bientôt : ", "Startet bald: ", "Inizia presto: ", "Começa em breve: ", "まもなく開始："}},
+	    {"Live chat", {"Chat en direct", "Live-Chat", "Chat dal vivo", "Chat ao vivo", "ライブチャット"}},
+	    {"This video is not a live stream", {"Cette vidéo n'est pas un direct", "Dieses Video ist kein Livestream", "Questo video non è una diretta", "Este vídeo não é uma transmissão ao vivo", "この動画はライブではありません"}},
+	    {"Write", {"Écrire", "Schreiben", "Scrivi", "Escrever", "書く"}},
+	    {"Write in the chat", {"Écrire dans le chat", "Im Chat schreiben", "Scrivi nella chat", "Escrever no chat", "チャットに書く"}},
+	    {"Message sent", {"Message envoyé", "Nachricht gesendet", "Messaggio inviato", "Mensagem enviada", "メッセージを送信しました"}},
+	    {"Could not send the message (Studio login needed)", {"Envoi impossible (connexion Studio requise)", "Senden nicht möglich (Studio-Login nötig)", "Impossibile inviare (serve il login Studio)", "Não foi possível enviar (login do Studio necessário)", "送信できません（Studioログインが必要）"}},
+	    {"This video has no live chat", {"Cette vidéo n'a pas de chat en direct", "Dieses Video hat keinen Live-Chat", "Questo video non ha la chat dal vivo", "Este vídeo não tem chat ao vivo", "この動画にはライブチャットがありません"}},
+	    {"The chat stopped (no connection?)", {"Le chat s'est arrêté (pas de connexion ?)", "Der Chat wurde beendet (keine Verbindung?)", "La chat si è fermata (nessuna connessione?)", "O chat parou (sem conexão?)", "チャットが停止しました（接続なし？）"}},
+	    {"Could not start the chat", {"Impossible de démarrer le chat", "Chat konnte nicht gestartet werden", "Impossibile avviare la chat", "Não foi possível iniciar o chat", "チャットを開始できませんでした"}},
+	    {"Loading the chat...", {"Chargement du chat...", "Chat wird geladen...", "Caricamento della chat...", "Carregando o chat...", "チャットを読み込み中..."}},
 	};
 	return table;
 }
