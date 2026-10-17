@@ -1459,6 +1459,10 @@ debug_info_view =
 		    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 		    if (url.compare(0, 8, "offline:") == 0) { // audio saved on the SD card : no network needed
 			    tmp_video_info = offline_video_info(url.substr(8));
+		    } else if (var_wifi_state != 2 && offline_has_id(youtube_get_video_id_by_url(url))) {
+			    // no internet but this video is saved on the SD card : play that copy
+			    tmp_video_info = offline_video_info(youtube_get_video_id_by_url(url));
+			    notice_show(tr("No connection: playing the saved copy", "Sin conexión: se usa la copia guardada"));
 		    } else {
 			    tmp_video_info = youtube_load_video_page(url);
 		    }

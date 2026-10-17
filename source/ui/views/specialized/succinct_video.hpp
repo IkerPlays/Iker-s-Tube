@@ -7,6 +7,7 @@
 #include "util/play_queue.hpp"
 #include "util/util.hpp"
 #include "data_io/history.hpp"
+#include "data_io/offline.hpp"
 #include "youtube_parser/parser.hpp"
 
 #include "variables.hpp"
@@ -101,6 +102,12 @@ struct SuccinctVideoView : public FixedSizeView {
 			float bx = x0 + get_thumbnail_width() - 14;
 			Draw_texture(var_square_image[0], 0xE0000000, bx, y0, 14, 12);
 			Draw("v", bx + 3, y0 - 2, 0.45, 0.45, 0xFF60E060);
+		}
+		if (queue_url.size() && offline_has_id(youtube_get_video_id_by_url(queue_url))) {
+			// saved on the SD card : a small tag at the bottom left of the thumbnail
+			float tag_width = Draw_get_width("DL", 0.4) + 4;
+			Draw_texture(var_square_image[0], 0xE0408040, x0, y0 + get_thumbnail_height() - 10, tag_width, 10);
+			Draw("DL", x0 + 2, y0 + get_thumbnail_height() - 11, 0.4, 0.4, (u32)-1);
 		}
 		if (queue_url.size()) {
 			int pos = play_queue_position(queue_url);

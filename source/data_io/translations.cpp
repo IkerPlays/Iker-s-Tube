@@ -340,6 +340,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Client ID", {"ID client", "Client-ID", "ID client", "ID do cliente", "クライアントID"}},
 	    {"Client secret", {"Secret client", "Client-Secret", "Segreto client", "Segredo do cliente", "クライアントシークレット"}},
 	    {"Starting...", {"Démarrage...", "Starte...", "Avvio...", "Iniciando...", "起動中..."}},
+	    {"No connection: playing the saved copy", {"Pas de connexion : lecture de la copie enregistrée", "Keine Verbindung: gespeicherte Kopie wird abgespielt", "Nessuna connessione: riproduzione della copia salvata", "Sem conexão: tocando a cópia salva", "接続なし：保存したコピーを再生します"}},
 	};
 	return table;
 }

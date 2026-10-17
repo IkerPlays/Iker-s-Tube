@@ -1,6 +1,7 @@
 #include "data_io/offline.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cstdio>
+#include <set>
 #include <cstdlib>
 #include <sys/stat.h>
 
@@ -9,6 +10,8 @@
 #define OFFLINE_INDEX_TMP OFFLINE_DIR "/index.tmp"
 
 static Mutex offline_lock;
+static std::set<std::string> saved_ids; // cache for offline_has_id()
+static bool saved_ids_valid = false;
 
 static std::string clean(std::string s) {
 	for (auto &c : s) {
@@ -66,6 +69,7 @@ static void write_index(const std::vector<OfflineItem> &items) {
 	fclose(f);
 	remove(OFFLINE_INDEX);
 	rename(OFFLINE_INDEX_TMP, OFFLINE_INDEX);
+	saved_ids_valid = false;
 }
 
 std::vector<OfflineItem> offline_list() {
@@ -116,4 +120,16 @@ void offline_remove(const std::string &id) {
 	remove(offline_file_path(id).c_str());
 	remove(offline_video_path(id).c_str());
 	offline_lock.unlock();
+}
+
+bool offline_has_id(const std::string &id) {
+	offline_lock.lock();
+	if (!saved_ids_valid) {
+		saved_ids.clear();
+		for (auto &i : read_index()) saved_ids.insert(i.id);
+		saved_ids_valid = true;
+	}
+	bool res = saved_ids.count(id) > 0;
+	offline_lock.unlock();
+	return res;
 }

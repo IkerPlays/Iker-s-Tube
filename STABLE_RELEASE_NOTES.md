@@ -9,6 +9,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Downloads screen.** Items saved, space used and free on the SD card, and Play all / Shuffle for everything you saved.
 - **Clean up.** An optional setting deletes a download after you watch it, and a button deletes all downloads (with confirmation).
 - **Download indicator.** A green dot on Downloads while something downloads.
+- **Saved copies.** A DL tag marks the videos that are saved, and without internet opening one of them plays the saved copy.
 - **No connection strip.** A red strip says when the console has no internet and reminds that saved downloads still play.
 
 ### New look

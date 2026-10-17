@@ -1,4 +1,4 @@
 Devbuild notes
 
-- Studio setup without files: the Google Cloud client for Studio can now be built into the app (GitHub secrets STUDIO_CLIENT_ID and STUDIO_CLIENT_SECRET, picked up by the next build), or set up in the Studio tab by scanning a QR with the camera or typing it. After that only Sign in for Studio is needed. See Documentation/STUDIO_SETUP.md.
-- Start screen: the fake Homebrew text is gone. The real Homebrew animation is the logo embedded in the .cia (it is played by the HOME Menu when the installed app is launched, before the app starts). The app shows the loading screen with its progress bar from the first moment and keeps it for 3 seconds at the end so the account and data finish loading.
+- Saved videos are marked: videos of Favorites, Watch later, playlists and the queue that are saved on the SD card show a small green DL tag on the thumbnail.
+- Without an internet connection, opening a video that you saved (from the history, favorites or anywhere) plays the saved copy instead of failing.
