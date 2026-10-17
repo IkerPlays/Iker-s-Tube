@@ -986,76 +986,167 @@ void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std
 		headers["Authorization"] = "Bearer " + OAuth::get_access_token();
 	}
 
-	auto raw_response = http_get(url, headers);
-	if (!raw_response.first) {
-		this->error = "[v-cap+] HTTP request failed";
-		return;
-	}
-
-	std::string xml_content = raw_response.second;
-	std::vector<YouTubeVideoDetail::CaptionPiece> cur_caption;
-
-	size_t pos = 0;
-	while ((pos = xml_content.find("<p ", pos)) != std::string::npos) {
-		size_t start_pos = xml_content.find("t=\"", pos);
-		if (start_pos == std::string::npos || start_pos > pos + 200) {
-			pos += 3;
-			continue;
-		}
-		start_pos += 3;
-		size_t start_end = xml_content.find("\"", start_pos);
-		std::string start_str = xml_content.substr(start_pos, start_end - start_pos);
-
-		size_t dur_pos = xml_content.find("d=\"", pos);
-		if (dur_pos == std::string::npos || dur_pos > pos + 200) {
-			pos += 3;
-			continue;
-		}
-		dur_pos += 3;
-		size_t dur_end = xml_content.find("\"", dur_pos);
-		std::string dur_str = xml_content.substr(dur_pos, dur_end - dur_pos);
-
-		size_t content_start = xml_content.find(">", pos) + 1;
-		size_t content_end = xml_content.find("</p>", content_start);
-		if (content_end == std::string::npos) {
-			pos += 3;
-			continue;
-		}
-
-		std::string p_content = xml_content.substr(content_start, content_end - content_start);
-		std::string combined_text;
-
-		size_t s_pos = 0;
-		while ((s_pos = p_content.find("<s ", s_pos)) != std::string::npos) {
-			size_t s_content_start = p_content.find(">", s_pos) + 1;
-			size_t s_content_end = p_content.find("</s>", s_content_start);
-			if (s_content_end == std::string::npos) {
-				break;
-			}
-
-			combined_text += p_content.substr(s_content_start, s_content_end - s_content_start);
-			s_pos = s_content_end;
-		}
-
+	auto decode_entities = [](std::string text) {
 		const std::pair<std::string, std::string> entities[] = {
-		    {"&amp;", "&"}, {"&lt;", "<"}, {"&gt;", ">"}, {"&quot;", "\""}, {"&#39;", "'"}};
+		    {"&lt;", "<"}, {"&gt;", ">"}, {"&quot;", "\""}, {"&#39;", "'"}, {"&apos;", "'"}, {"&amp;", "&"}};
 		for (const auto &entity : entities) {
 			size_t entity_pos = 0;
-			while ((entity_pos = combined_text.find(entity.first, entity_pos)) != std::string::npos) {
-				combined_text.replace(entity_pos, entity.first.length(), entity.second);
+			while ((entity_pos = text.find(entity.first, entity_pos)) != std::string::npos) {
+				text.replace(entity_pos, entity.first.length(), entity.second);
 				entity_pos += entity.second.length();
 			}
 		}
-
-		if (!combined_text.empty()) {
-			YouTubeVideoDetail::CaptionPiece caption_piece;
-			caption_piece.start_time = std::stof(start_str) / 1000.0f;
-			caption_piece.end_time = caption_piece.start_time + std::stof(dur_str) / 1000.0f;
-			caption_piece.content = combined_text;
-			cur_caption.push_back(caption_piece);
+		return text;
+	};
+	auto strip_tags = [](const std::string &text) {
+		std::string out;
+		bool in_tag = false;
+		for (char c : text) {
+			if (c == '<') {
+				in_tag = true;
+			} else if (c == '>') {
+				in_tag = false;
+			} else if (!in_tag) {
+				out += c;
+			}
 		}
+		return out;
+	};
+	auto attr = [](const std::string &tag, const std::string &name) -> std::string {
+		size_t p = tag.find(" " + name + "=\"");
+		if (p == std::string::npos) {
+			return "";
+		}
+		p += name.size() + 3;
+		size_t e = tag.find('"', p);
+		return e == std::string::npos ? "" : tag.substr(p, e - p);
+	};
 
-		pos = content_end;
+	// Parses the XML flavours : srv3 (<p t= d=> with optional <s> words, in ms) and the old <text start= dur=> (in s)
+	auto parse_xml = [&](const std::string &xml) {
+		std::vector<YouTubeVideoDetail::CaptionPiece> result;
+		size_t pos = 0;
+		while (true) {
+			size_t p_pos = xml.find("<p ", pos);
+			size_t t_pos = xml.find("<text ", pos);
+			bool is_p = p_pos != std::string::npos && (t_pos == std::string::npos || p_pos < t_pos);
+			size_t tag_pos = is_p ? p_pos : t_pos;
+			if (tag_pos == std::string::npos) {
+				break;
+			}
+			size_t tag_end = xml.find('>', tag_pos);
+			if (tag_end == std::string::npos) {
+				break;
+			}
+			std::string tag = xml.substr(tag_pos, tag_end - tag_pos);
+			bool self_closing = tag_end > 0 && xml[tag_end - 1] == '/';
+			size_t content_end = self_closing ? tag_end : xml.find(is_p ? "</p>" : "</text>", tag_end);
+			if (content_end == std::string::npos) {
+				break;
+			}
+			std::string content = self_closing ? "" : xml.substr(tag_end + 1, content_end - tag_end - 1);
+			pos = content_end;
+
+			double start, dur;
+			if (is_p) {
+				std::string t = attr(tag, "t"), d = attr(tag, "d");
+				if (t == "" || d == "") {
+					continue;
+				}
+				start = atof(t.c_str()) / 1000.0;
+				dur = atof(d.c_str()) / 1000.0;
+			} else {
+				std::string t = attr(tag, "start"), d = attr(tag, "dur");
+				if (t == "") {
+					continue;
+				}
+				start = atof(t.c_str());
+				dur = d == "" ? 2.0 : atof(d.c_str());
+			}
+			std::string text;
+			size_t s_pos = 0;
+			while ((s_pos = content.find("<s", s_pos)) != std::string::npos) {
+				size_t s_start = content.find('>', s_pos);
+				size_t s_end = content.find("</s>", s_start == std::string::npos ? s_pos : s_start);
+				if (s_start == std::string::npos || s_end == std::string::npos) {
+					break;
+				}
+				text += content.substr(s_start + 1, s_end - s_start - 1);
+				s_pos = s_end;
+			}
+			if (text.empty()) { // no word tags : the text is directly in the element (<br> = new line)
+				size_t br;
+				while ((br = content.find("<br")) != std::string::npos) {
+					size_t br_end = content.find('>', br);
+					content.replace(br, br_end == std::string::npos ? 3 : br_end - br + 1, "\n");
+				}
+				text = strip_tags(content);
+			}
+			text = decode_entities(text);
+			if (!text.empty() && text != "\n") {
+				YouTubeVideoDetail::CaptionPiece piece;
+				piece.start_time = (float)start;
+				piece.end_time = (float)(start + dur);
+				piece.content = text;
+				result.push_back(piece);
+			}
+		}
+		return result;
+	};
+
+	auto parse_json3 = [&](const std::string &body) {
+		std::vector<YouTubeVideoDetail::CaptionPiece> result;
+		rapidjson::Document document;
+		std::string json_error;
+		RJson data = RJson::parse(document, body.c_str(), json_error);
+		if (!data.is_valid()) {
+			return result;
+		}
+		for (auto event : data["events"].array_items()) {
+			std::string text;
+			for (auto seg : event["segs"].array_items()) {
+				text += seg["utf8"].string_value();
+			}
+			if (text.empty() || text == "\n") {
+				continue;
+			}
+			YouTubeVideoDetail::CaptionPiece piece;
+			piece.start_time = event["tStartMs"].int_value() / 1000.0f;
+			piece.end_time = piece.start_time + event["dDurationMs"].int_value() / 1000.0f;
+			piece.content = text;
+			result.push_back(piece);
+		}
+		return result;
+	};
+
+	// try the url as given, then asking explicitly for srv3 and json3 (some clients get an empty body otherwise)
+	std::vector<YouTubeVideoDetail::CaptionPiece> cur_caption;
+	bool any_response = false;
+	const char *formats[] = {"", "&fmt=srv3", "&fmt=json3"};
+	for (int attempt = 0; attempt < 3 && cur_caption.empty(); attempt++) {
+		std::string try_url = url;
+		if (formats[attempt][0] && url.find("fmt=") == std::string::npos) {
+			try_url += formats[attempt];
+		} else if (formats[attempt][0]) {
+			continue;
+		}
+		auto raw_response = http_get(try_url, headers);
+		logger.info("Caption", "attempt " + std::to_string(attempt) + " ok=" + std::to_string(raw_response.first) +
+		                           " size=" + std::to_string(raw_response.second.size()));
+		if (!raw_response.first) {
+			continue;
+		}
+		any_response = true;
+		const std::string &body = raw_response.second;
+		if (body.find('<') != std::string::npos) {
+			cur_caption = parse_xml(body);
+		} else if (body.find('{') != std::string::npos) {
+			cur_caption = parse_json3(body);
+		}
+	}
+	if (!any_response) {
+		this->error = "[v-cap+] HTTP request failed";
+		return;
 	}
 
 	caption_data[{base_lang_id, translation_lang_id}] = cur_caption;
