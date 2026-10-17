@@ -120,6 +120,10 @@ static void nav_icon(int type, float cx, float cy, u32 c) {
 static void draw_nav_bar() {
 	const std::string labels[NAV_ITEMS] = {LOCALIZED(HOME), tr("Search", "Buscar"), tr("Library", "Biblioteca"),
 	                                       tr("Downloads", "Descargas"), tr("More", "Más")};
+	if (var_wifi_state != 2) { // no internet : say it, saved downloads still work
+		Draw_texture(var_square_image[0], 0xFF2A2AB0, 0, nav_top - 13, 320, 13);
+		Draw_x_centered(tr("No connection - saved downloads still play", "Sin conexión - lo descargado se puede ver"), 0, 320, nav_top - 12, 0.4, 0.4, 0xFFFFFFFF);
+	}
 	Draw_texture(var_square_image[0], COLOR_GRAY(var_night_mode ? 0x1C : 0xEE), 0, nav_top, 320, NAV_BAR_HEIGHT);
 	Draw_texture(var_square_image[0], COLOR_GRAY(var_night_mode ? 0x38 : 0xCC), 0, nav_top, 320, 1);
 	int selected = nav_selected();

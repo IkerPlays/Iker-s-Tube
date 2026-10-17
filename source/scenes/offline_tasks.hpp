@@ -11,6 +11,8 @@ int offline_download_queued();      // downloads waiting for the running one
 int offline_download_percent();     // 0..100 of the running download
 std::string offline_download_title(); // title of the running download
 void offline_download_cancel();       // stops the running download and deletes the partial files
+// Loads the page of the video (in the background) and then saves it : for the lists, where the streams are not known yet.
+void offline_save_by_id_async(const std::string &id, const std::string &title, const std::string &author, bool want_video);
 void offline_download_async(const std::string &id, const std::string &title, const std::string &author,
                             const std::string &audio_url, bool want_video = false, const std::string &video_url = "",
                             const std::string &both_url = "", int quality = 0);

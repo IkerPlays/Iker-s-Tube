@@ -5,6 +5,7 @@
 #include "network_decoder/network_io.hpp"
 #include "ui/notice.hpp"
 #include "util/async_task.hpp"
+#include "youtube_parser/parser.hpp"
 #include <sys/stat.h>
 #include <functional>
 #include <vector>
@@ -194,4 +195,36 @@ void offline_download_async(const std::string &id, const std::string &title, con
 		delete job;
 		download_running = false;
 	}
+}
+
+struct SaveByIdJob {
+	std::string id, title, author;
+	bool want_video;
+};
+
+static void save_by_id_task(void *arg) {
+	SaveByIdJob *job = (SaveByIdJob *)arg;
+	YouTubeVideoDetail info = youtube_load_video_page(youtube_get_video_url_by_id(job->id));
+	if (!info.is_playable()) {
+		notice_show(tr("Could not load the video", "No se pudo cargar el vídeo"));
+	} else {
+		// the saved quality : 360p at most (240p on the old 3DS), the closest one that exists
+		int wanted = var_is_new3ds ? 360 : 240, quality = 0;
+		std::string video_url;
+		for (auto &i : info.video_stream_urls) {
+			if (i.first <= wanted && i.first > quality) {
+				quality = i.first;
+				video_url = i.second;
+			}
+		}
+		offline_download_async(job->id, job->title != "" ? job->title : info.title, job->author != "" ? job->author : info.author.name,
+		                       info.audio_stream_url, job->want_video, video_url, var_is_new3ds ? info.both_stream_url : "", quality);
+	}
+	delete job;
+}
+
+void offline_save_by_id_async(const std::string &id, const std::string &title, const std::string &author, bool want_video) {
+	if (id == "") return;
+	notice_show(tr("Loading the video...", "Cargando el vídeo..."));
+	queue_async_task(save_by_id_task, new SaveByIdJob{id, title, author, want_video});
 }

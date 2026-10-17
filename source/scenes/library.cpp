@@ -321,6 +321,8 @@ static void build_favorites(VerticalListView *list) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
 			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
+			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
+			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Set tag...", "Poner etiqueta..."), [id]() { pending_action = [id]() { std::string tag; if (ask_text(tr("Tag", "Etiqueta").c_str(), tag)) { favorites_set_tag(id, tag); rebuild_request = true; } }; }),
 			                 make_option(tr("Remove tag", "Quitar etiqueta"), [id]() { favorites_set_tag(id, ""); rebuild_request = true; }),
@@ -360,6 +362,8 @@ static void build_watch_later(VerticalListView *list) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
 			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
+			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
+			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Remove from watch later", "Quitar de ver más tarde"), [id]() { watch_later_remove(id); })});
 		    });
@@ -494,6 +498,8 @@ static void build_playlists(VerticalListView *list) {
 		    ->add_on_long_hold(35, [index, id, url, v](View &) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
 			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
+			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Remove from list", "Quitar de la lista"), [index, id]() { playlist_remove(index, id); })});
 		    });

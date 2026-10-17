@@ -277,6 +277,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Sports", {"Sports", "Sport", "Sport", "Esportes", "スポーツ"}},
 	    {"News & Politics", {"Actualités et politique", "Nachrichten & Politik", "Notizie e politica", "Notícias e política", "ニュースと政治"}},
 	    {"Travel & Events", {"Voyages et événements", "Reisen & Events", "Viaggi ed eventi", "Viagens e eventos", "旅行とイベント"}},
+	    {"Save video offline", {"Enregistrer la vidéo hors ligne", "Video offline speichern", "Salva video offline", "Salvar vídeo offline", "動画をオフライン保存"}},
+	    {"Save audio offline", {"Enregistrer l'audio hors ligne", "Audio offline speichern", "Salva audio offline", "Salvar áudio offline", "音声をオフライン保存"}},
+	    {"Could not load the video", {"Impossible de charger la vidéo", "Video konnte nicht geladen werden", "Impossibile caricare il video", "Não foi possível carregar o vídeo", "動画を読み込めません"}},
+	    {"Loading the video...", {"Chargement de la vidéo...", "Video wird geladen...", "Caricamento del video...", "Carregando o vídeo...", "動画を読み込み中..."}},
+	    {"No connection - saved downloads still play", {"Pas de connexion - les téléchargements restent lisibles", "Keine Verbindung - gespeicherte Downloads laufen weiter", "Nessuna connessione - i download salvati si vedono", "Sem conexão - os downloads salvos ainda tocam", "接続なし - 保存済みは再生できます"}},
 	};
 	return table;
 }

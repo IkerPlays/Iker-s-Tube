@@ -22,6 +22,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 
 ### Library and search
 - **Library.** Queue, favorites with tags, playlists, Watch later and the new Offline tab. Sort and filter favorites and Watch later, play next from any list and a check mark on videos you already watched.
+- **Save offline from lists.** Long press a video in Favorites, Watch later or a playlist to save its video or audio, and a strip tells you when there is no connection.
 - **Downloads screen.** Items saved, space used and free on the SD card, progress of the running download, a download queue and a way to cancel it.
 - **Offline videos and audio.** Save a video (360p, 240p on the old 3DS) or only its audio to the SD card and play it without a connection from the Offline list (Downloads in the bottom bar).
 - **Search.** Long press a recent search to forget it, keyboard suggestions, Explore and Discover shortcuts, continue watching the last video, QR scanning with the camera and a red dot when your subscriptions have new videos.

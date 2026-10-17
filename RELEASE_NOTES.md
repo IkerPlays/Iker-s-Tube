@@ -1,5 +1,4 @@
 Devbuild notes
 
-- Downloads: several videos can be queued. Pressing Save video or Save audio while another download runs adds it to a queue, and the Downloads screen shows how many are waiting; tapping the progress line cancels the running one and clears the queue.
-- Studio: the upload form lets you pick the category (People & Blogs, Music, Gaming, Entertainment, Education, ...).
-- Subtitles: the language you chose the last time is preselected in the captions tab of the next videos that have it.
+- Offline from the lists: long press a video in Favorites, Watch later or a playlist and choose Save video offline or Save audio offline. The app loads the video in the background and adds it to the download queue, no need to open it first.
+- When the console has no internet connection, a red strip above the bottom bar says so and reminds that saved downloads still play.
