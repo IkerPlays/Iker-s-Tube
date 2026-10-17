@@ -351,6 +351,12 @@ static void update_worker_thread_func(void *) {
  						    delete release_notes_view->views.back();
  						    release_notes_view->views.pop_back();
    						}
+   						// only a short summary is shown here, the complete notes stay on the GitHub release
+   						const size_t max_note_lines = 10;
+   						if (release_notes_lines.size() > max_note_lines) {
+   						    release_notes_lines.resize(max_note_lines);
+   						    release_notes_lines.back() = "...\n";
+   						}
    						for (const auto& note_line : release_notes_lines) {
    						    release_notes_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))->set_text(note_line));
    						}

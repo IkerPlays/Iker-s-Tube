@@ -8,10 +8,11 @@ on:
 permissions:
   contents: write # needed to publish devbuild releases
 
-# a newer push cancels the older run, so a devbuild is always built from the latest commit
+# On main a running build is never cancelled (otherwise a quick second push would skip its release);
+# at most one newer run waits in the queue and replaces older waiting ones. Other branches cancel old runs.
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   # Version of this build : "<core>-dev.<run number>".
