@@ -642,7 +642,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
 						}, var_grid_view)
 						->set_title([](const SelectorView &) { return tr("Grid of thumbnails", "Cuadrícula de miniaturas"); })
-						->set_info([](const SelectorView &) { return tr("Search results as a grid with two columns. Applies to new searches.", "Resultados de búsqueda en cuadrícula de dos columnas. Se aplica a las búsquedas nuevas."); })
+						->set_info([](const SelectorView &) { return tr("Video lists (search, channels, home) as a grid with two columns. Applies to lists loaded from now on.", "Listas de vídeos (búsqueda, canales, inicio) en cuadrícula de dos columnas. Se aplica a las listas que cargues desde ahora."); })
 						->set_popup_height(60)
 						->set_on_change([](const SelectorView &view) {
 							if (var_grid_view != view.selected_button) {

@@ -5,6 +5,7 @@
 #include "ui/ui_common.hpp"
 #include "../view.hpp"
 #include "util/play_queue.hpp"
+#include "util/util.hpp"
 
 #include "variables.hpp"
 #define VIDEO_LIST_THUMBNAIL_HEIGHT (var_large_thumbnails ? 72 : 54)
@@ -59,6 +60,16 @@ struct SuccinctVideoView : public FixedSizeView {
 			view.reset_holding_status(); // the release must not open the video
 			var_need_refresh = true;
 		});
+		return this;
+	}
+	// grid mode (if enabled in the settings) : half-width cell, the thumbnail on top and the title below
+	SuccinctVideoView *auto_grid(const std::string &title) {
+		if (!var_grid_view) return this;
+		const int cell_w = 158;
+		grid = true;
+		set_width(cell_w);
+		set_height(cell_w * 9 / 16 + (DEFAULT_FONT_INTERVAL - 1) * 2 + 3);
+		title_lines = truncate_str(title, cell_w - 4, 2, 0.45, 0.45);
 		return this;
 	}
 	SuccinctVideoView *set_grid(bool grid) {

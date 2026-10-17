@@ -81,6 +81,7 @@ void Home_init(void) {
 
 	home_videos_list_view = (new VerticalListView(0, 0, 320))
 	                            ->set_margin(SMALL_MARGIN)
+	                            ->set_flow(true)
 	                            ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
 	home_tab_view = (new ScrollView(0, 0, 320, 0))
 	                    ->set_views({home_videos_list_view, home_videos_bottom_view})
@@ -91,11 +92,13 @@ void Home_init(void) {
 	                    });
 	local_channels_list_view = (new VerticalListView(0, 0, 320))
 	                               ->set_margin(SMALL_MARGIN)
-	                               ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
+	                               ->set_flow(true)
+	                            ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
 	local_channels_tab_view = (new ScrollView(0, 0, 320, 0))->set_views({local_channels_list_view});
 	oauth_channels_list_view = (new VerticalListView(0, 0, 320))
 	                               ->set_margin(SMALL_MARGIN)
-	                               ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
+	                               ->set_flow(true)
+	                            ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
 	oauth_channels_tab_view = (new ScrollView(0, 0, 320, 0))
 	                              ->set_views({oauth_channels_list_view})
 	                              ->set_pull_to_refresh(!var_disable_pull_to_refresh, []() {
@@ -152,7 +155,8 @@ void Home_init(void) {
 	}
 	local_feed_videos_list_view = (new VerticalListView(0, 0, 320))
 	                                  ->set_margin(SMALL_MARGIN)
-	                                  ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
+	                                  ->set_flow(true)
+	                            ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
 
 	if (var_disable_pull_to_refresh) {
 		local_feed_videos_view = (new ScrollView(0, 0, 320, 0))->set_views({local_feed_videos_list_view});
@@ -197,7 +201,8 @@ void Home_init(void) {
 
 	oauth_feed_videos_list_view = (new VerticalListView(0, 0, 320))
 	                                  ->set_margin(SMALL_MARGIN)
-	                                  ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
+	                                  ->set_flow(true)
+	                            ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HOME);
 
 	if (var_disable_pull_to_refresh) {
 		oauth_feed_videos_view =
@@ -594,6 +599,7 @@ static SuccinctVideoView *convert_video_to_view(const YouTubeVideoSuccinct &vide
 	res->set_bottom_right_overlay(video.duration_text);
 	res->set_queue_item(video.url, video.title);
 	res->set_thumbnail_url(video.thumbnail_url);
+	res->auto_grid(video.title);
 	res->set_get_background_color(View::STANDARD_BACKGROUND);
 	res->set_on_view_released([video](View &view) {
 		clicked_url = video.url;

@@ -134,6 +134,7 @@ void Channel_init(void) {
 
     video_list_view = (new VerticalListView(0, 0, 320))
                           ->set_margin(SMALL_MARGIN)
+                          ->set_flow(true)
                           ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::CHANNEL);
     video_load_more_view = (new TextView(0, 0, 320, 0));
     video_load_more_view
@@ -152,7 +153,8 @@ void Channel_init(void) {
         });
     stream_list_view = new VerticalListView(0, 0, 320);
     stream_list_view->set_margin(SMALL_MARGIN)
-        ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::CHANNEL);
+        ->set_flow(true)
+                          ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::CHANNEL);
 
     stream_load_more_view = new TextView(0, 0, 320, 0);
     stream_load_more_view->set_text((std::function<std::string()>)[]() {
@@ -173,7 +175,8 @@ void Channel_init(void) {
 
     shorts_list_view = new VerticalListView(0, 0, 320);
     shorts_list_view->set_margin(SMALL_MARGIN)
-        ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::CHANNEL);
+        ->set_flow(true)
+                          ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::CHANNEL);
 
     shorts_load_more_view = new TextView(0, 0, 320, 0);
     shorts_load_more_view->set_text((std::function<std::string()>)[]() {
@@ -292,6 +295,7 @@ void Channel_init(void) {
 	        ->set_auxiliary_lines({video.publish_date, video.views_str})
 	        ->set_bottom_right_overlay(video.duration_text)
 	        ->set_queue_item(video.url, video.title)
+	        ->auto_grid(video.title)
 	        ->set_get_background_color(View::STANDARD_BACKGROUND)
 	        ->set_on_view_released([video](View &) { clicked_url = video.url; });
     }
@@ -302,6 +306,7 @@ void Channel_init(void) {
 	        ->set_auxiliary_lines({stream.publish_date, stream.views_str})
 	        ->set_bottom_right_overlay(stream.duration_text)
 	        ->set_queue_item(stream.url, stream.title)
+	        ->auto_grid(stream.title)
 	        ->set_get_background_color(View::STANDARD_BACKGROUND)
 	        ->set_on_view_released([stream](View &) { clicked_url = stream.url; });
     }
@@ -312,6 +317,7 @@ void Channel_init(void) {
 	        ->set_thumbnail_url(shorts.thumbnail_url)
 	        ->set_auxiliary_lines({shorts.publish_date, shorts.views_str})
 	        ->set_bottom_right_overlay("")
+	        ->auto_grid(shorts.title)
 	        ->set_get_background_color(View::STANDARD_BACKGROUND)
 	        ->set_on_view_released([shorts](View &) { clicked_url = shorts.url; });
     }
@@ -321,6 +327,7 @@ void Channel_init(void) {
 	        ->set_thumbnail_url(playlist.thumbnail_url)
 	        ->set_auxiliary_lines({playlist.video_count_str})
 	        ->set_is_playlist(true)
+	        ->auto_grid(playlist.title)
 	        ->set_get_background_color(View::STANDARD_BACKGROUND)
 	        ->set_on_view_released([playlist](View &) { clicked_url = playlist.url; });
     }
@@ -336,7 +343,8 @@ void Channel_init(void) {
 			    VerticalListView *cur_list_view =
 			        (new VerticalListView(0, 0, 320))
 			            ->set_margin(SMALL_MARGIN)
-			            ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::CHANNEL);
+			            ->set_flow(true)
+                          ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::CHANNEL);
 			    for (auto playlist : playlist_category.second) {
 				    cur_list_view->views.push_back(playlist2view(playlist));
 			    }
