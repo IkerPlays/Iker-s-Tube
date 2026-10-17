@@ -391,6 +391,8 @@ static std::string size_text(u64 bytes) {
 	return buf;
 }
 
+static int offline_sort = 0; // 0 newest first, 1 title A-Z, 2 biggest first
+
 static void play_offline(bool shuffle) {
 	std::vector<std::pair<std::string, std::string>> items;
 	for (auto &item : offline_list()) items.push_back({"offline:" + item.id, item.title});
@@ -405,6 +407,23 @@ static void play_offline(bool shuffle) {
 
 static void build_offline(VerticalListView *list) {
 	auto items = offline_list();
+	if (offline_sort == 1) {
+		std::sort(items.begin(), items.end(), [](const OfflineItem &a, const OfflineItem &b) { return a.title < b.title; });
+	} else if (offline_sort == 2) {
+		std::sort(items.begin(), items.end(), [](const OfflineItem &a, const OfflineItem &b) {
+			return file_size(offline_file_path(a.id)) + file_size(offline_video_path(a.id)) >
+			       file_size(offline_file_path(b.id)) + file_size(offline_video_path(b.id));
+		});
+	}
+	if (items.size() > 1) {
+		list->views.push_back(make_button(offline_sort == 0   ? tr("Sort: newest first", "Orden: más recientes")
+		                                  : offline_sort == 1 ? tr("Sort: title A-Z", "Orden: título A-Z")
+		                                                      : tr("Sort: biggest first", "Orden: más grandes"),
+		                                  320, []() {
+			                                  offline_sort = (offline_sort + 1) % 3;
+			                                  rebuild_request = true;
+		                                  }));
+	}
 	if (items.size() > 0) { // delete everything (asks first)
 		list->views.push_back(make_button(tr("Delete all downloads", "Borrar todas las descargas"), 320, []() {
 			show_dialog({make_option(tr("Yes, delete everything", "Sí, borrar todo"), []() {

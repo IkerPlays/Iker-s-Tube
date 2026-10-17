@@ -341,6 +341,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Client secret", {"Secret client", "Client-Secret", "Segreto client", "Segredo do cliente", "クライアントシークレット"}},
 	    {"Starting...", {"Démarrage...", "Starte...", "Avvio...", "Iniciando...", "起動中..."}},
 	    {"No connection: playing the saved copy", {"Pas de connexion : lecture de la copie enregistrée", "Keine Verbindung: gespeicherte Kopie wird abgespielt", "Nessuna connessione: riproduzione della copia salvata", "Sem conexão: tocando a cópia salva", "接続なし：保存したコピーを再生します"}},
+	    {"Continue watching", {"Reprendre la lecture", "Weiterschauen", "Continua a guardare", "Continuar assistindo", "続きを見る"}},
+	    {"Sort: newest first", {"Tri : plus récents", "Sortierung: neueste zuerst", "Ordine: più recenti", "Ordem: mais recentes", "並び順：新しい順"}},
+	    {"Sort: title A-Z", {"Tri : titre A-Z", "Sortierung: Titel A-Z", "Ordine: titolo A-Z", "Ordem: título A-Z", "並び順：タイトル A-Z"}},
+	    {"Sort: biggest first", {"Tri : plus gros", "Sortierung: größte zuerst", "Ordine: più grandi", "Ordem: maiores", "並び順：大きい順"}},
 	};
 	return table;
 }

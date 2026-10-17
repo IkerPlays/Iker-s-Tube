@@ -18,6 +18,7 @@
 #include "util/misc_tasks.hpp"
 #include "util/async_task.hpp"
 #include "util/result_filter.hpp"
+#include "data_io/last_played.hpp"
 #include "oauth/oauth.hpp"
 #include "rapidjson_wrapper.hpp"
 
@@ -679,6 +680,17 @@ static void load_home_page(void *) {
 	std::vector<View *> new_videos_view;
 	for (auto video : results.videos) {
 		new_videos_view.push_back(convert_video_to_view(video));
+	}
+	{ // continue watching : the last video that was played, first in the list
+		std::string last_id, last_title;
+		if (last_played_get(last_id, last_title)) {
+			YouTubeVideoSuccinct last;
+			last.url = youtube_get_video_url_by_id(last_id);
+			last.title = last_title;
+			last.thumbnail_url = youtube_get_video_thumbnail_url_by_id(last_id);
+			last.views_str = tr("Continue watching", "Seguir viendo");
+			new_videos_view.insert(new_videos_view.begin(), convert_video_to_view(last));
+		}
 	}
 	logger.info("home", "truncate/view creation end");
 
