@@ -1,27 +1,38 @@
 Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of FourthTube and ThirdTube (GPLv3).
 
-## What's new since the last stable release (1.0.1)
+## What's new since 1.0.1
 
-- **Backup and statistics.** Export and import your data (favorites, watch later, playlists, bookmarks, history, subscriptions, settings) and see your total playing time and most watched channel.
-- **Data saver.** 240p videos without thumbnails, plus a per-session data limit warning.
-- **Grid of thumbnails everywhere.** Search, channel pages and the home feed.
-- **Watch later sync (download).** The Later tab also pulls your YouTube Watch later playlist when you are signed in.
-- **Personal controls.** Choose what X and Y do in the player, left-handed mini player, speed remembered per channel, skip 30 s and stop after this video.
-- **Custom idle background** from a picture on the SD card.
-- **Long videos fixed.** Videos over an hour that only have a combined audio and video stream now play instead of failing with "No valid stream url extracted".
-- **Network resilience and diagnostics.** Retries when the host name cannot be resolved right after the Wi-Fi connects, and clearer details in the log when a video cannot be played.
-- **Starts at the beginning.** Fixed a bug where a new video could start at the minute of the previous video, and added an option to always start from the beginning.
-- **Account actions.** Like and dislike, save to your YouTube playlists, subscribe on your account, write, like and reply to comments (OAuth login needed).
-- **Translate** titles, descriptions and comments into the language of the app.
-- **Offline audio.** Save audio to the SD card and play it without a connection from the Offline tab.
-- **Queue and shorts.** Play next from library lists and shorts that play one after another.
-- **Premiere countdown** for upcoming videos.
-- **Crash report file.** An unexpected abort now leaves sdmc:/3ds/IkersTube/crash.txt on the SD card so it can be diagnosed.
-- **Stability fixes.** A freeze with the A-B loop, a crash risk with bookmarks and several unchecked cases that could close the app.
-- **Continue watching and first launch.** Resume the last video from Search or at start, and the settings open on the first launch.
-- **Library tools.** Sort, filter and tag favorites and Watch later, check marks on watched videos, and a red dot for new subscription videos.
-- **More personal.** A custom theme color, high contrast mode, sound profiles, volume per channel and L / R shortcuts.
-- **QR with time.** QR codes of the current video include the moment you are at.
+### Your YouTube account (OAuth login needed)
+- **Like or dislike a video**, **save it to your YouTube playlists**, and **subscribe or unsubscribe** on your account (the subscribe button now also updates your account).
+- **Comments.** Write a comment, and long press a comment to like it, reply to it or translate it.
+- **Your account in Search.** Recommended videos and your notifications inbox, and the Later tab also downloads your YouTube Watch later playlist.
+
+### Player
+- **Mini player** with big controls on the bottom screen, swipe gestures, volume remembered per channel and a left-handed mode.
+- **Tools on the video page.** Jump 10 s back or forward, skip 30 s, A-B loop, tappable chapters, bookmarks with names, next chapter, quick speed (50% to 200%, remembered per channel), stop after this video and a premiere countdown.
+- **Seek preview** thumbnails while dragging the progress bar, equalizer presets and sound profiles (music, movie, speech).
+- **Shorts play one after another** when opened from a channel.
+- **Buttons.** Choose what X, Y, L and R do in the player.
+- **Starts at the beginning.** A new video no longer starts at the minute of the previous one. A Settings option makes every video start from the beginning.
+- **Screensaver.** The logo bounces on a black top screen after a minute of pause.
+
+### Library and search
+- **Library.** Queue, favorites with tags, playlists, Watch later and the new Offline tab. Sort and filter favorites and Watch later, play next from any list and a check mark on videos you already watched.
+- **Offline audio.** Save the audio of a video to the SD card and play it without a connection.
+- **Search.** Keyboard suggestions, Explore and Discover shortcuts, continue watching the last video, QR scanning with the camera and a red dot when your subscriptions have new videos.
+- **Grid of thumbnails** in search, channels and the home feed (optional).
+- **Translate** a video title and description, or a comment, into the language of the app.
+- **QR codes** of any video (including the current moment), also from the queue, favorites and playlists.
+
+### Look and settings
+- **Themes.** Six themes plus a custom color, a high contrast mode, text size, large thumbnails and an optional background picture from the SD card.
+- **Settings in sections** with a start screen, automatic theme by time of day, data saver, a data limit warning, statistics, backup export and import, and the first launch opens the settings.
+- **Languages.** All the new texts are available in English, Spanish, French, German, Italian, Portuguese and Japanese.
+
+### Reliability
+- **Fixes.** Videos over an hour with a single combined stream play again, the A-B loop no longer freezes, comment sorting no longer crashes, and many cases that could close the app were fixed after a full code review.
+- **Network.** Failed host name lookups right after the Wi-Fi connects are retried and the app asks the console to reconnect if the Wi-Fi drops during playback.
+- **Diagnostics.** Warnings and errors are saved to sdmc:/3ds/IkersTube/log.txt, and an unexpected abort writes sdmc:/3ds/IkersTube/crash.txt.
 
 ## Installing
 
