@@ -695,6 +695,22 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Automatic quality
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_auto_quality)
+						->set_title([](const SelectorView &) { return "Automatic quality"; })
+						->set_info([](const SelectorView &) { return "Lowers the quality of the next videos if playback keeps stalling, raises it again when the connection is stable."; })
+						->set_popup_height(70)
+						->set_on_change([](const SelectorView &view) {
+							if (var_auto_quality != view.selected_button) {
+								var_auto_quality = view.selected_button;
+								var_auto_quality_cap = 0;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Subtitles
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

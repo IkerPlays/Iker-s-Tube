@@ -189,6 +189,56 @@ static void load_more_suggestions(void *);
 static void load_more_replies(void *);
 static void load_caption(void *);
 
+// Automatic quality : if playback stalls repeatedly the quality cap for the next videos goes one step down,
+// after a few minutes of smooth playback it goes one step up again.
+static void auto_quality_tick() {
+	static const int steps[4] = {144, 240, 360, 480};
+	static std::string tracked_id;
+	static time_t smooth_since = 0;
+	static time_t stall_since = 0;
+	static bool lowered_for_this_video = false;
+	if (!var_auto_quality || var_video_quality == 0 || audio_only_mode) {
+		return;
+	}
+	if (playing_video_info.id != tracked_id) {
+		tracked_id = playing_video_info.id;
+		smooth_since = time(NULL);
+		stall_since = 0;
+		lowered_for_this_video = false;
+	}
+	time_t now = time(NULL);
+	bool waiting = get_network_waiting_status() != NULL;
+	if (!vid_play_request || vid_pausing || !waiting) {
+		stall_since = 0;
+		if (smooth_since && now - smooth_since >= 240 && var_auto_quality_cap > 0) {
+			// 4 minutes without trouble : allow one step more
+			int idx = 0;
+			for (int i = 0; i < 4; i++) {
+				if (steps[i] <= var_auto_quality_cap) idx = i;
+			}
+			var_auto_quality_cap = idx >= 3 ? 0 : steps[idx + 1];
+			if (var_auto_quality_cap >= var_video_quality) var_auto_quality_cap = 0;
+			misc_tasks_request(TASK_SAVE_SETTINGS);
+			smooth_since = now;
+		}
+		return;
+	}
+	if (!stall_since) stall_since = now;
+	if (now - stall_since >= 6 && !lowered_for_this_video && now - smooth_since >= 12) {
+		int cur = var_auto_quality_cap > 0 ? var_auto_quality_cap : var_video_quality;
+		int idx = 0;
+		for (int i = 0; i < 4; i++) {
+			if (steps[i] <= cur) idx = i;
+		}
+		if (idx > 0) {
+			var_auto_quality_cap = steps[idx - 1];
+			misc_tasks_request(TASK_SAVE_SETTINGS);
+		}
+		lowered_for_this_video = true;
+		smooth_since = now;
+	}
+}
+
 static void decode_thread(void *arg);
 static void convert_thread(void *arg);
 
@@ -1486,10 +1536,14 @@ debug_info_view =
 	    return tmp_video_info.video_stream_urls.count(p_value) ||
 	           ((p_value == 360 || p_value == 480) && tmp_video_info.both_stream_url != "");
     };
+    int wanted_quality = var_video_quality;
+    if (var_auto_quality && var_auto_quality_cap > 0 && wanted_quality > var_auto_quality_cap) {
+	    wanted_quality = var_auto_quality_cap;
+    }
     if (var_video_quality == 0) {
 	    audio_only_mode = true;
     } else {
-	    if (!audio_only_mode && !is_available(var_video_quality)) {
+	    if (!audio_only_mode && !is_available(wanted_quality)) {
 		    video_p_value = var_is_new3ds ? 360 : 144;
 		    if (var_is_new3ds && !is_available(video_p_value)) {
 			    auto it =
@@ -1507,7 +1561,7 @@ debug_info_view =
 			    }
 		    }
 	    } else {
-		    video_p_value = var_video_quality;
+		    video_p_value = wanted_quality;
 	    }
     }
 
@@ -2721,6 +2775,7 @@ debug_info_view =
 		    }
 
 		    update_overlay_menu(&key);
+		    auto_quality_tick();
 
 		    if (qr_popup_update(key)) {
 			    // the QR popup is open : it takes all the input
