@@ -390,6 +390,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"cancel", {"annuler", "abbrechen", "annulla", "cancelar", "キャンセル"}},
 	    {"Wait before the next video", {"Attendre avant la vidéo suivante", "Vor dem nächsten Video warten", "Attendi prima del prossimo video", "Esperar antes do próximo vídeo", "次の動画の前に待つ"}},
 	    {"A countdown is shown; pressing A cancels the autoplay.", {"Un compte à rebours s'affiche ; A annule la lecture automatique.", "Ein Countdown wird angezeigt; A bricht die automatische Wiedergabe ab.", "Viene mostrato un conto alla rovescia; A annulla la riproduzione automatica.", "Uma contagem regressiva é mostrada; A cancela a reprodução automática.", "カウントダウンが表示されます。Aで自動再生をキャンセルします。"}},
+	    {"Shorts", {"Shorts", "Shorts", "Short", "Shorts", "ショート"}},
+	    {"Learn something", {"Apprendre quelque chose", "Etwas lernen", "Impara qualcosa", "Aprender algo", "何か学ぶ"}},
+	    {"Funny", {"Drôle", "Lustig", "Divertente", "Engraçado", "面白い"}},
 	};
 	return table;
 }
