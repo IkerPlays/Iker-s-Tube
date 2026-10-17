@@ -38,6 +38,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ### Library and reliability
 - **Continue watching.** The first item of Home is the last video you played.
 - **First-use tour and error report.** A short tour on first use, and Create a report to send in Settings (one file with version, state and log).
+- **Thumbnail cache on the SD card.** Pictures already seen show at once and use no data.
 - **Queue and backups.** The play queue survives a restart, your data is backed up on the SD card once a week, and the app tells you when the last run ended in a crash.
 - **Incognito mode.** From the More menu or Settings: no history, searches, resume points or last video are remembered.
 - **Search.** Long press a recent search to forget it, and optional settings hide Shorts and already watched videos in search, home and the subscription feeds.

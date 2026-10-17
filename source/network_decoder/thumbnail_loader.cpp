@@ -2,6 +2,9 @@
 #include "network_io.hpp"
 #include "thumbnail_loader.hpp"
 #include <set>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <algorithm>
 #include <map>
 #include <queue>
 
@@ -299,6 +302,70 @@ static std::vector<u8> http_get(const std::string &url, int &status_code) {
 	return result.data;
 }
 
+// ---- disk cache : the pictures already downloaded are kept on the SD card (sdmc:/3ds/IkersTube/thumbs), so the lists show
+// their thumbnails at once the next time and use no data. Only this thread uses these functions.
+#define THUMB_DIR "sdmc:/3ds/IkersTube/thumbs"
+#define THUMB_DISK_MAX_FILES 400
+#define THUMB_DISK_MAX_SIZE 300000
+
+static std::string disk_cache_path(const std::string &url) {
+	unsigned long long h = 1469598103934665603ULL; // FNV-1a
+	for (unsigned char c : url) {
+		h ^= c;
+		h *= 1099511628211ULL;
+	}
+	char buf[40];
+	snprintf(buf, sizeof buf, "/%016llx.img", h);
+	return std::string(THUMB_DIR) + buf;
+}
+
+static bool disk_cache_read(const std::string &url, std::vector<u8> &out) {
+	FILE *f = fopen(disk_cache_path(url).c_str(), "rb");
+	if (!f) return false;
+	fseek(f, 0, SEEK_END);
+	long size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	bool ok = false;
+	if (size > 0 && size <= THUMB_DISK_MAX_SIZE) {
+		out.resize(size);
+		ok = fread(out.data(), 1, size, f) == (size_t)size;
+	}
+	fclose(f);
+	return ok;
+}
+
+static void disk_cache_prune() { // keep the newest files only
+	DIR *dir = opendir(THUMB_DIR);
+	if (!dir) return;
+	std::vector<std::pair<time_t, std::string>> files;
+	while (struct dirent *entry = readdir(dir)) {
+		if (entry->d_name[0] == '.') continue;
+		std::string path = std::string(THUMB_DIR) + "/" + entry->d_name;
+		struct stat st;
+		if (stat(path.c_str(), &st) == 0) files.push_back({st.st_mtime, path});
+	}
+	closedir(dir);
+	if ((int)files.size() <= THUMB_DISK_MAX_FILES) return;
+	std::sort(files.begin(), files.end());
+	for (size_t i = 0; i + THUMB_DISK_MAX_FILES - 50 < files.size(); i++) remove(files[i].second.c_str()); // down to 350
+}
+
+static void disk_cache_write(const std::string &url, const std::vector<u8> &data) {
+	static int writes = 0;
+	if (data.empty() || data.size() > THUMB_DISK_MAX_SIZE) return;
+	if (writes == 0) {
+		mkdir("sdmc:/3ds", 0777);
+		mkdir("sdmc:/3ds/IkersTube", 0777);
+		mkdir(THUMB_DIR, 0777);
+		disk_cache_prune(); // once per run
+	}
+	writes++;
+	FILE *f = fopen(disk_cache_path(url).c_str(), "wb");
+	if (!f) return;
+	fwrite(data.data(), 1, data.size(), f);
+	fclose(f);
+}
+
 static bool should_be_running = true;
 void thumbnail_downloader_thread_func(void *arg) {
 	while (should_be_running) {
@@ -352,6 +419,14 @@ void thumbnail_downloader_thread_func(void *arg) {
 		std::vector<int> uncached_index_list;
 		std::vector<int> cached_index_list;
 		for (size_t i = 0; i < download_list.size(); i++) {
+			if (!thumbnail_cache.count(download_list[i].url) && !var_data_saver) { // maybe it is on the SD card from an earlier run
+				std::vector<u8> from_disk;
+				if (disk_cache_read(download_list[i].url, from_disk)) {
+					resource_lock.lock();
+					thumbnail_cache[download_list[i].url] = from_disk;
+					resource_lock.unlock();
+				}
+			}
 			if (thumbnail_cache.count(download_list[i].url)) {
 				results[i].status_code = 0; // cached
 				results[i].data = thumbnail_cache[download_list[i].url];
@@ -391,6 +466,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 					}
 				}
 				thumbnail_cache[info.url] = res.data;
+				if (res.status_code / 100 == 2) disk_cache_write(info.url, res.data); // (only what was just downloaded)
 				if (thumbnail_cache.size() >= THUMBNAIL_CACHE_MAX + 10) {
 					logger.warning("tloader", "over caching : " + std::to_string(thumbnail_cache.size()));
 				}
