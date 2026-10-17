@@ -667,13 +667,10 @@ static void rebuild_views() {
 		build_playlists(list);
 	}
 
-	constexpr int selector_width = 250;
+	constexpr int selector_width = 320; // the whole width : the six tabs need it (the nav bar already says Library)
 	main_view = (new ScrollView(0, 0, 320, 240))
 	                ->set_views({(new HorizontalListView(0, 0, MIDDLE_FONT_INTERVAL))
-	                                 ->set_views({(new TextView(0, 0, 320 - selector_width, MIDDLE_FONT_INTERVAL))
-	                                                  ->set_text(tr("Library", "Biblioteca"))
-	                                                  ->set_font_size(0.5, MIDDLE_FONT_INTERVAL),
-	                                              (new SelectorView(0, 0, selector_width, MIDDLE_FONT_INTERVAL, false))
+	                                 ->set_views({(new SelectorView(0, 0, selector_width, MIDDLE_FONT_INTERVAL, false))
 	                                                  ->set_texts({(std::function<std::string()>)[]() { return std::string(tr("Queue", "Cola")); },
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Favorites", "Favoritos")); },
 	                                                               (std::function<std::string()>)[]() { return std::string(tr("Playlists", "Listas")); },

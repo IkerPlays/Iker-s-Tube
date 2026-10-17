@@ -88,6 +88,7 @@ void load_settings() {
 	var_incognito = load_int("incognito", 0);
 	var_tour_done = load_int("tour_done", 0);
 	var_autoplay_delay = std::max(0, std::min(3, load_int("autoplay_delay", 0)));
+	var_download_window = std::max(0, std::min(1, load_int("download_window", 0)));
 	var_sponsorblock = std::max(0, std::min(2, load_int("sponsorblock", 0)));
 	var_hide_watched = load_int("hide_watched", 0);
 	var_resume_videos = load_int("resume_videos", 1);
@@ -156,6 +157,7 @@ void save_settings() {
 	add_int("incognito", var_incognito);
 	add_int("tour_done", var_tour_done);
 	add_int("autoplay_delay", var_autoplay_delay);
+	add_int("download_window", var_download_window);
 	add_int("sponsorblock", var_sponsorblock);
 	add_int("hide_watched", var_hide_watched);
 	add_int("welcome_done", var_welcome_done);

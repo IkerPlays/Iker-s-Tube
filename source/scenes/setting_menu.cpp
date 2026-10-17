@@ -1178,6 +1178,21 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Download window
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Any time", "Cuando sea"); },
+							(std::function<std::string ()>) []() { return tr("Only at night (1:00-7:00)", "Solo de noche (1:00-7:00)"); }
+						}, var_download_window)
+						->set_title([](const SelectorView &) { return tr("When to download", "Cuándo descargar"); })
+						->set_info([](const SelectorView &) { return tr("At night the downloads wait for the hours 1:00 to 7:00 of the console clock. The app must stay open.", "De noche las descargas esperan a las horas 1:00 a 7:00 del reloj de la consola. La app debe seguir abierta."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_download_window != view.selected_button) {
+								var_download_window = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Forward buffer ratio
 					(new BarView(0, 0, 320, 40))
 						->set_values_sync(0.1, 1.0, &var_forward_buffer_ratio)

@@ -441,6 +441,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Audio language", {"Langue audio", "Audiosprache", "Lingua audio", "Idioma do áudio", "音声言語"}},
 	    {"This video has only one audio track", {"Cette vidéo n'a qu'une piste audio", "Dieses Video hat nur eine Tonspur", "Questo video ha una sola traccia audio", "Este vídeo tem apenas uma faixa de áudio", "この動画には音声トラックが1つだけです"}},
 	    {"Audio: ", {"Audio : ", "Audio: ", "Audio: ", "Áudio: ", "音声："}},
+	    {"Waiting for the night to download", {"En attente de la nuit pour télécharger", "Warte auf die Nacht zum Herunterladen", "In attesa della notte per scaricare", "Esperando a noite para baixar", "夜になるのを待っています"}},
+	    {"Any time", {"À tout moment", "Jederzeit", "In qualsiasi momento", "A qualquer hora", "いつでも"}},
+	    {"Only at night (1:00-7:00)", {"Seulement la nuit (1h-7h)", "Nur nachts (1-7 Uhr)", "Solo di notte (1:00-7:00)", "Só à noite (1h-7h)", "夜のみ（1:00〜7:00）"}},
+	    {"When to download", {"Quand télécharger", "Wann herunterladen", "Quando scaricare", "Quando baixar", "ダウンロードの時間帯"}},
+	    {"At night the downloads wait for the hours 1:00 to 7:00 of the console clock. The app must stay open.", {"La nuit, les téléchargements attendent de 1h à 7h sur l'horloge de la console. L'appli doit rester ouverte.", "Nachts warten Downloads auf 1 bis 7 Uhr der Konsolenuhr. Die App muss geöffnet bleiben.", "Di notte i download aspettano le ore 1:00-7:00 dell'orologio della console. L'app deve restare aperta.", "À noite os downloads esperam das 1h às 7h do relógio do console. O app deve ficar aberto.", "夜間は本体時計の1:00〜7:00までダウンロードを待ちます。アプリは開いたままにしてください。"}},
 	};
 	return table;
 }

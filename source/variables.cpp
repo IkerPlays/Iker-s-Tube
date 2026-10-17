@@ -23,6 +23,7 @@ int var_sponsorblock = 0;
 bool var_incognito = false;
 bool var_tour_done = false;
 int var_autoplay_delay = 0;
+int var_download_window = 0;
 bool var_hide_watched = false;
 bool var_welcome_done = false;
 int var_custom_hue = 200;

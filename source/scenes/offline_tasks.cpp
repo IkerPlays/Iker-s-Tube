@@ -148,6 +148,20 @@ static void download_task(void *arg) {
 	}
 	DownloadJob *job = (DownloadJob *)arg;
 	while (job) {
+		if (var_download_window == 1) { // only at night : the job waits (the app must stay open)
+			bool announced = false;
+			while (!download_cancel) {
+				time_t now = time(NULL);
+				int hour = gmtime(&now)->tm_hour; // the console clock is local time
+				if (hour >= 1 && hour < 7) break;
+				if (!announced) {
+					announced = true;
+					notice_show(tr("Waiting for the night to download", "Esperando a la noche para descargar"));
+				}
+				svcSleepThread(5000000000LL);
+				if (var_download_window != 1) break; // the setting was changed
+			}
+		}
 		run_job(job, session);
 		LightLock_Lock(&pending_lock);
 		if (pending.size()) {
