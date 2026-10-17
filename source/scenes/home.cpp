@@ -17,6 +17,7 @@
 #include "network_decoder/thumbnail_loader.hpp"
 #include "util/misc_tasks.hpp"
 #include "util/async_task.hpp"
+#include "util/result_filter.hpp"
 #include "oauth/oauth.hpp"
 #include "rapidjson_wrapper.hpp"
 
@@ -670,6 +671,9 @@ static void load_home_page(void *) {
 	add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	auto results = youtube_load_home_page();
 	remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
+	results.videos.erase(std::remove_if(results.videos.begin(), results.videos.end(),
+	                                    [](const YouTubeVideoSuccinct &video) { return result_video_hidden(video.url); }),
+	                     results.videos.end());
 
 	logger.info("home", "truncate/view creation start");
 	std::vector<View *> new_videos_view;
@@ -698,6 +702,12 @@ static void load_home_page(void *) {
 static void load_home_page_more(void *) {
 	auto new_result = home_info;
 	new_result.load_more_results();
+	{
+		size_t old_size = std::min(home_info.videos.size(), new_result.videos.size());
+		new_result.videos.erase(std::remove_if(new_result.videos.begin() + old_size, new_result.videos.end(),
+		                                       [](const YouTubeVideoSuccinct &video) { return result_video_hidden(video.url); }),
+		                        new_result.videos.end());
+	}
 
 	logger.info("home-c", "truncate/view creation start");
 	std::vector<View *> new_videos_view;

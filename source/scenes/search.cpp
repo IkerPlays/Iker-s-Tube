@@ -15,6 +15,7 @@
 #include "network_decoder/network_io.hpp"
 #include "util/async_task.hpp"
 #include "data_io/search_history.hpp"
+#include "util/result_filter.hpp"
 #include "data_io/last_played.hpp"
 #include "data_io/history.hpp"
 #include "ui/qr_scan.hpp"
@@ -522,6 +523,11 @@ static void load_search_results(void *) {
 	YouTubeSearchResult new_result = youtube_load_search(search_url);
 	remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
+	// the Shorts / watched videos that the settings hide
+	new_result.results.erase(std::remove_if(new_result.results.begin(), new_result.results.end(),
+	                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url); }),
+	                         new_result.results.end());
+
 	// wrap and truncate here
 	logger.info("search", "truncate/view creation start");
 	std::vector<View *> new_result_views;
@@ -546,6 +552,12 @@ static void load_search_results(void *) {
 static void load_more_search_results(void *) {
 	auto new_result = search_result;
 	new_result.load_more_results();
+	{ // hide what the settings say, only in the new part
+		size_t old_size = std::min(search_result.results.size(), new_result.results.size());
+		new_result.results.erase(std::remove_if(new_result.results.begin() + old_size, new_result.results.end(),
+		                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url); }),
+		                         new_result.results.end());
+	}
 
 	logger.info("search-c", "truncate/view creation start");
 	std::vector<View *> new_result_views;

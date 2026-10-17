@@ -330,6 +330,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"A saved video or audio is deleted from the SD card when it plays until the end.", {"Une vidéo ou un audio enregistré est supprimé de la carte SD quand il est lu jusqu'à la fin.", "Ein gespeichertes Video oder Audio wird von der SD-Karte gelöscht, wenn es bis zum Ende läuft.", "Un video o audio salvato viene eliminato dalla scheda SD quando viene riprodotto fino alla fine.", "Um vídeo ou áudio salvo é apagado do cartão SD quando é reproduzido até o fim.", "保存した動画や音声は最後まで再生するとSDカードから削除されます。"}},
 	    {"Delete all downloads", {"Supprimer tous les téléchargements", "Alle Downloads löschen", "Elimina tutti i download", "Apagar todos os downloads", "すべてのダウンロードを削除"}},
 	    {"Yes, delete everything", {"Oui, tout supprimer", "Ja, alles löschen", "Sì, elimina tutto", "Sim, apagar tudo", "はい、すべて削除"}},
+	    {"Hide Shorts in search and home", {"Masquer les Shorts dans la recherche et l'accueil", "Shorts in Suche und Start ausblenden", "Nascondi gli Short in ricerca e home", "Ocultar Shorts na busca e no início", "検索とホームでショートを非表示"}},
+	    {"Hide watched videos in search and home", {"Masquer les vidéos vues dans la recherche et l'accueil", "Gesehene Videos in Suche und Start ausblenden", "Nascondi i video visti in ricerca e home", "Ocultar vídeos assistidos na busca e no início", "検索とホームで視聴済みを非表示"}},
 	};
 	return table;
 }

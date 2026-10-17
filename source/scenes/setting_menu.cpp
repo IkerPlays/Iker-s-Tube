@@ -689,6 +689,33 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Hide Shorts / watched videos in search and home
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_hide_shorts)
+						->set_title([](const SelectorView &) { return tr("Hide Shorts in search and home", "Ocultar Shorts en búsqueda e inicio"); })
+						->set_info([](const SelectorView &) { return tr("Applies to the lists loaded from now on.", "Se aplica a las listas que cargues a partir de ahora."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_hide_shorts != view.selected_button) {
+								var_hide_shorts = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_hide_watched)
+						->set_title([](const SelectorView &) { return tr("Hide watched videos in search and home", "Ocultar vídeos vistos en búsqueda e inicio"); })
+						->set_info([](const SelectorView &) { return tr("Applies to the lists loaded from now on.", "Se aplica a las listas que cargues a partir de ahora."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_hide_watched != view.selected_button) {
+								var_hide_watched = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Delete downloads after watching them
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

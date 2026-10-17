@@ -1,4 +1,3 @@
 Devbuild notes
 
-- New setting Delete downloads after watching (Settings, display section): a saved video or audio is deleted from the SD card when it plays until the end (it is removed when the next video starts). Off by default.
-- Downloads screen: Delete all downloads button (it asks for confirmation).
+- Two new settings (display section): Hide Shorts in search and home, and Hide watched videos in search and home. They leave those videos out of the search results and the home feed (also when more results load). Both are off by default and apply to lists loaded from then on.
