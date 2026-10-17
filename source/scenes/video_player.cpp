@@ -1826,9 +1826,11 @@ debug_info_view =
 		    small_resource_lock.unlock();
 		    return;
 	    }
-	    if (tmp_video_info.duration_ms > 60 * 60 * 1000) {
+	    if (tmp_video_info.duration_ms > 60 * 60 * 1000 && tmp_video_info.audio_stream_url != "" &&
+	        tmp_video_info.video_stream_urls.size()) {
 		    tmp_video_info.both_stream_url =
-		        ""; // for some reason, itag 18 causes problems when the video is long enough
+		        ""; // for some reason, itag 18 causes problems when the video is long enough (it is only dropped when
+		            // there is another way to play : without a separate audio stream itag 18 is the only option)
 	    }
 	    playing_video_info = tmp_video_info;
 	    video_info_cache[url] = tmp_video_info;

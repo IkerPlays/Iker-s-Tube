@@ -83,6 +83,18 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 		if (res.audio_stream_url == "" && audio_formats.size()) {
 			res.audio_stream_url = audio_formats[0]["url"].string_value();
 		}
+		if (res.audio_stream_url == "") { // goes to log.txt : which audio formats YouTube offered
+			std::string list;
+			int shown = 0;
+			for (auto &f : formats) {
+				std::string mime = f["mimeType"].string_value();
+				if (mime.substr(0, 5) == "audio" && shown++ < 6) {
+					list += " [itag " + std::to_string(f["itag"].int_value()) + " " + mime.substr(0, 40) + (f["url"].string_value() == "" ? " NO-URL" : "") + "]";
+				}
+			}
+			logger.warning("player", "no usable audio stream : " + std::to_string(formats.size()) + " formats, mp4a=" +
+			                             std::to_string(audio_formats.size()) + list);
+		}
 	}
 	// video
 	{
@@ -713,7 +725,10 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 
 		// Automatic client fallback : if the selected client did not give a playable stream, try the others
 		// (Android VR, visionOS, Android) in turn so that playback keeps working when YouTube blocks one of them.
-		if (!use_android_vr && !res.is_playable()) {
+		// a long video that has no separate audio stream only has itag 18, which is risky : try the other clients too
+		const bool want_audio_fallback = res.is_playable() && res.audio_stream_url == "" && res.duration_ms > 60 * 60 * 1000;
+		YouTubeVideoDetail backup_before_fallback = res;
+		if (!use_android_vr && (!res.is_playable() || want_audio_fallback)) {
 			static const int fallback_order[3] = {1, 2, 0};
 			for (int client : fallback_order) {
 				if (client == var_player_response) continue;
@@ -731,10 +746,13 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 				parse_json_destructive((char *)&fb_data[0],
 				                       [&](Document &json_root, RJson data) { extract_player_data(json_root, data, res); },
 				                       [&](const std::string &error) { debug_error("[v-fallback-client] " + error); });
-				if (res.is_playable()) {
+				if (res.is_playable() && (!want_audio_fallback || res.audio_stream_url != "")) {
 					debug_info("Fallback client " + std::to_string(client) + " worked");
 					break;
 				}
+			}
+			if (want_audio_fallback && !(res.is_playable() && res.audio_stream_url != "")) {
+				res = backup_before_fallback; // no client gave better streams : keep what the first one gave
 			}
 		}
 	}
