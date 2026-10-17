@@ -43,8 +43,9 @@ void Menu_worker_thread(void *arg);
 // Boot splash : the app logo (a play button) and the name, drawn procedurally.
 static void Menu_draw_splash() {
 	Draw_frame_ready();
-	Draw_screen_ready(0, 0xFF181212);
 	Draw_screen_ready(1, 0xFF181212);
+	Draw_screen_ready(2, 0xFF181212);
+	Draw_screen_ready(0, 0xFF181212);
 	// Rounded-ish red badge with a white play triangle built from stripes
 	const float cx = 200, cy = 100;
 	Draw_texture(var_square_image[0], 0xFF4B4BFF, cx - 40, cy - 28, 80, 56);

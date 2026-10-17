@@ -15,6 +15,7 @@
 #include "network_decoder/network_io.hpp"
 #include "util/async_task.hpp"
 #include "data_io/search_history.hpp"
+#include "ui/qr_scan.hpp"
 
 #define SEARCH_BOX_MARGIN 4
 #define SEARCH_ROW_HEIGHT 25
@@ -135,6 +136,7 @@ static const struct {
                       {"Largos (> 20 min)", "EgQQARgD"}};
 static int search_filter_index = 0;
 static bool history_clear_request = false;
+static bool qr_scan_pending = false;
 
 // starts a search. Must be called while resource_lock is held (from the update of this scene)
 static void start_search(const std::string &word) {
@@ -173,6 +175,13 @@ static void show_search_history() {
 		                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                                      ->set_on_view_released([query](View &) { start_search(query); }));
 	}
+	result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+	                                      ->set_text("Scan a QR code (camera)")
+	                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+	                                      ->set_y_alignment(TextView::YAlign::CENTER)
+	                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
+	                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                                      ->set_on_view_released([](View &) { qr_scan_pending = true; }));
 	if (!words.size()) {
 		return;
 	}
@@ -655,6 +664,19 @@ void Search_draw(void) {
 			clicked_url = "";
 		}
 		resource_lock.unlock();
+
+		if (qr_scan_pending) {
+			qr_scan_pending = false;
+			std::string scanned;
+			video_set_skip_drawing(true);
+			bool ok = qr_scan_run(scanned);
+			video_set_skip_drawing(false);
+			if (ok && !is_async_task_running(access_input_url)) {
+				last_url_input = scanned;
+				remove_all_async_tasks_with_type(access_input_url);
+				queue_async_task(access_input_url, NULL);
+			}
+		}
 
 		if (video_playing_bar_show) {
 			video_update_playing_bar(key);
