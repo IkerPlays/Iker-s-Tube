@@ -119,7 +119,7 @@ static void run_job(DownloadJob *job, NetworkSessionList &session) {
 		item.quality = job->quality;
 		item.combined = job->combined;
 		offline_add(item);
-		notice_show(tr("Saved for offline viewing", "Guardado para ver sin conexión"));
+		notice_show(tr("Saved for offline viewing: ", "Guardado para ver sin conexión: ") + job->title.substr(0, 30));
 	} else {
 		for (auto &part : job->parts) remove(part.path.c_str());
 		notice_show(download_cancel ? tr("Download cancelled", "Descarga cancelada") : tr("Could not download it", "No se pudo descargar"));

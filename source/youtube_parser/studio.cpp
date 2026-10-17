@@ -72,7 +72,51 @@ static std::string count_text(const std::string &json, const std::string &key) {
 
 // The totals come from the public About page of the channel (no Data API needed) : the channel page has the continuation
 // tokens, one of them opens the About panel with the totals.
+#define STATS_CACHE_PATH "sdmc:/3ds/IkersTube/studio_stats.txt"
+
+static void stats_cache_save(const StudioStats &s) {
+	mkdir("sdmc:/3ds", 0777);
+	mkdir("sdmc:/3ds/IkersTube", 0777);
+	FILE *f = fopen(STATS_CACHE_PATH, "w");
+	if (!f) return;
+	fprintf(f, "%s\n%s\n%s\n", s.subscribers.c_str(), s.views.c_str(), s.videos.c_str());
+	fclose(f);
+}
+
+// the numbers of the last time, shown when they cannot be loaded now (no connection)
+static void stats_cache_load(StudioStats &s) {
+	FILE *f = fopen(STATS_CACHE_PATH, "r");
+	if (!f) return;
+	char a[64] = {0}, b[64] = {0}, c[64] = {0};
+	if (fgets(a, sizeof a, f) && fgets(b, sizeof b, f) && fgets(c, sizeof c, f)) {
+		auto trim = [](char *x) { size_t n = strlen(x); while (n && (x[n - 1] == '\n' || x[n - 1] == '\r')) x[--n] = 0; return std::string(x); };
+		s.subscribers = trim(a);
+		s.views = trim(b);
+		s.videos = trim(c);
+	}
+	fclose(f);
+}
+
+static StudioStats load_stats_online();
+
 StudioStats youtube_studio_stats() {
+	StudioStats res = load_stats_online();
+	if (res.error == "") {
+		stats_cache_save(res);
+	} else {
+		StudioStats cached;
+		stats_cache_load(cached);
+		if (cached.views != "-") { // keep the old numbers and say they are old
+			res.subscribers = cached.subscribers;
+			res.views = cached.views;
+			res.videos = cached.videos;
+			res.error += " - old numbers";
+		}
+	}
+	return res;
+}
+
+static StudioStats load_stats_online() {
 	StudioStats res;
 	std::string channel = OAuth::get_user_channel_id();
 	if (channel == "") {

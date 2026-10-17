@@ -5,6 +5,7 @@
 #include "data_io/string_resource.hpp"
 #include "util/play_queue.hpp"
 #include "scenes/library.hpp"
+#include "scenes/offline_tasks.hpp"
 #include <algorithm>
 
 #define ICON_LINE_HEIGHT 3
@@ -141,6 +142,9 @@ static void draw_nav_bar() {
 		}
 		u32 color = sel ? 0xFFFFFFFF : COLOR_GRAY(var_night_mode ? 0xB8 : 0x55);
 		nav_icon(i, cx, cy, color);
+		if (i == 3 && offline_download_running()) { // a download is running : green dot on Downloads
+			Draw_round_rect(cx + 8, cy - 8, 6, 6, 3, 0xFF50C878);
+		}
 		Draw_x_centered(labels[i], x0, x1, nav_top + 19, 0.4, 0.4, sel ? DEFAULT_TEXT_COLOR : color);
 	}
 }
