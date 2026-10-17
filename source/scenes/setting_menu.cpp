@@ -689,6 +689,20 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Incognito
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_incognito)
+						->set_title([](const SelectorView &) { return tr("Incognito mode", "Modo incógnito"); })
+						->set_info([](const SelectorView &) { return tr("Nothing is remembered: no watch history, searches, resume points or last video. Also in the More menu.", "No se recuerda nada: ni historial, ni búsquedas, ni dónde lo dejaste ni el último vídeo. También en el menú Más."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_incognito != view.selected_button) {
+								var_incognito = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// SponsorBlock
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

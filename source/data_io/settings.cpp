@@ -85,6 +85,7 @@ void load_settings() {
 	var_mark_watched = load_int("mark_watched", 1);
 	var_offline_autodelete = load_int("offline_autodelete", 0);
 	var_hide_shorts = load_int("hide_shorts", 0);
+	var_incognito = load_int("incognito", 0);
 	var_sponsorblock = std::max(0, std::min(2, load_int("sponsorblock", 0)));
 	var_hide_watched = load_int("hide_watched", 0);
 	var_resume_videos = load_int("resume_videos", 1);
@@ -150,6 +151,7 @@ void save_settings() {
 	add_int("mark_watched", var_mark_watched);
 	add_int("offline_autodelete", var_offline_autodelete);
 	add_int("hide_shorts", var_hide_shorts);
+	add_int("incognito", var_incognito);
 	add_int("sponsorblock", var_sponsorblock);
 	add_int("hide_watched", var_hide_watched);
 	add_int("welcome_done", var_welcome_done);

@@ -1,3 +1,4 @@
+#include "headers.hpp"
 #include "data_io/resume_position.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cstdio>
@@ -52,6 +53,7 @@ double resume_get(const std::string &video_id) {
 }
 
 void resume_set(const std::string &video_id, double seconds, double duration) {
+	if (var_incognito) return; // incognito : nothing is remembered
 	if (video_id.empty() || video_id.find('\t') != std::string::npos || video_id.find('\n') != std::string::npos) {
 		return;
 	}
@@ -74,6 +76,7 @@ void resume_set(const std::string &video_id, double seconds, double duration) {
 }
 
 void resume_save() {
+	if (var_incognito) return; // incognito : nothing is remembered
 	resume_lock.lock();
 	ensure_loaded_locked();
 	mkdir("sdmc:/3ds", 0777);

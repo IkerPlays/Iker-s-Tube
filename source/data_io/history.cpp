@@ -105,6 +105,7 @@ void save_watch_history() {
 	}
 }
 void add_watched_video(HistoryVideo video) {
+	if (var_incognito) return; // incognito : nothing is remembered
 	watched_ids_dirty = true;
 	if (var_history_enabled) {
 		video.title_lines = truncate_str(video.title, 320 - VIDEO_LIST_THUMBNAIL_WIDTH - 6, 2, 0.5, 0.5);

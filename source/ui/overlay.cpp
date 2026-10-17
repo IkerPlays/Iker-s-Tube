@@ -6,6 +6,8 @@
 #include "util/play_queue.hpp"
 #include "scenes/library.hpp"
 #include "scenes/offline_tasks.hpp"
+#include "util/misc_tasks.hpp"
+#include "ui/notice.hpp"
 #include <algorithm>
 
 #define ICON_LINE_HEIGHT 3
@@ -25,6 +27,7 @@ struct Content {
 		EXIT,
 		SETTINGS,
 		ABOUT,
+		INCOGNITO,
 	};
 	Type type;
 };
@@ -121,6 +124,11 @@ static void nav_icon(int type, float cx, float cy, u32 c) {
 static void draw_nav_bar() {
 	const std::string labels[NAV_ITEMS] = {LOCALIZED(HOME), tr("Search", "Buscar"), tr("Library", "Biblioteca"),
 	                                       tr("Downloads", "Descargas"), tr("More", "Más")};
+	if (var_incognito) { // a reminder that nothing is being remembered
+		float w = Draw_get_width(tr("Incognito", "Incógnito"), 0.4) + 8;
+		Draw_round_rect(4, nav_top - 12, w, 11, 5, 0xE0303030);
+		Draw(tr("Incognito", "Incógnito"), 8, nav_top - 12, 0.4, 0.4, 0xFFFFFFFF);
+	}
 	if (var_wifi_state != 2) { // no internet : say it, saved downloads still work
 		Draw_texture(var_square_image[0], 0xFF2A2AB0, 0, nav_top - 13, 320, 13);
 		Draw_x_centered(tr("No connection - saved downloads still play", "Sin conexión - lo descargado se puede ver"), 0, 320, nav_top - 12, 0.4, 0.4, 0xFFFFFFFF);
@@ -252,6 +260,7 @@ void update_overlay_menu(Hid_info *key) {
 	if (global_current_scene != SceneType::HISTORY) {
 		contents.push_back({LOCALIZED(WATCH_HISTORY), Content::Type::HISTORY});
 	}
+	contents.push_back({var_incognito ? tr("Incognito: on", "Incógnito: activado") : tr("Incognito: off", "Incógnito: desactivado"), Content::Type::INCOGNITO});
 	contents.push_back({LOCALIZED(EXIT_APP), Content::Type::EXIT});
 	if (global_current_scene != SceneType::SETTINGS) {
 		contents.push_back({LOCALIZED(SETTINGS), Content::Type::SETTINGS});
@@ -320,6 +329,11 @@ void update_overlay_menu(Hid_info *key) {
 					});
 					var_need_refresh = true;
 					menu_status = CONFIRMING_CLOSE;
+				} else if (contents[id].type == Content::Type::INCOGNITO) {
+					var_incognito = !var_incognito;
+					misc_tasks_request(TASK_SAVE_SETTINGS);
+					notice_show(var_incognito ? tr("Incognito on: nothing is remembered", "Incógnito activado: no se recuerda nada")
+					                          : tr("Incognito off", "Incógnito desactivado"));
 				} else if (contents[id].type == Content::Type::ABOUT) {
 					global_intent.next_scene = SceneType::ABOUT;
 					global_intent.arg = "";

@@ -367,6 +367,13 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Tags (separated by commas)", {"Tags (séparés par des virgules)", "Tags (durch Kommas getrennt)", "Tag (separati da virgole)", "Tags (separadas por vírgulas)", "タグ（カンマ区切り）"}},
 	    {"Continue the unfinished upload: ", {"Reprendre l'envoi inachevé : ", "Unterbrochenen Upload fortsetzen: ", "Riprendi il caricamento interrotto: ", "Continuar o envio inacabado: ", "中断したアップロードを再開: "}},
 	    {"Forget the unfinished upload", {"Oublier l'envoi inachevé", "Unterbrochenen Upload vergessen", "Dimentica il caricamento interrotto", "Esquecer o envio inacabado", "中断したアップロードを破棄"}},
+	    {"Incognito: on", {"Navigation privée : activée", "Inkognito: an", "Incognito: attivo", "Anônimo: ligado", "シークレット：オン"}},
+	    {"Incognito: off", {"Navigation privée : désactivée", "Inkognito: aus", "Incognito: disattivo", "Anônimo: desligado", "シークレット：オフ"}},
+	    {"Incognito on: nothing is remembered", {"Navigation privée activée : rien n'est mémorisé", "Inkognito an: nichts wird gespeichert", "Incognito attivo: non si ricorda nulla", "Anônimo ligado: nada é lembrado", "シークレットオン：何も記録しません"}},
+	    {"Incognito off", {"Navigation privée désactivée", "Inkognito aus", "Incognito disattivato", "Anônimo desligado", "シークレットオフ"}},
+	    {"Incognito", {"Privé", "Inkognito", "Incognito", "Anônimo", "シークレット"}},
+	    {"Incognito mode", {"Navigation privée", "Inkognito-Modus", "Modalità incognito", "Modo anônimo", "シークレットモード"}},
+	    {"Nothing is remembered: no watch history, searches, resume points or last video. Also in the More menu.", {"Rien n'est mémorisé : ni historique, ni recherches, ni reprises, ni dernière vidéo. Aussi dans le menu Plus.", "Nichts wird gespeichert: kein Verlauf, keine Suchen, keine Fortsetzungspunkte, kein letztes Video. Auch im Menü Mehr.", "Non si ricorda nulla: né cronologia, né ricerche, né punti di ripresa, né ultimo video. Anche nel menu Altro.", "Nada é lembrado: nem histórico, nem buscas, nem pontos de retomada, nem último vídeo. Também no menu Mais.", "何も記録しません：履歴、検索、再開位置、最後の動画。「その他」メニューにもあります。"}},
 	};
 	return table;
 }

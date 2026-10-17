@@ -1,3 +1,4 @@
+#include "headers.hpp"
 #include "data_io/search_history.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cctype>
@@ -62,6 +63,7 @@ static bool equals_ignore_case(const std::string &a, const std::string &b) {
 }
 
 void search_history_add(const std::string &word) {
+	if (var_incognito) return; // incognito : nothing is remembered
 	if (word.empty() || word.find('\n') != std::string::npos) {
 		return;
 	}

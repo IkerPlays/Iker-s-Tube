@@ -1,3 +1,4 @@
+#include "headers.hpp"
 #include "data_io/last_played.hpp"
 #include <cstdio>
 #include <sys/stat.h>
@@ -5,6 +6,7 @@
 #define LAST_PLAYED_PATH "sdmc:/3ds/IkersTube/last_played.txt"
 
 void last_played_set(const std::string &id, const std::string &title) {
+	if (var_incognito) return; // incognito : nothing is remembered
 	if (id == "") return;
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);

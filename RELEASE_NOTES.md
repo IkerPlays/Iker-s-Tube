@@ -1,4 +1,3 @@
 Devbuild notes
 
-- Studio: an upload that did not finish (the app was closed, the connection dropped) can be continued: the Studio tab offers Continue the unfinished upload, which asks YouTube how much it already has and sends the rest (the session lasts about a week). Forget the unfinished upload clears it.
-- Studio: the upload form has Tags (separated by commas).
+- Incognito mode: Settings (display section) or the More menu. While it is on nothing is remembered: no watch history, no recent searches, no resume points and no last played video. A small Incognito tag above the bottom bar reminds you that it is on. It stays on until you turn it off.
