@@ -2321,6 +2321,14 @@ debug_info_view =
 				                         make_tool([]() { return tr("Restart", "Reiniciar"); }, 70, [jump]() { jump(-1e9); }),
 				                         make_tool([]() { return std::string("-1 min"); }, 60, [jump]() { jump(-60); }),
 				                         make_tool([]() { return std::string("+1 min"); }, 60, [jump]() { jump(60); }),
+				                         make_tool([]() { return tr("Reload", "Recargar"); }, 70,
+				                                   []() {
+					                                   if (cur_playing_url == "" || is_async_task_running(load_video_page)) return;
+					                                   seek_at_init_request = vid_current_pos;
+					                                   send_change_video_request_wo_lock(cur_playing_url, true, false, true);
+					                                   video_retry_left = MAX_RETRY_CNT;
+					                                   notice_show(tr("Reloading the video...", "Recargando el vídeo..."));
+				                                   }),
 				                         make_tool([]() { return std::string("-5 min"); }, 60, [jump]() { jump(-300); }),
 				                         make_tool([]() { return std::string("+5 min"); }, 60, [jump]() { jump(300); }),
 				                         make_tool([]() { return tr("Links", "Enlaces"); }, 70,

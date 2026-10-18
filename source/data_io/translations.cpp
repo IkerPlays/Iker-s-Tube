@@ -104,6 +104,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Video QR", {"QR vidéo", "Video-QR", "QR del video", "QR do vídeo", "動画のQR"}},
 	    {"Bell (tap to change)", {"Cloche (toucher pour changer)", "Glocke (zum Ändern tippen)", "Campanella (tocca per cambiare)", "Sino (toque para mudar)", "通知ベル（タップで変更）"}},
 	    {"Subtitles translated: ", {"Sous-titres traduits : ", "Untertitel übersetzt: ", "Sottotitoli tradotti: ", "Legendas traduzidas: ", "字幕の翻訳: "}},
+	    {"Reload", {"Recharger", "Neu laden", "Ricarica", "Recarregar", "再読込"}},
+	    {"Reloading the video...", {"Rechargement de la vidéo...", "Video wird neu geladen...", "Ricarico il video...", "Recarregando o vídeo...", "動画を再読み込み中..."}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
