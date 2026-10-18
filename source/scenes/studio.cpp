@@ -47,6 +47,9 @@ static bool delete_armed = false; // the first tap on Delete only asks for a sec
 static std::string pick_dir = "sdmc:/";
 static std::string form_path, form_title, form_desc;
 static int form_privacy = 0; // 0 private, 1 unlisted, 2 public
+static std::vector<AccountPlaylist> form_lists; // the playlists of the account (loaded when the button is first pressed)
+static int form_playlist = -1;                  // index in form_lists, -1 : none
+static volatile bool form_lists_loading = false;
 static int form_publish = 0; // index in publish_options[] (0 = now)
 static const int publish_options[] = {0, 3600, 10800, 86400, 259200, 604800};
 static const char *publish_en[] = {"now", "in 1 hour", "in 3 hours", "in 1 day", "in 3 days", "in 1 week"};
@@ -171,6 +174,7 @@ struct UploadJob {
 	std::string path, title, description, privacy, category_id, thumb_path, tags, resume_url;
 	bool is_short;
 	int publish_in;
+	std::string playlist_id; // the video is added to this playlist of the account after the upload ("" : none)
 };
 
 static void upload_thread(void *arg) {
@@ -197,6 +201,12 @@ static void upload_thread(void *arg) {
 			thumb_error = "";
 		}
 	}
+	if (ok && job->playlist_id != "" && video_id != "") {
+		notice_show(tr("Adding it to the playlist...", "Añadiéndolo a la lista..."));
+		if (!youtube_account_playlist_edit(job->playlist_id, video_id, true)) {
+			thumb_error += tr(" (could not add it to the playlist)", " (no se pudo añadir a la lista)");
+		}
+	}
 	LightLock_Lock(&state_lock);
 	if (ok) {
 		upload_message = tr("Uploaded: ", "Subido: ") + "youtube.com/watch?v=" + video_id + thumb_error;
@@ -219,8 +229,9 @@ static void upload_thread(void *arg) {
 static void start_upload(const std::string &resume_path = "", const std::string &resume_title = "", const std::string &resume_url = "") {
 	if (upload_running) return;
 	UploadJob *job = resume_url != ""
-	                     ? new UploadJob{resume_path, resume_title, "", "private", "22", "", "", resume_url, false, 0} // (the rest was sent when it started)
-	                     : new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_tags, "", form_short, publish_options[form_publish]};
+	                     ? new UploadJob{resume_path, resume_title, "", "private", "22", "", "", resume_url, false, 0, ""} // (the rest was sent when it started)
+	                     : new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_tags, "", form_short, publish_options[form_publish],
+	                                  form_playlist >= 0 && form_playlist < (int)form_lists.size() ? form_lists[form_playlist].id : std::string()};
 	for (auto &c : job->privacy) c = tolower(c);
 	upload_running = true;
 	upload_percent = 0;
@@ -504,6 +515,7 @@ static std::vector<View *> build_pick() {
 			form_privacy = 0;
 			form_category = 0;
 			form_publish = 0;
+			form_playlist = -1;
 			form_tags = "";
 			form_thumb = "";
 			form_short = pick_short;
@@ -541,6 +553,32 @@ static std::vector<View *> build_form() {
 	v.push_back(button([]() { return tr("Category: ", "Categoría: ") + tr(categories[form_category].en, categories[form_category].es); },
 	                   []() {
 		                   form_category = (form_category + 1) % category_count;
+		                   var_need_refresh = true;
+	                   }));
+	v.push_back(button([]() {
+		                   if (form_lists_loading) return tr("Playlist: loading...", "Lista: cargando...");
+		                   return tr("Playlist: ", "Lista: ") + (form_playlist >= 0 && form_playlist < (int)form_lists.size() ? form_lists[form_playlist].title.substr(0, 24) : tr("none", "ninguna"));
+	                   },
+	                   []() {
+		                   if (form_lists.empty()) {
+			                   if (form_lists_loading) return;
+			                   form_lists_loading = true;
+			                   queue_async_task([](void *) {
+				                   std::vector<AccountPlaylist> lists, usable;
+				                   if (youtube_account_playlists("", lists)) {
+					                   for (auto &l : lists) {
+						                   if (l.id != "WL" && l.id != "LL") usable.push_back(l);
+					                   }
+				                   }
+				                   form_lists = usable;
+				                   form_lists_loading = false;
+				                   if (usable.empty()) notice_show(tr("No playlists found in your account", "No hay listas en tu cuenta"));
+				                   var_need_refresh = true;
+				                   mode_dirty = true;
+			                   }, NULL);
+			                   return;
+		                   }
+		                   form_playlist = form_playlist + 1 >= (int)form_lists.size() ? -1 : form_playlist + 1;
 		                   var_need_refresh = true;
 	                   }));
 	v.push_back(button([]() { return tr("Publish: ", "Publicar: ") + tr(publish_en[form_publish], publish_es[form_publish]); }, []() {

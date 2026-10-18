@@ -502,6 +502,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Bell: personalized", {"Cloche : personnalisées", "Glocke: personalisiert", "Campanella: personalizzate", "Sino: personalizadas", "通知：おすすめ"}},
 	    {"Bell: none", {"Cloche : aucune", "Glocke: keine", "Campanella: nessuna", "Sino: nenhuma", "通知：なし"}},
 	    {"Applies to the lists loaded from now on.", {"S'applique aux listes chargées à partir de maintenant.", "Gilt für ab jetzt geladene Listen.", "Si applica alle liste caricate da ora in poi.", "Aplica-se às listas carregadas a partir de agora.", "今後読み込むリストに適用されます。"}},
+	    {"Playlist: loading...", {"Liste : chargement...", "Playlist: lädt...", "Playlist: caricamento...", "Lista: carregando...", "リスト：読み込み中..."}},
+	    {"Playlist: ", {"Liste : ", "Playlist: ", "Playlist: ", "Lista: ", "リスト："}},
+	    {"none", {"aucune", "keine", "nessuna", "nenhuma", "なし"}},
+	    {"Adding it to the playlist...", {"Ajout à la liste...", "Wird zur Playlist hinzugefügt...", "Aggiunta alla playlist...", "Adicionando à lista...", "リストに追加中..."}},
+	    {" (could not add it to the playlist)", {" (impossible de l'ajouter à la liste)", " (konnte nicht zur Playlist hinzugefügt werden)", " (impossibile aggiungerlo alla playlist)", " (não foi possível adicionar à lista)", " （リストに追加できませんでした）"}},
 	};
 	return table;
 }
