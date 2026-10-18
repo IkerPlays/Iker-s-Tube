@@ -810,6 +810,19 @@ static void build_playlists(VerticalListView *list) {
 			                ->add_on_long_hold(35, [i, pl](View &) {
 				                show_dialog({make_option(tr("Play", "Reproducir"), [pl]() { start_playlist(pl, false); }),
 				                             make_option(tr("Shuffle", "Aleatorio"), [pl]() { start_playlist(pl, true); }),
+				                             make_option(tr("Duplicate", "Duplicar"), [pl]() {
+					                             std::string name = pl.name + " 2";
+					                             if (!playlist_create(name)) {
+						                             notice_show(tr("That name is not valid or already exists", "Ese nombre no vale o ya existe"));
+						                             return;
+					                             }
+					                             auto all = playlists_get();
+					                             for (size_t k = 0; k < all.size(); k++) {
+						                             if (all[k].name != name) continue;
+						                             for (auto &v : pl.videos) playlist_add((int)k, v);
+					                             }
+					                             rebuild_request = true;
+				                             }),
 				                             make_option(tr("Rename", "Renombrar"), [i, pl]() {
 					                             pending_action = [i, pl]() {
 						                             std::string name = pl.name;
