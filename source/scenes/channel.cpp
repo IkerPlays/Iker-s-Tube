@@ -1,4 +1,6 @@
 #include "headers.hpp"
+#include "oauth/oauth.hpp"
+#include "scenes/account_tasks.hpp"
 #include "util/play_queue.hpp"
 #include <vector>
 #include <string>
@@ -552,6 +554,7 @@ void Channel_init(void) {
 			        new_channel.subscriber_count_str = channel_info.subscriber_count_str;
 			        subscription_subscribe(new_channel);
 		        }
+		        if (OAuth::is_authenticated()) account_subscribe_async(channel_info.id, !cur_subscribed); // also on your YouTube account
 		        misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 		        Home_update_local_channels();
 		        var_need_refresh = true;
