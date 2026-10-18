@@ -1,3 +1,3 @@
 Devbuild notes
 
-- README: summary of the app features with links to the usage guide and the Studio setup.
+- Player tools: Info shows the channel, views, date, likes, length, available qualities, number of audio tracks and the id of the video.

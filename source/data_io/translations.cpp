@@ -593,6 +593,14 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Alphabetical", {"Alphabétique", "Alphabetisch", "Alfabetico", "Alfabético", "アルファベット順"}},
 	    {"As added", {"Dans l'ordre d'ajout", "Wie hinzugefügt", "Come aggiunti", "Como adicionados", "追加した順"}},
 	    {"Subscribed channels order", {"Ordre des chaînes suivies", "Reihenfolge der abonnierten Kanäle", "Ordine dei canali iscritti", "Ordem dos canais inscritos", "登録チャンネルの順序"}},
+	    {"Channel: ", {"Chaîne : ", "Kanal: ", "Canale: ", "Canal: ", "チャンネル： "}},
+	    {"Views: ", {"Vues : ", "Aufrufe: ", "Visualizzazioni: ", "Visualizações: ", "再生回数： "}},
+	    {"Date: ", {"Date : ", "Datum: ", "Data: ", "Data: ", "日付： "}},
+	    {"Likes: ", {"J'aime : ", "Likes: ", "Mi piace: ", "Curtidas: ", "高評価： "}},
+	    {"Length: ", {"Durée : ", "Dauer: ", "Durata: ", "Duração: ", "長さ： "}},
+	    {"Qualities: ", {"Qualités : ", "Qualitäten: ", "Qualità: ", "Qualidades: ", "画質： "}},
+	    {"Audio tracks: ", {"Pistes audio : ", "Tonspuren: ", "Tracce audio: ", "Faixas de áudio: ", "音声トラック： "}},
+	    {"Info", {"Infos", "Info", "Info", "Info", "情報"}},
 	};
 	return table;
 }

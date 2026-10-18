@@ -2189,6 +2189,20 @@ debug_info_view =
 					                                   }
 					                                   notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(n) + tr(" videos", " vídeos"));
 				                                   }),
+				                         make_tool([]() { return tr("Info", "Info"); }, 50,
+				                                   []() { // facts of the video, as text
+					                                   if (cur_video_info.id == "") return;
+					                                   std::string text = tr("Channel: ", "Canal: ") + cur_video_info.author.name + "\n" +
+					                                                      tr("Views: ", "Visitas: ") + cur_video_info.views_str + "\n" +
+					                                                      tr("Date: ", "Fecha: ") + cur_video_info.publish_date + "\n" +
+					                                                      tr("Likes: ", "Me gusta: ") + cur_video_info.like_count_str + "\n" +
+					                                                      tr("Length: ", "Duración: ") + Util_convert_seconds_to_time((double)cur_video_info.duration_ms / 1000) + "\n" +
+					                                                      tr("Qualities: ", "Calidades: ");
+					                                   for (auto &q : cur_video_info.video_stream_urls) text += std::to_string(q.first) + "p ";
+					                                   text += "\n" + tr("Audio tracks: ", "Pistas de audio: ") + std::to_string(std::max<size_t>(1, cur_video_info.audio_tracks.size())) +
+					                                           "\nID: " + cur_video_info.id;
+					                                   show_text_popup(cur_video_info.title, text);
+				                                   }),
 				                         make_tool([]() { return tr("Channel QR", "QR del canal"); }, 90,
 				                                   []() {
 					                                   if (cur_video_info.author.id != "") qr_popup_show("https://www.youtube.com/channel/" + cur_video_info.author.id);
