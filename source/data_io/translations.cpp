@@ -470,6 +470,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {" videos", {" vidéos", " Videos", " video", " vídeos", " 本"}},
 	    {"Shuffle queue", {"Mélanger la file", "Warteschlange mischen", "Mescola la coda", "Embaralhar a fila", "キューをシャッフル"}},
 	    {"Save all audio", {"Enregistrer tout l'audio", "Alle Audios speichern", "Salva tutto l'audio", "Salvar todo o áudio", "音声をすべて保存"}},
+	    {"Queue all", {"Tout mettre en file", "Alle in die Warteschlange", "Metti tutto in coda", "Colocar tudo na fila", "すべてキューへ"}},
+	    {"Queued: ", {"En file : ", "In der Warteschlange: ", "In coda: ", "Na fila: ", "キュー： "}},
 	};
 	return table;
 }

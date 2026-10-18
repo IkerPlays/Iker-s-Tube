@@ -544,6 +544,35 @@ static void load_search_results(void *) {
 	// wrap and truncate here
 	logger.info("search", "truncate/view creation start");
 	std::vector<View *> new_result_views;
+	{ // Play all / Queue all for the videos of the results (listening to a search like a playlist)
+		std::vector<std::pair<std::string, std::string>> videos;
+		for (auto &item : new_result.results) {
+			if (item.type == YouTubeSuccinctItem::VIDEO && videos.size() < 40) videos.push_back({item.video.url, item.video.title});
+		}
+		if (videos.size() > 1) {
+			auto button = [](const std::string &text, int width, std::function<void()> action) {
+				return (new TextView(0, 0, width, 22))
+				    ->set_text(text)
+				    ->set_x_alignment(TextView::XAlign::CENTER)
+				    ->set_y_alignment(TextView::YAlign::CENTER)
+				    ->set_get_background_color(View::STANDARD_BACKGROUND)
+				    ->set_corner_radius(6)
+				    ->set_on_view_released([action](View &) { action(); });
+			};
+			new_result_views.push_back((new HorizontalListView(0, 0, 22))
+			                               ->set_views({button(tr("Play all", "Reproducir todo"), 160, [videos]() {
+				                                            play_queue_clear();
+				                                            for (size_t i = 1; i < videos.size(); i++) play_queue_toggle(videos[i].first, videos[i].second);
+				                                            clicked_url = videos[0].first;
+			                                            }),
+			                                            button(tr("Queue all", "Poner todo en cola"), 160, [videos]() {
+				                                            for (auto &v : videos) {
+					                                            if (play_queue_position(v.first) == 0) play_queue_toggle(v.first, v.second);
+				                                            }
+				                                            notice_show(tr("Queued: ", "En cola: ") + std::to_string(videos.size()));
+			                                            })}));
+		}
+	}
 	for (size_t i = 0; i < new_result.results.size(); i++) {
 		new_result_views.push_back(result_item_to_view(new_result.results[i]));
 	}

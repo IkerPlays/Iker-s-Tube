@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Library: Favorites, Watch later and Liked have Play all, Shuffle and Save audio (the first 30) buttons at the top. The queue has Shuffle queue and Save all audio.
+- Search: the results start with Play all and Queue all buttons for the videos of the list (the first 40), to listen to a search like a playlist.

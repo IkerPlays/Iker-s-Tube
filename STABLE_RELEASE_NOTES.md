@@ -29,6 +29,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **YouTube history list.** The Liked tab can switch to your YouTube history (best effort).
 - **Comment diagnostics.** When comments cannot be sent, the failure screen lists what YouTube answered, and new comments and replies have a last-resort way to be sent.
 - **Bulk actions in the Library.** Play all, Shuffle and Save audio on Favorites, Watch later and Liked; Shuffle queue and Save all audio on the queue.
+- **Play or queue a whole search.** Play all and Queue all at the top of the results.
 
 ## Installing
 
