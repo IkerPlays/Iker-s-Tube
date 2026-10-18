@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Library: the queue and Watch later have a Remove the watched ones button (the videos that are in your history).
+- Search results (list view): each video shows its channel on the first line under the title, then views and date.

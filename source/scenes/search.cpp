@@ -464,7 +464,12 @@ static View *result_item_to_view(const YouTubeSuccinctItem &item) {
 		cur_view->set_title_lines(grid ? truncate_str(item.get_name(), cell_w - 4, 2, 0.45, 0.45)
 		                               : truncate_str(item.get_name(), 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
 		if (item.type == YouTubeSuccinctItem::VIDEO) {
-			cur_view->set_auxiliary_lines({item.video.views_str, item.video.publish_date});
+			if (!grid && item.video.author != "") { // the channel first, so you know who made it
+				cur_view->set_auxiliary_lines({truncate_first_line(item.video.author, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3) - 6, 0.5),
+				                               item.video.views_str + (item.video.publish_date != "" ? " - " + item.video.publish_date : std::string())});
+			} else {
+				cur_view->set_auxiliary_lines({item.video.views_str, item.video.publish_date});
+			}
 			cur_view->set_bottom_right_overlay(item.video.duration_text);
 			cur_view->set_queue_item(item.get_url(), item.get_name(), item.video.author);
 		} else if (item.type == YouTubeSuccinctItem::PLAYLIST) {
