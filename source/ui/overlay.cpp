@@ -114,6 +114,10 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 		bool added = favorites_toggle(video);
 		notice_show(added ? tr("Added to Favorites", "Añadido a Favoritos") : tr("Removed from Favorites", "Quitado de Favoritos"));
 	});
+	option(tr("Search similar", "Buscar parecidos"), [title]() {
+		global_intent.next_scene = SceneType::SEARCH;
+		global_intent.arg = "q:" + title;
+	});
 	option(history_has_id(id) ? tr("Mark as not watched", "Marcar como no visto") : tr("Mark as watched", "Marcar como visto"), [id, title, author]() {
 		if (history_has_id(id)) {
 			history_erase_by_id(id);

@@ -545,6 +545,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Next suggestion", {"Suggestion suivante", "Nächster Vorschlag", "Suggerimento successivo", "Próxima sugestão", "次のおすすめ"}},
 	    {"Skip watched", {"Ignorer les vues", "Gesehene überspringen", "Salta i già visti", "Pular os assistidos", "視聴済みを飛ばす"}},
 	    {"Autoplay picks", {"La lecture auto choisit", "Autoplay wählt", "La riproduzione automatica sceglie", "A reprodução automática escolhe", "自動再生の選択"}},
+	    {"Search similar", {"Chercher similaires", "Ähnliche suchen", "Cerca simili", "Buscar semelhantes", "似た動画を検索"}},
 	};
 	return table;
 }

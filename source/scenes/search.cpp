@@ -399,10 +399,10 @@ void Search_exit(void) {
 void Search_suspend(void) { thread_suspend = true; }
 
 void Search_resume(std::string arg) {
-	(void)arg;
 	overlay_menu_on_resume();
 	resource_lock.lock();
 	show_search_history();
+	if (arg.compare(0, 2, "q:") == 0 && arg.size() > 2) start_search(arg.substr(2)); // "Search similar" of the video menu
 	resource_lock.unlock();
 
 	thread_suspend = false;
