@@ -686,7 +686,7 @@ static void show_live_chat() {
 		                                          account_pl_popup_view->set_is_visible(false);
 		                                          var_need_refresh = true;
 	                                          })})})
-	        ->set_draw_order({1, 0, 2}));
+	        ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
 	account_pl_popup_view->set_is_visible(true);
 	var_need_refresh = true;
 }

@@ -235,7 +235,15 @@ static std::vector<std::string> comment_section_tokens(const std::string &json) 
 	return out;
 }
 
+// a few facts of an answer, to find out (from the notice or the log) why no comment section was usable
+static std::string section_facts(int client, const std::string &json) {
+	auto has = [&](const char *k) { return json.find(k) != std::string::npos ? "1" : "0"; };
+	return "c" + std::to_string(client) + ":" + std::to_string(json.size() / 1000) + "k h" + has("commentsHeaderRenderer") + " t" +
+	       has("commentThreadRenderer") + " p" + has("createCommentParams") + " e" + has("engagementPanel");
+}
+
 static bool fetch_comment_section(const std::string &token, std::string &json, bool need_params) {
+	std::string facts;
 	int order[6] = {comment_client, 1, 2, 0, 3, 4};
 	std::vector<int> clients;
 	for (int c : order) {
@@ -249,11 +257,13 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 			json = r.second;
 			return true;
 		}
+		if (r.first) facts += " " + section_facts(client, r.second);
 		if (!r.first && token != "") continue; // this client does not take the login (or the token) : the next one
 		std::string video_id = get_context_video();
 		if (video_id != "") { // the page of the video as this client sees it has its own comment tokens
 			auto page = account_post("next", "\"videoId\": \"" + json_escape(video_id) + "\"", client);
 			if (!page.first) continue;
+			facts += " page-" + section_facts(client, page.second);
 			if (comment_section_usable(page.second, need_params)) {
 				comment_client = client;
 				json = page.second;
@@ -270,11 +280,12 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 					json = section.second;
 					return true;
 				}
+				if (section.first) facts += " sec-" + section_facts(client, section.second);
 			}
 		}
 	}
-	if (get_last_error() == "") set_last_error("no comment section");
-	logger.warning("account", "no usable comment section in any client");
+	set_last_error((get_last_error() == "" ? std::string("no comment section") : get_last_error()) + " [" + facts.substr(0, 90) + "]");
+	logger.warning("account", "no usable comment section in any client :" + facts);
 	return false;
 }
 
@@ -294,7 +305,32 @@ bool youtube_account_comment_create(const std::string &comments_token, const std
 	}
 	std::string json;
 	if (!fetch_comment_section(comments_token, json, true)) {
-		if (err != "") set_last_error(get_last_error() + " | data api: " + err);
+		std::string why = get_last_error();
+		// last resort : the params of a new comment are a small protobuf message with the id of the video, so build them
+		// (YouTube may still refuse them : the answer then says why)
+		if (video.size() == 11) {
+			static const char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+			const std::string tails[2] = {std::string("\x2a\x02\x08\x00\x40\x00\x48\x01", 8), std::string("\x2a\x02\x08\x00", 4)};
+			for (const std::string &tail : tails) {
+				std::string raw = std::string("\x12\x0b") + video + tail, params;
+				for (size_t i = 0; i < raw.size(); i += 3) {
+					unsigned v = ((unsigned char)raw[i] << 16) | (i + 1 < raw.size() ? (unsigned char)raw[i + 1] << 8 : 0) | (i + 2 < raw.size() ? (unsigned char)raw[i + 2] : 0);
+					params += b64[(v >> 18) & 63];
+					params += b64[(v >> 12) & 63];
+					if (i + 1 < raw.size()) params += b64[(v >> 6) & 63];
+					if (i + 2 < raw.size()) params += b64[v & 63];
+				}
+				for (int client : {3, 4, comment_client}) {
+					if (account_post("comment/create_comment",
+					                 "\"commentText\": \"" + json_escape(text) + "\", \"createCommentParams\": \"" + params + "\"", client)
+					        .first) {
+						comment_client = client;
+						return true;
+					}
+				}
+			}
+		}
+		set_last_error(why + (err != "" ? " | data api: " + err : "") + " | " + get_last_error());
 		return false;
 	}
 	size_t end = json.size();
