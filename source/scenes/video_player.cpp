@@ -2321,6 +2321,8 @@ debug_info_view =
 				                         make_tool([]() { return tr("Restart", "Reiniciar"); }, 70, [jump]() { jump(-1e9); }),
 				                         make_tool([]() { return std::string("-1 min"); }, 60, [jump]() { jump(-60); }),
 				                         make_tool([]() { return std::string("+1 min"); }, 60, [jump]() { jump(60); }),
+				                         make_tool([]() { return std::string("-5 min"); }, 60, [jump]() { jump(-300); }),
+				                         make_tool([]() { return std::string("+5 min"); }, 60, [jump]() { jump(300); }),
 				                         make_tool([]() { return tr("Links", "Enlaces"); }, 70,
 				                                   []() { if (cur_video_info.description != "") show_description_links(); })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
