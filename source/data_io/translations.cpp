@@ -585,6 +585,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Surprise me", {"Surprends-moi", "Überrasch mich", "Sorprendimi", "Surpreenda-me", "おまかせ"}},
 	    {"Unwatched", {"Non vues", "Ungesehen", "Non viste", "Não vistas", "未視聴"}},
 	    {"You watched everything saved", {"Vous avez tout vu", "Du hast alles Gespeicherte gesehen", "Hai visto tutto il salvato", "Você viu tudo o que está salvo", "保存したものはすべて視聴済みです"}},
+	    {"Show the news again (next start)", {"Revoir les nouveautés (au prochain démarrage)", "Neuigkeiten erneut zeigen (beim nächsten Start)", "Mostra di nuovo le novità (al prossimo avvio)", "Ver as novidades de novo (na próxima abertura)", "新機能をもう一度表示（次回起動時）"}},
+	    {"The news show at the next start", {"Les nouveautés s'afficheront au prochain démarrage", "Die Neuigkeiten erscheinen beim nächsten Start", "Le novità appariranno al prossimo avvio", "As novidades aparecem na próxima abertura", "次回起動時に新機能を表示します"}},
 	};
 	return table;
 }

@@ -1426,6 +1426,24 @@ void Sem_init(void) {
 							var_need_refresh = true;
 						}),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Show the news again (next start)", "Ver las novedades otra vez (al reiniciar)"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							remove("sdmc:/3ds/IkersTube/last_version.txt");
+							toast_view
+								->set_text((std::function<std::string ()>) [] () { return tr("The news show at the next start", "Las novedades salen al reiniciar"); })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 150;
+							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Export lists as text files", "Exportar listas como texto"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)

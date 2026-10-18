@@ -1,3 +1,4 @@
 Devbuild notes
 
-- Player tools: the Audio language button shows the name of the audio track that plays when the video has several.
+- Library, Favorites: Remove the watched ones.
+- Settings, Data: Show the news again (the What is new dialog opens at the next start).

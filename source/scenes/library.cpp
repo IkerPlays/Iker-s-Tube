@@ -438,6 +438,14 @@ static void build_favorites(VerticalListView *list) {
 	auto favs = filter_and_sort(favorites_get());
 	add_sort_filter_row(list);
 	add_list_actions(list, favs, "Favorites");
+	if (favs.size()) {
+		list->views.push_back(make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
+			for (auto &v : favorites_get()) {
+				if (history_has_id(v.id)) favorites_remove(v.id);
+			}
+			rebuild_request = true;
+		}));
+	}
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, (v.tag != "" ? "[" + v.tag + "] " : std::string()) + v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
