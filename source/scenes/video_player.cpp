@@ -651,13 +651,17 @@ static void show_live_chat() {
 	if (status != "") {
 		list->views.push_back((new TextView(0, 0, width, 22))->set_text(status)->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
-	for (auto &m : live_chat_latest(14)) {
+	int used = status != "" ? 22 : 0;
+	const int budget = 150; // what fits between the title and the buttons : the list does not scroll, so nothing is drawn outside
+	for (auto &m : live_chat_latest(20)) {
 		std::vector<std::string> lines = truncate_str(m.author + ": " + m.text, width - 8, 2, 0.5, 0.5);
-		list->views.push_back((new TextView(4, 0, width - 4, DEFAULT_FONT_INTERVAL * (int)std::max<size_t>(1, lines.size()) + 2))
+		int height = DEFAULT_FONT_INTERVAL * (int)std::max<size_t>(1, lines.size()) + 2;
+		if (used + height > budget) break; // the older messages do not fit
+		used += height;
+		list->views.push_back((new TextView(4, 0, width - 4, height))
 		                          ->set_text_lines(lines)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
-	int list_height = 240 - VIDEO_PLAYING_BAR_HEIGHT - 80;
 	account_pl_popup_view->recursive_delete_subviews();
 	account_pl_popup_view->set_subview(
 	    (new VerticalListView(0, 0, width))
@@ -666,9 +670,7 @@ static void show_live_chat() {
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
 	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
-	                     (new ScrollView(0, 0, width, list_height))
-	                         ->set_views({list})
-	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
+	                     list,
 	                     (new HorizontalListView(0, 0, 22))
 	                         ->set_views({(new TextView(0, 0, width / 2, 22))
 	                                          ->set_text(tr("Write", "Escribir"))
@@ -790,6 +792,32 @@ static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &chan
 	}
 	std::vector<View *> buttons;
 	int close_width = pages > 1 ? width / 2 : width;
+	if (channels.size() > 1) { // follow every channel of the video at once
+		buttons.push_back((new TextView(0, 0, 100, 22))
+		                      ->set_text(tr("Subscribe all", "Suscribirme a todos"))
+		                      ->set_x_alignment(TextView::XAlign::CENTER)
+		                      ->set_corner_radius(6)
+		                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                      ->set_on_view_released([channels](View &) {
+			                      int added = 0;
+			                      for (auto &channel : channels) {
+				                      if (subscription_is_subscribed(channel.id)) continue;
+				                      SubscriptionChannel new_channel;
+				                      new_channel.id = channel.id;
+				                      new_channel.url = "https://m.youtube.com/channel/" + channel.id;
+				                      new_channel.name = channel.name;
+				                      new_channel.icon_url = channel.icon_url;
+				                      new_channel.subscriber_count_str = channel.subscribers;
+				                      subscription_subscribe(new_channel);
+				                      account_subscribe_async(channel.id, true);
+				                      added++;
+			                      }
+			                      notice_show(tr("Subscribed to ", "Suscrito a ") + std::to_string(added) + tr(" channels", " canales"));
+			                      collab_refresh_request = true;
+			                      var_need_refresh = true;
+		                      }));
+		close_width = (pages > 1 ? 100 : width - 100);
+	}
 	buttons.push_back((new TextView(0, 0, close_width, 22))
 	                      ->set_text(LOCALIZED(CLOSE))
 	                      ->set_x_alignment(TextView::XAlign::CENTER)
@@ -800,7 +828,7 @@ static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &chan
 		                      var_need_refresh = true;
 	                      }));
 	if (pages > 1) {
-		buttons.push_back((new TextView(0, 0, width - close_width, 22))
+		buttons.push_back((new TextView(0, 0, width - close_width - (channels.size() > 1 ? 100 : 0), 22))
 		                      ->set_text(tr("More ", "Más ") + std::to_string(collab_page + 1) + "/" + std::to_string(pages))
 		                      ->set_x_alignment(TextView::XAlign::CENTER)
 		                      ->set_corner_radius(6)

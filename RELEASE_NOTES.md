@@ -1,4 +1,5 @@
 Devbuild notes
 
-- Collaboration screen: the channels are now three per page with a More button (no scrolling), so the cards no longer draw outside the popup.
-- Comments: YouTube refused the Data API for comments (insufficient scopes: the Studio login cannot get that permission), so it is no longer tried after the first refusal. The old way now also works without opening the comments tab, and a failure shows both reasons.
+- Live chat: the list no longer scrolls; it shows the newest messages that fit above the Write and Close buttons, so nothing is drawn over the tabs below.
+- Comments without the comments tab open: the video page is now asked with more YouTube clients, and the tokens that sit next to the comment section marks are tried first (before, only three of the many tokens of the page were tried and the comments one was missed).
+- Collaboration screen: new Subscribe all button.

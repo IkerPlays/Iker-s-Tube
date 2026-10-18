@@ -216,8 +216,27 @@ static std::vector<std::string> continuation_tokens(const std::string &json, siz
 	return out;
 }
 
+// The continuation tokens that belong to the comments : the ones found right after the marks of the comment section
+// (the page of a video has many more tokens, for the suggestions, and trying them blindly misses the comments).
+static std::vector<std::string> comment_section_tokens(const std::string &json) {
+	std::vector<std::string> out;
+	const char *marks[] = {"comment-item-section", "engagement-panel-comments-section", "comments-section", "commentsEntryPointHeaderRenderer", "\"comments\""};
+	for (const char *mark : marks) {
+		size_t pos = 0;
+		while (out.size() < 6 && (pos = json.find(mark, pos)) != std::string::npos) {
+			size_t end = std::min(json.size(), pos + 4000);
+			for (const char *key : {"\"token\":\"", "\"continuation\":\""}) {
+				std::string t = text_after(json, pos, end, key);
+				if (t.size() > 40 && std::find(out.begin(), out.end(), t) == out.end()) out.push_back(t);
+			}
+			pos += strlen(mark);
+		}
+	}
+	return out;
+}
+
 static bool fetch_comment_section(const std::string &token, std::string &json, bool need_params) {
-	int order[4] = {comment_client, 1, 0, 3};
+	int order[6] = {comment_client, 1, 2, 0, 3, 4};
 	std::vector<int> clients;
 	for (int c : order) {
 		if (std::find(clients.begin(), clients.end(), c) == clients.end()) clients.push_back(c);
@@ -240,7 +259,11 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 				json = page.second;
 				return true;
 			}
-			for (auto &t : continuation_tokens(page.second, 3)) {
+			std::vector<std::string> candidates = comment_section_tokens(page.second);
+			for (auto &t : continuation_tokens(page.second, 5)) {
+				if (std::find(candidates.begin(), candidates.end(), t) == candidates.end()) candidates.push_back(t);
+			}
+			for (auto &t : candidates) {
 				auto section = account_post("next", "\"continuation\": \"" + json_escape(t) + "\"", client);
 				if (section.first && comment_section_usable(section.second, need_params)) {
 					comment_client = client;
