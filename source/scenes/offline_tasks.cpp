@@ -22,6 +22,7 @@ struct DownloadJob {
 
 static volatile bool download_running = false; // one download at a time
 static volatile bool download_cancel = false;
+static volatile bool downloads_paused = false; // the running download waits between two chunks
 static volatile int download_percent = 0;
 static std::string download_title; // set before the thread starts, read by the UI
 
@@ -46,9 +47,13 @@ void offline_download_cancel() { // the running download and the queued ones
 	pending.clear();
 	LightLock_Unlock(&pending_lock);
 	download_cancel = true;
+	downloads_paused = false;
 }
 
 // downloads one file in 1 MB ranged chunks into `<path>.part`, then renames it. `progress` gets 0..100.
+void offline_downloads_set_paused(bool paused) { downloads_paused = paused; }
+bool offline_downloads_paused() { return downloads_paused; }
+
 static bool download_part(NetworkSessionList &session, const DownloadPart &part, const std::function<void(int)> &progress) {
 	std::string tmp_path = part.path + ".part";
 	FILE *file = fopen(tmp_path.c_str(), "wb");
@@ -57,6 +62,11 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 	int failures = 0; // in a row
 	const u64 CHUNK = 1024 * 1024;
 	while (ok) {
+		if (download_cancel) {
+			ok = false;
+			break;
+		}
+		while (downloads_paused && !download_cancel) svcSleepThread(500000000LL); // paused : wait here (the file keeps what it has)
 		if (download_cancel) {
 			ok = false;
 			break;

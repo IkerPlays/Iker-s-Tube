@@ -558,6 +558,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Hide in lists", {"Masquer dans les listes", "In Listen ausblenden", "Nascondi nelle liste", "Ocultar nas listas", "リストで非表示"}},
 	    {"Hidden channels: ", {"Chaînes masquées : ", "Ausgeblendete Kanäle: ", "Canali nascosti: ", "Canais ocultos: ", "非表示チャンネル： "}},
 	    {" (tap to show all)", {" (touchez pour tout afficher)", " (antippen, um alle zu zeigen)", " (tocca per mostrarli tutti)", " (toque para mostrar todos)", " （タップで全て表示）"}},
+	    {"Resume downloads", {"Reprendre les téléchargements", "Downloads fortsetzen", "Riprendi i download", "Retomar os downloads", "ダウンロードを再開"}},
+	    {"Pause downloads", {"Mettre les téléchargements en pause", "Downloads pausieren", "Metti in pausa i download", "Pausar os downloads", "ダウンロードを一時停止"}},
 	};
 	return table;
 }

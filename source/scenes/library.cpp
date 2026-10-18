@@ -640,6 +640,12 @@ static void build_offline(VerticalListView *list) {
 			                                  rebuild_request = true;
 		                                  }));
 	}
+	if (offline_download_running()) { // pause / resume the download in progress
+		list->views.push_back(make_button(offline_downloads_paused() ? tr("Resume downloads", "Reanudar descargas") : tr("Pause downloads", "Pausar descargas"), 320, []() {
+			offline_downloads_set_paused(!offline_downloads_paused());
+			rebuild_request = true;
+		}));
+	}
 	if (items.size() > 0) { // free room : the saved videos that are already in the watch history
 		list->views.push_back(make_button(tr("Delete the ones already watched", "Borrar las ya vistas"), 320, []() {
 			int removed = 0;

@@ -16,3 +16,7 @@ void offline_save_by_id_async(const std::string &id, const std::string &title, c
 void offline_download_async(const std::string &id, const std::string &title, const std::string &author,
                             const std::string &audio_url, bool want_video = false, const std::string &video_url = "",
                             const std::string &both_url = "", int quality = 0);
+
+// Pause / resume the running download (it waits between two chunks; the queue keeps its order)
+void offline_downloads_set_paused(bool paused);
+bool offline_downloads_paused();
