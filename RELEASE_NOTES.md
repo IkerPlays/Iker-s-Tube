@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Studio, Edit my uploads: each video of the list also shows its view count.
+- New file Documentation/GUIA_DE_USO.md (in Spanish): where every feature is and how to use it.
