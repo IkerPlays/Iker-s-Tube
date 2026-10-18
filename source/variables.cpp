@@ -27,6 +27,7 @@ int var_download_window = 0;
 int var_hide_studio = 0;
 int var_wl_autoremove = 0;
 int var_default_speed = 0;
+int var_auto_captions = 0;
 int var_auto_chat = 0;
 int var_download_quality = 0;
 int var_autoplay_skip_watched = 0;

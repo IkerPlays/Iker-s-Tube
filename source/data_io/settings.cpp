@@ -102,6 +102,7 @@ void load_settings() {
 	var_autoplay_skip_watched = std::max(0, std::min(1, load_int("autoplay_skip_watched", 0)));
 	var_download_quality = std::max(0, std::min(3, load_int("download_quality", 0)));
 	var_auto_chat = std::max(0, std::min(1, load_int("auto_chat", 0)));
+	var_auto_captions = std::max(0, std::min(1, load_int("auto_captions", 0)));
 	var_default_speed = std::max(0, std::min(5, load_int("default_speed", 0)));
 	var_wl_autoremove = std::max(0, std::min(1, load_int("wl_autoremove", 0)));
 	var_hide_studio = std::max(0, std::min(1, load_int("hide_studio", 0)));
@@ -179,6 +180,7 @@ void save_settings() {
 	add_int("wl_autoremove", var_wl_autoremove);
 	add_int("default_speed", var_default_speed);
 	add_int("auto_chat", var_auto_chat);
+	add_int("auto_captions", var_auto_captions);
 	add_int("download_quality", var_download_quality);
 	add_int("autoplay_skip_watched", var_autoplay_skip_watched);
 	add_int("studio_category", var_studio_category);

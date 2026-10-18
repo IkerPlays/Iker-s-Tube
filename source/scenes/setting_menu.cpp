@@ -1229,6 +1229,20 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Subtitles
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Manual", "Manual"); },
+							(std::function<std::string ()>) []() { return tr("Open by itself", "Abrir solos"); }
+						}, var_auto_captions)
+						->set_title([](const SelectorView &) { return tr("Subtitles", "Subtítulos"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_auto_captions != view.selected_button) {
+								var_auto_captions = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Default speed
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

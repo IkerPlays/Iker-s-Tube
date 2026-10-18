@@ -100,6 +100,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"This video has no subtitles", {"Cette vidéo n'a pas de sous-titres", "Dieses Video hat keine Untertitel", "Questo video non ha sottotitoli", "Este vídeo não tem legendas", "この動画には字幕がありません"}},
 	    {"Subtitles off", {"Sous-titres désactivés", "Untertitel aus", "Sottotitoli disattivati", "Legendas desativadas", "字幕オフ"}},
 	    {"Subtitles: ", {"Sous-titres : ", "Untertitel: ", "Sottotitoli: ", "Legendas: ", "字幕: "}},
+	    {"Subtitles", {"Sous-titres", "Untertitel", "Sottotitoli", "Legendas", "字幕"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

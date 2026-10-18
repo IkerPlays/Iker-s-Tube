@@ -40,6 +40,7 @@ extern int var_hide_explore; // 1 : the Explore shortcuts of the Search screen a
 extern int var_studio_category; // the category of the last Studio upload (index of the list of the form)
 extern int var_autoplay_skip_watched; // 1 : autoplay picks the first suggestion you have not watched yet
 extern int var_download_quality; // saved videos : 0 automatic (360p on the New 3DS, 240p on the old one), 1 : 144p, 2 : 240p, 3 : 360p
+extern int var_auto_captions; // 1 : the subtitles of the last used language turn on by themselves
 extern int var_auto_chat; // 1 : the chat opens by itself when a live stream starts playing
 extern int var_default_speed; // 0..5 : 100%, 75%, 125%, 150%, 175%, 200% (for channels without a speed of their own)
 extern int var_wl_autoremove; // 1 : a video leaves Watch later when it is watched until the end

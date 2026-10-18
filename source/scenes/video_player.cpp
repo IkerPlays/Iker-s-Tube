@@ -4460,6 +4460,23 @@ static void autoplay_countdown_tick() {
 					    chat_request = true;
 				    }
 			    }
+			    {
+				    static std::string cc_auto_for; // the subtitles of the remembered language open by themselves (setting)
+				    if (var_auto_captions && cur_video_info.id != "" && cc_auto_for != cur_video_info.id) {
+					    cc_auto_for = cur_video_info.id;
+					    std::string remembered = caption_lang_remembered();
+					    for (size_t i = 0; remembered != "" && i < cur_video_info.caption_base_languages.size(); i++) {
+						    if (cur_video_info.caption_base_languages[i].id == remembered) {
+							    cc_video_id = cur_video_info.id;
+							    cc_index = i;
+							    cc_base = remembered;
+							    cc_trans = "";
+							    queue_async_task(load_caption, &cc_arg);
+							    break;
+						    }
+					    }
+				    }
+			    }
 			    if (chat_request) {
 				    chat_request = false;
 				    live_chat_open(cur_video_info.id);
