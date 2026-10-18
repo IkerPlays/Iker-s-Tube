@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Player tools: Save playlist audio downloads the audio of the videos of the playlist the video is in (up to 40, the ones not saved yet).
+- Library, Liked tab: the button at the top now cycles through Liked, YouTube history and every playlist of your account (they load when you open the tab signed in), so your YouTube playlists can be browsed, played, shuffled and saved from the app.

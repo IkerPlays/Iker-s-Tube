@@ -492,6 +492,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"For channels without a speed of their own (the Speed tool of a video remembers one per channel).", {"Pour les chaînes sans vitesse propre (l'outil de vitesse en retient une par chaîne).", "Für Kanäle ohne eigene Geschwindigkeit (das Tempo-Werkzeug merkt sich eine pro Kanal).", "Per i canali senza velocità propria (lo strumento velocità ne ricorda una per canale).", "Para canais sem velocidade própria (a ferramenta de velocidade guarda uma por canal).", "個別の速度がないチャンネル用（速度ツールはチャンネルごとに記憶します）。"}},
 	    {"Save playlist audio", {"Enregistrer l'audio de la liste", "Audio der Liste speichern", "Salva audio della lista", "Salvar áudio da lista", "リストの音声を保存"}},
 	    {"This video is not in a playlist", {"Cette vidéo n'est pas dans une liste", "Dieses Video ist in keiner Playlist", "Questo video non è in una playlist", "Este vídeo não está em uma lista", "この動画はリストにありません"}},
+	    {"Showing: ", {"Affiché : ", "Zeigt: ", "Mostra: ", "Mostrando: ", "表示中： "}},
+	    {"YouTube history", {"Historique YouTube", "YouTube-Verlauf", "Cronologia YouTube", "Histórico do YouTube", "YouTube履歴"}},
+	    {" (tap for the next)", {" (touchez pour le suivant)", " (antippen für das nächste)", " (tocca per il successivo)", " (toque para o próximo)", " （タップで次へ）"}},
 	};
 	return table;
 }
