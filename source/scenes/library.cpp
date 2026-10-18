@@ -761,6 +761,15 @@ static void build_playlists(VerticalListView *list) {
 			                ->add_on_long_hold(35, [i, pl](View &) {
 				                show_dialog({make_option(tr("Play", "Reproducir"), [pl]() { start_playlist(pl, false); }),
 				                             make_option(tr("Shuffle", "Aleatorio"), [pl]() { start_playlist(pl, true); }),
+				                             make_option(tr("Rename", "Renombrar"), [i, pl]() {
+					                             pending_action = [i, pl]() {
+						                             std::string name = pl.name;
+						                             if (ask_text(tr("Playlist name", "Nombre de la lista").c_str(), name) && !playlist_rename(i, name)) {
+							                             notice_show(tr("That name is not valid or already exists", "Ese nombre no vale o ya existe"));
+						                             }
+						                             rebuild_request = true;
+					                             };
+				                             }),
 				                             make_option("Eliminar lista", [i]() { playlist_delete(i); })});
 			                });
 			list->views.push_back(row);

@@ -197,3 +197,21 @@ void playlist_remove(int index, const std::string &video_id) {
 	}
 	playlists_lock.unlock();
 }
+
+bool playlist_rename(int index, const std::string &name_in) {
+	std::string name = clean(name_in);
+	if (name.empty() || name[0] == '#') return false;
+	bool ok = true;
+	playlists_lock.lock();
+	ensure_loaded_locked();
+	if (index < 0 || index >= (int)playlists.size()) ok = false;
+	for (int i = 0; ok && i < (int)playlists.size(); i++) {
+		if (i != index && same_name(playlists[i].name, name)) ok = false;
+	}
+	if (ok) {
+		playlists[index].name = name;
+		save_locked();
+	}
+	playlists_lock.unlock();
+	return ok;
+}

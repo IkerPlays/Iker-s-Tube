@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Studio upload form: the category of your last upload is preselected.
+- Library, Playlists: long press a local list and choose Rename.

@@ -575,6 +575,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Studio: schedule, playlist, description", {"Studio : programmer, liste, description", "Studio: planen, Playlist, Beschreibung", "Studio: pianifica, playlist, descrizione", "Studio: agendar, lista, descrição", "Studio：予約、リスト、説明"}},
 	    {"Details: Documentation/GUIA_DE_USO.md", {"Détails : Documentation/GUIA_DE_USO.md", "Details: Documentation/GUIA_DE_USO.md", "Dettagli: Documentation/GUIA_DE_USO.md", "Detalhes: Documentation/GUIA_DE_USO.md", "詳細：Documentation/GUIA_DE_USO.md"}},
 	    {"Long press a video for its menu.", {"Appui long sur une vidéo : son menu.", "Video lang drücken: sein Menü.", "Pressione lunga su un video: il suo menu.", "Toque longo num vídeo: o menu dele.", "動画を長押しでメニュー。"}},
+	    {"Rename", {"Renommer", "Umbenennen", "Rinomina", "Renomear", "名前を変更"}},
+	    {"That name is not valid or already exists", {"Ce nom n'est pas valide ou existe déjà", "Dieser Name ist ungültig oder existiert bereits", "Questo nome non è valido o esiste già", "Esse nome não é válido ou já existe", "その名前は無効か、すでに存在します"}},
 	};
 	return table;
 }

@@ -13,5 +13,6 @@ struct UserPlaylist {
 std::vector<UserPlaylist> playlists_get();
 bool playlist_create(const std::string &name);                      // false : empty / duplicated name / too many
 void playlist_delete(int index);
+bool playlist_rename(int index, const std::string &name);           // false : empty / duplicated name
 bool playlist_add(int index, const FavoriteVideo &video);           // false : already in the list / list full
 void playlist_remove(int index, const std::string &video_id);
