@@ -362,6 +362,13 @@ static void build_queue(VerticalListView *list) {
 			                   play_queue_clear();
 			                   rebuild_request = true;
 		                   }));
+		list->views.insert(list->views.begin(), make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
+			                   for (int i = play_queue_size() - 1; i >= 0; i--) {
+				                   std::string url, title;
+				                   if (play_queue_get(i, url, title) && history_has_id(youtube_get_video_id_by_url(url))) play_queue_remove_at(i);
+			                   }
+			                   rebuild_request = true;
+		                   }));
 		list->views.insert(list->views.begin(), (new HorizontalListView(0, 0, 22))
 		                                             ->set_views({make_button(tr("Shuffle queue", "Mezclar cola"), 160, []() {
 			                                                          std::vector<std::pair<std::string, std::string>> items;
@@ -544,6 +551,14 @@ static void build_watch_later(VerticalListView *list) {
 	auto favs = filter_and_sort(watch_later_get());
 	add_sort_filter_row(list);
 	add_list_actions(list, favs);
+	if (favs.size()) {
+		list->views.push_back(make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
+			for (auto &v : watch_later_get()) {
+				if (history_has_id(v.id)) watch_later_remove(v.id);
+			}
+			rebuild_request = true;
+		}));
+	}
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);

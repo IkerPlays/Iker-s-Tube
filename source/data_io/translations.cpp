@@ -566,6 +566,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Removed: ", {"Retiré : ", "Entfernt: ", "Rimossi: ", "Removidos: ", "削除： "}},
 	    {"Unmute", {"Réactiver le son", "Ton an", "Riattiva audio", "Ativar som", "ミュート解除"}},
 	    {"Mute", {"Couper le son", "Stumm", "Silenzia", "Silenciar", "ミュート"}},
+	    {"Remove the watched ones", {"Retirer les vidéos déjà vues", "Gesehene entfernen", "Rimuovi quelli già visti", "Remover os já assistidos", "視聴済みを削除"}},
 	};
 	return table;
 }
