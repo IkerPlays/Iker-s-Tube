@@ -374,6 +374,13 @@ void Search_init(void) {
 	                             ->set_x_alignment(TextView::XAlign::CENTER)
 	                             ->set_y_alignment(TextView::YAlign::CENTER)
 	                             ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; })
+	                             ->add_on_long_hold(35, [](View &v) { // long press : back to All
+		                             search_filter_index = 0;
+		                             youtube_search_filter_params = search_filters[0].params;
+		                             if (cur_search_word != "") filter_search_due = osGetTime() + 300;
+		                             v.reset_holding_status();
+		                             var_need_refresh = true;
+	                             })
 	                             ->set_on_view_released([](View &) {
 		                             search_filter_index = (search_filter_index + 1) % (sizeof(search_filters) / sizeof(search_filters[0]));
 		                             youtube_search_filter_params = search_filters[search_filter_index].params;
