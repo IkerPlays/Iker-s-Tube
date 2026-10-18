@@ -613,6 +613,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Change the tags", {"Changer les étiquettes", "Tags ändern", "Cambia i tag", "Mudar as tags", "タグを変更"}},
 	    {" (today ", {" (aujourd'hui ", " (heute ", " (oggi ", " (hoje ", " （今日 "}},
 	    {", week ", {", semaine ", ", Woche ", ", settimana ", ", semana ", "、週 "}},
+	    {"Visibility of new Studio uploads", {"Visibilité des nouveaux envois Studio", "Sichtbarkeit neuer Studio-Uploads", "Visibilità dei nuovi caricamenti Studio", "Visibilidade dos novos envios do Studio", "Studioアップロードの公開設定"}},
 	};
 	return table;
 }

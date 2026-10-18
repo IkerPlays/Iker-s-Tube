@@ -515,7 +515,7 @@ static std::vector<View *> build_pick() {
 			form_title = name.substr(0, name.find_last_of('.'));
 			if (form_title.size() > 95) form_title.resize(95);
 			form_desc = "";
-			form_privacy = 0;
+			form_privacy = var_studio_privacy; // (Settings : the visibility that new uploads start with)
 			form_category = var_studio_category < category_count ? var_studio_category : 0; // the one of the last upload
 			form_publish = 0;
 			form_playlist = -1;

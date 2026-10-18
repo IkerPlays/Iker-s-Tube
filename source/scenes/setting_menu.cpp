@@ -1263,6 +1263,21 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Studio visibility
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Private", "Privado"); },
+							(std::function<std::string ()>) []() { return tr("Unlisted", "No listado"); },
+							(std::function<std::string ()>) []() { return tr("Public", "Público"); }
+						}, var_studio_privacy)
+						->set_title([](const SelectorView &) { return tr("Visibility of new Studio uploads", "Visibilidad de las subidas de Studio"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_studio_privacy != view.selected_button) {
+								var_studio_privacy = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Live chat refresh
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
