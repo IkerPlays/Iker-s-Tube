@@ -1263,6 +1263,20 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Order of the subscribed channels
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Alphabetical", "Alfabético"); },
+							(std::function<std::string ()>) []() { return tr("As added", "Como los añadiste"); }
+						}, var_channels_unsorted)
+						->set_title([](const SelectorView &) { return tr("Subscribed channels order", "Orden de los canales suscritos"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_channels_unsorted != view.selected_button) {
+								var_channels_unsorted = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Explore shortcuts
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

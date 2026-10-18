@@ -1204,7 +1204,7 @@ static void update_subscribed_channels(const std::vector<SubscriptionChannel> &n
 	// prepare new views
 	std::vector<View *> new_views;
 	std::vector<SubscriptionChannel> sorted_channels = new_subscribed_channels; // alphabetical, like the apps people know
-	std::stable_sort(sorted_channels.begin(), sorted_channels.end(), [](const SubscriptionChannel &a, const SubscriptionChannel &b) {
+	if (!var_channels_unsorted) std::stable_sort(sorted_channels.begin(), sorted_channels.end(), [](const SubscriptionChannel &a, const SubscriptionChannel &b) {
 		std::string x = a.name, y = b.name;
 		for (auto &c : x) c = tolower(c);
 		for (auto &c : y) c = tolower(c);

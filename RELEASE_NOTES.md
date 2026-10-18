@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Settings: Explore shortcuts in Search can be hidden.
+- Settings: Subscribed channels order (alphabetical or as added) for the local list.

@@ -590,6 +590,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"The SD card is almost full (less than 64 MB)", {"La carte SD est presque pleine (moins de 64 Mo)", "Die SD-Karte ist fast voll (weniger als 64 MB)", "La scheda SD è quasi piena (meno di 64 MB)", "O cartão SD está quase cheio (menos de 64 MB)", "SDカードの空きがほとんどありません（64MB未満）"}},
 	    {"Explore shortcuts in Search", {"Raccourcis Explorer dans Recherche", "Entdecken-Kürzel in der Suche", "Scorciatoie Esplora nella ricerca", "Atalhos Explorar na busca", "検索の探索ショートカット"}},
 	    {"Applies the next time the Search screen opens.", {"S'applique à la prochaine ouverture de la recherche.", "Gilt beim nächsten Öffnen der Suche.", "Si applica alla prossima apertura della ricerca.", "Aplica-se na próxima vez que abrir a busca.", "次に検索画面を開いたときに反映されます。"}},
+	    {"Alphabetical", {"Alphabétique", "Alphabetisch", "Alfabetico", "Alfabético", "アルファベット順"}},
+	    {"As added", {"Dans l'ordre d'ajout", "Wie hinzugefügt", "Come aggiunti", "Como adicionados", "追加した順"}},
+	    {"Subscribed channels order", {"Ordre des chaînes suivies", "Reihenfolge der abonnierten Kanäle", "Ordine dei canali iscritti", "Ordem dos canais inscritos", "登録チャンネルの順序"}},
 	};
 	return table;
 }

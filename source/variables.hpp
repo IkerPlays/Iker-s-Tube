@@ -33,6 +33,7 @@ extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
+extern int var_channels_unsorted; // 1 : the local subscribed channels keep the order they were added in
 extern int var_hide_explore; // 1 : the Explore shortcuts of the Search screen are not shown
 extern int var_studio_category; // the category of the last Studio upload (index of the list of the form)
 extern int var_autoplay_skip_watched; // 1 : autoplay picks the first suggestion you have not watched yet
