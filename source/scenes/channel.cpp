@@ -2,6 +2,7 @@
 #include "oauth/oauth.hpp"
 #include "scenes/account_tasks.hpp"
 #include "ui/qr_popup.hpp"
+#include "ui/notice.hpp"
 #include "util/play_queue.hpp"
 #include <vector>
 #include <string>
@@ -460,6 +461,35 @@ void Channel_init(void) {
 	    // wrap and truncate here to avoid taking time in locked state
 	    logger.info("channel", "truncate start");
 	    std::vector<View *> video_views;
+	    {
+		    std::vector<std::pair<std::string, std::string>> queue_items; // listen to the channel like a playlist
+		    for (auto &video : result.videos) {
+			    if (video.url != "" && queue_items.size() < 40) queue_items.push_back({video.url, video.title});
+		    }
+		    if (queue_items.size() > 1) {
+			    auto make_button = [](const std::string &text, int width, std::function<void()> action) {
+				    return (new TextView(0, 0, width, 22))
+				        ->set_text(text)
+				        ->set_x_alignment(TextView::XAlign::CENTER)
+				        ->set_y_alignment(TextView::YAlign::CENTER)
+				        ->set_get_background_color(View::STANDARD_BACKGROUND)
+				        ->set_corner_radius(6)
+				        ->set_on_view_released([action](View &) { action(); });
+			    };
+			    video_views.push_back((new HorizontalListView(0, 0, 22))
+			                              ->set_views({make_button(tr("Play all", "Reproducir todo"), 160, [queue_items]() {
+				                                           play_queue_clear();
+				                                           for (size_t i = 1; i < queue_items.size(); i++) play_queue_toggle(queue_items[i].first, queue_items[i].second);
+				                                           clicked_url = queue_items[0].first;
+			                                           }),
+			                                           make_button(tr("Queue all", "Poner todo en cola"), 160, [queue_items]() {
+				                                           for (auto &v : queue_items) {
+					                                           if (play_queue_position(v.first) == 0) play_queue_toggle(v.first, v.second);
+				                                           }
+				                                           notice_show(tr("Queued: ", "En cola: ") + std::to_string(queue_items.size()));
+			                                           })}));
+		    }
+	    }
 	    for (auto video : result.videos) {
 		    video_views.push_back(video2view(video));
 	    }
