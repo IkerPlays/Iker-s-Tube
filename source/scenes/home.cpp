@@ -1209,6 +1209,10 @@ static void update_subscribed_channels(const std::vector<SubscriptionChannel> &n
 		cur_view->set_auxiliary_lines({channel.subscriber_count_str});
 		cur_view->set_thumbnail_url(channel.icon_url);
 		cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
+		cur_view->add_on_long_hold(35, [channel](View &v) { // subscribe / bell
+			overlay_show_channel_menu(channel.id, channel.name, channel.icon_url, channel.subscriber_count_str);
+			v.reset_holding_status();
+		});
 		cur_view->set_on_view_released([channel](View &view) {
 			clicked_url = channel.url;
 			clicked_is_video = false;
@@ -1230,6 +1234,10 @@ static void update_oauth_subscribed_channels(const std::vector<SubscriptionChann
 		cur_view->set_auxiliary_lines({channel.subscriber_count_str});
 		cur_view->set_thumbnail_url(channel.icon_url);
 		cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
+		cur_view->add_on_long_hold(35, [channel](View &v) { // subscribe / bell
+			overlay_show_channel_menu(channel.id, channel.name, channel.icon_url, channel.subscriber_count_str);
+			v.reset_holding_status();
+		});
 		cur_view->set_on_view_released([channel](View &view) {
 			clicked_url = channel.url;
 			clicked_is_video = false;
