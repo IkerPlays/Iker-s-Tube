@@ -15,8 +15,10 @@ necesitan haber iniciado sesión en Ajustes; las de Studio, además, el login de
 
 ## Mantener pulsado
 - **Un vídeo (en cualquier lista):** menú con reproducir a continuación, cola, Ver más tarde, Favorito, guardar audio o
-  vídeo sin conexión, marcar como visto y "No me interesa". En el historial añade "Quitar del historial".
-- **Un canal (búsqueda y listas de suscritos):** suscribirte o quitar la suscripción (también en tu cuenta) y la campana.
+  vídeo sin conexión, "Añadir a mi lista de YouTube", "Buscar parecidos", "Ocultar este canal en las listas", marcar
+  como visto y "No me interesa". En el historial añade "Quitar del historial".
+- **Un canal (búsqueda y listas de suscritos):** suscribirte o quitar la suscripción (también en tu cuenta), la campana
+  y ocultar o mostrar sus vídeos en las listas (Ajustes, Datos, enseña cuántos hay y los muestra todos de nuevo).
 
 ## Reproductor
 Herramientas (se desplazan hacia los lados): saltos de 10 s, 30 s y 1 min, A-B, capítulos, velocidad, Luego, marcas,
