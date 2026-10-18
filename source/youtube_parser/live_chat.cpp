@@ -130,6 +130,34 @@ static void chat_thread(void *arg) {
 				}
 				if (m.text != "") fresh.push_back(m);
 			}
+			// Super Chats : the amount in front of the author
+			pos = 0;
+			while ((pos = json.find("\"liveChatPaidMessageRenderer\"", pos)) != std::string::npos) {
+				size_t next = json.find("\"addChatItemAction\"", pos + 20);
+				size_t end = next == std::string::npos ? json.size() : next;
+				pos += 20;
+				std::string id = string_after(json, pos, end, "\"id\":\"");
+				if (id != "" && std::find(seen.begin(), seen.end(), id) != seen.end()) continue;
+				if (id != "") seen.push_back(id);
+				ChatMessage m;
+				std::string amount = string_after(json, pos, end, "\"purchaseAmountText\":{\"simpleText\":\"");
+				m.author = "[" + amount + "] " + string_after(json, pos, end, "\"authorName\":{\"simpleText\":\"");
+				size_t msg_at = json.find("\"message\":{\"runs\":[", pos);
+				if (msg_at != std::string::npos && msg_at < end) {
+					size_t p = msg_at;
+					size_t limit = json.find("\"authorName\"", msg_at);
+					if (limit == std::string::npos || limit > end) limit = std::min(end, msg_at + 600);
+					while (true) {
+						size_t after = 0;
+						std::string part = string_after(json, p, limit, "\"text\":\"", &after);
+						if (after == 0) break;
+						m.text += part;
+						p = after;
+					}
+				}
+				if (m.text == "") m.text = "(Super Chat)";
+				fresh.push_back(m);
+			}
 			// where to continue and when
 			size_t c = json.rfind("\"continuation\":\"");
 			if (c != std::string::npos) {

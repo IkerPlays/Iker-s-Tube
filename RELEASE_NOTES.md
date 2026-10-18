@@ -1,4 +1,3 @@
 Devbuild notes
 
-- Downloads: new button Delete the ones already watched (the saved videos that are in your watch history).
-- Settings: Clear the picture cache removes the thumbnails kept on the SD card.
+- Live chat: Super Chats are shown too, with the amount in front of the author.
