@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Live chat: a button switches between Top chat and All chat (every message), when the stream offers both (best effort: the two continuations are read from the chat header).
+- Settings, Playback: Autoplay picks (Next suggestion or Skip watched): with Skip watched the next video is the first suggestion that is not in your history (if all were watched, the first one).

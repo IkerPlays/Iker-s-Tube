@@ -45,6 +45,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Auto chat.** A setting opens the live chat by itself when a live stream plays; the player also has a Restart tool, and the channel Videos row can save audio.
 - **Saved video quality.** A setting chooses 144p, 240p or 360p for the videos you save, and the video menu can mark videos as watched.
 - **Reset the settings** from Settings, Data (lists, history and downloads are kept).
+- **Autoplay skips watched.** A setting makes autoplay avoid the videos already in your history.
 
 ## Installing
 

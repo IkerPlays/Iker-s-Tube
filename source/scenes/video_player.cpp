@@ -902,7 +902,12 @@ static void apply_eq_preset(const double (&gains)[18]);
 static std::vector<View *> make_eq_preset_buttons();
 static std::vector<View *> make_sound_profile_buttons();
 
+static bool autoplay_is_watched(const std::string &url) {
+	return var_autoplay_skip_watched && history_has_id(youtube_get_video_id_by_url(url));
+}
+
 void VideoPlayer_init(void) {
+	youtube_is_watched_hook = autoplay_is_watched; // (the setting Autoplay picks : skip watched)
 	logger.info(DEF_SAPP0_INIT_STR, "Initializing...");
 	bool new_3ds = false;
 	Result_with_string result;

@@ -1179,6 +1179,20 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Autoplay and watched videos
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Next suggestion", "Siguiente sugerencia"); },
+							(std::function<std::string ()>) []() { return tr("Skip watched", "Saltar los vistos"); }
+						}, var_autoplay_skip_watched)
+						->set_title([](const SelectorView &) { return tr("Autoplay picks", "La reproducción automática elige"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_autoplay_skip_watched != view.selected_button) {
+								var_autoplay_skip_watched = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Saved video quality
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

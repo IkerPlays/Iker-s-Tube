@@ -542,6 +542,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Top chat", {"Chat principal", "Top-Chat", "Chat principale", "Chat principal", "トップチャット"}},
 	    {"All chat", {"Tout le chat", "Ganzer Chat", "Tutta la chat", "Chat completo", "すべてのチャット"}},
 	    {"Switching the chat...", {"Changement du chat...", "Chat wird gewechselt...", "Cambio della chat...", "Trocando o chat...", "チャットを切り替え中..."}},
+	    {"Next suggestion", {"Suggestion suivante", "Nächster Vorschlag", "Suggerimento successivo", "Próxima sugestão", "次のおすすめ"}},
+	    {"Skip watched", {"Ignorer les vues", "Gesehene überspringen", "Salta i già visti", "Pular os assistidos", "視聴済みを飛ばす"}},
+	    {"Autoplay picks", {"La lecture auto choisit", "Autoplay wählt", "La riproduzione automatica sceglie", "A reprodução automática escolhe", "自動再生の選択"}},
 	};
 	return table;
 }

@@ -1362,3 +1362,5 @@ void youtube_audio_lang_set(const std::string &lang) {
 	fprintf(f, "%s\n", lang.c_str());
 	fclose(f);
 }
+
+bool (*youtube_is_watched_hook)(const std::string &url) = nullptr;

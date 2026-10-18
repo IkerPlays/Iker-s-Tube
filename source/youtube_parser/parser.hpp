@@ -62,6 +62,9 @@ struct YouTubeSearchResult {
 };
 YouTubeSearchResult youtube_load_search(std::string url);
 
+// set by the app : true when the video of this url was already watched (only used when the setting asks to skip them)
+extern bool (*youtube_is_watched_hook)(const std::string &url);
+
 struct YouTubeVideoDetail {
 	std::string error;
 	std::string url;
@@ -175,10 +178,14 @@ struct YouTubeVideoDetail {
 		if (playlist.videos.size() && playlist.selected_index != (int)playlist.videos.size() - 1) {
 			return playlist.videos[std::max(0, playlist.selected_index + 1)];
 		}
-		for (auto suggestion : suggestions) {
-			if (suggestion.type == YouTubeSuccinctItem::VIDEO) {
-				return suggestion.video;
+		bool skip = youtube_is_watched_hook != nullptr; // (setting : autoplay skips what you already watched)
+		for (int pass = 0; pass < 2; pass++) { // second pass : everything was watched, take the first one
+			for (auto suggestion : suggestions) {
+				if (suggestion.type == YouTubeSuccinctItem::VIDEO && !(pass == 0 && skip && youtube_is_watched_hook(suggestion.video.url))) {
+					return suggestion.video;
+				}
 			}
+			if (!skip) break;
 		}
 		return YouTubeVideoSuccinct();
 	}
