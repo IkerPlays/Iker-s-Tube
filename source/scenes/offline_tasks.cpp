@@ -189,6 +189,13 @@ void offline_download_async(const std::string &id, const std::string &title, con
                             const std::string &audio_url, bool want_video, const std::string &video_url,
                             const std::string &both_url, int quality) {
 	if (id == "") return;
+	{ // not enough room on the SD card : do not start (a full SD card breaks saves of the lists and settings too)
+		FS_ArchiveResource resource;
+		if (R_SUCCEEDED(FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_SD)) && (u64)resource.freeClusters * resource.clusterSize < 64ULL * 1024 * 1024) {
+			notice_show(tr("The SD card is almost full (less than 64 MB)", "La SD está casi llena (menos de 64 MB)"));
+			return;
+		}
+	}
 	DownloadJob *job = new DownloadJob();
 	job->id = id;
 	job->title = title;

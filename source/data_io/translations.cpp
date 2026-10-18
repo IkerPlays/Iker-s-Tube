@@ -587,6 +587,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"You watched everything saved", {"Vous avez tout vu", "Du hast alles Gespeicherte gesehen", "Hai visto tutto il salvato", "Você viu tudo o que está salvo", "保存したものはすべて視聴済みです"}},
 	    {"Show the news again (next start)", {"Revoir les nouveautés (au prochain démarrage)", "Neuigkeiten erneut zeigen (beim nächsten Start)", "Mostra di nuovo le novità (al prossimo avvio)", "Ver as novidades de novo (na próxima abertura)", "新機能をもう一度表示（次回起動時）"}},
 	    {"The news show at the next start", {"Les nouveautés s'afficheront au prochain démarrage", "Die Neuigkeiten erscheinen beim nächsten Start", "Le novità appariranno al prossimo avvio", "As novidades aparecem na próxima abertura", "次回起動時に新機能を表示します"}},
+	    {"The SD card is almost full (less than 64 MB)", {"La carte SD est presque pleine (moins de 64 Mo)", "Die SD-Karte ist fast voll (weniger als 64 MB)", "La scheda SD è quasi piena (meno di 64 MB)", "O cartão SD está quase cheio (menos de 64 MB)", "SDカードの空きがほとんどありません（64MB未満）"}},
 	};
 	return table;
 }
