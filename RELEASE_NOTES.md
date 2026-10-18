@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Backup now also keeps the queue, the audio language and the subtitle language. The report shows the last account error.
+- Player tools: Save playlist audio downloads the audio of the videos of the playlist the video is in (up to 40, the ones not saved yet).

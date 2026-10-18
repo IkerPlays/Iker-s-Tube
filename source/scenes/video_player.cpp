@@ -2119,6 +2119,24 @@ debug_info_view =
 					                             notice_show(next ? tr("Sleep timer: ", "Temporizador: ") + std::to_string(next) + " min" : tr("Sleep timer off", "Temporizador apagado"));
 					                             var_need_refresh = true;
 				                             }),
+				                         make_tool([]() { return tr("Save playlist audio", "Guardar audio de la lista"); }, 140,
+				                                   []() {
+					                                   auto &videos = cur_video_info.playlist.videos;
+					                                   if (videos.empty()) {
+						                                   notice_show(tr("This video is not in a playlist", "Este vídeo no está en una lista"));
+						                                   return;
+					                                   }
+					                                   int n = 0;
+					                                   for (auto &video : videos) {
+						                                   if (n >= 40) break;
+						                                   std::string id = youtube_get_video_id_by_url(video.url);
+						                                   if (id != "" && !offline_has_id(id)) {
+							                                   offline_save_by_id_async(id, video.title, video.author, false);
+							                                   n++;
+						                                   }
+					                                   }
+					                                   notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(n) + tr(" videos", " vídeos"));
+				                                   }),
 				                         make_tool([]() { return tr("Next video", "Siguiente"); }, 90,
 				                                   []() {
 					                                   std::string next;
