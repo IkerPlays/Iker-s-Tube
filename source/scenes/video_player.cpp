@@ -2202,6 +2202,17 @@ debug_info_view =
 					    }
 					    h->views = spaced;
 				    }
+				    main_tab_views.push_back((new TextView(0, 0, 320, 18))
+				                                 ->set_text((std::function<std::string()>)[]() {
+					                                 std::string url, title;
+					                                 int n = play_queue_size();
+					                                 if (n == 0 || !play_queue_get(0, url, title)) return std::string();
+					                                 return tr("Next in queue: ", "Siguiente en la cola: ") + truncate_first_line(title, 220, 0.45) + (n > 1 ? " (+" + std::to_string(n - 1) + ")" : "");
+				                                 })
+				                                 ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+				                                 ->set_y_alignment(TextView::YAlign::CENTER)
+				                                 ->set_text_offset(SMALL_MARGIN, 0)
+				                                 ->set_get_text_color([]() { return (u32)COLOR_ACCENT; }));
 				    // chapters : lines of the description that start with a timestamp ("0:00 Intro")
 				    std::vector<std::pair<double, std::string>> chapters;
 				    {

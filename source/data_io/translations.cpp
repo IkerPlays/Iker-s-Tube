@@ -518,6 +518,14 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Channel QR", {"QR de la chaîne", "Kanal-QR", "QR del canale", "QR do canal", "チャンネルQR"}},
 	    {"Today", {"Aujourd'hui", "Heute", "Oggi", "Hoje", "今日"}},
 	    {"Yesterday", {"Hier", "Gestern", "Ieri", "Ontem", "昨日"}},
+	    {"Next in queue: ", {"Ensuite dans la file : ", "Als Nächstes in der Warteschlange: ", "Prossimo in coda: ", "Próximo na fila: ", "キューの次： "}},
+	    {"Science", {"Sciences", "Wissenschaft", "Scienza", "Ciência", "科学"}},
+	    {"Cooking", {"Cuisine", "Kochen", "Cucina", "Culinária", "料理"}},
+	    {"Technology", {"Technologie", "Technik", "Tecnologia", "Tecnologia", "テクノロジー"}},
+	    {"Travel", {"Voyages", "Reisen", "Viaggi", "Viagens", "旅行"}},
+	    {"Podcasts", {"Podcasts", "Podcasts", "Podcast", "Podcasts", "ポッドキャスト"}},
+	    {"Kids", {"Enfants", "Kinder", "Bambini", "Crianças", "キッズ"}},
+	    {"Live music", {"Musique en direct", "Live-Musik", "Musica dal vivo", "Música ao vivo", "ライブ音楽"}},
 	};
 	return table;
 }

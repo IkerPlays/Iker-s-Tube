@@ -1,4 +1,4 @@
 Devbuild notes
 
-- Lists: videos you started watching show a thin red progress bar on the thumbnail.
-- History: the list has a header for each day (Today, Yesterday, then the date).
+- Player: a line under the tools shows the next video of the queue.
+- Search, Explore: eight more shortcuts (Sports, Science, Cooking, Technology, Travel, Podcasts, Kids, Live music).

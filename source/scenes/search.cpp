@@ -188,10 +188,11 @@ static void show_search_history() {
 	                                      ->set_text(tr("Explore", "Explorar"))
 	                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 	                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
-	const std::string explore_labels[] = {tr("Music", "Música"), tr("Trending", "Tendencias"), tr("Gaming", "Videojuegos"), tr("Live", "Directos"), tr("Movie trailers", "Tráilers de películas"), tr("News", "Noticias"), tr("Shorts", "Shorts"), tr("Learn something", "Aprende algo"), tr("Funny", "Humor")};
+	const std::string explore_labels[] = {tr("Music", "Música"), tr("Trending", "Tendencias"), tr("Gaming", "Videojuegos"), tr("Live", "Directos"), tr("Movie trailers", "Tráilers de películas"), tr("News", "Noticias"), tr("Shorts", "Shorts"), tr("Learn something", "Aprende algo"), tr("Funny", "Humor"), tr("Sports", "Deportes"), tr("Science", "Ciencia"), tr("Cooking", "Cocina"), tr("Technology", "Tecnología"), tr("Travel", "Viajes"), tr("Podcasts", "Podcasts"), tr("Kids", "Infantil"), tr("Live music", "Música en directo")};
 	static const char *explore_queries[] = {"music 2026 official video", "trending today", "gaming highlights",
-	                                        "live now", "new movie trailers", "world news today", "#shorts", "how it works explained", "funny moments"};
-	for (int i = 0; i < 9; i++) {
+	                                        "live now", "new movie trailers", "world news today", "#shorts", "how it works explained", "funny moments",
+	                                        "sports highlights", "science explained", "easy recipes", "tech reviews", "travel vlog", "podcast full episode", "kids songs and cartoons", "live concert full"};
+	for (int i = 0; i < 17; i++) {
 		std::string query = explore_queries[i];
 		bool feed = i == 6; // Shorts
 		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
