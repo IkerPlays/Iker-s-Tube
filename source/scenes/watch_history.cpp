@@ -27,6 +27,8 @@ std::string erase_request;
 
 int cur_sort_type = 0;
 int sort_request = -1;
+static bool filter_request = false;      // the search-in-history button was pressed (the keyboard opens after the views update)
+static std::string history_filter;       // only the videos whose title or channel contain this text are listed
 
 int CONTENT_Y_HIGHT = 240; // changes according to whether the video playing bar is drawn or not
 
@@ -109,9 +111,25 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		                                     ->set_views({button(tr("Play all", "Reproducir todo"), 160, [play]() { play(false); }),
 		                                                  button(tr("Shuffle", "Aleatorio"), 160, [play]() { play(true); })}));
 	}
+	{ // search in the history
+		video_list_view->views.push_back((new TextView(0, 0, 320, 22))
+		                                     ->set_text(history_filter == "" ? tr("Search in the history", "Buscar en el historial") : tr("Filter: ", "Filtro: ") + history_filter + tr(" (tap to change)", " (toca para cambiar)"))
+		                                     ->set_x_alignment(TextView::XAlign::CENTER)
+		                                     ->set_y_alignment(TextView::YAlign::CENTER)
+		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                                     ->set_corner_radius(6)
+		                                     ->set_on_view_released([](View &) { filter_request = true; }));
+	}
+	std::string needle = history_filter;
+	for (auto &c : needle) c = tolower(c);
 	long long last_day = -1;
 	const long long today = (long long)time(NULL) / 86400;
 	for (auto i : watch_history) {
+		if (needle != "") { // the filter
+			std::string hay = i.title + " " + i.author_name;
+			for (auto &c : hay) c = tolower(c);
+			if (hay.find(needle) == std::string::npos) continue;
+		}
 		long long day = (long long)i.last_watch_time / 86400;
 		if (day != last_day) { // a header for each day
 			last_day = day;
@@ -261,6 +279,23 @@ void History_draw(void) {
 				global_intent.next_scene = SceneType::VIDEO_PLAYER;
 				global_intent.arg = clicked_url;
 				clicked_url = "";
+			}
+			if (filter_request) {
+				filter_request = false;
+				SwkbdState keyboard;
+				swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 60);
+				swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY);
+				swkbdSetHintText(&keyboard, tr("Title or channel (empty : all)", "Título o canal (vacío: todo)").c_str());
+				swkbdSetInitialText(&keyboard, history_filter.c_str());
+				swkbdSetButton(&keyboard, SWKBD_BUTTON_LEFT, LOCALIZED(CANCEL).c_str(), false);
+				swkbdSetButton(&keyboard, SWKBD_BUTTON_RIGHT, LOCALIZED(OK).c_str(), true);
+				char buffer[128] = {0};
+				auto pressed = swkbdInputText(&keyboard, buffer, sizeof(buffer));
+				if (pressed == SWKBD_BUTTON_RIGHT) {
+					history_filter = buffer;
+					update_watch_history(watch_history);
+				}
+				var_need_refresh = true;
 			}
 			if (sort_request != -1) {
 				auto tmp_watch_history = watch_history;

@@ -534,6 +534,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Automatic", {"Automatique", "Automatisch", "Automatica", "Automática", "自動"}},
 	    {"Quality of saved videos", {"Qualité des vidéos enregistrées", "Qualität gespeicherter Videos", "Qualità dei video salvati", "Qualidade dos vídeos salvos", "保存動画の画質"}},
 	    {"Lower quality uses less room on the SD card. The closest quality that exists is used.", {"Une qualité plus basse prend moins de place sur la SD. La qualité existante la plus proche est utilisée.", "Niedrigere Qualität braucht weniger Platz auf der SD. Es wird die nächstliegende vorhandene Qualität genutzt.", "Una qualità più bassa occupa meno spazio sulla SD. Si usa la qualità esistente più vicina.", "Qualidade menor ocupa menos espaço no SD. Usa-se a qualidade existente mais próxima.", "画質を下げるとSDの容量を節約できます。最も近い画質が使われます。"}},
+	    {"Search in the history", {"Rechercher dans l'historique", "Im Verlauf suchen", "Cerca nella cronologia", "Buscar no histórico", "履歴を検索"}},
+	    {"Title or channel (empty : all)", {"Titre ou chaîne (vide : tout)", "Titel oder Kanal (leer: alle)", "Titolo o canale (vuoto: tutto)", "Título ou canal (vazio: tudo)", "タイトルかチャンネル（空：すべて）"}},
+	    {" (tap to change)", {" (touchez pour changer)", " (antippen zum Ändern)", " (tocca per cambiare)", " (toque para mudar)", " （タップで変更）"}},
 	};
 	return table;
 }
