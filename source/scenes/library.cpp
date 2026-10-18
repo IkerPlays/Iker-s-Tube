@@ -488,6 +488,35 @@ static std::vector<std::pair<std::string, std::string>> liked_sources = {{"Liked
 static int liked_source = 0;
 static bool liked_playlists_added = false;
 static bool liked_task_running = false; // only one load at a time (guarded by resource_lock_lib)
+struct AccountListJob {
+	std::string id, name; // name empty : delete the list
+};
+static void account_list_task(void *arg) {
+	AccountListJob *job = (AccountListJob *)arg;
+	bool ok = job->name == "" ? youtube_account_playlist_delete(job->id) : youtube_account_playlist_rename(job->id, job->name);
+	if (ok) {
+		resource_lock_lib.lock();
+		for (size_t i = 2; i < liked_sources.size(); i++) {
+			if (liked_sources[i].second != "VL" + job->id) continue;
+			if (job->name == "") {
+				liked_sources.erase(liked_sources.begin() + i);
+				liked_source = 0;
+				liked_videos.clear();
+				liked_loaded = liked_failed = liked_loading = false;
+			} else {
+				liked_sources[i].first = job->name;
+			}
+			break;
+		}
+		resource_lock_lib.unlock();
+		rebuild_request = true;
+		var_need_refresh = true;
+		notice_show(job->name == "" ? tr("List deleted", "Lista borrada") : tr("List renamed", "Lista renombrada"));
+	} else {
+		notice_show(tr("Could not change the list", "No se pudo cambiar la lista") + std::string(" (") + youtube_account_last_error().substr(0, 50) + ")");
+	}
+	delete job;
+}
 static void load_liked_task(void *) {
 	std::vector<FavoriteVideo> videos;
 	if (!liked_playlists_added) { // the playlists of the account join the sources the first time
@@ -553,6 +582,33 @@ static void build_liked(VerticalListView *list) {
 			resource_lock_lib.unlock();
 			rebuild_request = true;
 		}));
+	}
+	{ // one of your own lists of the account : rename or delete it
+		resource_lock_lib.lock();
+		std::string source_id = liked_sources[std::min<size_t>(liked_source, liked_sources.size() - 1)].second;
+		std::string source_title = liked_sources[std::min<size_t>(liked_source, liked_sources.size() - 1)].first;
+		resource_lock_lib.unlock();
+		if (source_id.size() > 2 && source_id.compare(0, 2, "VL") == 0 && source_id != "VLLL") {
+			std::string playlist_id = source_id.substr(2);
+			list->views.push_back(make_button(tr("Rename this list", "Renombrar esta lista"), 320, [playlist_id, source_title]() {
+				pending_action = [playlist_id, source_title]() {
+					std::string name = source_title;
+					if (ask_text(tr("Playlist name", "Nombre de la lista").c_str(), name) && name != "" && name != source_title) {
+						queue_async_task(account_list_task, new AccountListJob{playlist_id, name});
+					}
+				};
+			}));
+			list->views.push_back(make_button(tr("Delete this list (tap twice)", "Borrar esta lista (toca dos veces)"), 320, [playlist_id]() {
+				static std::string armed;
+				if (armed != playlist_id) {
+					armed = playlist_id;
+					notice_show(tr("Tap again to DELETE it for good", "Toca otra vez para BORRARLA del todo"));
+					return;
+				}
+				armed = "";
+				queue_async_task(account_list_task, new AccountListJob{playlist_id, ""});
+			}));
+		}
 	}
 	add_sort_filter_row(list);
 	add_list_actions(list, videos);

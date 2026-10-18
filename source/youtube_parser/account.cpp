@@ -235,6 +235,16 @@ bool youtube_account_playlist_edit(const std::string &playlist_id, const std::st
 	return account_post("browse/edit_playlist", fields).first;
 }
 
+bool youtube_account_playlist_rename(const std::string &playlist_id, const std::string &name) {
+	std::string fields = "\"playlistId\": \"" + json_escape(playlist_id) + "\", \"actions\": [{\"action\": \"ACTION_SET_PLAYLIST_NAME\", \"playlistName\": \"" + json_escape(name) + "\"}]";
+	return account_post("browse/edit_playlist", fields).first || account_post("browse/edit_playlist", fields, 1).first;
+}
+
+bool youtube_account_playlist_delete(const std::string &playlist_id) {
+	std::string fields = "\"playlistId\": \"" + json_escape(playlist_id) + "\"";
+	return account_post("playlist/delete", fields, 1).first || account_post("playlist/delete", fields).first;
+}
+
 // The comment section as the signed-in user sees it : it contains the tokens that allow writing, replying and liking.
 // The login does not work the same with every YouTube client, so several are tried (the one that worked last time first),
 // first with the continuation token of the page and then, if that is refused, by asking the client for the video itself.

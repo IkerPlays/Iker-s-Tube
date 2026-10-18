@@ -21,6 +21,9 @@ bool youtube_account_recommendations(std::vector<YouTubeVideoSuccinct> &out);
 bool youtube_account_notifications(std::vector<YouTubeVideoSuccinct> &out);
 
 // Community posts : like a post, or run an endpoint copied from a post page (the choices of a poll)
+// your own playlists : rename or delete one
+bool youtube_account_playlist_rename(const std::string &playlist_id, const std::string &name);
+bool youtube_account_playlist_delete(const std::string &playlist_id);
 bool youtube_account_post_like(const std::string &post_id);
 bool youtube_account_run_endpoint(const std::string &endpoint_json);
 bool youtube_account_like(const std::string &video_id, int rating); // 1 like, -1 dislike, 0 remove the rating
