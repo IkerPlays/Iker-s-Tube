@@ -464,6 +464,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Subscribed to ", {"Abonné à ", "Abonniert: ", "Iscritto a ", "Inscrito em ", "登録: "}},
 	    {" channels", {" chaînes", " Kanäle", " canali", " canais", " チャンネル"}},
 	    {"QR code of this channel", {"Code QR de cette chaîne", "QR-Code dieses Kanals", "Codice QR di questo canale", "Código QR deste canal", "このチャンネルのQRコード"}},
+	    {"Showing: YouTube history (tap for liked)", {"Affiché : historique YouTube (touchez pour les j'aime)", "Zeigt: YouTube-Verlauf (antippen für Gefällt mir)", "Mostra: cronologia YouTube (tocca per i piaciuti)", "Mostrando: histórico do YouTube (toque para curtidos)", "表示中：YouTube履歴（タップで高評価）"}},
+	    {"Showing: liked (tap for YouTube history)", {"Affiché : j'aime (touchez pour l'historique YouTube)", "Zeigt: Gefällt mir (antippen für YouTube-Verlauf)", "Mostra: piaciuti (tocca per la cronologia YouTube)", "Mostrando: curtidos (toque para o histórico do YouTube)", "表示中：高評価（タップでYouTube履歴）"}},
 	};
 	return table;
 }

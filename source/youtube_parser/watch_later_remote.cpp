@@ -62,6 +62,26 @@ bool account_playlist_videos(const std::string &browse_id, std::vector<FavoriteV
 		if (v.id != "" && v.title != "") videos.push_back(v);
 		pos += 20;
 	}
+	if (videos.empty()) { // other lists (the history) come as other renderers : take every video id with the title near it
+		size_t at = 0;
+		while ((at = json.find("\"videoId\":\"", at)) != std::string::npos) {
+			size_t end = json.find("\"videoId\":\"", at + 12);
+			if (end == std::string::npos) end = json.size();
+			end = std::min(end, at + 3000);
+			FavoriteVideo v;
+			v.id = text_after(json, at, end, "\"videoId\":\"");
+			v.title = text_after(json, at, end, "\"title\":{\"runs\":[{\"text\":\"");
+			if (v.title == "") v.title = text_after(json, at, end, "\"title\":{\"simpleText\":\"");
+			if (v.title == "") v.title = text_after(json, at, end, "\"headline\":{\"runs\":[{\"text\":\"");
+			v.author = text_after(json, at, end, "\"shortBylineText\":{\"runs\":[{\"text\":\"");
+			if (v.author == "") v.author = text_after(json, at, end, "\"longBylineText\":{\"runs\":[{\"text\":\"");
+			v.length_text = text_after(json, at, end, "\"lengthText\":{\"simpleText\":\"");
+			bool known = false;
+			for (auto &x : videos) known = known || x.id == v.id;
+			if (v.id.size() == 11 && v.title != "" && !known) videos.push_back(v);
+			at += 12;
+		}
+	}
 	return true;
 }
 

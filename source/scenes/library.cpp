@@ -389,9 +389,10 @@ static void pull_watch_later_task(void *) {
 static Mutex resource_lock_lib;
 static std::vector<FavoriteVideo> liked_videos;
 static bool liked_loaded = false, liked_failed = false, liked_loading = false;
+static bool show_yt_history = false; // the same tab shows the YouTube history instead of the liked videos
 static void load_liked_task(void *) {
 	std::vector<FavoriteVideo> videos;
-	bool ok = account_playlist_videos("VLLL", videos);
+	bool ok = account_playlist_videos(show_yt_history ? "FEhistory" : "VLLL", videos);
 	resource_lock_lib.lock();
 	liked_videos = videos;
 	liked_loaded = ok;
@@ -418,6 +419,16 @@ static void build_liked(VerticalListView *list) {
 	std::vector<FavoriteVideo> videos = filter_and_sort(liked_videos);
 	bool loading = liked_loading, failed = liked_failed;
 	resource_lock_lib.unlock();
+	list->views.push_back(make_button(show_yt_history ? tr("Showing: YouTube history (tap for liked)", "Viendo: historial de YouTube (toca para Me gusta)")
+	                                                  : tr("Showing: liked (tap for YouTube history)", "Viendo: Me gusta (toca para el historial de YouTube)"),
+	                                  320, []() {
+		                                  show_yt_history = !show_yt_history;
+		                                  resource_lock_lib.lock();
+		                                  liked_videos.clear();
+		                                  liked_loaded = liked_failed = liked_loading = false;
+		                                  resource_lock_lib.unlock();
+		                                  rebuild_request = true;
+	                                  }));
 	add_sort_filter_row(list);
 	for (auto &v : videos) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
