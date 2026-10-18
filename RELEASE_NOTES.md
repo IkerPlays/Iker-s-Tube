@@ -1,1 +1,1 @@
-Shorts: the Shorts shortcut now asks YouTube for the real Shorts feed that follows the first Short found (reel watch sequence) and plays those; if YouTube does not answer, it keeps using the search results. Experimental.
+Video menu (long press on any video): new "More from this channel" option searches the videos of its author.

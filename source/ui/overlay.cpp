@@ -131,6 +131,12 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 			notice_show(hidden ? tr("Channel shown again (reload the list)", "Canal visible otra vez (recarga la lista)") : tr("Channel hidden (it applies to lists loaded from now on)", "Canal oculto (vale para las listas que cargues desde ahora)"));
 		});
 	}
+	if (author != "") {
+		option(tr("More from this channel", "Más de este canal"), [author]() {
+			global_intent.next_scene = SceneType::SEARCH;
+			global_intent.arg = "q:" + author;
+		});
+	}
 	option(tr("Search similar", "Buscar parecidos"), [title]() {
 		global_intent.next_scene = SceneType::SEARCH;
 		global_intent.arg = "q:" + title;
