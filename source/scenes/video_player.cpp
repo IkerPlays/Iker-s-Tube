@@ -2189,6 +2189,12 @@ debug_info_view =
 					                                   }
 					                                   notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(n) + tr(" videos", " vídeos"));
 				                                   }),
+				                         make_tool([]() { return var_loop_mode ? tr("Loop: on", "Bucle: sí") : tr("Loop: off", "Bucle: no"); }, 80,
+				                                   []() {
+					                                   var_loop_mode = !var_loop_mode;
+					                                   misc_tasks_request(TASK_SAVE_SETTINGS);
+					                                   var_need_refresh = true;
+				                                   }),
 				                         make_tool([]() { return tr("Info", "Info"); }, 50,
 				                                   []() { // facts of the video, as text
 					                                   if (cur_video_info.id == "") return;

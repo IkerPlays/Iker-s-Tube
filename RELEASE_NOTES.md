@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Player tools: Info shows the channel, views, date, likes, length, available qualities, number of audio tracks and the id of the video.
+- Player tools: Loop on/off toggles repeating the video (the same setting as in Settings).

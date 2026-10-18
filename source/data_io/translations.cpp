@@ -601,6 +601,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Qualities: ", {"Qualités : ", "Qualitäten: ", "Qualità: ", "Qualidades: ", "画質： "}},
 	    {"Audio tracks: ", {"Pistes audio : ", "Tonspuren: ", "Tracce audio: ", "Faixas de áudio: ", "音声トラック： "}},
 	    {"Info", {"Infos", "Info", "Info", "Info", "情報"}},
+	    {"Loop: on", {"Boucle : oui", "Schleife: an", "Ripeti: sì", "Repetir: sim", "ループ：オン"}},
+	    {"Loop: off", {"Boucle : non", "Schleife: aus", "Ripeti: no", "Repetir: não", "ループ：オフ"}},
 	};
 	return table;
 }
