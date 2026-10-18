@@ -568,6 +568,7 @@ bool youtube_studio_set_title(const std::string &video_id, const std::string &ti
 	}
 	size_t snippet = body.find("\"snippet\"");
 	std::string category = raw_string(body, snippet, "categoryId");
+	std::string default_language = raw_string(body, snippet, "defaultLanguage"); // kept as it was
 	std::string description = raw_string(body, snippet, "description");
 	std::string tags;
 	size_t tp = body.find("\"tags\"", snippet);
@@ -576,7 +577,8 @@ bool youtube_studio_set_title(const std::string &video_id, const std::string &ti
 		if (open != std::string::npos && close != std::string::npos && close > open) tags = body.substr(open, close - open + 1);
 	}
 	std::string snippet_json = "{\"title\": " + json_quote(title) + ", \"description\": \"" + description + "\", \"categoryId\": \"" +
-	                           (category == "" ? "22" : category) + "\"" + (tags != "" ? ", \"tags\": " + tags : "") + "}";
+	                           (category == "" ? "22" : category) + "\"" + (tags != "" ? ", \"tags\": " + tags : "") +
+	                           (default_language != "" ? ", \"defaultLanguage\": \"" + default_language + "\"" : "") + "}";
 	r = api_request("PUT", "https://www.googleapis.com/youtube/v3/videos?part=snippet",
 	                "{\"id\": " + json_quote(video_id) + ", \"snippet\": " + snippet_json + "}", "application/json; charset=UTF-8", body);
 	if (r.fail || !r.status_code_is_success()) {
@@ -655,6 +657,7 @@ bool youtube_studio_set_description(const std::string &video_id, const std::stri
 	}
 	size_t snippet = body.find("\"snippet\"");
 	std::string category = raw_string(body, snippet, "categoryId");
+	std::string default_language = raw_string(body, snippet, "defaultLanguage"); // kept as it was
 	std::string title = raw_string(body, snippet, "title"); // (still escaped, as it came)
 	std::string tags;
 	size_t tp = body.find("\"tags\"", snippet);
@@ -663,7 +666,8 @@ bool youtube_studio_set_description(const std::string &video_id, const std::stri
 		if (open != std::string::npos && close != std::string::npos && close > open) tags = body.substr(open, close - open + 1);
 	}
 	std::string snippet_json = "{\"title\": \"" + title + "\", \"description\": " + json_quote(description) + ", \"categoryId\": \"" +
-	                           (category == "" ? "22" : category) + "\"" + (tags != "" ? ", \"tags\": " + tags : "") + "}";
+	                           (category == "" ? "22" : category) + "\"" + (tags != "" ? ", \"tags\": " + tags : "") +
+	                           (default_language != "" ? ", \"defaultLanguage\": \"" + default_language + "\"" : "") + "}";
 	r = api_request("PUT", "https://www.googleapis.com/youtube/v3/videos?part=snippet",
 	                "{\"id\": " + json_quote(video_id) + ", \"snippet\": " + snippet_json + "}", "application/json; charset=UTF-8", body);
 	if (r.fail || !r.status_code_is_success()) {

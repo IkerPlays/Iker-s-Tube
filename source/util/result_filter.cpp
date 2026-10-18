@@ -11,20 +11,16 @@
 static std::vector<std::string> hidden_names;
 static bool hidden_loaded = false;
 static LightLock hidden_lock;
-static bool hidden_lock_init = false;
-
-static void hidden_prepare() {
-	if (!hidden_lock_init) {
-		hidden_lock_init = true;
-		LightLock_Init(&hidden_lock);
-	}
-}
+static struct HiddenLockInit { // initialised before main : no thread can meet an uninitialised lock
+	HiddenLockInit() { LightLock_Init(&hidden_lock); }
+} hidden_lock_init_object;
+static void hidden_prepare() {}
 static void hidden_load_locked() {
 	if (hidden_loaded) return;
 	hidden_loaded = true;
 	FILE *f = fopen(HIDDEN_PATH, "r");
 	if (!f) return;
-	char line[200];
+	char line[600];
 	while (fgets(line, sizeof line, f)) {
 		std::string s = line;
 		while (s.size() && (s.back() == '\n' || s.back() == '\r')) s.pop_back();

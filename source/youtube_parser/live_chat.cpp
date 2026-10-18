@@ -1,6 +1,7 @@
 #include "headers.hpp"
 #include "youtube_parser/live_chat.hpp"
 #include "youtube_parser/studio.hpp"
+#include "ui/notice.hpp"
 #include "internal_common.hpp"
 #include <algorithm>
 #include <cstring>
@@ -106,7 +107,9 @@ static void chat_thread(void *arg) {
 		if (chat_toggle_request) { // the other mode of the chat
 			chat_toggle_request = false;
 			int other = 1 - chat_mode;
-			if (mode_tokens[other] != "") {
+			if (mode_tokens[other] == "") {
+				notice_show(tr("This chat has only one mode", "Este chat solo tiene un modo"));
+			} else {
 				continuation = mode_tokens[other];
 				chat_mode = other;
 				LightLock_Lock(&chat_lock);

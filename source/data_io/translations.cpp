@@ -560,6 +560,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {" (tap to show all)", {" (touchez pour tout afficher)", " (antippen, um alle zu zeigen)", " (tocca per mostrarli tutti)", " (toque para mostrar todos)", " （タップで全て表示）"}},
 	    {"Resume downloads", {"Reprendre les téléchargements", "Downloads fortsetzen", "Riprendi i download", "Retomar os downloads", "ダウンロードを再開"}},
 	    {"Pause downloads", {"Mettre les téléchargements en pause", "Downloads pausieren", "Metti in pausa i download", "Pausar os downloads", "ダウンロードを一時停止"}},
+	    {"The history is off (incognito or disabled)", {"L'historique est désactivé (incognito ou désactivé)", "Der Verlauf ist aus (Inkognito oder deaktiviert)", "La cronologia è disattivata (incognito o disabilitata)", "O histórico está desligado (anônimo ou desativado)", "履歴はオフです（シークレットまたは無効）"}},
+	    {"This chat has only one mode", {"Ce chat n'a qu'un seul mode", "Dieser Chat hat nur einen Modus", "Questa chat ha una sola modalità", "Este chat tem apenas um modo", "このチャットにはモードが1つだけです"}},
 	};
 	return table;
 }

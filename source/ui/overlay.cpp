@@ -136,9 +136,13 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 		global_intent.arg = "q:" + title;
 	});
 	option(history_has_id(id) ? tr("Mark as not watched", "Marcar como no visto") : tr("Mark as watched", "Marcar como visto"), [id, title, author]() {
+		if (var_incognito || !var_history_enabled) {
+			notice_show(tr("The history is off (incognito or disabled)", "El historial está apagado (incógnito o desactivado)"));
+			return;
+		}
 		if (history_has_id(id)) {
 			history_erase_by_id(id);
-			save_watch_history();
+			misc_tasks_request(TASK_SAVE_HISTORY);
 		} else {
 			HistoryVideo h;
 			h.id = id;
@@ -149,7 +153,7 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 			h.my_view_count = 1;
 			h.last_watch_time = time(NULL);
 			add_watched_video(h);
-			save_watch_history();
+			misc_tasks_request(TASK_SAVE_HISTORY);
 		}
 		var_need_refresh = true;
 	});
