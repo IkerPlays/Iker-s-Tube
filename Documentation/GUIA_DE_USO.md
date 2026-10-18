@@ -24,7 +24,7 @@ necesitan haber iniciado sesión en Ajustes; las de Studio, además, el login de
 Herramientas (se desplazan hacia los lados): saltos de 10 s, 30 s y 1 min, A-B, capítulos, velocidad, Luego, marcas,
 mini reproductor, parar al acabar, guardar audio/vídeo, Me gusta, No me gusta, Mi lista, campana, No me interesa,
 ocultar canal, traducir, **Chat en directo**, **Idioma del audio** (pistas dobladas), **QR del canal**, **Guardar audio de la
-lista**, **Siguiente**, **Reiniciar**, **Temporizador** y **Enlaces** de la descripción (cada uno da su QR).
+lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlaces** de la descripción (cada uno da su QR).
 
 - **Chat en directo:** solo en directos. Botón para cambiar entre chat destacado y todo el chat. Escribir necesita el
   login de Studio. Un ajuste lo abre solo en los directos.
@@ -35,7 +35,7 @@ lista**, **Siguiente**, **Reiniciar**, **Temporizador** y **Enlaces** de la desc
 ## Descargas y almacenamiento
 - Guardar audio o vídeo desde el reproductor o desde cualquier lista; las listas tienen "Guardar audio" en bloque.
 - Ajustes: calidad de los vídeos guardados, descargar solo de noche (1:00 a 7:00), borrar tras ver y vaciar la caché de imágenes.
-- Descargas: borrar todas o solo las ya vistas.
+- Descargas: pausar y reanudar la descarga en curso, borrar todas o solo las ya vistas.
 
 ## Studio
 - Estadísticas, subir vídeos o Shorts (título, descripción, visibilidad, categoría, etiquetas, miniatura, **lista** y
@@ -51,3 +51,9 @@ lista**, **Siguiente**, **Reiniciar**, **Temporizador** y **Enlaces** de la desc
 ## Si algo falla
 Ajustes, Datos, "Crear un informe para enviar" escribe `sdmc:/3ds/IkersTube/report.txt` (versión, estado de la cuenta,
 último error de la cuenta y el final del registro). Mándalo junto con el texto exacto del aviso.
+
+## Otros detalles
+- Un enlace de YouTube con tiempo (`&t=95s`, `?t=1m30s`, `&start=95`), por ejemplo escaneado desde un QR, empieza el
+  vídeo en ese momento.
+- Historial: buscar por título o canal, "Reproducir todo", "Aleatorio" y borrar lo de más de 30 días.
+- La lista de canales suscritos locales sale ordenada alfabéticamente.
