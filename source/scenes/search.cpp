@@ -155,6 +155,7 @@ static std::string search_filter_name(int i) {
 	return tr(en[i], search_filters[i].name);
 }
 static int search_filter_index = 0;
+static u64 filter_search_due = 0; // the search with the new filter starts when the button was not tapped again for a moment
 static int account_feed_kind = 0; // 1 : recommendations, 2 : notifications of the YouTube account
 static void load_account_feed(void *);
 static bool history_clear_request = false;
@@ -353,9 +354,7 @@ void Search_init(void) {
 	                             ->set_on_view_released([](View &) {
 		                             search_filter_index = (search_filter_index + 1) % (sizeof(search_filters) / sizeof(search_filters[0]));
 		                             youtube_search_filter_params = search_filters[search_filter_index].params;
-		                             if (cur_search_word != "" && !is_async_task_running(load_search_results)) {
-			                             start_search(cur_search_word); // search again with the new filter
-		                             }
+		                             if (cur_search_word != "") filter_search_due = osGetTime() + 800; // (the filters are many : one search for all the taps)
 		                             var_need_refresh = true;
 	                             }),
 	                         (new RuleView(0, 0, 320, 1))
@@ -837,6 +836,13 @@ void Search_draw(void) {
 
 		resource_lock.lock();
 		main_view->update(key);
+		if (filter_search_due && osGetTime() >= filter_search_due) {
+			filter_search_due = 0;
+			if (cur_search_word != "") {
+				if (is_async_task_running(load_search_results)) filter_search_due = osGetTime() + 300; // wait for the running search
+				else start_search(cur_search_word);
+			}
+		}
 		if (history_clear_request) {
 			history_clear_request = false;
 			search_history_clear();

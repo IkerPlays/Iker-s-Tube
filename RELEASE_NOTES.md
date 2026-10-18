@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Search filters: new Live now, Playlists, Channels, Last hour, This year, Sort by date, Sort by views and HD (the Filter button cycles through them).
+- Search: tapping the Filter button several times now starts one search after you stop tapping, instead of one search per tap.
