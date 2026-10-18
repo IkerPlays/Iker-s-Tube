@@ -482,6 +482,12 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Deleted: ", {"Supprimées : ", "Gelöscht: ", "Eliminate: ", "Excluídas: ", "削除： "}},
 	    {"Clear the picture cache", {"Vider le cache d'images", "Bildcache leeren", "Svuota la cache immagini", "Limpar o cache de imagens", "画像キャッシュを消去"}},
 	    {"Pictures removed: ", {"Images supprimées : ", "Bilder entfernt: ", "Immagini rimosse: ", "Imagens removidas: ", "削除した画像： "}},
+	    {"Plays next", {"Joué ensuite", "Spielt als Nächstes", "Parte dopo", "Toca a seguir", "次に再生"}},
+	    {"Watch later", {"À regarder plus tard", "Später ansehen", "Guarda più tardi", "Assistir depois", "後で見る"}},
+	    {"Added to Watch later", {"Ajouté à regarder plus tard", "Zu Später ansehen hinzugefügt", "Aggiunto a Guarda più tardi", "Adicionado a Assistir depois", "後で見るに追加しました"}},
+	    {"Removed from Watch later", {"Retiré de regarder plus tard", "Aus Später ansehen entfernt", "Rimosso da Guarda più tardi", "Removido de Assistir depois", "後で見るから削除しました"}},
+	    {"Added to Favorites", {"Ajouté aux favoris", "Zu Favoriten hinzugefügt", "Aggiunto ai preferiti", "Adicionado aos favoritos", "お気に入りに追加しました"}},
+	    {"Removed from Favorites", {"Retiré des favoris", "Aus Favoriten entfernt", "Rimosso dai preferiti", "Removido dos favoritos", "お気に入りから削除しました"}},
 	};
 	return table;
 }

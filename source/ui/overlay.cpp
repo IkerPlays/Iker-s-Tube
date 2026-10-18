@@ -8,6 +8,11 @@
 #include "scenes/offline_tasks.hpp"
 #include "util/misc_tasks.hpp"
 #include "ui/notice.hpp"
+#include "data_io/watch_later.hpp"
+#include "data_io/favorites.hpp"
+#include "scenes/account_tasks.hpp"
+#include "youtube_parser/parser.hpp"
+#include "oauth/oauth.hpp"
 #include <algorithm>
 
 #define ICON_LINE_HEIGHT 3
@@ -58,6 +63,71 @@ static OverlayDialogView *dialog_view = (new OverlayDialogView(0, 0, 320, 240));
 #define menu_content_background_color_selected COLOR_GRAY(var_night_mode ? 0x5F : 0xA0)
 #define menu_content_string_color DEFAULT_TEXT_COLOR
 #define menu_content_border_color COLOR_GRAY(var_night_mode ? 0x22 : 0xDD)
+
+// ---- the video actions menu (long press on a video) ----
+static OverlayView *video_menu = NULL;
+static void video_menu_close() {
+	if (video_menu) video_menu->set_is_visible(false);
+	var_need_refresh = true;
+}
+void overlay_show_video_menu(const std::string &url, const std::string &title, const std::string &author) {
+	std::string id = youtube_get_video_id_by_url(url);
+	if (!video_menu) {
+		video_menu = new OverlayView(0, 0, 320, 240);
+		video_menu->set_on_cancel([](OverlayView &) { video_menu_close(); });
+	}
+	video_menu->recursive_delete_subviews();
+	const int width = 250;
+	std::vector<View *> rows;
+	rows.push_back((new TextView(0, 0, width, 22))
+	                   ->set_text(truncate_first_line(title, width - 8, 0.5))
+	                   ->set_x_alignment(TextView::XAlign::CENTER)
+	                   ->set_y_alignment(TextView::YAlign::CENTER)
+	                   ->set_get_text_color([]() { return COLOR_ACCENT; })
+	                   ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
+	auto option = [&](const std::string &text, std::function<void()> action) {
+		rows.push_back((new TextView(0, 0, width, 24))
+		                   ->set_text(text)
+		                   ->set_x_alignment(TextView::XAlign::CENTER)
+		                   ->set_y_alignment(TextView::YAlign::CENTER)
+		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                   ->set_on_view_released([action](View &) {
+			                   video_menu_close();
+			                   action();
+		                   }));
+	};
+	FavoriteVideo video;
+	video.id = id;
+	video.title = title;
+	video.author = author;
+	bool queued = play_queue_position(url) != 0;
+	option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); notice_show(tr("Plays next", "Suena a continuación")); });
+	option(queued ? tr("Remove from queue", "Quitar de la cola") : tr("Add to queue", "Añadir a la cola"), [url, title]() { play_queue_toggle(url, title); });
+	option(watch_later_contains(id) ? tr("Remove from watch later", "Quitar de ver más tarde") : tr("Watch later", "Ver más tarde"), [video]() {
+		bool added = watch_later_toggle(video);
+		notice_show(added ? tr("Added to Watch later", "Añadido a Ver más tarde") : tr("Removed from Watch later", "Quitado de Ver más tarde"));
+	});
+	option(favorites_contains(id) ? tr("Remove from favorites", "Quitar de favoritos") : tr("+ Favorite", "+ Favorito"), [video]() {
+		bool added = favorites_toggle(video);
+		notice_show(added ? tr("Added to Favorites", "Añadido a Favoritos") : tr("Removed from Favorites", "Quitado de Favoritos"));
+	});
+	option(tr("Save audio offline", "Guardar audio sin conexión"), [id, title, author]() { offline_save_by_id_async(id, title, author, false); });
+	option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, title, author]() { offline_save_by_id_async(id, title, author, true); });
+	if (OAuth::is_authenticated()) {
+		option(tr("Not interested", "No me interesa"), [id]() { account_not_interested_async(id, false); });
+	}
+	rows.push_back((new TextView(0, 0, width, 24))
+	                   ->set_text(LOCALIZED(CANCEL))
+	                   ->set_x_alignment(TextView::XAlign::CENTER)
+	                   ->set_y_alignment(TextView::YAlign::CENTER)
+	                   ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                   ->set_on_view_released([](View &) { video_menu_close(); }));
+	video_menu->set_subview((new VerticalListView(0, 0, width))
+	                            ->set_views(rows)
+	                            ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
+	video_menu->set_is_visible(true);
+	var_need_refresh = true;
+}
 
 static bool nav_enabled = false;
 static int nav_top = 240 - NAV_BAR_HEIGHT;
@@ -228,6 +298,7 @@ void draw_overlay_menu(int y) {
 	if (menu_status == CONFIRMING_CLOSE) {
 		dialog_view->draw();
 	}
+	if (video_menu && video_menu->is_visible) video_menu->draw();
 }
 // the first-use tour : a dialog with the main things of the app, shown once on the Home screen
 static void show_first_use_tour() {
@@ -261,6 +332,14 @@ static void show_first_use_tour() {
 
 void update_overlay_menu(Hid_info *key) {
 	static bool exit_confirmed = false;
+	if (video_menu && video_menu->is_visible) { // the video menu takes all the input while it is open
+		video_menu->update(*key);
+		key->touch_x = key->touch_y = -1;
+		key->p_touch = false;
+		key->p_a = key->p_b = key->p_x = key->p_y = false;
+		var_need_refresh = true;
+		return;
+	}
 	{ // the tour comes after the Home screen has been there for a moment (the very first start goes to Settings first)
 		static int home_frames = 0;
 		if (!var_tour_done && nav_enabled && global_current_scene == SceneType::HOME && menu_status == CLOSED) {

@@ -5,6 +5,7 @@
 #include "ui/ui_common.hpp"
 #include "../view.hpp"
 #include "util/play_queue.hpp"
+#include "ui/overlay.hpp"
 #include "util/util.hpp"
 #include "data_io/history.hpp"
 #include "data_io/offline.hpp"
@@ -59,7 +60,7 @@ struct SuccinctVideoView : public FixedSizeView {
 	SuccinctVideoView *set_queue_item(const std::string &url, const std::string &title) {
 		this->queue_url = url;
 		add_on_long_hold(35, [url, title](View &view) {
-			play_queue_toggle(url, title);
+			overlay_show_video_menu(url, title, ""); // the actions of the video (queue, watch later, favorites, save offline...)
 			view.reset_holding_status(); // the release must not open the video
 			var_need_refresh = true;
 		});
