@@ -8,7 +8,7 @@
 
 static const char *backup_files[] = {"favorites.txt",    "watch_later.txt", "bookmarks.txt",     "playlists.txt",
                                      "search_history.txt", "resume.txt",      "subscription.json", "watch_history.json",
-                                     "settings.txt"};
+                                     "settings.txt",       "queue.txt",       "audio_lang.txt",    "caption_lang.txt"};
 
 static bool copy_file(const std::string &from, const std::string &to) {
 	FILE *in = fopen(from.c_str(), "rb");

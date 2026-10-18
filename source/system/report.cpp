@@ -4,6 +4,7 @@
 #include "data_io/offline.hpp"
 #include "youtube_parser/studio_auth.hpp"
 #include "util/play_queue.hpp"
+#include "youtube_parser/account.hpp"
 #include <cstdio>
 #include <sys/stat.h>
 
@@ -47,6 +48,7 @@ bool report_create() {
 	        OAuth::get_user_channel_id() != "" ? "yes" : "no");
 	fprintf(f, "studio client: %s, studio login: %s\n", studio_auth_has_client() ? (studio_auth_client_built_in() ? "built in" : "set up here") : "none",
 	        studio_auth_signed_in() ? "signed in" : "no");
+	fprintf(f, "last account error: %s\n", youtube_account_last_error().c_str());
 	fprintf(f, "saved items: %d, queue: %d\n", (int)offline_list().size(), play_queue_size());
 	append_tail(f, "crash_last.txt", "sdmc:/3ds/IkersTube/crash_last.txt", 4000);
 	append_tail(f, "log.txt (end)", "sdmc:/3ds/IkersTube/log.txt", 24000);
