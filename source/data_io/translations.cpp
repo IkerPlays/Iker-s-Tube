@@ -472,6 +472,12 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Save all audio", {"Enregistrer tout l'audio", "Alle Audios speichern", "Salva tutto l'audio", "Salvar todo o áudio", "音声をすべて保存"}},
 	    {"Queue all", {"Tout mettre en file", "Alle in die Warteschlange", "Metti tutto in coda", "Colocar tudo na fila", "すべてキューへ"}},
 	    {"Queued: ", {"En file : ", "In der Warteschlange: ", "In coda: ", "Na fila: ", "キュー： "}},
+	    {"Keep", {"Garder", "Behalten", "Mantieni", "Manter", "残す"}},
+	    {"Remove when watched", {"Retirer après visionnage", "Nach dem Ansehen entfernen", "Rimuovi quando visto", "Remover ao assistir", "視聴したら削除"}},
+	    {"Videos in Watch later", {"Vidéos à regarder plus tard", "Videos in Später ansehen", "Video in Guarda più tardi", "Vídeos em Assistir depois", "後で見る動画"}},
+	    {"A video leaves the Watch later list (also on your account) when it plays until the end.", {"Une vidéo quitte la liste (aussi sur votre compte) quand elle est lue jusqu'au bout.", "Ein Video verlässt die Liste (auch im Konto), wenn es bis zum Ende läuft.", "Un video esce dalla lista (anche sul tuo account) quando arriva alla fine.", "Um vídeo sai da lista (também na conta) quando chega ao fim.", "最後まで再生すると一覧（アカウント側も）から削除されます。"}},
+	    {"Next video", {"Suivante", "Nächstes", "Successivo", "Próximo", "次へ"}},
+	    {"There is no next video", {"Il n'y a pas de vidéo suivante", "Es gibt kein nächstes Video", "Non c'è un video successivo", "Não há próximo vídeo", "次の動画はありません"}},
 	};
 	return table;
 }

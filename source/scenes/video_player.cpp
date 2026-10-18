@@ -2116,6 +2116,19 @@ debug_info_view =
 					                             notice_show(next ? tr("Sleep timer: ", "Temporizador: ") + std::to_string(next) + " min" : tr("Sleep timer off", "Temporizador apagado"));
 					                             var_need_refresh = true;
 				                             }),
+				                         make_tool([]() { return tr("Next video", "Siguiente"); }, 90,
+				                                   []() {
+					                                   std::string next;
+					                                   if (play_queue_pop(next)) {
+						                                   send_change_video_request_wo_lock(next, true, false, false);
+					                                   } else if (playing_video_info.has_next_video()) {
+						                                   send_change_video_request_wo_lock(playing_video_info.get_next_video().url, true, false, false);
+					                                   } else {
+						                                   notice_show(tr("There is no next video", "No hay siguiente vídeo"));
+					                                   }
+				                                   }),
+				                         make_tool([]() { return std::string("-1 min"); }, 60, [jump]() { jump(-60); }),
+				                         make_tool([]() { return std::string("+1 min"); }, 60, [jump]() { jump(60); }),
 				                         make_tool([]() { return tr("Links", "Enlaces"); }, 70,
 				                                   []() { if (cur_video_info.description != "") show_description_links(); })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
@@ -3754,6 +3767,7 @@ static void autoplay_countdown_tick() {
 						    stop_after_video = false;
 						    resume_set(playing_video_info.id, 0, 0); // watched until the end : next time from the start
 						    resume_save();
+						    if (var_wl_autoremove && watch_later_contains(playing_video_info.id)) watch_later_remove(playing_video_info.id);
 						    if (var_offline_autodelete && var_loop_mode == false && playing_video_info.url.compare(0, 8, "offline:") == 0) {
 							    pending_offline_delete = playing_video_info.id;
 						    }

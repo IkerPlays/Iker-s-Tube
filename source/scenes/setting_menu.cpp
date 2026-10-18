@@ -1178,6 +1178,21 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Watch later cleanup
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Keep", "Mantener"); },
+							(std::function<std::string ()>) []() { return tr("Remove when watched", "Quitar al verlo"); }
+						}, var_wl_autoremove)
+						->set_title([](const SelectorView &) { return tr("Videos in Watch later", "Vídeos en Ver más tarde"); })
+						->set_info([](const SelectorView &) { return tr("A video leaves the Watch later list (also on your account) when it plays until the end.", "Un vídeo sale de Ver más tarde (también en tu cuenta) cuando se reproduce hasta el final."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_wl_autoremove != view.selected_button) {
+								var_wl_autoremove = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Studio tab
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

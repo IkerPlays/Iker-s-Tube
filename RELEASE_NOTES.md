@@ -1,3 +1,4 @@
 Devbuild notes
 
-- Channel page: the Videos tab starts with Play all and Queue all buttons (the first 40 videos of the list).
+- Settings: Videos in Watch later can be set to Remove when watched: a video leaves Watch later (and your account list) when it plays until the end.
+- Player tools: Next video (the queue first, then the autoplay suggestion), -1 min and +1 min.
