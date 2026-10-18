@@ -1,1 +1,1 @@
-Docs: usage guide mentions renaming and deleting your YouTube lists.
+Shorts: Search, Explore, Shorts now opens the first Short by itself (only real Shorts when the search returns enough of them). In the player the D-pad Down goes to the next video of the queue and Up goes back to the previous one, like swiping Shorts.

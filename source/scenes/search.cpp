@@ -598,6 +598,7 @@ static void load_account_feed(void *) {
 	}
 }
 
+static std::string feed_first_url; // the Shorts feed opens its first video by itself
 static void load_search_results(void *) {
 	// pre-access processing
 	resource_lock.lock();
@@ -628,11 +629,15 @@ static void load_search_results(void *) {
 		                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url, item.video.author); }),
 		                         new_result.results.end());
 	} else { // Shorts feed : play them all in a shuffled loop once you open one
-		std::vector<std::pair<std::string, std::string>> items;
+		std::vector<std::pair<std::string, std::string>> items, only_shorts;
 		for (auto &item : new_result.results) {
-			if (item.type == YouTubeSuccinctItem::VIDEO) items.push_back({item.video.url, item.video.title});
+			if (item.type != YouTubeSuccinctItem::VIDEO) continue;
+			items.push_back({item.video.url, item.video.title});
+			if (item.video.url.find("/shorts/") != std::string::npos) only_shorts.push_back({item.video.url, item.video.title});
 		}
+		if (only_shorts.size() >= 3) items = only_shorts; // (the search may also return ordinary videos)
 		play_queue_set_repeat(items, true);
+		if (items.size()) feed_first_url = items[0].first;
 	}
 
 	// wrap and truncate here
@@ -683,6 +688,11 @@ static void load_search_results(void *) {
 
 	search_done = true;
 	var_need_refresh = true;
+	if (feed && feed_first_url != "") {
+		clicked_url = feed_first_url;
+		feed_first_url = "";
+		notice_show(tr("Shorts: D-pad Down = next, Up = previous", "Shorts: cruceta Abajo = siguiente, Arriba = anterior"));
+	}
 	resource_lock.unlock();
 }
 static void load_more_search_results(void *) {

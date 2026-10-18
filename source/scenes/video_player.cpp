@@ -4668,6 +4668,28 @@ static void autoplay_countdown_tick() {
 				    pos = std::min<double>(vid_duration, pos);
 				    send_seek_request(pos);
 			    }
+		    } else if (key.p_d_down || key.p_d_up) { // like swiping the Shorts : down = next video of the queue, up = the one before
+			    static std::vector<std::pair<std::string, std::string>> back_stack; // videos left with "down" ({url, title})
+			    std::string cur_url = cur_playing_url, cur_title = playing_video_info.title;
+			    if (key.p_d_down) {
+				    std::string queued_url;
+				    if (play_queue_pop(queued_url)) {
+					    if (cur_url != "" && cur_url != queued_url) {
+						    back_stack.push_back({cur_url, cur_title});
+						    if (back_stack.size() > 30) back_stack.erase(back_stack.begin());
+					    }
+					    send_change_video_request(queued_url, true, false, false);
+				    } else {
+					    notice_show(tr("There is no next video", "No hay siguiente vídeo"));
+				    }
+			    } else if (back_stack.size()) {
+				    auto previous = back_stack.back();
+				    back_stack.pop_back();
+				    if (cur_url != "") play_queue_play_next(cur_url, cur_title); // "down" comes back to this one
+				    send_change_video_request(previous.first, true, false, false);
+			    } else {
+				    notice_show(tr("No previous video", "No hay vídeo anterior"));
+			    }
 		    } else if (key.p_r && var_button_r) { // R : next video of the queue by default
 			    run_button_action(var_button_r);
 		    } else if (key.p_l && var_button_l) { // L : restart by default

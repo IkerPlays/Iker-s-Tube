@@ -14,6 +14,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Search suggestions.** The keyboard offers YouTube autocomplete suggestions while you type.
 - **Community posts.** Long press a post to like it or vote in its poll (experimental).
 - **Manage your YouTube lists.** Rename or delete your own playlists from the Library (Liked tab).
+- **Shorts.** The Shorts shortcut opens the first Short at once; D-pad Down/Up in the player go to the next and previous video.
 - **Chapters.** New "<< Chap" tool goes to the previous chapter.
 
 ## Installing

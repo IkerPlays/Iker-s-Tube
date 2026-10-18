@@ -23,6 +23,7 @@ necesitan haber iniciado sesión en Ajustes; las de Studio, además, el login de
 - **Comunidad de un canal:** mantén pulsada una publicación para darle Me gusta o votar en su encuesta (experimental, necesita tu login).
 
 ## Reproductor
+- **Shorts:** en Buscar, Explorar, "Shorts" abre directamente el primero y sigue con más. En cualquier vídeo, la cruceta **Abajo** pasa al siguiente de la cola y **Arriba** vuelve al anterior, como deslizar los Shorts.
 Herramientas (se desplazan hacia los lados): saltos de 10 s, 30 s y 1 min, A-B, capítulos, velocidad, Luego, marcas,
 mini reproductor, parar al acabar, guardar audio/vídeo, Me gusta, No me gusta, Mi lista, campana, No me interesa,
 ocultar canal, traducir, **Chat en directo**, **Idioma del audio** (pistas dobladas), **QR del canal**, **QR del vídeo**, **CC** (subtítulos de YouTube: cada pulsación pasa al siguiente idioma y al final los apaga), **<< Cap** (capítulo anterior), **Guardar audio de la
