@@ -133,6 +133,8 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		                                     ->set_corner_radius(6)
 		                                     ->set_on_view_released([](View &) { clear_old_request = true; }));
 	}
+	std::map<long long, int> per_day; // how many videos each day
+	for (auto &v : watch_history) per_day[(long long)v.last_watch_time / 86400]++;
 	long long last_day = -1;
 	const long long today = (long long)time(NULL) / 86400;
 	for (auto i : watch_history) {
@@ -154,7 +156,7 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 				title = buf;
 			}
 			video_list_view->views.push_back((new TextView(0, 0, 320, 18))
-			                                     ->set_text(title)
+			                                     ->set_text(title + " (" + std::to_string(per_day[day]) + ")")
 			                                     ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 			                                     ->set_y_alignment(TextView::YAlign::CENTER)
 			                                     ->set_text_offset(SMALL_MARGIN, 0)

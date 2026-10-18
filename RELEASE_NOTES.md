@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Search: long press the Filter button to go back to All.
+- History: each day header shows how many videos you watched that day.
