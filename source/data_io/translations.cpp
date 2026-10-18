@@ -548,6 +548,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Search similar", {"Chercher similaires", "Ähnliche suchen", "Cerca simili", "Buscar semelhantes", "似た動画を検索"}},
 	    {"Save this list to my YouTube", {"Enregistrer cette liste sur mon YouTube", "Diese Liste in meinem YouTube speichern", "Salva questa lista nel mio YouTube", "Salvar esta lista no meu YouTube", "このリストを自分のYouTubeに保存"}},
 	    {"Saving the list...", {"Enregistrement de la liste...", "Liste wird gespeichert...", "Salvataggio della lista...", "Salvando a lista...", "リストを保存中..."}},
+	    {"Add to my YouTube playlist", {"Ajouter à ma liste YouTube", "Zu meiner YouTube-Playlist hinzufügen", "Aggiungi alla mia playlist YouTube", "Adicionar à minha lista do YouTube", "自分のYouTubeリストに追加"}},
+	    {"Add to a playlist", {"Ajouter à une liste", "Zu einer Playlist hinzufügen", "Aggiungi a una playlist", "Adicionar a uma lista", "リストに追加"}},
 	};
 	return table;
 }

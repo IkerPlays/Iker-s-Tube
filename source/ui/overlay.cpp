@@ -67,6 +67,8 @@ static OverlayDialogView *dialog_view = (new OverlayDialogView(0, 0, 320, 240));
 #define menu_content_border_color COLOR_GRAY(var_night_mode ? 0x22 : 0xDD)
 
 // ---- the video actions menu (long press on a video) ----
+static bool waiting_account_playlists = false; // "Add to my YouTube playlist" asked for the lists : the menu opens when they arrive
+static u64 waiting_account_playlists_since = 0;
 static OverlayView *video_menu = NULL;
 static void video_menu_close() {
 	if (video_menu) video_menu->set_is_visible(false);
@@ -114,6 +116,13 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 		bool added = favorites_toggle(video);
 		notice_show(added ? tr("Added to Favorites", "Añadido a Favoritos") : tr("Removed from Favorites", "Quitado de Favoritos"));
 	});
+	if (OAuth::is_authenticated()) {
+		option(tr("Add to my YouTube playlist", "Añadir a mi lista de YouTube"), [id]() {
+			waiting_account_playlists = true;
+			waiting_account_playlists_since = osGetTime();
+			account_playlists_async(id);
+		});
+	}
 	option(tr("Search similar", "Buscar parecidos"), [title]() {
 		global_intent.next_scene = SceneType::SEARCH;
 		global_intent.arg = "q:" + title;
@@ -428,6 +437,22 @@ static void show_first_use_tour() {
 
 void update_overlay_menu(Hid_info *key) {
 	static bool exit_confirmed = false;
+	if (waiting_account_playlists && osGetTime() - waiting_account_playlists_since > 20000) waiting_account_playlists = false; // (nothing came : stop waiting)
+	if (waiting_account_playlists) {
+		std::string playlists_video;
+		std::vector<AccountPlaylist> lists;
+		if (account_playlists_take(playlists_video, lists)) {
+			waiting_account_playlists = false;
+			std::vector<std::pair<std::string, std::function<void()>>> options;
+			for (auto &pl : lists) {
+				std::string playlist_id = pl.id;
+				bool has = pl.has_video;
+				options.push_back({(has ? "[x] " : "[ ] ") + pl.title.substr(0, 30), [playlist_id, playlists_video, has]() { account_playlist_edit_async(playlist_id, playlists_video, !has); }});
+				if (options.size() >= 6) break; // (the menu has to fit on the screen)
+			}
+			show_menu_rows(tr("Add to a playlist", "Añadir a una lista"), options);
+		}
+	}
 	if (video_menu && video_menu->is_visible) { // the video menu takes all the input while it is open
 		video_menu->update(*key);
 		key->touch_x = key->touch_y = -1;
