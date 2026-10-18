@@ -488,6 +488,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Removed from Watch later", {"Retiré de regarder plus tard", "Aus Später ansehen entfernt", "Rimosso da Guarda più tardi", "Removido de Assistir depois", "後で見るから削除しました"}},
 	    {"Added to Favorites", {"Ajouté aux favoris", "Zu Favoriten hinzugefügt", "Aggiunto ai preferiti", "Adicionado aos favoritos", "お気に入りに追加しました"}},
 	    {"Removed from Favorites", {"Retiré des favoris", "Aus Favoriten entfernt", "Rimosso dai preferiti", "Removido dos favoritos", "お気に入りから削除しました"}},
+	    {"Default playback speed", {"Vitesse par défaut", "Standardgeschwindigkeit", "Velocità predefinita", "Velocidade padrão", "標準の再生速度"}},
+	    {"For channels without a speed of their own (the Speed tool of a video remembers one per channel).", {"Pour les chaînes sans vitesse propre (l'outil de vitesse en retient une par chaîne).", "Für Kanäle ohne eigene Geschwindigkeit (das Tempo-Werkzeug merkt sich eine pro Kanal).", "Per i canali senza velocità propria (lo strumento velocità ne ricorda una per canale).", "Para canais sem velocidade própria (a ferramenta de velocidade guarda uma por canal).", "個別の速度がないチャンネル用（速度ツールはチャンネルごとに記憶します）。"}},
 	};
 	return table;
 }

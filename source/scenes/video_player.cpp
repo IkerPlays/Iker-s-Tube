@@ -380,7 +380,10 @@ static void channel_speed_tick() {
 	if (volume <= 0) volume = 1.0;
 	mini_volume_apply(volume);
 	double speed = channel_speed_get(playing_video_info.author.id);
-	if (speed <= 0) speed = 1.0;
+	if (speed <= 0) {
+		static const double defaults[6] = {1.0, 0.75, 1.25, 1.5, 1.75, 2.0};
+		speed = playing_video_info.is_livestream ? 1.0 : defaults[std::max(0, std::min(5, var_default_speed))];
+	}
 	if (speed != quick_speed) {
 		quick_speed = speed;
 		network_decoder.set_tempo(quick_speed);

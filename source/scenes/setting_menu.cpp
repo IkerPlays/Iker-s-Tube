@@ -1179,6 +1179,25 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Default speed
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return std::string("100%"); },
+							(std::function<std::string ()>) []() { return std::string("75%"); },
+							(std::function<std::string ()>) []() { return std::string("125%"); },
+							(std::function<std::string ()>) []() { return std::string("150%"); },
+							(std::function<std::string ()>) []() { return std::string("175%"); },
+							(std::function<std::string ()>) []() { return std::string("200%"); }
+						}, var_default_speed)
+						->set_title([](const SelectorView &) { return tr("Default playback speed", "Velocidad por defecto"); })
+						->set_info([](const SelectorView &) { return tr("For channels without a speed of their own (the Speed tool of a video remembers one per channel).", "Para canales sin velocidad propia (la herramienta de velocidad de un vídeo recuerda una por canal)."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_default_speed != view.selected_button) {
+								var_default_speed = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Watch later cleanup
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

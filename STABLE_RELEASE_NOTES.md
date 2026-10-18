@@ -33,6 +33,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Watch later cleanup and player buttons.** An option removes a video from Watch later when you finish it; the player has Next video, -1 min and +1 min.
 - **Free room.** Delete the downloads you already watched, and clear the picture cache.
 - **Video actions menu everywhere.** Long press a video in any list to play it next, queue it, save it to Watch later or Favorites, download it, or say Not interested.
+- **Default speed.** A setting for the playback speed of channels without their own.
 
 ## Installing
 
