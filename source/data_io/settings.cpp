@@ -6,9 +6,15 @@
 #define SETTINGS_FILE_PATH (DEF_MAIN_DIR + "settings.txt")
 
 void load_settings() {
-	char buf[0x1001] = {0};
+	// "Reset the settings" (Settings, Data) leaves a flag : the settings file is dropped at the next start, so the defaults load
+	if (access((DEF_MAIN_DIR + "reset_settings.flag").c_str(), F_OK) == 0) {
+		remove(SETTINGS_FILE_PATH.c_str());
+		remove((DEF_MAIN_DIR + "reset_settings.flag").c_str());
+	}
+	static char buf[0x4001];
+	memset(buf, 0, sizeof buf);
 	u32 read_size;
-	Result_with_string result = Path(SETTINGS_FILE_PATH).read_file((u8 *)buf, 0x1000, read_size);
+	Result_with_string result = Path(SETTINGS_FILE_PATH).read_file((u8 *)buf, 0x4000, read_size);
 	logger.info(DEF_SEM_INIT_STR, "read_file()..." + result.string + result.error_description, result.code);
 	auto settings = parse_xml_like_text(buf);
 

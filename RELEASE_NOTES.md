@@ -1,3 +1,3 @@
 Devbuild notes
 
-- History: a Search in the history button at the top filters the list by title or channel.
+- Settings, Data: Reset the settings (next start) brings every setting back to its default the next time the app starts (your lists, history and downloads are kept). The settings file reader also accepts a bigger file now.

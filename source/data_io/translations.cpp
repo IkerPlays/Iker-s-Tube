@@ -537,6 +537,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Search in the history", {"Rechercher dans l'historique", "Im Verlauf suchen", "Cerca nella cronologia", "Buscar no histórico", "履歴を検索"}},
 	    {"Title or channel (empty : all)", {"Titre ou chaîne (vide : tout)", "Titel oder Kanal (leer: alle)", "Titolo o canale (vuoto: tutto)", "Título ou canal (vazio: tudo)", "タイトルかチャンネル（空：すべて）"}},
 	    {" (tap to change)", {" (touchez pour changer)", " (antippen zum Ändern)", " (tocca per cambiare)", " (toque para mudar)", " （タップで変更）"}},
+	    {"Reset the settings (next start)", {"Réinitialiser les réglages (au prochain démarrage)", "Einstellungen zurücksetzen (beim nächsten Start)", "Ripristina le impostazioni (al prossimo avvio)", "Redefinir as configurações (na próxima abertura)", "設定をリセット（次回起動時）"}},
+	    {"Settings reset when the app restarts", {"Les réglages seront réinitialisés au redémarrage", "Einstellungen werden beim Neustart zurückgesetzt", "Le impostazioni verranno ripristinate al riavvio", "As configurações serão redefinidas ao reiniciar", "再起動時に設定がリセットされます"}},
 	};
 	return table;
 }
