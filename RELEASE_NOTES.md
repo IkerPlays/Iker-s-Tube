@@ -1,1 +1,1 @@
-Release notes for the stable version 1.0.5 were tidied (no code changes).
+Stable version 1.0.5 was published. The stable release notes now start from it.
