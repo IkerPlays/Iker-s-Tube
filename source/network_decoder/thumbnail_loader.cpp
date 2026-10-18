@@ -305,7 +305,7 @@ static std::vector<u8> http_get(const std::string &url, int &status_code) {
 // ---- disk cache : the pictures already downloaded are kept on the SD card (sdmc:/3ds/IkersTube/thumbs), so the lists show
 // their thumbnails at once the next time and use no data. Only this thread uses these functions.
 #define THUMB_DIR "sdmc:/3ds/IkersTube/thumbs"
-#define THUMB_DISK_MAX_FILES 400
+#define THUMB_DISK_MAX_FILES 700
 #define THUMB_DISK_MAX_SIZE 300000
 
 static std::string disk_cache_path(const std::string &url) {

@@ -7,7 +7,7 @@
 
 #define SEARCH_HISTORY_PATH "sdmc:/3ds/IkersTube/search_history.txt"
 #define SEARCH_HISTORY_TMP_PATH "sdmc:/3ds/IkersTube/search_history.tmp"
-#define SEARCH_HISTORY_MAX 15
+#define SEARCH_HISTORY_MAX 30
 
 static Mutex history_lock;
 static std::vector<std::string> history;

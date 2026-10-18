@@ -76,7 +76,7 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 		if (result.fail || !result.status_code_is_success() || result.data.empty()) {
 			logger.warning("offline", "download failed at " + std::to_string(done) + " : http " + std::to_string(result.status_code) + " " + result.error);
 			// a Wi-Fi hiccup : wait a little and ask the same chunk again (the file keeps what was already written)
-			if (++failures >= 5 || download_cancel) {
+			if (++failures >= 8 || download_cancel) {
 				ok = false;
 				break;
 			}
