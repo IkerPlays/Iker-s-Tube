@@ -629,6 +629,34 @@ bool youtube_studio_rate(const std::string &video_id, const std::string &rating,
 	return api_json("POST", "https://www.googleapis.com/youtube/v3/videos/rate?id=" + video_id + "&rating=" + rating, "", error);
 }
 
+bool youtube_studio_set_description(const std::string &video_id, const std::string &description, std::string &error) {
+	std::string body;
+	auto r = api_request("GET", "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + video_id, "", "", body);
+	if (r.fail || !r.status_code_is_success() || body.find("\"snippet\"") == std::string::npos) {
+		error = api_error(r, body);
+		return false;
+	}
+	size_t snippet = body.find("\"snippet\"");
+	std::string category = raw_string(body, snippet, "categoryId");
+	std::string title = raw_string(body, snippet, "title"); // (still escaped, as it came)
+	std::string tags;
+	size_t tp = body.find("\"tags\"", snippet);
+	if (tp != std::string::npos) {
+		size_t open = body.find('[', tp), close = body.find(']', tp);
+		if (open != std::string::npos && close != std::string::npos && close > open) tags = body.substr(open, close - open + 1);
+	}
+	std::string snippet_json = "{\"title\": \"" + title + "\", \"description\": " + json_quote(description) + ", \"categoryId\": \"" +
+	                           (category == "" ? "22" : category) + "\"" + (tags != "" ? ", \"tags\": " + tags : "") + "}";
+	r = api_request("PUT", "https://www.googleapis.com/youtube/v3/videos?part=snippet",
+	                "{\"id\": " + json_quote(video_id) + ", \"snippet\": " + snippet_json + "}", "application/json; charset=UTF-8", body);
+	if (r.fail || !r.status_code_is_success()) {
+		error = api_error(r, body);
+		logger.warning("studio", "set description failed : " + error);
+		return false;
+	}
+	return true;
+}
+
 bool youtube_studio_set_thumbnail(const std::string &video_id, const std::string &path, std::string &error) {
 	struct stat st;
 	if (stat(path.c_str(), &st) != 0 || st.st_size <= 0 || st.st_size > 2 * 1024 * 1024) {

@@ -507,6 +507,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"none", {"aucune", "keine", "nessuna", "nenhuma", "なし"}},
 	    {"Adding it to the playlist...", {"Ajout à la liste...", "Wird zur Playlist hinzugefügt...", "Aggiunta alla playlist...", "Adicionando à lista...", "リストに追加中..."}},
 	    {" (could not add it to the playlist)", {" (impossible de l'ajouter à la liste)", " (konnte nicht zur Playlist hinzugefügt werden)", " (impossibile aggiungerlo alla playlist)", " (não foi possível adicionar à lista)", " （リストに追加できませんでした）"}},
+	    {"Change the description", {"Changer la description", "Beschreibung ändern", "Cambia la descrizione", "Mudar a descrição", "説明を変更"}},
 	};
 	return table;
 }

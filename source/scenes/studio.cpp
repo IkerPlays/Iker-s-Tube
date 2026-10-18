@@ -639,7 +639,7 @@ static void start_my_videos_load() {
 }
 
 struct EditJob {
-	int action; // 0 privacy, 1 title, 2 delete
+	int action; // 0 privacy, 1 title, 2 delete, 3 description
 	std::string id, value;
 };
 
@@ -648,6 +648,7 @@ static void edit_task(void *arg) {
 	std::string error;
 	bool ok = job->action == 0   ? youtube_studio_set_privacy(job->id, job->value, error)
 	          : job->action == 1 ? youtube_studio_set_title(job->id, job->value, error)
+	          : job->action == 3 ? youtube_studio_set_description(job->id, job->value, error)
 	                             : youtube_studio_delete(job->id, error);
 	if (ok) {
 		LightLock_Lock(&state_lock);
@@ -729,6 +730,11 @@ static std::vector<View *> build_video() {
 	v.push_back(button([]() { return tr("Change the title", "Cambiar el título"); }, []() {
 		std::string out;
 		if (ask_text(tr("Title", "Título"), locked_copy(sel_video.title), 95, false, out)) edit_async(1, locked_copy(sel_video.id), out);
+		var_need_refresh = true;
+	}));
+	v.push_back(button([]() { return tr("Change the description", "Cambiar la descripción"); }, []() {
+		std::string out;
+		if (ask_text(tr("Description", "Descripción"), "", 1000, true, out)) edit_async(3, locked_copy(sel_video.id), out);
 		var_need_refresh = true;
 	}));
 	v.push_back(button([]() { return tr("Watch it", "Verlo"); }, []() {
