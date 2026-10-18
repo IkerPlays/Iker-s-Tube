@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Bottom bar: the Library item shows the number of videos in the queue.
+- Studio, Edit my uploads: each video of the list also shows its view count.

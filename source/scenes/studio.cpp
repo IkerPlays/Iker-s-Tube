@@ -697,7 +697,8 @@ static std::vector<View *> build_myvideos() {
 	for (auto &video : list) {
 		StudioVideo copy = video;
 		std::string text = "[" + (copy.privacy == "public" ? tr("Public", "Público") : copy.privacy == "unlisted" ? tr("Unlisted", "No listado") : tr("Private", "Privado")) + "] " + copy.title;
-		if (text.size() > 44) text = text.substr(0, 44) + "..";
+		if (text.size() > 38) text = text.substr(0, 38) + "..";
+		if (copy.views != "") text += " - " + copy.views;
 		v.push_back(button([text]() { return text; }, [copy]() {
 			LightLock_Lock(&state_lock);
 			sel_video = copy;

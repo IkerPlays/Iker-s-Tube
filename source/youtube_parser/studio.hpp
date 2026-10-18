@@ -31,6 +31,7 @@ void youtube_studio_clear_pending_upload();
 // ---- your uploaded videos (YouTube Data API, same login) ----
 struct StudioVideo {
 	std::string id, title, privacy; // privacy : "public", "unlisted" or "private"
+	std::string views;              // "1.2K" (empty when unknown)
 };
 bool youtube_studio_list_videos(std::vector<StudioVideo> &out, std::string &error); // the latest 25 uploads
 bool youtube_studio_set_privacy(const std::string &video_id, const std::string &privacy, std::string &error);

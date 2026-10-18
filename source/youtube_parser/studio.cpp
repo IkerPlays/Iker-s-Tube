@@ -525,6 +525,23 @@ bool youtube_studio_list_videos(std::vector<StudioVideo> &out, std::string &erro
 		if (v.id != "") out.push_back(v);
 		pos += marker.size();
 	}
+	// the view counts of those videos, in one request
+	if (out.size()) {
+		std::string ids;
+		for (auto &v : out) ids += (ids == "" ? "" : ",") + v.id;
+		std::string stats;
+		auto sr = api_request("GET", "https://www.googleapis.com/youtube/v3/videos?part=statistics&maxResults=25&id=" + ids, "", "", stats);
+		if (!sr.fail && sr.status_code_is_success()) {
+			for (auto &v : out) {
+				size_t at = stats.find("\"id\": \"" + v.id + "\"");
+				if (at == std::string::npos) continue;
+				size_t end = stats.find("\"kind\": \"youtube#video\"", at + 10);
+				unsigned long long views = 0;
+				std::string chunk = stats.substr(at, end == std::string::npos ? std::string::npos : end - at);
+				if (number_field(chunk, "viewCount", views)) v.views = short_number(views);
+			}
+		}
+	}
 	return true;
 }
 
