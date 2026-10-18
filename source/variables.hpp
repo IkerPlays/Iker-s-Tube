@@ -33,6 +33,7 @@ extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
+extern int var_chat_slow; // 1 : the live chat is refreshed every 6 seconds or more (saves battery and data)
 extern int var_channels_unsorted; // 1 : the local subscribed channels keep the order they were added in
 extern int var_hide_explore; // 1 : the Explore shortcuts of the Search screen are not shown
 extern int var_studio_category; // the category of the last Studio upload (index of the list of the form)

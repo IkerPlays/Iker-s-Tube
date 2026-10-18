@@ -1263,6 +1263,20 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Live chat refresh
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Fast", "Rápido"); },
+							(std::function<std::string ()>) []() { return tr("Slow (saves battery)", "Lento (ahorra batería)"); }
+						}, var_chat_slow)
+						->set_title([](const SelectorView &) { return tr("Live chat refresh", "Actualización del chat"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_chat_slow != view.selected_button) {
+								var_chat_slow = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Order of the subscribed channels
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

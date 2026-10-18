@@ -94,6 +94,7 @@ void load_settings() {
 	var_incognito = load_int("incognito", 0);
 	var_tour_done = load_int("tour_done", 0);
 	var_autoplay_delay = std::max(0, std::min(5, load_int("autoplay_delay", 0)));
+	var_chat_slow = std::max(0, std::min(1, load_int("chat_slow", 0)));
 	var_channels_unsorted = std::max(0, std::min(1, load_int("channels_unsorted", 0)));
 	var_hide_explore = std::max(0, std::min(1, load_int("hide_explore", 0)));
 	var_studio_category = std::max(0, std::min(30, load_int("studio_category", 0)));
@@ -182,6 +183,7 @@ void save_settings() {
 	add_int("studio_category", var_studio_category);
 	add_int("hide_explore", var_hide_explore);
 	add_int("channels_unsorted", var_channels_unsorted);
+	add_int("chat_slow", var_chat_slow);
 	add_int("sponsorblock", var_sponsorblock);
 	add_int("hide_watched", var_hide_watched);
 	add_int("welcome_done", var_welcome_done);

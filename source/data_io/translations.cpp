@@ -605,6 +605,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Loop: off", {"Boucle : non", "Schleife: aus", "Ripeti: no", "Repetir: não", "ループ：オフ"}},
 	    {"Shuffle playlist", {"Mélanger la liste", "Playlist mischen", "Mescola la playlist", "Embaralhar a lista", "リストをシャッフル"}},
 	    {"Queued in random order: ", {"En file au hasard : ", "Zufällig eingereiht: ", "In coda a caso: ", "Na fila ao acaso: ", "ランダムにキューへ： "}},
+	    {"Fast", {"Rapide", "Schnell", "Veloce", "Rápido", "速い"}},
+	    {"Slow (saves battery)", {"Lent (économise la batterie)", "Langsam (spart Akku)", "Lento (risparmia batteria)", "Lento (economiza bateria)", "遅い（電池節約）"}},
+	    {"Live chat refresh", {"Actualisation du chat en direct", "Live-Chat-Aktualisierung", "Aggiornamento della chat dal vivo", "Atualização do chat ao vivo", "ライブチャットの更新"}},
 	};
 	return table;
 }

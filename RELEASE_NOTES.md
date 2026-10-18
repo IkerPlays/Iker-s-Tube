@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Player tools: Shuffle playlist puts the rest of the playlist of the video in the queue in random order.
+- Settings: Live chat refresh (Fast or Slow, every 6 seconds or more, to save battery).

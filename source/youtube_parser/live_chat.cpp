@@ -199,7 +199,7 @@ static void chat_thread(void *arg) {
 			size_t t = json.rfind("\"timeoutMs\":");
 			if (t != std::string::npos) {
 				int ms = atoi(json.c_str() + t + 12);
-				if (ms > 0) wait_ms = std::min(8000, std::max(2000, ms));
+				if (ms > 0) wait_ms = std::min(8000, std::max(var_chat_slow ? 6000 : 2000, ms));
 			}
 			if (fresh.size() && alive()) { // (a thread of a chat that was closed or replaced must not add to the new one)
 				LightLock_Lock(&chat_lock);
