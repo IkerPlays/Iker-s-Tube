@@ -296,6 +296,41 @@ static void note_data_api_error(const std::string &err) {
 	if (err.find("insufficient") != std::string::npos) data_api_comments_blocked = true;
 }
 
+static std::string b64url_nopad(const std::string &raw) {
+	static const char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+	std::string out;
+	for (size_t i = 0; i < raw.size(); i += 3) {
+		unsigned v = ((unsigned char)raw[i] << 16) | (i + 1 < raw.size() ? (unsigned char)raw[i + 1] << 8 : 0) | (i + 2 < raw.size() ? (unsigned char)raw[i + 2] : 0);
+		out += b64[(v >> 18) & 63];
+		out += b64[(v >> 12) & 63];
+		if (i + 1 < raw.size()) out += b64[(v >> 6) & 63];
+		if (i + 2 < raw.size()) out += b64[v & 63];
+	}
+	return out;
+}
+
+// A reply : its params are a small protobuf message with the id of the video and the id of the comment answered (the top
+// level one : "UgxABC.9xyz" is a reply, its parent is "UgxABC"). Several layouts are tried ; YouTube's answer says if none fits.
+static bool reply_with_built_params(const std::string &video, const std::string &comment_id, const std::string &text) {
+	if (video.size() != 11 || comment_id == "") return false;
+	std::string parent = comment_id.substr(0, comment_id.find('.'));
+	const std::string tails[3] = {std::string("\x30\x00\x78\x02", 4), std::string("\x2a\x02\x08\x00\x30\x00\x78\x02", 8),
+	                              std::string("\x30\x00\x40\x00\x78\x02", 6)};
+	for (const std::string &tail : tails) {
+		std::string raw = std::string("\x12\x0b") + video + std::string("\x22") + std::string(1, (char)parent.size()) + parent + tail;
+		std::string params = b64url_nopad(raw);
+		for (int client : {3, 4, comment_client}) {
+			if (account_post("comment/create_comment_reply",
+			                 "\"commentText\": \"" + json_escape(text) + "\", \"createReplyParams\": \"" + params + "\"", client)
+			        .first) {
+				comment_client = client;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool youtube_account_comment_create(const std::string &comments_token, const std::string &text) {
 	std::string video = get_context_video(), err;
 	if (studio_ready() && video != "") {
@@ -453,7 +488,12 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
 		set_last_error("");
 	}
 	std::string json;
-	if (!fetch_comment_section(comments_token, json, false)) return false;
+	if (!fetch_comment_section(comments_token, json, false)) {
+		std::string why = get_last_error();
+		if (reply_with_built_params(get_context_video(), comment_id, text)) return true;
+		set_last_error(why + " | " + get_last_error());
+		return false;
+	}
 	std::string params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createReplyParams\":\"", comment_id);
 	if (params == "") params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createCommentReplyParams\":\"", comment_id);
 	if (params == "") {
@@ -466,6 +506,8 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
 	}
 	if (params == "") {
 		logger.warning("account", "no reply params found for the comment (not in this page, or the account layout differs)");
+		if (reply_with_built_params(get_context_video(), comment_id, text)) return true;
+		set_last_error("no reply params | " + get_last_error());
 		return false;
 	}
 	return account_post("comment/create_comment_reply",
