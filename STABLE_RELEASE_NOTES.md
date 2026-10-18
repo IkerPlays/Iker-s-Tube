@@ -30,7 +30,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Comment diagnostics.** When comments cannot be sent, the failure screen lists what YouTube answered, and new comments and replies have a last-resort way to be sent.
 - **Bulk actions in the Library.** Play all, Shuffle and Save audio on Favorites, Watch later and Liked; Shuffle queue and Save all audio on the queue.
 - **Play or queue a whole search or channel.** Play all and Queue all at the top of the results and of the Videos tab of a channel.
-- **Watch later cleanup and player buttons.** An option removes a video from Watch later when you finish it; the player has Next video, -1 min and +1 min.
+- **Watch later cleanup and player buttons.** An option removes a video from Watch later when you finish it; the player has Next video, Mute, -1 min and +1 min.
 - **Free room.** Delete the downloads you already watched, and clear the picture cache.
 - **Video actions menu everywhere.** Long press a video in any list to play it next, queue it, save it to Watch later or Favorites, download it, say Not interested, add it to a YouTube playlist, or search similar videos.
 - **Default speed.** A setting for the playback speed of channels without their own.

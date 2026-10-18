@@ -564,6 +564,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"This chat has only one mode", {"Ce chat n'a qu'un seul mode", "Dieser Chat hat nur einen Modus", "Questa chat ha una sola modalità", "Este chat tem apenas um modo", "このチャットにはモードが1つだけです"}},
 	    {"Clear what is older than 30 days", {"Effacer ce qui date de plus de 30 jours", "Älteres als 30 Tage löschen", "Cancella ciò che ha più di 30 giorni", "Apagar o que tem mais de 30 dias", "30日より古いものを消去"}},
 	    {"Removed: ", {"Retiré : ", "Entfernt: ", "Rimossi: ", "Removidos: ", "削除： "}},
+	    {"Unmute", {"Réactiver le son", "Ton an", "Riattiva audio", "Ativar som", "ミュート解除"}},
+	    {"Mute", {"Couper le son", "Stumm", "Silenzia", "Silenciar", "ミュート"}},
 	};
 	return table;
 }

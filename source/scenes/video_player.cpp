@@ -2188,6 +2188,17 @@ debug_info_view =
 						                                   notice_show(tr("There is no next video", "No hay siguiente vídeo"));
 					                                   }
 				                                   }),
+				                         make_tool([]() { return mini_volume <= 0.001 ? tr("Unmute", "Activar sonido") : tr("Mute", "Silenciar"); }, 90,
+				                                   []() {
+					                                   static double before_mute = 1.0;
+					                                   if (mini_volume <= 0.001) {
+						                                   mini_volume_apply(before_mute > 0.001 ? before_mute : 1.0);
+					                                   } else {
+						                                   before_mute = mini_volume;
+						                                   mini_volume_apply(0.0);
+					                                   }
+					                                   var_need_refresh = true;
+				                                   }),
 				                         make_tool([]() { return tr("Restart", "Reiniciar"); }, 70, [jump]() { jump(-1e9); }),
 				                         make_tool([]() { return std::string("-1 min"); }, 60, [jump]() { jump(-60); }),
 				                         make_tool([]() { return std::string("+1 min"); }, 60, [jump]() { jump(60); }),
