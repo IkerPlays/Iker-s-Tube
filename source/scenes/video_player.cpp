@@ -2271,6 +2271,10 @@ debug_info_view =
 					                                           "\nID: " + cur_video_info.id;
 					                                   show_text_popup(cur_video_info.title, text);
 				                                   }),
+				                         make_tool([]() { return tr("Video QR", "QR del vídeo"); }, 84,
+				                                   []() {
+					                                   if (cur_video_info.id != "") qr_popup_show("https://www.youtube.com/watch?v=" + cur_video_info.id);
+				                                   }),
 				                         make_tool([]() { return tr("Channel QR", "QR del canal"); }, 90,
 				                                   []() {
 					                                   if (cur_video_info.author.id != "") qr_popup_show("https://www.youtube.com/channel/" + cur_video_info.author.id);

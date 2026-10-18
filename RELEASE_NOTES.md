@@ -1,1 +1,1 @@
-Settings: Subtitles can be set to "Open by itself": when a video has the subtitle language you used last time, they turn on without opening the Subtitles tab.
+Player: new "Video QR" tool shows the QR code of the video link, to open it on a phone.
