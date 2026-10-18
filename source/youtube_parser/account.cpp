@@ -256,16 +256,24 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 }
 
 // Writing through the Data API with the Studio login : the app login (YouTube TV) is often refused for comments.
-static bool studio_ready() { return studio_auth_signed_in(); }
+static bool data_api_comments_blocked = false; // YouTube answered "insufficient scopes" : this login cannot comment through the Data API
+static bool studio_ready() { return studio_auth_signed_in() && !data_api_comments_blocked; }
+static void note_data_api_error(const std::string &err) {
+	if (err.find("insufficient") != std::string::npos) data_api_comments_blocked = true;
+}
 
 bool youtube_account_comment_create(const std::string &comments_token, const std::string &text) {
 	std::string video = get_context_video(), err;
 	if (studio_ready() && video != "") {
 		if (youtube_studio_comment_insert(video, text, err)) return true;
-		set_last_error("data api: " + err);
+		note_data_api_error(err);
+		set_last_error("");
 	}
 	std::string json;
-	if (!fetch_comment_section(comments_token, json, true)) return false;
+	if (!fetch_comment_section(comments_token, json, true)) {
+		if (err != "") set_last_error(get_last_error() + " | data api: " + err);
+		return false;
+	}
 	size_t end = json.size();
 	std::string params = text_after(json, 0, end, "\"createCommentParams\":\"");
 	if (params == "") {
@@ -350,7 +358,10 @@ bool youtube_account_comment_like(const std::string &comments_token, const std::
 
 bool youtube_account_comment_delete(const std::string &comments_token, const std::string &comment_id) {
 	std::string err;
-	if (studio_ready() && comment_id != "" && youtube_studio_comment_delete(comment_id, err)) return true;
+	if (studio_ready() && comment_id != "") {
+		if (youtube_studio_comment_delete(comment_id, err)) return true;
+		note_data_api_error(err);
+	}
 	std::string json;
 	if (!fetch_comment_section(comments_token, json, false)) return false;
 	// the menu of an own comment has an entry with the DELETE icon, followed by the action that does it
@@ -379,7 +390,8 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
 	std::string err;
 	if (studio_ready() && comment_id != "") {
 		if (youtube_studio_comment_reply(comment_id, text, err)) return true;
-		set_last_error("data api: " + err);
+		note_data_api_error(err);
+		set_last_error("");
 	}
 	std::string json;
 	if (!fetch_comment_section(comments_token, json, false)) return false;

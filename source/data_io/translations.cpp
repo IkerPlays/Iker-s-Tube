@@ -459,6 +459,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Studio tab on the Home screen", {"Onglet Studio sur l'accueil", "Studio-Tab auf dem Startbildschirm", "Scheda Studio nella Home", "Aba Studio na tela inicial", "ホームのStudioタブ"}},
 	    {"Applies the next time the app starts.", {"S'applique au prochain démarrage.", "Gilt beim nächsten Start der App.", "Si applica al prossimo avvio dell'app.", "Aplica-se na próxima vez que abrir o app.", "次回のアプリ起動時に反映されます。"}},
 	    {"Why it failed", {"Pourquoi cela a échoué", "Warum es fehlgeschlagen ist", "Perché è fallito", "Por que falhou", "失敗した理由"}},
+	    {"More ", {"Plus ", "Mehr ", "Altri ", "Mais ", "次へ "}},
 	};
 	return table;
 }

@@ -744,15 +744,19 @@ static void show_description_links() {
 	var_need_refresh = true;
 }
 
+static int collab_page = 0; // 3 channels per page : no scrolling, so nothing can be drawn outside the screen
 static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &channels) {
 	collab_shown = channels;
-	const int width = 300;
+	const int width = 300, per_page = 3;
+	int pages = ((int)channels.size() + per_page - 1) / per_page;
+	if (collab_page >= pages) collab_page = std::max(0, pages - 1);
 	VerticalListView *list = (new VerticalListView(0, 0, width))->enable_thumbnail_request_update(6, SceneType::VIDEO_PLAYER);
-	for (auto &channel : channels) {
+	for (int i = collab_page * per_page; i < (int)channels.size() && i < (collab_page + 1) * per_page; i++) {
+		const YouTubeChannelSuccinct &channel = channels[i];
 		SuccinctChannelView *view = new SuccinctChannelView(0, 0, width, CHANNEL_ICON_HEIGHT);
-		view->set_name(truncate_first_line(channel.name, width - CHANNEL_ICON_HEIGHT - 24, 0.6));
+		view->set_name(channel.name);
 		bool subscribed = subscription_is_subscribed(channel.id);
-		view->set_auxiliary_lines({truncate_first_line(channel.subscribers, width - CHANNEL_ICON_HEIGHT - 24, 0.5),
+		view->set_auxiliary_lines({channel.subscribers,
 		                           subscribed ? tr("Subscribed - long press to unsubscribe", "Suscrito - mantén para quitar")
 		                                      : tr("Long press to subscribe", "Mantén para suscribirte")});
 		view->set_thumbnail_url(channel.icon_url);
@@ -784,7 +788,29 @@ static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &chan
 		});
 		list->views.push_back(view);
 	}
-	int list_height = std::min<int>(CHANNEL_ICON_HEIGHT * 3, (int)channels.size() * CHANNEL_ICON_HEIGHT);
+	std::vector<View *> buttons;
+	int close_width = pages > 1 ? width / 2 : width;
+	buttons.push_back((new TextView(0, 0, close_width, 22))
+	                      ->set_text(LOCALIZED(CLOSE))
+	                      ->set_x_alignment(TextView::XAlign::CENTER)
+	                      ->set_corner_radius(6)
+	                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                      ->set_on_view_released([](View &) {
+		                      account_pl_popup_view->set_is_visible(false);
+		                      var_need_refresh = true;
+	                      }));
+	if (pages > 1) {
+		buttons.push_back((new TextView(0, 0, width - close_width, 22))
+		                      ->set_text(tr("More ", "Más ") + std::to_string(collab_page + 1) + "/" + std::to_string(pages))
+		                      ->set_x_alignment(TextView::XAlign::CENTER)
+		                      ->set_corner_radius(6)
+		                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                      ->set_on_view_released([pages](View &) {
+			                      collab_page = (collab_page + 1) % pages;
+			                      collab_refresh_request = true;
+			                      var_need_refresh = true;
+		                      }));
+	}
 	account_pl_popup_view->recursive_delete_subviews();
 	account_pl_popup_view->set_subview(
 	    (new VerticalListView(0, 0, width))
@@ -793,19 +819,9 @@ static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &chan
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
 	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
-	                     (new ScrollView(0, 0, width, list_height))
-	                         ->set_views({list})
-	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
-	                     (new TextView(0, 0, width, 22))
-	                         ->set_text(LOCALIZED(CLOSE))
-	                         ->set_x_alignment(TextView::XAlign::CENTER)
-	                         ->set_corner_radius(6)
-	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
-	                         ->set_on_view_released([](View &) {
-		                         account_pl_popup_view->set_is_visible(false);
-		                         var_need_refresh = true;
-	                         })})
-	        ->set_draw_order({1, 0, 2}));
+	                     list,
+	                     (new HorizontalListView(0, 0, 22))->set_views(buttons)})
+	        ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
 	account_pl_popup_view->set_is_visible(true);
 	var_need_refresh = true;
 }
@@ -4219,6 +4235,7 @@ static void autoplay_countdown_tick() {
 			    }
 			    std::vector<YouTubeChannelSuccinct> collab_list;
 			    if (collab_take(collab_list)) {
+				    collab_page = 0;
 				    show_collab_channels(collab_list);
 			    } else if (collab_refresh_request) { // rebuild the open screen so the subscribed marks are up to date
 				    collab_refresh_request = false;

@@ -1,5 +1,4 @@
 Devbuild notes
 
-- Channels: the Podcasts, Courses and Releases tabs of a channel (when it has them) now appear inside the Playlists tab as extra categories.
-- Channel cards: the name and the lines are cut to fit inside the card, and the rounded corners were removed from them (they could draw outside the list).
-- Comments: writing a comment or reply no longer needs the comments tab to be opened first, and when a comment or chat message fails a screen shows the whole reason (Why it failed) so it can be reported.
+- Collaboration screen: the channels are now three per page with a More button (no scrolling), so the cards no longer draw outside the popup.
+- Comments: YouTube refused the Data API for comments (insufficient scopes: the Studio login cannot get that permission), so it is no longer tried after the first refusal. The old way now also works without opening the comments tab, and a failure shows both reasons.
