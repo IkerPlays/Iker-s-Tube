@@ -1,6 +1,8 @@
 // clang-format off
 #include "data_io/backup.hpp"
 #include "headers.hpp"
+#include "data_io/watch_later.hpp"
+#include "data_io/favorites.hpp"
 #include "util/result_filter.hpp"
 #include <dirent.h>
 #include <functional>
@@ -1414,6 +1416,42 @@ void Sem_init(void) {
 							bool ok = report_create();
 							toast_view
 								->set_text((std::function<std::string ()>) [ok] () { return ok ? std::string("sdmc:/3ds/IkersTube/report.txt") : tr("Could not write the report", "No se pudo escribir el informe"); })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 150;
+							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Export lists as text files", "Exportar listas como texto"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							// favorites, watch later and history as "title - link" lines, to read or share from a computer
+							int files = 0;
+							auto write = [&] (const char *name, const std::vector<std::pair<std::string, std::string>> &items) {
+								if (items.empty()) return;
+								FILE *f = fopen((std::string("sdmc:/3ds/IkersTube/") + name).c_str(), "w");
+								if (!f) return;
+								for (auto &item : items) fprintf(f, "%s - https://www.youtube.com/watch?v=%s\n", item.second.c_str(), item.first.c_str());
+								fclose(f);
+								files++;
+							};
+							std::vector<std::pair<std::string, std::string>> items;
+							for (auto &v : favorites_get()) items.push_back({v.id, v.title});
+							write("export_favorites.txt", items);
+							items.clear();
+							for (auto &v : watch_later_get()) items.push_back({v.id, v.title});
+							write("export_watch_later.txt", items);
+							items.clear();
+							for (auto &v : get_valid_watch_history()) items.push_back({v.id, v.title});
+							write("export_history.txt", items);
+							toast_view
+								->set_text((std::function<std::string ()>) [files] () { return tr("Files written: ", "Archivos escritos: ") + std::to_string(files) + " (3ds/IkersTube/export_*.txt)"; })
 								->set_x_alignment(TextView::XAlign::CENTER)
 								->set_text_offset(0, -1)
 								->set_get_text_color([] () { return (u32) -1; })

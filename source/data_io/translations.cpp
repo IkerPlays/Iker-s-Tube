@@ -580,6 +580,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Save the queue as a list", {"Enregistrer la file comme liste", "Warteschlange als Liste speichern", "Salva la coda come lista", "Salvar a fila como lista", "キューをリストとして保存"}},
 	    {"List saved: ", {"Liste enregistrée : ", "Liste gespeichert: ", "Lista salvata: ", "Lista salva: ", "リストを保存： "}},
 	    {"Looking for audio tracks...", {"Recherche des pistes audio...", "Tonspuren werden gesucht...", "Ricerca delle tracce audio...", "Procurando faixas de áudio...", "音声トラックを検索中..."}},
+	    {"Export lists as text files", {"Exporter les listes en texte", "Listen als Textdateien exportieren", "Esporta le liste come testo", "Exportar listas como texto", "リストをテキストで書き出す"}},
+	    {"Files written: ", {"Fichiers écrits : ", "Dateien geschrieben: ", "File scritti: ", "Arquivos gravados: ", "書き出したファイル： "}},
 	};
 	return table;
 }
