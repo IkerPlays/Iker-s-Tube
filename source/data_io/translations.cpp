@@ -550,6 +550,14 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Saving the list...", {"Enregistrement de la liste...", "Liste wird gespeichert...", "Salvataggio della lista...", "Salvando a lista...", "リストを保存中..."}},
 	    {"Add to my YouTube playlist", {"Ajouter à ma liste YouTube", "Zu meiner YouTube-Playlist hinzufügen", "Aggiungi alla mia playlist YouTube", "Adicionar à minha lista do YouTube", "自分のYouTubeリストに追加"}},
 	    {"Add to a playlist", {"Ajouter à une liste", "Zu einer Playlist hinzufügen", "Aggiungi a una playlist", "Adicionar a uma lista", "リストに追加"}},
+	    {"Show this channel in lists", {"Afficher cette chaîne dans les listes", "Diesen Kanal in Listen anzeigen", "Mostra questo canale nelle liste", "Mostrar este canal nas listas", "このチャンネルをリストに表示"}},
+	    {"Hide this channel in lists", {"Masquer cette chaîne dans les listes", "Diesen Kanal in Listen ausblenden", "Nascondi questo canale nelle liste", "Ocultar este canal nas listas", "このチャンネルをリストで非表示"}},
+	    {"Channel shown again (reload the list)", {"Chaîne de nouveau visible (rechargez la liste)", "Kanal wieder sichtbar (Liste neu laden)", "Canale di nuovo visibile (ricarica la lista)", "Canal visível de novo (recarregue a lista)", "チャンネルを再表示（リストを再読み込み）"}},
+	    {"Channel hidden (it applies to lists loaded from now on)", {"Chaîne masquée (pour les listes chargées à partir de maintenant)", "Kanal ausgeblendet (gilt für ab jetzt geladene Listen)", "Canale nascosto (vale per le liste caricate da ora)", "Canal oculto (vale para as listas carregadas a partir de agora)", "チャンネルを非表示（今後読み込むリストに適用）"}},
+	    {"Show in lists again", {"Afficher de nouveau dans les listes", "Wieder in Listen anzeigen", "Mostra di nuovo nelle liste", "Mostrar de novo nas listas", "リストに再表示"}},
+	    {"Hide in lists", {"Masquer dans les listes", "In Listen ausblenden", "Nascondi nelle liste", "Ocultar nas listas", "リストで非表示"}},
+	    {"Hidden channels: ", {"Chaînes masquées : ", "Ausgeblendete Kanäle: ", "Canali nascosti: ", "Canais ocultos: ", "非表示チャンネル： "}},
+	    {" (tap to show all)", {" (touchez pour tout afficher)", " (antippen, um alle zu zeigen)", " (tocca per mostrarli tutti)", " (toque para mostrar todos)", " （タップで全て表示）"}},
 	};
 	return table;
 }

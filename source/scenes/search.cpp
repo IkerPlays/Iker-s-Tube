@@ -466,7 +466,7 @@ static View *result_item_to_view(const YouTubeSuccinctItem &item) {
 		if (item.type == YouTubeSuccinctItem::VIDEO) {
 			cur_view->set_auxiliary_lines({item.video.views_str, item.video.publish_date});
 			cur_view->set_bottom_right_overlay(item.video.duration_text);
-			cur_view->set_queue_item(item.get_url(), item.get_name());
+			cur_view->set_queue_item(item.get_url(), item.get_name(), item.video.author);
 		} else if (item.type == YouTubeSuccinctItem::PLAYLIST) {
 			cur_view->set_auxiliary_lines({item.playlist.video_count_str});
 		}
@@ -546,7 +546,7 @@ static void load_search_results(void *) {
 	// the Shorts / watched videos that the settings hide
 	if (!feed) {
 		new_result.results.erase(std::remove_if(new_result.results.begin(), new_result.results.end(),
-		                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url); }),
+		                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url, item.video.author); }),
 		                         new_result.results.end());
 	} else { // Shorts feed : play them all in a shuffled loop once you open one
 		std::vector<std::pair<std::string, std::string>> items;
@@ -612,7 +612,7 @@ static void load_more_search_results(void *) {
 	{ // hide what the settings say, only in the new part
 		size_t old_size = std::min(search_result.results.size(), new_result.results.size());
 		new_result.results.erase(std::remove_if(new_result.results.begin() + old_size, new_result.results.end(),
-		                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url); }),
+		                                        [](const YouTubeSuccinctItem &item) { return item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url, item.video.author); }),
 		                         new_result.results.end());
 	}
 

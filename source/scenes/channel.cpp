@@ -300,7 +300,7 @@ void Channel_init(void) {
 	        ->set_thumbnail_url(video.thumbnail_url)
 	        ->set_auxiliary_lines({video.publish_date, video.views_str})
 	        ->set_bottom_right_overlay(video.duration_text)
-	        ->set_queue_item(video.url, video.title)
+	        ->set_queue_item(video.url, video.title, video.author)
 	        ->auto_grid(video.title)
 	        ->set_get_background_color(View::STANDARD_BACKGROUND)
 	        ->set_on_view_released([video](View &) { clicked_url = video.url; });

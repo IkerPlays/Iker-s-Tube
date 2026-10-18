@@ -610,7 +610,7 @@ static SuccinctVideoView *convert_video_to_view(const YouTubeVideoSuccinct &vide
 	res->set_title_lines(truncate_str(video.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
 	res->set_auxiliary_lines({video.views_str, video.publish_date});
 	res->set_bottom_right_overlay(video.duration_text);
-	res->set_queue_item(video.url, video.title);
+	res->set_queue_item(video.url, video.title, video.author);
 	res->set_thumbnail_url(video.thumbnail_url);
 	res->auto_grid(video.title);
 	res->set_get_background_color(View::STANDARD_BACKGROUND);
@@ -679,7 +679,7 @@ static void load_home_page(void *) {
 	auto results = youtube_load_home_page();
 	remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	results.videos.erase(std::remove_if(results.videos.begin(), results.videos.end(),
-	                                    [](const YouTubeVideoSuccinct &video) { return result_video_hidden(video.url); }),
+	                                    [](const YouTubeVideoSuccinct &video) { return result_video_hidden(video.url, video.author); }),
 	                     results.videos.end());
 
 	logger.info("home", "truncate/view creation start");
@@ -723,7 +723,7 @@ static void load_home_page_more(void *) {
 	{
 		size_t old_size = std::min(home_info.videos.size(), new_result.videos.size());
 		new_result.videos.erase(std::remove_if(new_result.videos.begin() + old_size, new_result.videos.end(),
-		                                       [](const YouTubeVideoSuccinct &video) { return result_video_hidden(video.url); }),
+		                                       [](const YouTubeVideoSuccinct &video) { return result_video_hidden(video.url, video.author); }),
 		                        new_result.videos.end());
 	}
 
@@ -843,14 +843,14 @@ static void load_subscription_feed(void *) {
 	}
 	for (auto &i : loaded_videos) {
 		for (auto video : i.second) {
-			if (result_video_hidden(video.url)) continue; // the settings hide Shorts / watched videos
+			if (result_video_hidden(video.url, video.author)) continue; // the settings hide Shorts / watched videos
 			SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 
 			cur_view->set_title_lines(truncate_str(video.title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
 			cur_view->set_thumbnail_url(video.thumbnail_url);
 			cur_view->set_auxiliary_lines({video.publish_date, video.views_str});
 			cur_view->set_bottom_right_overlay(video.duration_text);
-			cur_view->set_queue_item(video.url, video.title);
+			cur_view->set_queue_item(video.url, video.title, video.author);
 			cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
 			cur_view->set_on_view_released([video](View &view) {
 				clicked_url = video.url;

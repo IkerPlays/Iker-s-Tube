@@ -1529,7 +1529,7 @@ debug_info_view =
 	    if (item.type == YouTubeSuccinctItem::VIDEO) {
 		    cur_view->set_auxiliary_lines({item.video.author});
 		    cur_view->set_bottom_right_overlay(item.video.duration_text);
-		    cur_view->set_queue_item(item.get_url(), item.get_name());
+		    cur_view->set_queue_item(item.get_url(), item.get_name(), item.video.author);
 	    } else if (item.type == YouTubeSuccinctItem::PLAYLIST) {
 		    cur_view->set_auxiliary_lines({item.playlist.video_count_str});
 	    }

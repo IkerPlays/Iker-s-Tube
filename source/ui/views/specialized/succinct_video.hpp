@@ -58,10 +58,10 @@ struct SuccinctVideoView : public FixedSizeView {
 		return this;
 	}
 	// long press : add to (or remove from) the "play next" queue
-	SuccinctVideoView *set_queue_item(const std::string &url, const std::string &title) {
+	SuccinctVideoView *set_queue_item(const std::string &url, const std::string &title, const std::string &author = "") {
 		this->queue_url = url;
-		add_on_long_hold(35, [url, title](View &view) {
-			overlay_show_video_menu(url, title, ""); // the actions of the video (queue, watch later, favorites, save offline...)
+		add_on_long_hold(35, [url, title, author](View &view) {
+			overlay_show_video_menu(url, title, author); // the actions of the video (queue, watch later, favorites, save offline...)
 			view.reset_holding_status(); // the release must not open the video
 			var_need_refresh = true;
 		});

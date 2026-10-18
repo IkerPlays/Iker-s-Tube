@@ -10,6 +10,7 @@
 #include "ui/notice.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
+#include "util/result_filter.hpp"
 #include "data_io/history.hpp"
 #include "data_io/subscription_util.hpp"
 #include "scenes/account_tasks.hpp"
@@ -123,6 +124,13 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 			account_playlists_async(id);
 		});
 	}
+	if (author != "") { // hide / show the videos of this channel in the lists
+		bool hidden = hidden_channel_is(author);
+		option(hidden ? tr("Show this channel in lists", "Mostrar este canal en las listas") : tr("Hide this channel in lists", "Ocultar este canal en las listas"), [author, hidden]() {
+			hidden_channel_set(author, !hidden);
+			notice_show(hidden ? tr("Channel shown again (reload the list)", "Canal visible otra vez (recarga la lista)") : tr("Channel hidden (it applies to lists loaded from now on)", "Canal oculto (vale para las listas que cargues desde ahora)"));
+		});
+	}
 	option(tr("Search similar", "Buscar parecidos"), [title]() {
 		global_intent.next_scene = SceneType::SEARCH;
 		global_intent.arg = "q:" + title;
@@ -219,6 +227,11 @@ void overlay_show_channel_menu(const std::string &id, const std::string &name, c
 		}
 		if (OAuth::is_authenticated()) account_subscribe_async(id, !subscribed);
 		notice_show(subscribed ? tr("Unsubscribed", "Suscripción quitada") : tr("Subscribed", "Suscrito"));
+	}});
+	bool hidden = hidden_channel_is(name);
+	options.push_back({hidden ? tr("Show in lists again", "Mostrar en las listas") : tr("Hide in lists", "Ocultar en las listas"), [name, hidden]() {
+		hidden_channel_set(name, !hidden);
+		notice_show(hidden ? tr("Channel shown again (reload the list)", "Canal visible otra vez (recarga la lista)") : tr("Channel hidden (it applies to lists loaded from now on)", "Canal oculto (vale para las listas que cargues desde ahora)"));
 	}});
 	if (OAuth::is_authenticated()) {
 		options.push_back({tr("Bell: all notifications", "Campana: todas"), [id]() { account_bell_async(id, 0); }});

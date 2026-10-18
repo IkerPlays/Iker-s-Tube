@@ -1,6 +1,7 @@
 // clang-format off
 #include "data_io/backup.hpp"
 #include "headers.hpp"
+#include "util/result_filter.hpp"
 #include <dirent.h>
 #include <functional>
 #include <sstream>
@@ -1420,6 +1421,15 @@ void Sem_init(void) {
 								->set_get_background_color([] (const View &) { return 0x50000000; })
 								->set_is_visible(true);
 							toast_frames_left = 150;
+							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Hidden channels: ", "Canales ocultos: ") + std::to_string(hidden_channel_count()) + tr(" (tap to show all)", " (toca para mostrar todos)"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							hidden_channels_clear();
 							var_need_refresh = true;
 						}),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
