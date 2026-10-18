@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/misc_tasks.hpp"
 #include "scenes/studio.hpp"
 #include "scenes/video_player.hpp"
 #include "data_io/string_resource.hpp"
@@ -233,6 +234,8 @@ static void start_upload(const std::string &resume_path = "", const std::string 
 	                     : new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_tags, "", form_short, publish_options[form_publish],
 	                                  form_playlist >= 0 && form_playlist < (int)form_lists.size() ? form_lists[form_playlist].id : std::string()};
 	for (auto &c : job->privacy) c = tolower(c);
+	var_studio_category = form_category;
+	misc_tasks_request(TASK_SAVE_SETTINGS);
 	upload_running = true;
 	upload_percent = 0;
 	LightLock_Lock(&state_lock);
@@ -513,7 +516,7 @@ static std::vector<View *> build_pick() {
 			if (form_title.size() > 95) form_title.resize(95);
 			form_desc = "";
 			form_privacy = 0;
-			form_category = 0;
+			form_category = var_studio_category < category_count ? var_studio_category : 0; // the one of the last upload
 			form_publish = 0;
 			form_playlist = -1;
 			form_tags = "";

@@ -33,6 +33,7 @@ extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
+extern int var_studio_category; // the category of the last Studio upload (index of the list of the form)
 extern int var_autoplay_skip_watched; // 1 : autoplay picks the first suggestion you have not watched yet
 extern int var_download_quality; // saved videos : 0 automatic (360p on the New 3DS, 240p on the old one), 1 : 144p, 2 : 240p, 3 : 360p
 extern int var_auto_chat; // 1 : the chat opens by itself when a live stream starts playing
