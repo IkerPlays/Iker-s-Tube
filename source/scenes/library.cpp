@@ -235,6 +235,25 @@ static void start_playlist(const UserPlaylist &playlist, bool shuffle) {
 	clicked_url = items[0].first;
 }
 
+// Play all / Shuffle / Save all (audio) for a list of videos
+static void add_list_actions(VerticalListView *list, const std::vector<FavoriteVideo> &videos) {
+	if (videos.size() < 2) return;
+	UserPlaylist pl;
+	pl.name = "";
+	pl.videos = videos;
+	list->views.push_back((new HorizontalListView(0, 0, 22))
+	                          ->set_views({make_button(tr("Play all", "Reproducir todo"), 106, [pl]() { start_playlist(pl, false); }),
+	                                       make_button(tr("Shuffle", "Aleatorio"), 106, [pl]() { start_playlist(pl, true); }),
+	                                       make_button(tr("Save audio", "Guardar audio"), 108, [pl]() {
+		                                       int n = 0;
+		                                       for (auto &v : pl.videos) {
+			                                       if (n++ >= 30) break; // the first 30 : the queue of downloads stays manageable
+			                                       offline_save_by_id_async(v.id, v.title, v.author, false);
+		                                       }
+		                                       notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(std::min<int>(30, pl.videos.size())) + tr(" videos", " vídeos"));
+	                                       })}));
+}
+
 void Library_init(void) {
 	logger.info("library/init", "Initializing...");
 	srand((unsigned)osGetTime());
@@ -332,6 +351,26 @@ static void build_queue(VerticalListView *list) {
 			                   play_queue_clear();
 			                   rebuild_request = true;
 		                   }));
+		list->views.insert(list->views.begin(), (new HorizontalListView(0, 0, 22))
+		                                             ->set_views({make_button(tr("Shuffle queue", "Mezclar cola"), 160, []() {
+			                                                          std::vector<std::pair<std::string, std::string>> items;
+			                                                          for (int i = 0; i < play_queue_size(); i++) {
+				                                                          std::string url, title;
+				                                                          if (play_queue_get(i, url, title)) items.push_back({url, title});
+			                                                          }
+			                                                          for (size_t i = items.size(); i > 1; i--) std::swap(items[i - 1], items[rand() % i]);
+			                                                          play_queue_clear();
+			                                                          for (auto &item : items) play_queue_toggle(item.first, item.second);
+			                                                          rebuild_request = true;
+		                                                          }),
+		                                                          make_button(tr("Save all audio", "Guardar todo el audio"), 160, []() {
+			                                                          int n = 0;
+			                                                          for (int i = 0; i < play_queue_size() && n < 30; i++, n++) {
+				                                                          std::string url, title;
+				                                                          if (play_queue_get(i, url, title)) offline_save_by_id_async(youtube_get_video_id_by_url(url), title, "", false);
+			                                                          }
+			                                                          notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(n) + tr(" videos", " vídeos"));
+		                                                          })}));
 		if (OAuth::is_authenticated()) {
 			list->views.insert(list->views.begin(), make_button(tr("Save the queue to my YouTube", "Guardar la cola en mi YouTube"), 320, []() {
 				                   std::string name;
@@ -352,6 +391,7 @@ static void build_queue(VerticalListView *list) {
 static void build_favorites(VerticalListView *list) {
 	auto favs = filter_and_sort(favorites_get());
 	add_sort_filter_row(list);
+	add_list_actions(list, favs);
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, (v.tag != "" ? "[" + v.tag + "] " : std::string()) + v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
@@ -430,6 +470,7 @@ static void build_liked(VerticalListView *list) {
 		                                  rebuild_request = true;
 	                                  }));
 	add_sort_filter_row(list);
+	add_list_actions(list, videos);
 	for (auto &v : videos) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
@@ -460,6 +501,7 @@ static void build_watch_later(VerticalListView *list) {
 	}
 	auto favs = filter_and_sort(watch_later_get());
 	add_sort_filter_row(list);
+	add_list_actions(list, favs);
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);

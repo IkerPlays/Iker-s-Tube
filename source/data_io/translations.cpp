@@ -466,6 +466,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"QR code of this channel", {"Code QR de cette chaîne", "QR-Code dieses Kanals", "Codice QR di questo canale", "Código QR deste canal", "このチャンネルのQRコード"}},
 	    {"Showing: YouTube history (tap for liked)", {"Affiché : historique YouTube (touchez pour les j'aime)", "Zeigt: YouTube-Verlauf (antippen für Gefällt mir)", "Mostra: cronologia YouTube (tocca per i piaciuti)", "Mostrando: histórico do YouTube (toque para curtidos)", "表示中：YouTube履歴（タップで高評価）"}},
 	    {"Showing: liked (tap for YouTube history)", {"Affiché : j'aime (touchez pour l'historique YouTube)", "Zeigt: Gefällt mir (antippen für YouTube-Verlauf)", "Mostra: piaciuti (tocca per la cronologia YouTube)", "Mostrando: curtidos (toque para o histórico do YouTube)", "表示中：高評価（タップでYouTube履歴）"}},
+	    {"Saving the audio of ", {"Enregistrement de l'audio de ", "Audio wird gespeichert von ", "Salvataggio dell'audio di ", "Salvando o áudio de ", "音声を保存中："}},
+	    {" videos", {" vidéos", " Videos", " video", " vídeos", " 本"}},
+	    {"Shuffle queue", {"Mélanger la file", "Warteschlange mischen", "Mescola la coda", "Embaralhar a fila", "キューをシャッフル"}},
+	    {"Save all audio", {"Enregistrer tout l'audio", "Alle Audios speichern", "Salva tutto l'audio", "Salvar todo o áudio", "音声をすべて保存"}},
 	};
 	return table;
 }

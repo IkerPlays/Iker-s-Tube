@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Replying to a comment: when no usable comment section is found, the reply is now sent with params built from the video id and the comment id (three layouts are tried, with the TV and Android clients). If YouTube refuses them, its answer is shown in the failure screen.
+- Library: Favorites, Watch later and Liked have Play all, Shuffle and Save audio (the first 30) buttons at the top. The queue has Shuffle queue and Save all audio.
