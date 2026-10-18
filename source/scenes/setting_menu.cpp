@@ -1263,6 +1263,21 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Explore shortcuts
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Shown", "Visibles"); },
+							(std::function<std::string ()>) []() { return tr("Hidden", "Ocultos"); }
+						}, var_hide_explore)
+						->set_title([](const SelectorView &) { return tr("Explore shortcuts in Search", "Atajos de Explorar en Buscar"); })
+						->set_info([](const SelectorView &) { return tr("Applies the next time the Search screen opens.", "Se aplica la próxima vez que se abra Buscar."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_hide_explore != view.selected_button) {
+								var_hide_explore = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Studio tab
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

@@ -192,7 +192,7 @@ static void show_search_history() {
 	static const char *explore_queries[] = {"music 2026 official video", "trending today", "gaming highlights",
 	                                        "live now", "new movie trailers", "world news today", "#shorts", "how it works explained", "funny moments",
 	                                        "sports highlights", "science explained", "easy recipes", "tech reviews", "travel vlog", "podcast full episode", "kids songs and cartoons", "live concert full"};
-	for (int i = 0; i < 17; i++) {
+	for (int i = 0; i < (var_hide_explore ? 0 : 17); i++) { // (a setting hides the shortcuts)
 		std::string query = explore_queries[i];
 		bool feed = i == 6; // Shorts
 		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))

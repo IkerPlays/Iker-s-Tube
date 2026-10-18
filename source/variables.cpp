@@ -31,6 +31,7 @@ int var_auto_chat = 0;
 int var_download_quality = 0;
 int var_autoplay_skip_watched = 0;
 int var_studio_category = 0;
+int var_hide_explore = 0;
 bool var_hide_watched = false;
 bool var_welcome_done = false;
 int var_custom_hue = 200;
