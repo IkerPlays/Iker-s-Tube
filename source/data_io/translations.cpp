@@ -97,6 +97,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Top", {"Populaires", "Beliebt", "Popolari", "Populares", "人気"}},
 	    {"Newest", {"Récents", "Neueste", "Recenti", "Recentes", "新しい順"}},
 	    {"Chap >>", {"Chap >>", "Kap >>", "Cap >>", "Cap >>", "次章 >>"}},
+	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
 	    {"+Mark", {"+Marque", "+Marke", "+Segn.", "+Marca", "+しおり"}},

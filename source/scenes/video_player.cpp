@@ -2043,6 +2043,15 @@ debug_info_view =
 					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
 					                           var_need_refresh = true;
 				                           }),
+				                 make_tool([]() { return tr("<< Chap", "<< Cap"); }, 60,
+				                           [is_current]() {
+					                           if (!is_current()) return;
+					                           double target = 0;
+					                           for (auto &chapter : current_chapters) {
+						                           if (chapter.first < vid_current_pos - 3) target = chapter.first;
+					                           }
+					                           send_seek_request_wo_lock(target);
+				                           }),
 				                 make_tool([]() { return tr("Chap >>", "Cap >>"); }, 60,
 				                           [is_current]() {
 					                           if (!is_current()) return;
