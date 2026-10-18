@@ -309,6 +309,12 @@ static void draw_nav_bar() {
 		if (i == 3 && offline_download_running()) { // a download is running : green dot on Downloads
 			Draw_round_rect(cx + 8, cy - 8, 6, 6, 3, 0xFF50C878);
 		}
+		if (i == 2 && play_queue_size() > 0) { // the number of videos in the queue, on Library
+			std::string n = std::to_string(std::min(99, play_queue_size()));
+			float w = std::max(10.0f, Draw_get_width(n, 0.4) + 6);
+			Draw_round_rect(cx + 6, cy - 9, w, 10, 5, 0xFF3B3BE6);
+			Draw_x_centered(n, cx + 6, cx + 6 + w, cy - 10, 0.4, 0.4, 0xFFFFFFFF);
+		}
 		Draw_x_centered(labels[i], x0, x1, nav_top + 19, 0.4, 0.4, sel ? DEFAULT_TEXT_COLOR : color);
 	}
 }
