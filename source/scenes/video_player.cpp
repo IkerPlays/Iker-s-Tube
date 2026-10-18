@@ -323,6 +323,9 @@ static void caption_lang_remember(const std::string &id) {
 }
 
 // quick subtitles tool : off -> each subtitle language of the video -> off
+namespace youtube_parser {
+extern std::string language_code;
+}
 static std::string cc_base, cc_trans, cc_video_id;
 static int cc_index = -1;
 static std::pair<std::string *, std::string *> cc_arg = {&cc_base, &cc_trans};
@@ -2050,6 +2053,7 @@ debug_info_view =
 				                 make_tool(
 				                     []() {
 					                     if (cc_video_id != cur_video_info.id) cc_index = -1;
+					                     if (cc_index > 0 && cc_index == (int)cur_video_info.caption_base_languages.size()) return std::string("CC >") + youtube_parser::language_code;
 					                     if (cc_index < 0 || cc_index >= (int)cur_video_info.caption_base_languages.size())
 						                     return std::string("CC");
 					                     return std::string("CC ") + cur_video_info.caption_base_languages[cc_index].id;
@@ -2067,6 +2071,19 @@ debug_info_view =
 						                     return;
 					                     }
 					                     cc_index++;
+					                     if (cc_index == n) { // last step : a translatable track translated to the app language
+						                     bool found = false;
+						                     for (auto &t : cur_video_info.caption_translation_languages) found |= t.id == youtube_parser::language_code;
+						                     for (int k = 0; found && k < n; k++) {
+							                     if (!cur_video_info.caption_base_languages[k].is_translatable) continue;
+							                     cc_base = cur_video_info.caption_base_languages[k].id;
+							                     cc_trans = youtube_parser::language_code;
+							                     notice_show(tr("Subtitles translated: ", "Subtítulos traducidos: ") + youtube_parser::language_code);
+							                     queue_async_task(load_caption, &cc_arg);
+							                     return;
+						                     }
+						                     cc_index++;
+					                     }
 					                     if (cc_index >= n) {
 						                     cc_index = -1;
 						                     caption_overlay_view->set_is_visible(false);

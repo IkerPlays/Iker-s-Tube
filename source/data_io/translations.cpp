@@ -103,6 +103,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Subtitles", {"Sous-titres", "Untertitel", "Sottotitoli", "Legendas", "字幕"}},
 	    {"Video QR", {"QR vidéo", "Video-QR", "QR del video", "QR do vídeo", "動画のQR"}},
 	    {"Bell (tap to change)", {"Cloche (toucher pour changer)", "Glocke (zum Ändern tippen)", "Campanella (tocca per cambiare)", "Sino (toque para mudar)", "通知ベル（タップで変更）"}},
+	    {"Subtitles translated: ", {"Sous-titres traduits : ", "Untertitel übersetzt: ", "Sottotitoli tradotti: ", "Legendas traduzidas: ", "字幕の翻訳: "}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
