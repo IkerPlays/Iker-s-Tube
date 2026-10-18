@@ -150,9 +150,14 @@ static const struct {
                       {"Este año", "EgQIBRAB"},
                       {"Orden: fecha", "CAI="},
                       {"Orden: visitas", "CAM="},
-                      {"En HD", "EgIgAQ=="}};
+                      {"En HD", "EgIgAQ=="},
+                      {"Con subtítulos (CC)", "EgIoAQ=="},
+                      {"Creative Commons", "EgIwAQ=="},
+                      {"En 4K", "EgJwAQ=="},
+                      {"En HDR", "EgPIAQE="},
+                      {"360 grados", "EgJ4AQ=="}};
 static std::string search_filter_name(int i) {
-	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Long (> 20 min)", "Live now", "Playlists", "Channels", "Last hour", "This year", "Sort: date", "Sort: views", "HD"};
+	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Long (> 20 min)", "Live now", "Playlists", "Channels", "Last hour", "This year", "Sort: date", "Sort: views", "HD", "With subtitles (CC)", "Creative Commons", "4K", "HDR", "360 degrees"};
 	return tr(en[i], search_filters[i].name);
 }
 static int search_filter_index = 0;
