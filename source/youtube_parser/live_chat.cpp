@@ -189,7 +189,7 @@ void live_chat_open(const std::string &video_id) {
 	LightLock_Unlock(&chat_lock);
 	if (same) return;
 	live_chat_close();
-	while (chat_thread_running) svcSleepThread(50000000LL); // the old thread is ending
+	// (an old thread that is still inside a network request ends by itself : its generation no longer matches)
 	LightLock_Lock(&chat_lock);
 	messages.clear();
 	chat_status = tr("Loading the chat...", "Cargando el chat...");
