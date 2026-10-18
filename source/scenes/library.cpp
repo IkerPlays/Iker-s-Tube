@@ -362,6 +362,31 @@ static void build_queue(VerticalListView *list) {
 			                   play_queue_clear();
 			                   rebuild_request = true;
 		                   }));
+		list->views.insert(list->views.begin(), make_button(tr("Save the queue as a list", "Guardar la cola como lista"), 320, []() {
+			                   pending_action = []() {
+				                   std::string name;
+				                   if (!ask_text(tr("Playlist name", "Nombre de la lista").c_str(), name)) return;
+				                   if (!playlist_create(name)) {
+					                   notice_show(tr("That name is not valid or already exists", "Ese nombre no vale o ya existe"));
+					                   return;
+				                   }
+				                   int index = -1, added = 0;
+				                   auto all = playlists_get();
+				                   for (size_t k = 0; k < all.size(); k++) {
+					                   if (all[k].name == name) index = (int)k;
+				                   }
+				                   for (int i = 0; index >= 0 && i < play_queue_size(); i++) {
+					                   std::string url, title;
+					                   if (!play_queue_get(i, url, title)) continue;
+					                   FavoriteVideo v;
+					                   v.id = youtube_get_video_id_by_url(url);
+					                   v.title = title;
+					                   if (playlist_add(index, v)) added++;
+				                   }
+				                   notice_show(tr("List saved: ", "Lista guardada: ") + std::to_string(added));
+				                   rebuild_request = true;
+			                   };
+		                   }));
 		list->views.insert(list->views.begin(), make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
 			                   for (int i = play_queue_size() - 1; i >= 0; i--) {
 				                   std::string url, title;

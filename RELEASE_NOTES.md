@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Library, Playlists: long press a local list and choose Rename.
+- Library, Queue: Save the queue as a list creates a local playlist with the videos of the queue.
