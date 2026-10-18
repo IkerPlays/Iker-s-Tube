@@ -1178,6 +1178,21 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Studio tab
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Shown", "Visible"); },
+							(std::function<std::string ()>) []() { return tr("Hidden", "Oculta"); }
+						}, var_hide_studio)
+						->set_title([](const SelectorView &) { return tr("Studio tab on the Home screen", "Pestaña Studio en Inicio"); })
+						->set_info([](const SelectorView &) { return tr("Applies the next time the app starts.", "Se aplica la próxima vez que abras la app."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_hide_studio != view.selected_button) {
+								var_hide_studio = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Download window
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

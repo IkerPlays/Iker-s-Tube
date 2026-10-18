@@ -33,6 +33,7 @@ extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
+extern int var_hide_studio; // 1 : the Studio tab of the Home screen is not shown (takes effect when the app starts)
 extern int var_download_window; // 0 : downloads run any time, 1 : only at night (1:00 to 7:00 console time)
 extern int var_autoplay_delay; // 0..3 : 0 s, 3 s, 5 s, 10 s before the next video starts by itself
 extern bool var_tour_done;    // the first-use tour was shown

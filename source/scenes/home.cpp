@@ -266,12 +266,17 @@ void Home_init(void) {
 			                    ->set_lr_tab_switch_enabled(false);
 		}
 	}
+	std::vector<View *> main_tab_views = {home_tab_view, channels_tab_view, feed_tab_view};
+	std::vector<std::function<std::string()>> main_tab_texts = {[]() { return LOCALIZED(HOME); },
+	                                                            []() { return LOCALIZED(SUBSCRIBED_CHANNELS); },
+	                                                            []() { return LOCALIZED(NEW_VIDEOS); }};
+	if (!var_hide_studio) { // (the setting can hide the Studio tab)
+		main_tab_views.push_back(Studio_create_view());
+		main_tab_texts.push_back([]() { return std::string("Studio"); });
+	}
 	main_tab_view = (new TabView(0, 0, 320, CONTENT_Y_HIGH - TOP_HEIGHT))
-	                    ->set_views({home_tab_view, channels_tab_view, feed_tab_view, Studio_create_view()})
-	                    ->set_tab_texts<std::function<std::string()>>({[]() { return LOCALIZED(HOME); },
-	                                                                   []() { return LOCALIZED(SUBSCRIBED_CHANNELS); },
-	                                                                   []() { return LOCALIZED(NEW_VIDEOS); },
-	                                                                   []() { return std::string("Studio"); }});
+	                    ->set_views(main_tab_views)
+	                    ->set_tab_texts<std::function<std::string()>>(main_tab_texts);
 	main_view = (new VerticalListView(0, 0, 320))
 	                ->set_views({(new CustomView(0, 0, 320, 25))
 	                                 ->set_draw([](const CustomView &) { return Search_get_search_bar_view()->draw(); })

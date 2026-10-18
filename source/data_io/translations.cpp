@@ -454,6 +454,10 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Save the queue to my YouTube", {"Enregistrer la file sur mon YouTube", "Warteschlange in meinem YouTube speichern", "Salva la coda nel mio YouTube", "Salvar a fila no meu YouTube", "キューを自分のYouTubeに保存"}},
 	    {"Saved to YouTube: ", {"Enregistrée sur YouTube : ", "Auf YouTube gespeichert: ", "Salvata su YouTube: ", "Salva no YouTube: ", "YouTubeに保存："}},
 	    {"Saving the queue...", {"Enregistrement de la file...", "Warteschlange wird gespeichert...", "Salvataggio della coda...", "Salvando a fila...", "キューを保存中..."}},
+	    {"Shown", {"Affiché", "Sichtbar", "Visibile", "Visível", "表示"}},
+	    {"Hidden", {"Masqué", "Ausgeblendet", "Nascosto", "Oculto", "非表示"}},
+	    {"Studio tab on the Home screen", {"Onglet Studio sur l'accueil", "Studio-Tab auf dem Startbildschirm", "Scheda Studio nella Home", "Aba Studio na tela inicial", "ホームのStudioタブ"}},
+	    {"Applies the next time the app starts.", {"S'applique au prochain démarrage.", "Gilt beim nächsten Start der App.", "Si applica al prossimo avvio dell'app.", "Aplica-se na próxima vez que abrir o app.", "次回のアプリ起動時に反映されます。"}},
 	};
 	return table;
 }
