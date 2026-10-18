@@ -508,6 +508,13 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Adding it to the playlist...", {"Ajout à la liste...", "Wird zur Playlist hinzugefügt...", "Aggiunta alla playlist...", "Adicionando à lista...", "リストに追加中..."}},
 	    {" (could not add it to the playlist)", {" (impossible de l'ajouter à la liste)", " (konnte nicht zur Playlist hinzugefügt werden)", " (impossibile aggiungerlo alla playlist)", " (não foi possível adicionar à lista)", " （リストに追加できませんでした）"}},
 	    {"Change the description", {"Changer la description", "Beschreibung ändern", "Cambia la descrizione", "Mudar a descrição", "説明を変更"}},
+	    {"Live now", {"En direct", "Jetzt live", "In diretta", "Ao vivo agora", "ライブ中"}},
+	    {"Channels", {"Chaînes", "Kanäle", "Canali", "Canais", "チャンネル"}},
+	    {"Last hour", {"Dernière heure", "Letzte Stunde", "Ultima ora", "Última hora", "過去1時間"}},
+	    {"This year", {"Cette année", "Dieses Jahr", "Quest'anno", "Este ano", "今年"}},
+	    {"Sort: date", {"Tri : date", "Sortierung: Datum", "Ordine: data", "Ordem: data", "並べ替え：日付"}},
+	    {"Sort: views", {"Tri : vues", "Sortierung: Aufrufe", "Ordine: visualizzazioni", "Ordem: visualizações", "並べ替え：再生数"}},
+	    {"HD", {"HD", "HD", "HD", "HD", "HD"}},
 	};
 	return table;
 }

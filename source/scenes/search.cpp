@@ -141,9 +141,17 @@ static const struct {
                       {"Esta semana", "EgQIAxAB"},
                       {"Este mes", "EgQIBBAB"},
                       {"Cortos (< 4 min)", "EgQQARgB"},
-                      {"Largos (> 20 min)", "EgQQARgD"}};
+                      {"Largos (> 20 min)", "EgQQARgD"},
+                      {"En directo", "EgJAAQ=="},
+                      {"Listas", "EgIQAw=="},
+                      {"Canales", "EgIQAg=="},
+                      {"Última hora", "EgQIARAB"},
+                      {"Este año", "EgQIBRAB"},
+                      {"Orden: fecha", "CAI="},
+                      {"Orden: visitas", "CAM="},
+                      {"En HD", "EgIgAQ=="}};
 static std::string search_filter_name(int i) {
-	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Long (> 20 min)"};
+	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Long (> 20 min)", "Live now", "Playlists", "Channels", "Last hour", "This year", "Sort: date", "Sort: views", "HD"};
 	return tr(en[i], search_filters[i].name);
 }
 static int search_filter_index = 0;

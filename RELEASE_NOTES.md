@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Studio, Edit my uploads: new Change the description button for the selected video (it keeps the title, category and tags).
+- Search filters: new Live now, Playlists, Channels, Last hour, This year, Sort by date, Sort by views and HD (the Filter button cycles through them).

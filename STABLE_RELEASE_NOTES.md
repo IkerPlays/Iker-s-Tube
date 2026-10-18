@@ -39,6 +39,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Channel menu.** Long press a channel in the search results to subscribe or set the bell.
 - **Upload to a playlist.** The Studio upload form can add the new video to one of your playlists.
 - **Edit the description** of your uploads from Studio.
+- **More search filters.** Live now, Playlists, Channels, Last hour, This year, sort by date or views, and HD.
 
 ## Installing
 
