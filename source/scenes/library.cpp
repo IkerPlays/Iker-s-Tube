@@ -235,8 +235,29 @@ static void start_playlist(const UserPlaylist &playlist, bool shuffle) {
 	clicked_url = items[0].first;
 }
 
+// the queue as a private playlist of the YouTube account
+struct QueueSaveJob {
+	std::string name;
+	std::vector<std::string> ids;
+};
+static void save_queue_to_account_task(void *arg) {
+	QueueSaveJob *job = (QueueSaveJob *)arg;
+	std::string playlist_id;
+	if (!youtube_account_playlist_create(job->name, "PRIVATE", playlist_id) || playlist_id == "") {
+		notice_show(tr("Could not create the playlist", "No se pudo crear la lista") + std::string(" (") + youtube_account_last_error().substr(0, 50) + ")");
+		delete job;
+		return;
+	}
+	int added = 0;
+	for (auto &id : job->ids) {
+		if (youtube_account_playlist_edit(playlist_id, id, true)) added++;
+	}
+	notice_show(tr("Saved to YouTube: ", "Guardada en YouTube: ") + std::to_string(added) + "/" + std::to_string(job->ids.size()));
+	delete job;
+}
+
 // Play all / Shuffle / Save all (audio) for a list of videos
-static void add_list_actions(VerticalListView *list, const std::vector<FavoriteVideo> &videos) {
+static void add_list_actions(VerticalListView *list, const std::vector<FavoriteVideo> &videos, const std::string &youtube_name = "") {
 	if (videos.size() < 2) return;
 	UserPlaylist pl;
 	pl.name = "";
@@ -252,6 +273,17 @@ static void add_list_actions(VerticalListView *list, const std::vector<FavoriteV
 		                                       }
 		                                       notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(std::min<int>(30, pl.videos.size())) + tr(" videos", " vídeos"));
 	                                       })}));
+	if (youtube_name != "" && OAuth::is_authenticated()) { // this list as a private playlist of the account
+		list->views.push_back(make_button(tr("Save this list to my YouTube", "Guardar esta lista en mi YouTube"), 320, [pl, youtube_name]() {
+			QueueSaveJob *job = new QueueSaveJob();
+			job->name = youtube_name;
+			for (auto &v : pl.videos) {
+				if (job->ids.size() < 40) job->ids.push_back(v.id);
+			}
+			notice_show(tr("Saving the list...", "Guardando la lista..."));
+			queue_async_task(save_queue_to_account_task, job);
+		}));
+	}
 }
 
 void Library_init(void) {
@@ -291,27 +323,6 @@ void Library_resume(std::string arg) {
 	thread_suspend = false;
 	var_need_refresh = true;
 	rebuild_views();
-}
-
-// the queue as a private playlist of the YouTube account
-struct QueueSaveJob {
-	std::string name;
-	std::vector<std::string> ids;
-};
-static void save_queue_to_account_task(void *arg) {
-	QueueSaveJob *job = (QueueSaveJob *)arg;
-	std::string playlist_id;
-	if (!youtube_account_playlist_create(job->name, "PRIVATE", playlist_id) || playlist_id == "") {
-		notice_show(tr("Could not create the playlist", "No se pudo crear la lista") + std::string(" (") + youtube_account_last_error().substr(0, 50) + ")");
-		delete job;
-		return;
-	}
-	int added = 0;
-	for (auto &id : job->ids) {
-		if (youtube_account_playlist_edit(playlist_id, id, true)) added++;
-	}
-	notice_show(tr("Saved to YouTube: ", "Guardada en YouTube: ") + std::to_string(added) + "/" + std::to_string(job->ids.size()));
-	delete job;
 }
 
 static void build_queue(VerticalListView *list) {
@@ -391,7 +402,7 @@ static void build_queue(VerticalListView *list) {
 static void build_favorites(VerticalListView *list) {
 	auto favs = filter_and_sort(favorites_get());
 	add_sort_filter_row(list);
-	add_list_actions(list, favs);
+	add_list_actions(list, favs, "Favorites");
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, (v.tag != "" ? "[" + v.tag + "] " : std::string()) + v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);
