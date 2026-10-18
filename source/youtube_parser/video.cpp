@@ -18,58 +18,58 @@ bool youtube_audio_probe_request = false;
 int youtube_audio_probe_count = -1;
 
 // All the audio tracks (dubbed languages) of a video, asked to the ANDROID client (raw text scan of its answer)
+std::string youtube_audio_probe_info;
 static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std::string &video_id) {
 	std::vector<YouTubeVideoDetail::AudioTrack> out;
-	std::string body = R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID","clientVersion": "19.51.37","androidSdkVersion": 34}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})";
-	body = std::regex_replace(body, std::regex("%0"), language_code);
-	body = std::regex_replace(body, std::regex("%1"), country_code);
-	body = std::regex_replace(body, std::regex("%2"), video_id);
-	std::map<std::string, std::string> headers;
-	if (OAuth::is_authenticated()) headers["Authorization"] = "Bearer " + OAuth::get_access_token();
-	auto r = http_post_json(get_innertube_api_url("player"), body, headers);
-	if (!r.first) return out;
-	const std::string &json = r.second;
-	auto text_after = [&](size_t from, size_t to, const std::string &key) {
-		size_t p = json.find(key, from);
-		if (p == std::string::npos || p >= to) return std::string();
-		p += key.size();
-		std::string res;
-		for (; p < json.size() && json[p] != '"'; p++) {
-			if (json[p] == '\\' && p + 1 < json.size()) {
-				if (json.compare(p, 6, "\\u0026") == 0) {
-					res += '&';
-					p += 5;
-				} else {
-					res += json[++p];
-				}
-			} else {
-				res += json[p];
-			}
-		}
-		return res;
-	};
-	size_t pos = 0;
-	while ((pos = json.find("\"audioTrack\"", pos)) != std::string::npos) {
-		size_t obj_start = json.rfind("\"itag\"", pos);
-		size_t next = json.find("\"itag\"", pos);
-		size_t end = next == std::string::npos ? json.size() : next;
-		pos += 12;
-		if (obj_start == std::string::npos) continue;
-		std::string mime = text_after(obj_start, pos, "\"mimeType\":\"");
-		if (mime.find("audio") == std::string::npos || mime.find("mp4a") == std::string::npos) continue;
-		std::string track_id = text_after(pos - 12, end, "\"id\":\"");
-		std::string lang = track_id.substr(0, track_id.find('.'));
-		bool known = false;
-		for (auto &t : out) known = known || t.lang == lang;
-		if (lang == "" || known) continue;
-		YouTubeVideoDetail::AudioTrack t;
-		t.lang = lang;
-		t.name = text_after(pos - 12, end, "\"displayName\":\"");
-		t.url = text_after(obj_start, pos, "\"url\":\"");
-		t.selected = json.find("\"audioIsDefault\":true", pos - 12) < end;
-		if (t.name == "") t.name = lang;
-		out.push_back(t);
+	static const char *clients[2] = {
+	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID","clientVersion": "19.51.37","androidSdkVersion": 34}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})",
+	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android","osVersion": "14"}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})"};
+	youtube_audio_probe_info = "";
+	for (int c = 0; c < 2 && out.size() < 2; c++) {
+		out.clear();
+		std::string body = clients[c];
+		body = std::regex_replace(body, std::regex("%0"), language_code);
+		body = std::regex_replace(body, std::regex("%1"), country_code);
+		body = std::regex_replace(body, std::regex("%2"), video_id);
+		std::map<std::string, std::string> headers;
+		if (OAuth::is_authenticated()) headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		int formats = 0, audio = 0, with_track = 0, with_url = 0;
+		std::string status = "?";
+		access_and_parse_json(
+		    [&]() { return http_post_json(get_innertube_api_url("player"), body, headers); },
+		    [&](Document &, RJson data) {
+			    status = data["playabilityStatus"]["status"].string_value();
+			    for (auto f : data["streamingData"]["adaptiveFormats"].array_items()) {
+				    formats++;
+				    std::string mime = f["mimeType"].string_value();
+				    if (mime.find("audio") == std::string::npos) continue;
+				    audio++;
+				    if (!f.has_key("audioTrack")) continue;
+				    with_track++;
+				    std::string url = url_decode(f["url"].string_value());
+				    if (url != "") with_url++;
+				    if (mime.find("mp4a") == std::string::npos) continue;
+				    std::string id = f["audioTrack"]["id"].string_value();
+				    std::string lang = id.substr(0, id.find('.'));
+				    if (lang == "") continue;
+				    bool known = false;
+				    for (auto &t : out) known = known || t.lang == lang;
+				    if (known) continue;
+				    YouTubeVideoDetail::AudioTrack t;
+				    t.lang = lang;
+				    t.name = f["audioTrack"]["displayName"].string_value();
+				    if (t.name == "") t.name = lang;
+				    t.url = url;
+				    t.selected = f["audioTrack"]["audioIsDefault"].bool_value();
+				    out.push_back(t);
+			    }
+		    },
+		    [&](const std::string &error) { status = "error " + error.substr(0, 40); });
+		youtube_audio_probe_info += std::string(c ? " | VR " : "ANDROID ") + status + " formats=" + std::to_string(formats) +
+		                            " audio=" + std::to_string(audio) + " tracks=" + std::to_string(with_track) +
+		                            " urls=" + std::to_string(with_url);
 	}
+	logger.info("player", "audio probe : " + youtube_audio_probe_info);
 	return out;
 }
 

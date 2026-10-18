@@ -8,6 +8,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Bell on the channel page.** The Info tab of a channel changes its notification level.
 - **Translated subtitles.** The CC tool can translate the subtitles to the language of the app.
 - **Long videos.** New -5 min and +5 min tools.
+- **Audio tracks fix.** Dubbed audio tracks are now found by parsing the answer properly and trying two clients; report.txt shows what the probe saw.
 - **Chapters.** New "<< Chap" tool goes to the previous chapter.
 
 ## Installing

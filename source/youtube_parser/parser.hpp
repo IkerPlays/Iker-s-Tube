@@ -330,3 +330,4 @@ void youtube_audio_lang_set(const std::string &lang);
 // the Audio language tool asks the next video load to look for the dubbed audio tracks; the count it found (-1 : not asked)
 extern bool youtube_audio_probe_request;
 extern int youtube_audio_probe_count;
+extern std::string youtube_audio_probe_info; // what the last audio probe saw (for the report and the audio tool)

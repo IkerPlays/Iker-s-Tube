@@ -2193,7 +2193,7 @@ debug_info_view =
 					                                   auto &tracks = cur_video_info.audio_tracks;
 					                                   if (tracks.size() < 2) { // the video page found one : look for the others (the next load asks the ANDROID client)
 						                                   if (youtube_audio_probe_count == 0 || youtube_audio_probe_count == 1) {
-							                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio"));
+							                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio") + (youtube_audio_probe_info != "" ? " (" + youtube_audio_probe_info.substr(0, 90) + ")" : std::string()));
 							                                   youtube_audio_probe_count = -1;
 							                                   return;
 						                                   }

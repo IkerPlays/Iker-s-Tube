@@ -1,1 +1,1 @@
-Player: new -5 min and +5 min tools to move through long videos.
+Audio tracks: the probe that looks for dubbed audio tracks now reads the YouTube answer with the real JSON parser (the old text scan failed because YouTube writes spaces after the colons), tries the ANDROID client and then ANDROID_VR, and keeps a diagnostic line. If a video still shows one track, the notice and report.txt (audio probe line) say how many formats and tracks YouTube returned.
