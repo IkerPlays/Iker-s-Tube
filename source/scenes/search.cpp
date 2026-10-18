@@ -330,7 +330,47 @@ static void show_search_history() {
 	                                      }));
 }
 
+// Suggestions for the keyboard : YouTube's own autocomplete for every letter, fetched once in the background and put in
+// the dictionary of the keyboard (it offers them while you type).
+namespace youtube_parser {
+std::pair<bool, std::string> http_get(const std::string &url, std::map<std::string, std::string> header);
+}
+static LightLock suggest_lock;
+static std::vector<std::string> suggest_words;
+static bool suggest_started = false;
+static void suggest_thread(void *) {
+	for (char c = 'a'; c <= 'z'; c++) {
+		auto r = youtube_parser::http_get(std::string("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=") + c, {});
+		if (!r.first) {
+			if (c == 'a') return; // no connection : try again at the next start of the scene
+			continue;
+		}
+		size_t open = r.second.find('[', r.second.find('[') + 1);
+		if (open == std::string::npos) continue;
+		int taken = 0;
+		size_t p = open + 1;
+		while (taken < 3) {
+			size_t q1 = r.second.find('"', p);
+			if (q1 == std::string::npos) break;
+			size_t q2 = r.second.find('"', q1 + 1);
+			if (q2 == std::string::npos) break;
+			std::string w = r.second.substr(q1 + 1, q2 - q1 - 1);
+			p = q2 + 1;
+			if (w.find('\\') != std::string::npos || w.size() < 2 || w.size() > 38) continue;
+			LightLock_Lock(&suggest_lock);
+			suggest_words.push_back(w);
+			LightLock_Unlock(&suggest_lock);
+			taken++;
+		}
+	}
+}
+
 void Search_init(void) {
+	if (!suggest_started) {
+		suggest_started = true;
+		LightLock_Init(&suggest_lock);
+		if (!threadCreate(suggest_thread, NULL, 64 * 1024, 0x30, -1, true)) suggest_started = false;
+	}
 	logger.info("search/init", "Initializing...");
 	Result_with_string result;
 
@@ -728,10 +768,10 @@ bool Search_show_search_keyboard() {
 		swkbdSetButton(&keyboard, SWKBD_BUTTON_RIGHT, LOCALIZED(OK).c_str(), true);
 		swkbdSetInitialText(&keyboard, cur_search_word.c_str());
 		// Suggestions while typing : the keyboard dictionary holds the search history and some common terms.
-		static SwkbdDictWord dict_words[96];
+		static SwkbdDictWord dict_words[160];
 		int dict_count = 0;
 		auto add_dict_word = [&](const std::string &w) {
-			if (w.empty() || w.size() > 38 || dict_count >= 96) {
+			if (w.empty() || w.size() > 38 || dict_count >= 160) {
 				return;
 			}
 			swkbdSetDictWord(&dict_words[dict_count++], w.c_str(), w.c_str());
@@ -744,6 +784,11 @@ bool Search_show_search_keyboard() {
 		                                     "nintendo 3ds", "tutorial",       "news",    "full album", "soundtrack"};
 		for (auto t : common_terms) {
 			add_dict_word(t);
+		}
+		if (suggest_started) {
+			LightLock_Lock(&suggest_lock);
+			for (auto &w : suggest_words) add_dict_word(w);
+			LightLock_Unlock(&suggest_lock);
 		}
 		swkbdSetDictionary(&keyboard, dict_words, dict_count);
 		char search_word[257];

@@ -1,1 +1,1 @@
-Search: five new filters in the Filter button: with subtitles (CC), Creative Commons, 4K, HDR and 360 degrees.
+Search: the keyboard now offers YouTube autocomplete suggestions while you type (the app fetches the popular searches for every letter in the background and gives them to the keyboard dictionary).
