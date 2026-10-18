@@ -2120,7 +2120,12 @@ debug_info_view =
 						                                   var_need_refresh = true;
 					                                   }
 				                                   }),
-				                         make_tool([]() { return tr("Audio language", "Idioma del audio"); }, 110,
+				                         make_tool([]() {
+					                                   for (auto &t : cur_video_info.audio_tracks) {
+						                                   if (t.selected) return tr("Audio: ", "Audio: ") + t.name.substr(0, 16);
+					                                   }
+					                                   return tr("Audio language", "Idioma del audio");
+				                                   }, 130,
 				                                   []() {
 					                                   auto &tracks = cur_video_info.audio_tracks;
 					                                   if (tracks.size() < 2) { // the video page found one : look for the others (the next load asks the ANDROID client)
