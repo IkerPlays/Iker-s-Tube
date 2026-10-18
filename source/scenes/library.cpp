@@ -273,6 +273,9 @@ static void add_list_actions(VerticalListView *list, const std::vector<FavoriteV
 		                                       }
 		                                       notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(std::min<int>(30, pl.videos.size())) + tr(" videos", " vídeos"));
 	                                       })}));
+	list->views.push_back(make_button(tr("Surprise me", "Sorpréndeme"), 320, [pl]() { // a random video of the list
+		if (pl.videos.size()) clicked_url = youtube_get_video_url_by_id(pl.videos[rand() % pl.videos.size()].id);
+	}));
 	if (youtube_name != "" && OAuth::is_authenticated()) { // this list as a private playlist of the account
 		list->views.push_back(make_button(tr("Save this list to my YouTube", "Guardar esta lista en mi YouTube"), 320, [pl, youtube_name]() {
 			QueueSaveJob *job = new QueueSaveJob();
@@ -710,8 +713,21 @@ static void build_offline(VerticalListView *list) {
 	}
 	if (items.size() > 1) { // play everything that is saved, in order or shuffled
 		list->views.push_back((new HorizontalListView(0, 0, 22))
-		                          ->set_views({make_button(tr("Play all", "Reproducir todo"), 160, []() { play_offline(false); }),
-		                                       make_button(tr("Shuffle", "Aleatorio"), 160, []() { play_offline(true); })}));
+		                          ->set_views({make_button(tr("Play all", "Reproducir todo"), 106, []() { play_offline(false); }),
+		                                       make_button(tr("Shuffle", "Aleatorio"), 106, []() { play_offline(true); }),
+		                                       make_button(tr("Unwatched", "Sin ver"), 108, []() {
+			                                       std::vector<std::pair<std::string, std::string>> unwatched;
+			                                       for (auto &item : offline_list()) {
+				                                       if (!history_has_id(item.id)) unwatched.push_back({"offline:" + item.id, item.title});
+			                                       }
+			                                       if (unwatched.empty()) {
+				                                       notice_show(tr("You watched everything saved", "Has visto todo lo guardado"));
+				                                       return;
+			                                       }
+			                                       play_queue_clear();
+			                                       for (size_t k = 1; k < unwatched.size(); k++) play_queue_toggle(unwatched[k].first, unwatched[k].second);
+			                                       clicked_url = unwatched[0].first;
+		                                       })}));
 	}
 	{ // summary : how many items, how much room they use and how much is free on the SD card
 		u64 used = 0;

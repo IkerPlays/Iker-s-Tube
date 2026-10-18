@@ -582,6 +582,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Looking for audio tracks...", {"Recherche des pistes audio...", "Tonspuren werden gesucht...", "Ricerca delle tracce audio...", "Procurando faixas de áudio...", "音声トラックを検索中..."}},
 	    {"Export lists as text files", {"Exporter les listes en texte", "Listen als Textdateien exportieren", "Esporta le liste come testo", "Exportar listas como texto", "リストをテキストで書き出す"}},
 	    {"Files written: ", {"Fichiers écrits : ", "Dateien geschrieben: ", "File scritti: ", "Arquivos gravados: ", "書き出したファイル： "}},
+	    {"Surprise me", {"Surprends-moi", "Überrasch mich", "Sorprendimi", "Surpreenda-me", "おまかせ"}},
+	    {"Unwatched", {"Non vues", "Ungesehen", "Non viste", "Não vistas", "未視聴"}},
+	    {"You watched everything saved", {"Vous avez tout vu", "Du hast alles Gespeicherte gesehen", "Hai visto tutto il salvato", "Você viu tudo o que está salvo", "保存したものはすべて視聴済みです"}},
 	};
 	return table;
 }
