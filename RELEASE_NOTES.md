@@ -1,3 +1,4 @@
 Devbuild notes
 
-- History screen: Play all and Shuffle buttons at the top, and the long press menu is now the full video menu (queue, watch later, favorite, save offline...) with Remove from history as its last option.
+- Long press a channel in the search results: menu with Subscribe / Unsubscribe (also on your account) and the notification bell (all, personalized, none).
+- Fixes from a code review: a closed live chat can no longer add late messages to the next one, the live chat refresh no longer replaces another popup, the comment section probing is limited to 20 requests, and the Library list of your YouTube lists loads one source at a time.
