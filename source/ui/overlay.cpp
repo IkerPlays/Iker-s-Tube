@@ -10,6 +10,7 @@
 #include "ui/notice.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
+#include "data_io/history.hpp"
 #include "data_io/subscription_util.hpp"
 #include "scenes/account_tasks.hpp"
 #include "youtube_parser/parser.hpp"
@@ -112,6 +113,24 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 	option(favorites_contains(id) ? tr("Remove from favorites", "Quitar de favoritos") : tr("+ Favorite", "+ Favorito"), [video]() {
 		bool added = favorites_toggle(video);
 		notice_show(added ? tr("Added to Favorites", "Añadido a Favoritos") : tr("Removed from Favorites", "Quitado de Favoritos"));
+	});
+	option(history_has_id(id) ? tr("Mark as not watched", "Marcar como no visto") : tr("Mark as watched", "Marcar como visto"), [id, title, author]() {
+		if (history_has_id(id)) {
+			history_erase_by_id(id);
+			save_watch_history();
+		} else {
+			HistoryVideo h;
+			h.id = id;
+			h.title = title;
+			h.title_lines = {title};
+			h.author_name = author;
+			h.length_text = "";
+			h.my_view_count = 1;
+			h.last_watch_time = time(NULL);
+			add_watched_video(h);
+			save_watch_history();
+		}
+		var_need_refresh = true;
 	});
 	option(tr("Save audio offline", "Guardar audio sin conexión"), [id, title, author]() { offline_save_by_id_async(id, title, author, false); });
 	option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, title, author]() { offline_save_by_id_async(id, title, author, true); });

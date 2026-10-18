@@ -529,6 +529,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Manual", {"Manuel", "Manuell", "Manuale", "Manual", "手動"}},
 	    {"Open by itself", {"S'ouvre seul", "Öffnet automatisch", "Si apre da solo", "Abre sozinho", "自動で開く"}},
 	    {"Live chat in live streams", {"Chat en direct dans les directs", "Live-Chat bei Livestreams", "Chat dal vivo nelle dirette", "Chat ao vivo nas transmissões", "ライブ配信のチャット"}},
+	    {"Mark as watched", {"Marquer comme vu", "Als gesehen markieren", "Segna come visto", "Marcar como assistido", "視聴済みにする"}},
+	    {"Mark as not watched", {"Marquer comme non vu", "Als nicht gesehen markieren", "Segna come non visto", "Marcar como não assistido", "未視聴にする"}},
 	};
 	return table;
 }
