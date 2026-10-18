@@ -439,6 +439,13 @@ static View *result_item_to_view(const YouTubeSuccinctItem &item) {
 		cur_view->set_name(item.channel.name);
 		cur_view->set_auxiliary_lines({item.channel.subscribers, item.channel.video_num});
 		cur_view->set_thumbnail_url(item.channel.icon_url);
+		{ // long press : subscribe / bell
+			YouTubeChannelSuccinct ch = item.channel;
+			cur_view->add_on_long_hold(35, [ch](View &v) {
+				overlay_show_channel_menu(ch.id, ch.name, ch.icon_url, ch.subscribers);
+				v.reset_holding_status(); // the release must not open the channel
+			});
+		}
 		res_view = cur_view;
 	} else {
 		const bool grid = var_grid_view;

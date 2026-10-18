@@ -433,12 +433,13 @@ static bool liked_loaded = false, liked_failed = false, liked_loading = false;
 static std::vector<std::pair<std::string, std::string>> liked_sources = {{"Liked", "VLLL"}, {"YouTube history", "FEhistory"}}; // {title, browse id}
 static int liked_source = 0;
 static bool liked_playlists_added = false;
+static bool liked_task_running = false; // only one load at a time (guarded by resource_lock_lib)
 static void load_liked_task(void *) {
 	std::vector<FavoriteVideo> videos;
 	if (!liked_playlists_added) { // the playlists of the account join the sources the first time
-		liked_playlists_added = true;
 		std::vector<AccountPlaylist> lists;
 		if (youtube_account_playlists("", lists)) {
+			liked_playlists_added = true;
 			resource_lock_lib.lock();
 			for (auto &pl : lists) {
 				if (pl.id != "WL" && pl.id != "LL" && pl.id != "") liked_sources.push_back({pl.title, "VL" + pl.id});
@@ -450,12 +451,18 @@ static void load_liked_task(void *) {
 	resource_lock_lib.lock();
 	browse_id = liked_sources[std::min<size_t>(liked_source, liked_sources.size() - 1)].second;
 	resource_lock_lib.unlock();
+	int source_at_start;
+	resource_lock_lib.lock();
+	source_at_start = liked_source;
+	resource_lock_lib.unlock();
 	bool ok = account_playlist_videos(browse_id, videos);
 	resource_lock_lib.lock();
-	liked_videos = videos;
-	liked_loaded = ok;
-	liked_failed = !ok;
+	bool still_wanted = source_at_start == liked_source; // the source was changed while loading : load the new one
+	liked_videos = still_wanted ? videos : std::vector<FavoriteVideo>();
+	liked_loaded = ok && still_wanted;
+	liked_failed = !ok && still_wanted;
 	liked_loading = false;
+	liked_task_running = false;
 	resource_lock_lib.unlock();
 	rebuild_request = true;
 	var_need_refresh = true;
@@ -470,8 +477,9 @@ static void build_liked(VerticalListView *list) {
 		return;
 	}
 	resource_lock_lib.lock();
-	if (!liked_loaded && !liked_failed && !liked_loading) {
+	if (!liked_loaded && !liked_failed && !liked_loading && !liked_task_running) {
 		liked_loading = true;
+		liked_task_running = true;
 		queue_async_task(load_liked_task, NULL);
 	}
 	std::vector<FavoriteVideo> videos = filter_and_sort(liked_videos);

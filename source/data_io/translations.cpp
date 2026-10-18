@@ -496,6 +496,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"YouTube history", {"Historique YouTube", "YouTube-Verlauf", "Cronologia YouTube", "Histórico do YouTube", "YouTube履歴"}},
 	    {" (tap for the next)", {" (touchez pour le suivant)", " (antippen für das nächste)", " (tocca per il successivo)", " (toque para o próximo)", " （タップで次へ）"}},
 	    {"Remove from history", {"Retirer de l'historique", "Aus dem Verlauf entfernen", "Rimuovi dalla cronologia", "Remover do histórico", "履歴から削除"}},
+	    {"Unsubscribe", {"Se désabonner", "Abo beenden", "Annulla iscrizione", "Cancelar inscrição", "登録解除"}},
+	    {"Subscribe", {"S'abonner", "Abonnieren", "Iscriviti", "Inscrever-se", "登録"}},
+	    {"Bell: all notifications", {"Cloche : toutes", "Glocke: alle", "Campanella: tutte", "Sino: todas", "通知：すべて"}},
+	    {"Bell: personalized", {"Cloche : personnalisées", "Glocke: personalisiert", "Campanella: personalizzate", "Sino: personalizadas", "通知：おすすめ"}},
+	    {"Bell: none", {"Cloche : aucune", "Glocke: keine", "Campanella: nessuna", "Sino: nenhuma", "通知：なし"}},
 	};
 	return table;
 }

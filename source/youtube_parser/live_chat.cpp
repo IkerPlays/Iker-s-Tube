@@ -82,7 +82,7 @@ static void chat_thread(void *arg) {
 		if (r != std::string::npos) continuation = string_after(page.second, r, page.second.size(), "\"continuation\":\"");
 	}
 	if (continuation == "") {
-		set_status(tr("This video has no live chat", "Este vídeo no tiene chat en directo"));
+		if (alive()) set_status(tr("This video has no live chat", "Este vídeo no tiene chat en directo"));
 		chat_thread_running = false;
 		return;
 	}
@@ -138,7 +138,10 @@ static void chat_thread(void *arg) {
 				pos += 20;
 				std::string id = string_after(json, pos, end, "\"id\":\"");
 				if (id != "" && std::find(seen.begin(), seen.end(), id) != seen.end()) continue;
-				if (id != "") seen.push_back(id);
+				if (id != "") {
+					seen.push_back(id);
+					if (seen.size() > 300) seen.erase(seen.begin(), seen.begin() + 100);
+				}
 				ChatMessage m;
 				std::string amount = string_after(json, pos, end, "\"purchaseAmountText\":{\"simpleText\":\"");
 				m.author = "[" + amount + "] " + string_after(json, pos, end, "\"authorName\":{\"simpleText\":\"");
@@ -169,7 +172,7 @@ static void chat_thread(void *arg) {
 				int ms = atoi(json.c_str() + t + 12);
 				if (ms > 0) wait_ms = std::min(8000, std::max(2000, ms));
 			}
-			if (fresh.size()) {
+			if (fresh.size() && alive()) { // (a thread of a chat that was closed or replaced must not add to the new one)
 				LightLock_Lock(&chat_lock);
 				for (auto &m : fresh) messages.push_back(m);
 				while (messages.size() > 80) messages.pop_front();

@@ -244,12 +244,15 @@ static std::string section_facts(int client, const std::string &json) {
 
 static bool fetch_comment_section(const std::string &token, std::string &json, bool need_params) {
 	std::string facts;
+	int budget = 20; // requests : a refused login must not keep the task thread busy for minutes
 	int order[6] = {comment_client, 1, 2, 0, 3, 4};
 	std::vector<int> clients;
 	for (int c : order) {
 		if (std::find(clients.begin(), clients.end(), c) == clients.end()) clients.push_back(c);
 	}
 	for (int client : clients) {
+		if (budget <= 0) break;
+		budget--;
 		auto r = token != "" ? account_post("next", "\"continuation\": \"" + json_escape(token) + "\"", client)
 		                     : std::make_pair(false, std::string()); // no token (comments not opened) : straight to the page of the video
 		if (r.first && comment_section_usable(r.second, need_params)) {
@@ -261,6 +264,8 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 		if (!r.first && token != "") continue; // this client does not take the login (or the token) : the next one
 		std::string video_id = get_context_video();
 		if (video_id != "") { // the page of the video as this client sees it has its own comment tokens
+			if (budget <= 0) break;
+			budget--;
 			auto page = account_post("next", "\"videoId\": \"" + json_escape(video_id) + "\"", client);
 			if (!page.first) continue;
 			facts += " page-" + section_facts(client, page.second);
@@ -274,6 +279,8 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 				if (std::find(candidates.begin(), candidates.end(), t) == candidates.end()) candidates.push_back(t);
 			}
 			for (auto &t : candidates) {
+				if (budget <= 0) break;
+				budget--;
 				auto section = account_post("next", "\"continuation\": \"" + json_escape(t) + "\"", client);
 				if (section.first && comment_section_usable(section.second, need_params)) {
 					comment_client = client;

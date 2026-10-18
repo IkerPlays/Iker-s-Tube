@@ -10,6 +10,7 @@
 #include "ui/notice.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
+#include "data_io/subscription_util.hpp"
 #include "scenes/account_tasks.hpp"
 #include "youtube_parser/parser.hpp"
 #include "oauth/oauth.hpp"
@@ -129,6 +130,70 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 	                            ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
 	video_menu->set_is_visible(true);
 	var_need_refresh = true;
+}
+
+// rows of a small menu (title + options + Cancel) shown on the video menu overlay
+static void show_menu_rows(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options) {
+	if (!video_menu) {
+		video_menu = new OverlayView(0, 0, 320, 240);
+		video_menu->set_on_cancel([](OverlayView &) { video_menu_close(); });
+	}
+	video_menu->recursive_delete_subviews();
+	const int width = 250;
+	std::vector<View *> rows;
+	rows.push_back((new TextView(0, 0, width, 22))
+	                   ->set_text(truncate_first_line(title, width - 8, 0.5))
+	                   ->set_x_alignment(TextView::XAlign::CENTER)
+	                   ->set_y_alignment(TextView::YAlign::CENTER)
+	                   ->set_get_text_color([]() { return COLOR_ACCENT; })
+	                   ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
+	for (auto &option : options) {
+		auto action = option.second;
+		rows.push_back((new TextView(0, 0, width, 24))
+		                   ->set_text(option.first)
+		                   ->set_x_alignment(TextView::XAlign::CENTER)
+		                   ->set_y_alignment(TextView::YAlign::CENTER)
+		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                   ->set_on_view_released([action](View &) {
+			                   video_menu_close();
+			                   action();
+		                   }));
+	}
+	rows.push_back((new TextView(0, 0, width, 24))
+	                   ->set_text(LOCALIZED(CANCEL))
+	                   ->set_x_alignment(TextView::XAlign::CENTER)
+	                   ->set_y_alignment(TextView::YAlign::CENTER)
+	                   ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                   ->set_on_view_released([](View &) { video_menu_close(); }));
+	video_menu->set_subview((new VerticalListView(0, 0, width))->set_views(rows)->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
+	video_menu->set_is_visible(true);
+	var_need_refresh = true;
+}
+
+void overlay_show_channel_menu(const std::string &id, const std::string &name, const std::string &icon_url, const std::string &subscribers) {
+	std::vector<std::pair<std::string, std::function<void()>>> options;
+	bool subscribed = subscription_is_subscribed(id);
+	options.push_back({subscribed ? tr("Unsubscribe", "Quitar suscripción") : tr("Subscribe", "Suscribirme"), [id, name, icon_url, subscribers, subscribed]() {
+		if (subscribed) {
+			subscription_unsubscribe(id);
+		} else {
+			SubscriptionChannel channel;
+			channel.id = id;
+			channel.url = "https://m.youtube.com/channel/" + id;
+			channel.name = name;
+			channel.icon_url = icon_url;
+			channel.subscriber_count_str = subscribers;
+			subscription_subscribe(channel);
+		}
+		if (OAuth::is_authenticated()) account_subscribe_async(id, !subscribed);
+		notice_show(subscribed ? tr("Unsubscribed", "Suscripción quitada") : tr("Subscribed", "Suscrito"));
+	}});
+	if (OAuth::is_authenticated()) {
+		options.push_back({tr("Bell: all notifications", "Campana: todas"), [id]() { account_bell_async(id, 0); }});
+		options.push_back({tr("Bell: personalized", "Campana: personalizadas"), [id]() { account_bell_async(id, 1); }});
+		options.push_back({tr("Bell: none", "Campana: ninguna"), [id]() { account_bell_async(id, 2); }});
+	}
+	show_menu_rows(name, options);
 }
 
 static bool nav_enabled = false;

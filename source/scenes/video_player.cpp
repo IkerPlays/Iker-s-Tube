@@ -613,6 +613,7 @@ static std::vector<YouTubeChannelSuccinct> collab_result;
 static bool collab_ready = false;
 static bool chat_request = false, chat_write_request = false; // live chat : open the screen / write a message
 static unsigned chat_shown_version = 0;
+static View *chat_popup_subview = NULL; // the content of the popup while it shows the chat (another popup must not be overwritten)
 static bool collab_refresh_request = false; // a channel of the screen was (un)subscribed : redraw its texts
 static std::vector<YouTubeChannelSuccinct> collab_shown; // the channels of the screen that is open
 
@@ -690,6 +691,7 @@ static void show_live_chat() {
 		                                          var_need_refresh = true;
 	                                          })})})
 	        ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
+	chat_popup_subview = account_pl_popup_view->subview;
 	account_pl_popup_view->set_is_visible(true);
 	var_need_refresh = true;
 }
@@ -4294,7 +4296,7 @@ static void autoplay_countdown_tick() {
 				    show_live_chat();
 			    } else if (live_chat_is_open()) {
 				    if (!account_pl_popup_view->is_visible) live_chat_close(); // the screen was left with B
-				    else if (live_chat_version() != chat_shown_version) show_live_chat();
+				    else if (live_chat_version() != chat_shown_version && account_pl_popup_view->subview == chat_popup_subview) show_live_chat();
 			    }
 			    std::vector<YouTubeChannelSuccinct> collab_list;
 			    if (collab_take(collab_list)) {
