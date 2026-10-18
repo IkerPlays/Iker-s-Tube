@@ -609,6 +609,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Slow (saves battery)", {"Lent (économise la batterie)", "Langsam (spart Akku)", "Lento (risparmia batteria)", "Lento (economiza bateria)", "遅い（電池節約）"}},
 	    {"Live chat refresh", {"Actualisation du chat en direct", "Live-Chat-Aktualisierung", "Aggiornamento della chat dal vivo", "Atualização do chat ao vivo", "ライブチャットの更新"}},
 	    {"Duplicate", {"Dupliquer", "Duplizieren", "Duplica", "Duplicar", "複製"}},
+	    {"Recent channels", {"Chaînes récentes", "Zuletzt besuchte Kanäle", "Canali recenti", "Canais recentes", "最近のチャンネル"}},
 	};
 	return table;
 }

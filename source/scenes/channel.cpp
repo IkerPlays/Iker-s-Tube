@@ -3,6 +3,7 @@
 #include "scenes/account_tasks.hpp"
 #include "ui/qr_popup.hpp"
 #include "ui/notice.hpp"
+#include "util/recent_channels.hpp"
 #include "scenes/offline_tasks.hpp"
 #include "util/play_queue.hpp"
 #include <vector>
@@ -552,6 +553,7 @@ void Channel_init(void) {
 	    }
 	    channel_info = result;
 	    channel_info_cache[url] = result;
+	    if (result.error == "" && result.name != "") recent_channel_add(result.name, result.url_original != "" ? result.url_original : url); // (for the Recent channels of Search)
 
 	    // Update sort selector to match loaded content
 	    cur_video_sort_type = channel_info.current_video_sort_type;

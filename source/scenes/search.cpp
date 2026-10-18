@@ -16,6 +16,7 @@
 #include "util/async_task.hpp"
 #include "data_io/search_history.hpp"
 #include "util/result_filter.hpp"
+#include "util/recent_channels.hpp"
 #include "data_io/last_played.hpp"
 #include "data_io/history.hpp"
 #include "util/play_queue.hpp"
@@ -227,6 +228,27 @@ static void show_search_history() {
 				                                      ->set_y_alignment(TextView::YAlign::CENTER)
 				                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
 				                                      ->set_on_view_released([author](View &) { start_search(author); }));
+			}
+		}
+	}
+	{ // the channels you opened lately
+		auto recent = recent_channels_get();
+		if (recent.size()) {
+			result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+			                                      ->set_text(tr("Recent channels", "Canales recientes"))
+			                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+			                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+			for (size_t i = 0; i < recent.size() && i < 4; i++) {
+				std::string url = recent[i].url;
+				result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+				                                      ->set_text(truncate_search_text_for_display(recent[i].name, 300, 0.55))
+				                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+				                                      ->set_y_alignment(TextView::YAlign::CENTER)
+				                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+				                                      ->set_on_view_released([url](View &) {
+					                                      clicked_url = url;
+					                                      clicked_is_channel = true;
+				                                      }));
 			}
 		}
 	}

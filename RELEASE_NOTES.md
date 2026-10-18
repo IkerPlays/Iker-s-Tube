@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Library, Playlists: long press a local list and choose Duplicate.
+- Search: a Recent channels section lists the last channels you opened (not in incognito).
