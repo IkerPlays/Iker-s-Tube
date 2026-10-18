@@ -463,6 +463,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Subscribe all", {"Tout suivre", "Alle abonnieren", "Iscriviti a tutti", "Inscrever em todos", "全て登録"}},
 	    {"Subscribed to ", {"Abonné à ", "Abonniert: ", "Iscritto a ", "Inscrito em ", "登録: "}},
 	    {" channels", {" chaînes", " Kanäle", " canali", " canais", " チャンネル"}},
+	    {"QR code of this channel", {"Code QR de cette chaîne", "QR-Code dieses Kanals", "Codice QR di questo canale", "Código QR deste canal", "このチャンネルのQRコード"}},
 	};
 	return table;
 }

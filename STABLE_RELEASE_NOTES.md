@@ -25,6 +25,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Hide the Studio tab.** A setting removes the Studio tab from the Home screen.
 - **More modern look.** Rounded and spaced player buttons, accent popup titles, rounded dialogs and buttons, channel cards and the six Library tabs across the whole width.
 - **Studio login.** It now shows the address and the code on separate lines so the code is never cut off.
+- **Channel QR.** The Info tab of a channel has a QR code button.
 
 ## Installing
 

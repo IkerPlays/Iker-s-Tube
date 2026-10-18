@@ -1,6 +1,7 @@
 #include "headers.hpp"
 #include "oauth/oauth.hpp"
 #include "scenes/account_tasks.hpp"
+#include "ui/qr_popup.hpp"
 #include "util/play_queue.hpp"
 #include <vector>
 #include <string>
@@ -707,6 +708,15 @@ void Channel_init(void) {
 	             ->set_text((std::function<std::string()>)[]() { return LOCALIZED(CHANNEL_DESCRIPTION); })
 	             ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	         (new RuleView(0, 0, 320, SMALL_MARGIN)),
+	         (new TextView(0, 0, 320, 24))
+	             ->set_text(tr("QR code of this channel", "Código QR de este canal"))
+	             ->set_x_alignment(TextView::XAlign::CENTER)
+	             ->set_y_alignment(TextView::YAlign::CENTER)
+	             ->set_get_background_color(View::STANDARD_BACKGROUND)
+	             ->set_on_view_released([](View &) {
+		             if (channel_info.id != "") qr_popup_show("https://www.youtube.com/channel/" + channel_info.id);
+	             }),
+	         (new RuleView(0, 0, 320, SMALL_MARGIN)),
 	         (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * description_lines.size()))
 	             ->set_text_lines(description_lines),
 	         (new EmptyView(0, 0, 320, SMALL_MARGIN * 2))});
@@ -1049,6 +1059,7 @@ void Channel_init(void) {
 		    resource_lock.lock();
 		    main_view->draw();
 		    resource_lock.unlock();
+		    qr_popup_draw();
 
 		    if (video_playing_bar_show) {
 			    video_draw_playing_bar();
@@ -1083,7 +1094,9 @@ void Channel_init(void) {
 		    if (video_playing_bar_show) {
 			    video_update_playing_bar(key);
 		    }
-		    main_view->update(key);
+		    if (!qr_popup_update(key)) { // the QR popup takes the input while it is open
+			    main_view->update(key);
+		    }
 
 		    // community post thumbnail requests update
 		    if (channel_info.community_posts.size()) {
