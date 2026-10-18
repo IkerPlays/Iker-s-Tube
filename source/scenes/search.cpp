@@ -636,6 +636,14 @@ static void load_search_results(void *) {
 			if (item.video.url.find("/shorts/") != std::string::npos) only_shorts.push_back({item.video.url, item.video.title});
 		}
 		if (only_shorts.size() >= 3) items = only_shorts; // (the search may also return ordinary videos)
+		if (only_shorts.size()) { // the real Shorts feed : what YouTube plays after the first Short found
+			std::string seed = youtube_get_video_id_by_url(only_shorts[0].first);
+			std::vector<std::string> more = youtube_shorts_sequence(seed);
+			if (more.size() >= 3) {
+				items.clear();
+				for (auto &id : more) items.push_back({youtube_get_video_url_by_id(id), "Short"});
+			}
+		}
 		play_queue_set_repeat(items, true);
 		if (items.size()) feed_first_url = items[0].first;
 	}

@@ -4,6 +4,46 @@
 
 std::string youtube_search_filter_params;
 
+// ReelSequence protobuf : short id (1), params {number = 5} (5), feature 25 (10), feature 0 (13) ; sent as standard base64
+std::vector<std::string> youtube_shorts_sequence(const std::string &seed_video_id) {
+	std::vector<std::string> ids;
+	if (seed_video_id.size() != 11) return ids;
+	std::string raw;
+	raw += '\x0A';
+	raw += (char)seed_video_id.size();
+	raw += seed_video_id;
+	raw += "\x2A\x02\x18\x05"; // params { number = 5 }
+	raw += "\x50\x19";         // feature_2 = 25
+	raw += "\x68\x00";         // feature_3 = 0
+	static const char *tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	std::string b64;
+	for (size_t i = 0; i < raw.size(); i += 3) {
+		unsigned v = ((unsigned char)raw[i]) << 16;
+		if (i + 1 < raw.size()) v |= ((unsigned char)raw[i + 1]) << 8;
+		if (i + 2 < raw.size()) v |= (unsigned char)raw[i + 2];
+		b64 += tbl[(v >> 18) & 63];
+		b64 += tbl[(v >> 12) & 63];
+		b64 += i + 1 < raw.size() ? tbl[(v >> 6) & 63] : '=';
+		b64 += i + 2 < raw.size() ? tbl[v & 63] : '=';
+	}
+	std::string body = R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "WEB","clientVersion": "2.20241126.01.00"}}, "sequenceParams": "%2"})";
+	body = std::regex_replace(body, std::regex("%0"), language_code);
+	body = std::regex_replace(body, std::regex("%1"), country_code);
+	body = std::regex_replace(body, std::regex("%2"), b64);
+	auto r = http_post_json(get_innertube_api_url("reel/reel_watch_sequence"), body);
+	if (!r.first) {
+		logger.warning("shorts", "sequence failed : " + r.second.substr(0, 100));
+		return ids;
+	}
+	std::regex re("\"videoId\"\\s*:\\s*\"([A-Za-z0-9_-]{11})\"");
+	for (auto it = std::sregex_iterator(r.second.begin(), r.second.end(), re); it != std::sregex_iterator(); ++it) {
+		std::string id = (*it)[1].str();
+		if (std::find(ids.begin(), ids.end(), id) == ids.end()) ids.push_back(id);
+	}
+	logger.info("shorts", "sequence gave " + std::to_string(ids.size()) + " shorts");
+	return ids;
+}
+
 static bool parse_searched_item(RJson content, std::vector<YouTubeSuccinctItem> &res) {
 	bool success = true;
 

@@ -307,6 +307,8 @@ std::string youtube_get_video_url_by_id(const std::string &id);
 extern volatile bool youtube_load_cancel;
 // "params" of the search request (type / upload date / duration filter), empty : no filter
 extern std::string youtube_search_filter_params;
+// The Shorts that follow a Short (the "reel watch sequence" of YouTube, the endless Shorts feed) : video ids, empty if unavailable
+std::vector<std::string> youtube_shorts_sequence(const std::string &seed_video_id);
 std::string get_video_id_from_thumbnail_url(const std::string &url);
 std::string convert_webp_thumbnail_to_jpg(const std::string &url);
 bool youtube_is_valid_video_id(const std::string &id);
