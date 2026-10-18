@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Settings: Subscribed channels order (alphabetical or as added) for the local list.
+- README: summary of the app features with links to the usage guide and the Studio setup.

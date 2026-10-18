@@ -10,6 +10,15 @@ Basado en [FourthTube](https://github.com/erievs/FourthTube) (que viene de Third
 - **Caché de miniaturas duplicada** (600): menos descargas al volver atrás en las listas.
 - Datos separados en `sdmc:/3ds/IkersTube/` (no pisa los de FourthTube) y app con su propio ID.
 
+## Funciones propias
+Resumen; la guía completa está en [`Documentation/GUIA_DE_USO.md`](Documentation/GUIA_DE_USO.md).
+- **Cuenta:** Me gusta, listas, suscripciones, campana, comentarios, historial sincronizado y listas de YouTube en la Biblioteca.
+- **Reproductor:** chat en directo, idioma del audio, herramientas de salto y velocidad, enlaces con QR, SponsorBlock.
+- **Offline:** guardar audio o vídeo, cola de descargas, pausa, noche, calidad y limpieza.
+- **Studio:** estadísticas, subidas con lista y publicación programada, edición de subidas
+  (necesita un cliente de Google Cloud propio: [`Documentation/STUDIO_SETUP.md`](Documentation/STUDIO_SETUP.md)).
+- **Comodidad:** menú al mantener pulsado un vídeo o canal, ocultar canales, filtros de búsqueda, incógnito y copias.
+
 ## Instalar y actualizar
 - Cada build sube el **devbuild** a [Releases](../../releases) con `IkersTube.cia` y `IkersTube.3dsx`.
   Instala el `.cia` con **FBI** (SD → el `.cia` → Install); el `.3dsx` sirve para probar desde el Homebrew Launcher.
