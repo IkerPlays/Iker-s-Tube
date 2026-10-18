@@ -1,1 +1,1 @@
-Docs: the Spanish usage guide now covers the CC, Video QR and previous chapter tools and the automatic subtitles setting.
+Channel page: the Info tab has a Bell button (tap to cycle all, personalized, none notifications of the channel on your account).

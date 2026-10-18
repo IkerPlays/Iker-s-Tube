@@ -759,6 +759,19 @@ void Channel_init(void) {
 		             if (channel_info.id != "") qr_popup_show("https://www.youtube.com/channel/" + channel_info.id);
 	             }),
 	         (new RuleView(0, 0, 320, SMALL_MARGIN)),
+	         (new TextView(0, 0, 320, 24))
+	             ->set_text(tr("Bell (tap to change)", "Campana (toca para cambiar)"))
+	             ->set_x_alignment(TextView::XAlign::CENTER)
+	             ->set_y_alignment(TextView::YAlign::CENTER)
+	             ->set_get_background_color(View::STANDARD_BACKGROUND)
+	             ->set_on_view_released([](View &) {
+		             static int bell_level = 0; // all -> personalized -> none -> all ...
+		             if (channel_info.id != "") {
+			             account_bell_async(channel_info.id, bell_level);
+			             bell_level = (bell_level + 1) % 3;
+		             }
+	             }),
+	         (new RuleView(0, 0, 320, SMALL_MARGIN)),
 	         (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * description_lines.size()))
 	             ->set_text_lines(description_lines),
 	         (new EmptyView(0, 0, 320, SMALL_MARGIN * 2))});
