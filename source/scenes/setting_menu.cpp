@@ -1389,7 +1389,14 @@ void Sem_init(void) {
 								if (n == 3) seconds += part[0] * 3600 + part[1] * 60 + part[2];
 								else if (n == 2) seconds += part[0] * 60 + part[1];
 							}
-							return tr("Watched: ", "Visto: ") + std::to_string(list.size()) + tr(" videos, about ", " vídeos, unas ") + std::to_string(seconds / 3600) + " h";
+							int today = 0, week = 0; // how many in the last day and week
+							time_t now = time(NULL);
+							for (auto &v : list) {
+								if (now - v.last_watch_time < 86400) today++;
+								if (now - v.last_watch_time < 7 * 86400) week++;
+							}
+							return tr("Watched: ", "Visto: ") + std::to_string(list.size()) + tr(" videos, about ", " vídeos, unas ") + std::to_string(seconds / 3600) + " h" +
+							       tr(" (today ", " (hoy ") + std::to_string(today) + tr(", week ", ", semana ") + std::to_string(week) + ")";
 						}),
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 3 + SMALL_MARGIN))
 						->set_text((std::function<std::string ()>) [] () -> std::string {

@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Studio, Edit my uploads: new Change the tags button (comma separated; it keeps the title, description, category and language).
+- Settings, Data: the watched line also shows how many videos you watched today and this week.

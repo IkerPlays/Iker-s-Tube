@@ -611,6 +611,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Duplicate", {"Dupliquer", "Duplizieren", "Duplica", "Duplicar", "複製"}},
 	    {"Recent channels", {"Chaînes récentes", "Zuletzt besuchte Kanäle", "Canali recenti", "Canais recentes", "最近のチャンネル"}},
 	    {"Change the tags", {"Changer les étiquettes", "Tags ändern", "Cambia i tag", "Mudar as tags", "タグを変更"}},
+	    {" (today ", {" (aujourd'hui ", " (heute ", " (oggi ", " (hoje ", " （今日 "}},
+	    {", week ", {", semaine ", ", Woche ", ", settimana ", ", semana ", "、週 "}},
 	};
 	return table;
 }
