@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Settings, Data: Reset the settings (next start) brings every setting back to its default the next time the app starts (your lists, history and downloads are kept). The settings file reader also accepts a bigger file now.
+- Live chat: a button switches between Top chat and All chat (every message), when the stream offers both (best effort: the two continuations are read from the chat header).

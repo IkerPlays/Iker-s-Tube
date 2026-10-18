@@ -18,6 +18,8 @@ static unsigned chat_version = 0;
 static volatile bool chat_stop = true;
 static volatile int chat_generation = 0; // a thread of an older open/close sees it changed and ends
 static volatile bool chat_thread_running = false;
+static volatile bool chat_toggle_request = false; // switch between the Top chat and the Live chat (all messages)
+static volatile int chat_mode = 0;                // 0 : top chat (what YouTube shows first), 1 : all messages
 
 // the text of a JSON string that starts right after `key` (key ends with the opening quote), unescaped
 static std::string string_after(const std::string &s, size_t from, size_t to, const std::string &key, size_t *end_pos = NULL) {
@@ -76,10 +78,21 @@ static void chat_thread(void *arg) {
 
 	// the first continuation comes with the page of the video
 	std::string continuation;
+	std::string mode_tokens[2]; // the continuations of Top chat and Live chat, from the chat header
 	auto page = http_post_json(get_innertube_api_url("next"), "{" + context_json() + ", \"videoId\": \"" + video + "\"}");
 	if (page.first) {
 		size_t r = page.second.find("\"liveChatRenderer\"");
 		if (r != std::string::npos) continuation = string_after(page.second, r, page.second.size(), "\"continuation\":\"");
+		size_t sm = r == std::string::npos ? r : page.second.find("\"subMenuItems\"", r);
+		if (sm != std::string::npos) {
+			size_t end = std::min(page.second.size(), sm + 6000), p = sm;
+			for (int k = 0; k < 2; k++) {
+				size_t t = page.second.find("\"continuation\":\"", p);
+				if (t == std::string::npos || t >= end) break;
+				mode_tokens[k] = string_after(page.second, t, end, "\"continuation\":\"");
+				p = t + 20;
+			}
+		}
 	}
 	if (continuation == "") {
 		if (alive()) set_status(tr("This video has no live chat", "Este vídeo no tiene chat en directo"));
@@ -90,6 +103,19 @@ static void chat_thread(void *arg) {
 	std::vector<std::string> seen;
 	int failures = 0;
 	while (alive()) {
+		if (chat_toggle_request) { // the other mode of the chat
+			chat_toggle_request = false;
+			int other = 1 - chat_mode;
+			if (mode_tokens[other] != "") {
+				continuation = mode_tokens[other];
+				chat_mode = other;
+				LightLock_Lock(&chat_lock);
+				messages.clear();
+				chat_version++;
+				LightLock_Unlock(&chat_lock);
+				var_need_refresh = true;
+			}
+		}
 		auto r = http_post_json(get_innertube_api_url("live_chat/get_live_chat"),
 		                        "{" + context_json() + ", \"continuation\": \"" + continuation + "\"}");
 		int wait_ms = 4000;
@@ -195,6 +221,8 @@ void live_chat_open(const std::string &video_id) {
 	// (an old thread that is still inside a network request ends by itself : its generation no longer matches)
 	LightLock_Lock(&chat_lock);
 	messages.clear();
+	chat_mode = 0;
+	chat_toggle_request = false;
 	chat_status = tr("Loading the chat...", "Cargando el chat...");
 	chat_video = video_id;
 	chat_version++;
@@ -241,3 +269,6 @@ std::string live_chat_status() {
 bool live_chat_send(const std::string &video_id, const std::string &text, std::string &error) {
 	return youtube_studio_live_chat_send(video_id, text, error);
 }
+
+void live_chat_toggle_mode() { chat_toggle_request = true; }
+int live_chat_mode() { return chat_mode; }

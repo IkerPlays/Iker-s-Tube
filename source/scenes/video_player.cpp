@@ -676,12 +676,20 @@ static void show_live_chat() {
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
 	                     list,
 	                     (new HorizontalListView(0, 0, 22))
-	                         ->set_views({(new TextView(0, 0, width / 2, 22))
+	                         ->set_views({(new TextView(0, 0, width / 3, 22))
 	                                          ->set_text(tr("Write", "Escribir"))
 	                                          ->set_x_alignment(TextView::XAlign::CENTER)
 	                                          ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                                          ->set_on_view_released([](View &) { chat_write_request = true; }),
-	                                      (new TextView(0, 0, width / 2, 22))
+	                                      (new TextView(0, 0, width / 3, 22))
+	                                          ->set_text(live_chat_mode() == 0 ? tr("Top chat", "Chat destacado") : tr("All chat", "Todo el chat"))
+	                                          ->set_x_alignment(TextView::XAlign::CENTER)
+	                                          ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                                          ->set_on_view_released([](View &) {
+		                                          live_chat_toggle_mode();
+		                                          notice_show(tr("Switching the chat...", "Cambiando el chat..."));
+	                                          }),
+	                                      (new TextView(0, 0, width / 3, 22))
 	                                          ->set_text(LOCALIZED(CLOSE))
 	                                          ->set_x_alignment(TextView::XAlign::CENTER)
 	                                          ->set_get_background_color(View::STANDARD_BACKGROUND)

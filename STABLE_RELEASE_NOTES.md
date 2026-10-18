@@ -11,7 +11,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Comments.** Without a comments token (comments not opened) writing and replying now work, and when a comment or chat message fails a screen shows the whole reason. With the Studio login the Data API is tried first (YouTube may refuse it for lack of scopes, then the old way is used). Liking a video falls back to the Data API too.
 
 ### Player
-- **Live chat.** Read the chat of a live stream from the player tools, and write in it with the Studio login.
+- **Live chat.** Read the chat of a live stream from the player tools (Super Chats included, Top chat or All chat), and write in it with the Studio login.
 - **Audio language and links.** Choose the dubbed audio of videos that have several tracks, and open the links of the description through a QR code.
 - **Quick sleep timer.** A Sleep timer button in the player tools.
 - **Collaboration screen.** Channels are cards, three per page with a More button, so nothing is drawn outside the screen, and a Subscribe all button follows every channel of the video.
