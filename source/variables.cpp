@@ -28,6 +28,7 @@ int var_hide_studio = 0;
 int var_wl_autoremove = 0;
 int var_default_speed = 0;
 int var_auto_chat = 0;
+int var_download_quality = 0;
 bool var_hide_watched = false;
 bool var_welcome_done = false;
 int var_custom_hue = 200;

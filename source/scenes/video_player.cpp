@@ -2061,7 +2061,7 @@ debug_info_view =
 				                           []() {
 					                           if (cur_video_info.id == "") return;
 					                           // the saved quality : 360p at most (240p on the old 3DS), the closest one that exists
-					                           int wanted = var_is_new3ds ? 360 : 240, quality = 0;
+					                           int wanted = var_download_quality == 1 ? 144 : var_download_quality == 2 ? 240 : var_download_quality == 3 ? 360 : (var_is_new3ds ? 360 : 240), quality = 0;
 					                           std::string video_url;
 					                           for (auto &i : cur_video_info.video_stream_urls) {
 						                           if (i.first <= wanted && i.first > quality) {

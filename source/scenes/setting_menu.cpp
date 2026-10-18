@@ -1179,6 +1179,23 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Saved video quality
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Automatic", "Automática"); },
+							(std::function<std::string ()>) []() { return std::string("144p"); },
+							(std::function<std::string ()>) []() { return std::string("240p"); },
+							(std::function<std::string ()>) []() { return std::string("360p"); }
+						}, var_download_quality)
+						->set_title([](const SelectorView &) { return tr("Quality of saved videos", "Calidad de los vídeos guardados"); })
+						->set_info([](const SelectorView &) { return tr("Lower quality uses less room on the SD card. The closest quality that exists is used.", "Menos calidad ocupa menos en la SD. Se usa la calidad más cercana que exista."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_download_quality != view.selected_button) {
+								var_download_quality = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Live chat
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

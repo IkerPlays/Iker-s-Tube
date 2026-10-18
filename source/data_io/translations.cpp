@@ -531,6 +531,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Live chat in live streams", {"Chat en direct dans les directs", "Live-Chat bei Livestreams", "Chat dal vivo nelle dirette", "Chat ao vivo nas transmissões", "ライブ配信のチャット"}},
 	    {"Mark as watched", {"Marquer comme vu", "Als gesehen markieren", "Segna come visto", "Marcar como assistido", "視聴済みにする"}},
 	    {"Mark as not watched", {"Marquer comme non vu", "Als nicht gesehen markieren", "Segna come non visto", "Marcar como não assistido", "未視聴にする"}},
+	    {"Automatic", {"Automatique", "Automatisch", "Automatica", "Automática", "自動"}},
+	    {"Quality of saved videos", {"Qualité des vidéos enregistrées", "Qualität gespeicherter Videos", "Qualità dei video salvati", "Qualidade dos vídeos salvos", "保存動画の画質"}},
+	    {"Lower quality uses less room on the SD card. The closest quality that exists is used.", {"Une qualité plus basse prend moins de place sur la SD. La qualité existante la plus proche est utilisée.", "Niedrigere Qualität braucht weniger Platz auf der SD. Es wird die nächstliegende vorhandene Qualität genutzt.", "Una qualità più bassa occupa meno spazio sulla SD. Si usa la qualità esistente più vicina.", "Qualidade menor ocupa menos espaço no SD. Usa-se a qualidade existente mais próxima.", "画質を下げるとSDの容量を節約できます。最も近い画質が使われます。"}},
 	};
 	return table;
 }

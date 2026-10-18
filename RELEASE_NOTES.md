@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Video menu (long press): Mark as watched / Mark as not watched, to tidy the history and hide videos without playing them.
+- Settings, Playback: Quality of saved videos (Automatic, 144p, 240p or 360p). Lower quality uses less room on the SD card.
