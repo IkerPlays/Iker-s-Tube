@@ -55,3 +55,4 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 
 Install `IkersTube.cia` with FBI, or run `IkersTube.3dsx` from the Homebrew Launcher.
 The DSP firmware dump (`sdmc:/3ds/dspfirm.cdc`) is needed for sound.
+- Player: "CC" tool to turn YouTube subtitles on and cycle their languages; "<< Chap" tool for the previous chapter.

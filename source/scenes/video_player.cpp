@@ -322,6 +322,10 @@ static void caption_lang_remember(const std::string &id) {
 	fclose(f);
 }
 
+// quick subtitles tool : off -> each subtitle language of the video -> off
+static std::string cc_base, cc_trans, cc_video_id;
+static int cc_index = -1;
+static std::pair<std::string *, std::string *> cc_arg = {&cc_base, &cc_trans};
 static std::string autoplay_pending_url; // the next video waits for the countdown (guarded by small_resource_lock)
 static std::string autoplay_pending_for; // the id of the video that ended
 static u64 autoplay_due_ms = 0;
@@ -2043,6 +2047,39 @@ debug_info_view =
 					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
 					                           var_need_refresh = true;
 				                           }),
+				                 make_tool(
+				                     []() {
+					                     if (cc_video_id != cur_video_info.id) cc_index = -1;
+					                     if (cc_index < 0 || cc_index >= (int)cur_video_info.caption_base_languages.size())
+						                     return std::string("CC");
+					                     return std::string("CC ") + cur_video_info.caption_base_languages[cc_index].id;
+				                     },
+				                     56,
+				                     []() {
+					                     if (cur_video_info.id == "" || !caption_overlay_view) return;
+					                     if (cc_video_id != cur_video_info.id) {
+						                     cc_video_id = cur_video_info.id;
+						                     cc_index = -1;
+					                     }
+					                     int n = cur_video_info.caption_base_languages.size();
+					                     if (n == 0) {
+						                     notice_show(tr("This video has no subtitles", "Este vídeo no tiene subtítulos"));
+						                     return;
+					                     }
+					                     cc_index++;
+					                     if (cc_index >= n) {
+						                     cc_index = -1;
+						                     caption_overlay_view->set_is_visible(false);
+						                     notice_show(tr("Subtitles off", "Subtítulos desactivados"));
+						                     return;
+					                     }
+					                     cc_base = cur_video_info.caption_base_languages[cc_index].id;
+					                     cc_trans = "";
+					                     caption_lang_remember(cc_base);
+					                     notice_show(tr("Subtitles: ", "Subtítulos: ") +
+					                                 cur_video_info.caption_base_languages[cc_index].name);
+					                     queue_async_task(load_caption, &cc_arg);
+				                     }),
 				                 make_tool([]() { return tr("<< Chap", "<< Cap"); }, 60,
 				                           [is_current]() {
 					                           if (!is_current()) return;
