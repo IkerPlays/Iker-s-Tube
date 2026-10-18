@@ -423,6 +423,20 @@ void Channel_init(void) {
 	    if (post.poll_choices.size()) {
 		    res->lines_shown = content_lines.size();
 	    }
+	    if (post.post_id != "" || post.poll_endpoints.size()) { // long press : like the post / vote in its poll (YouTube login)
+		    std::string post_id = post.post_id;
+		    std::vector<std::string> choices = post.poll_choices, endpoints = post.poll_endpoints;
+		    res->add_on_long_hold(30, [post_id, choices, endpoints](View &) {
+			    std::vector<std::pair<std::string, std::function<void()>>> options;
+			    if (post_id != "") options.push_back({tr("Like this post", "Me gusta a esta publicación"), [post_id]() { account_post_like_async(post_id); }});
+			    for (size_t i = 0; i < choices.size() && i < endpoints.size(); i++) {
+				    if (endpoints[i] == "") continue;
+				    std::string endpoint = endpoints[i];
+				    options.push_back({tr("Vote: ", "Votar: ") + choices[i].substr(0, 30), [endpoint]() { account_run_endpoint_async(endpoint); }});
+			    }
+			    if (options.size()) overlay_show_menu(tr("Community post", "Publicación de la comunidad"), options);
+		    });
+	    }
 	    if (post.video.title != "") {
 		    std::string video_url = post.video.url;
 		    res->additional_video_view = (new SuccinctVideoView(0, 0, 320 - POST_ICON_SIZE - SMALL_MARGIN * 2,

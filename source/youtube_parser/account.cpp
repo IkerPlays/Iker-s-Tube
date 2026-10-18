@@ -146,6 +146,50 @@ bool youtube_account_like(const std::string &video_id, int rating) {
 	return false;
 }
 
+bool youtube_account_post_like(const std::string &post_id) {
+	if (post_id == "") return false;
+	std::string fields = "\"target\": {\"postId\": \"" + json_escape(post_id) + "\"}";
+	return account_post("like/like", fields, 1).first || account_post("like/like", fields, 2).first;
+}
+
+// An endpoint as YouTube writes it in a page : {"clickTrackingParams":..,"commandMetadata":{"webCommandMetadata":{"apiUrl":"/youtubei/v1/xxx"}},"yyyEndpoint":{...}}
+// It is sent to apiUrl with the content of the "yyyEndpoint" member as the fields of the request.
+bool youtube_account_run_endpoint(const std::string &endpoint_json) {
+	rapidjson::Document doc;
+	doc.Parse(endpoint_json.c_str());
+	if (doc.HasParseError() || !doc.IsObject()) {
+		set_last_error("bad endpoint json");
+		return false;
+	}
+	std::string api;
+	if (doc.HasMember("commandMetadata") && doc["commandMetadata"].IsObject() && doc["commandMetadata"].HasMember("webCommandMetadata") &&
+	    doc["commandMetadata"]["webCommandMetadata"].IsObject() && doc["commandMetadata"]["webCommandMetadata"].HasMember("apiUrl") &&
+	    doc["commandMetadata"]["webCommandMetadata"]["apiUrl"].IsString()) {
+		api = doc["commandMetadata"]["webCommandMetadata"]["apiUrl"].GetString();
+	}
+	std::string fields;
+	for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
+		std::string name = it->name.GetString();
+		if (name == "clickTrackingParams" || name == "commandMetadata" || !it->value.IsObject()) continue;
+		rapidjson::StringBuffer buffer;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		it->value.Accept(writer);
+		fields = buffer.GetString();
+		if (fields.size() >= 2) fields = fields.substr(1, fields.size() - 2); // without the braces
+		break;
+	}
+	const std::string prefix = "/youtubei/v1/";
+	if (api.compare(0, prefix.size(), prefix) != 0) {
+		set_last_error("endpoint without apiUrl : " + endpoint_json.substr(0, 80));
+		return false;
+	}
+	api = api.substr(prefix.size());
+	size_t q = api.find('?');
+	if (q != std::string::npos) api = api.substr(0, q);
+	if (fields == "") fields = "\"x\": 0";
+	return account_post(api, fields, 1).first || account_post(api, fields, 2).first;
+}
+
 bool youtube_account_subscribe(const std::string &channel_id, bool subscribe) {
 	return account_post(subscribe ? "subscription/subscribe" : "subscription/unsubscribe",
 	                    "\"channelIds\": [\"" + json_escape(channel_id) + "\"]")

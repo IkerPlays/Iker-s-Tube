@@ -20,6 +20,9 @@ bool youtube_account_channel_bell(const std::string &channel_id, int level);
 bool youtube_account_recommendations(std::vector<YouTubeVideoSuccinct> &out);
 bool youtube_account_notifications(std::vector<YouTubeVideoSuccinct> &out);
 
+// Community posts : like a post, or run an endpoint copied from a post page (the choices of a poll)
+bool youtube_account_post_like(const std::string &post_id);
+bool youtube_account_run_endpoint(const std::string &endpoint_json);
 bool youtube_account_like(const std::string &video_id, int rating); // 1 like, -1 dislike, 0 remove the rating
 bool youtube_account_subscribe(const std::string &channel_id, bool subscribe);
 bool youtube_account_playlists(const std::string &video_id, std::vector<AccountPlaylist> &out);

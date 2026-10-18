@@ -779,6 +779,7 @@ static void load_community_items(RJson contents, YouTubeChannelDetail &res) {
 			cur_post.author_icon_url = get_thumbnail_url_closest(post_renderer["authorThumbnail"]["thumbnails"], 70);
 			cur_post.time = get_text_from_object(post_renderer["publishedTimeText"]);
 			cur_post.upvotes_str = get_text_from_object(post_renderer["voteCount"]);
+			cur_post.post_id = post_renderer["postId"].string_value();
 			if (post_renderer["backstageAttachment"]["backstageImageRenderer"].is_valid()) {
 				auto tmp =
 				    post_renderer["backstageAttachment"]["backstageImageRenderer"]["image"]["thumbnails"].array_items();
@@ -794,6 +795,7 @@ static void load_community_items(RJson contents, YouTubeChannelDetail &res) {
 				cur_post.poll_total_votes = get_text_from_object(poll_renderer["totalVotes"]);
 				for (auto choice : poll_renderer["choices"].array_items()) {
 					cur_post.poll_choices.push_back(get_text_from_object(choice["text"]));
+					cur_post.poll_endpoints.push_back(choice["selectServiceEndpoint"].is_valid() ? choice["selectServiceEndpoint"].dump() : "");
 				}
 			}
 			res.community_posts.push_back(cur_post);

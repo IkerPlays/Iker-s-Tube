@@ -257,6 +257,8 @@ struct YouTubeChannelDetail {
 		std::string image_url; // "" if no image
 		std::string poll_total_votes;
 		std::vector<std::string> poll_choices;
+		std::vector<std::string> poll_endpoints; // the endpoint of each choice (selectServiceEndpoint, as json)
+		std::string post_id;
 		YouTubeVideoSuccinct video;
 	};
 	std::vector<CommunityPost> community_posts;

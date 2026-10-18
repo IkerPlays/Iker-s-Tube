@@ -12,6 +12,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Reload.** New tool reloads the current video from the same minute.
 - **More search filters.** Subtitles (CC), Creative Commons, 4K, HDR and 360 degrees.
 - **Search suggestions.** The keyboard offers YouTube autocomplete suggestions while you type.
+- **Community posts.** Long press a post to like it or vote in its poll (experimental).
 - **Chapters.** New "<< Chap" tool goes to the previous chapter.
 
 ## Installing

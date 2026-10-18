@@ -1,5 +1,7 @@
 #pragma once
 #include <functional>
+#include <vector>
+#include <utility>
 #include <string>
 #include "types.hpp"
 #include "scene_switcher.hpp"
@@ -21,4 +23,6 @@ void close_overlay_menu();
 void overlay_show_channel_menu(const std::string &id, const std::string &name, const std::string &icon_url, const std::string &subscribers);
 void overlay_show_video_menu(const std::string &url, const std::string &title, const std::string &author,
                              const std::string &extra_label = "", std::function<void()> extra_action = nullptr); // (an optional extra option, for example Remove from history)
+// A menu with any list of options (title + actions)
+void overlay_show_menu(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options);
 void overlay_menu_on_resume();

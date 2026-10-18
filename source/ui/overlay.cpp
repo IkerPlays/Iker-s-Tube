@@ -213,6 +213,7 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 	video_menu->set_is_visible(true);
 	var_need_refresh = true;
 }
+void overlay_show_menu(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options) { show_menu_rows(title, options); }
 
 void overlay_show_channel_menu(const std::string &id, const std::string &name, const std::string &icon_url, const std::string &subscribers) {
 	std::vector<std::pair<std::string, std::function<void()>>> options;

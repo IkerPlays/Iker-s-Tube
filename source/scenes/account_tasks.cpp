@@ -29,7 +29,7 @@ bool account_ready() {
 	return false;
 }
 
-enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL, LIVE_CHAT };
+enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL, LIVE_CHAT, POST_LIKE, RUN_ENDPOINT };
 
 static void run_job(void *arg) {
 	AccountJob *job = (AccountJob *)arg;
@@ -96,6 +96,16 @@ static void run_job(void *arg) {
 		ok = youtube_account_not_interested(job->a, job->flag);
 		done = job->flag ? tr("You will not be recommended this channel", "No se te recomendará este canal") : tr("Noted: not interested", "Anotado: no me interesa");
 		failed = tr("Could not send it", "No se pudo enviar");
+		break;
+	case POST_LIKE:
+		ok = youtube_account_post_like(job->a);
+		done = tr("Post liked", "Publicación con Me gusta");
+		failed = tr("Could not like the post", "No se pudo dar Me gusta a la publicación");
+		break;
+	case RUN_ENDPOINT:
+		ok = youtube_account_run_endpoint(job->a);
+		done = tr("Vote sent", "Voto enviado");
+		failed = tr("Could not send the vote", "No se pudo enviar el voto");
 		break;
 	case BELL:
 		ok = youtube_account_channel_bell(job->a, job->number);
@@ -185,6 +195,14 @@ void account_bell_async(const std::string &channel_id, int level) {
 	AccountJob *j = new AccountJob{BELL, channel_id, "", ""};
 	j->number = level;
 	queue_job(j);
+}
+void account_post_like_async(const std::string &post_id) {
+	if (!account_ready()) return;
+	queue_job(new AccountJob{POST_LIKE, post_id, "", ""});
+}
+void account_run_endpoint_async(const std::string &endpoint_json) {
+	if (!account_ready()) return;
+	queue_job(new AccountJob{RUN_ENDPOINT, endpoint_json, "", ""});
 }
 void account_live_chat_async(const std::string &video_id, const std::string &text) {
 	if (!account_ready()) return;
