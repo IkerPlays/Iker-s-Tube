@@ -603,6 +603,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Info", {"Infos", "Info", "Info", "Info", "情報"}},
 	    {"Loop: on", {"Boucle : oui", "Schleife: an", "Ripeti: sì", "Repetir: sim", "ループ：オン"}},
 	    {"Loop: off", {"Boucle : non", "Schleife: aus", "Ripeti: no", "Repetir: não", "ループ：オフ"}},
+	    {"Shuffle playlist", {"Mélanger la liste", "Playlist mischen", "Mescola la playlist", "Embaralhar a lista", "リストをシャッフル"}},
+	    {"Queued in random order: ", {"En file au hasard : ", "Zufällig eingereiht: ", "In coda a caso: ", "Na fila ao acaso: ", "ランダムにキューへ： "}},
 	};
 	return table;
 }

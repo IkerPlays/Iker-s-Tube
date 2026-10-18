@@ -2195,6 +2195,22 @@ debug_info_view =
 					                                   misc_tasks_request(TASK_SAVE_SETTINGS);
 					                                   var_need_refresh = true;
 				                                   }),
+				                         make_tool([]() { return tr("Shuffle playlist", "Mezclar lista"); }, 110,
+				                                   []() { // the rest of the playlist of the video, in random order, as the queue
+					                                   auto &videos = cur_video_info.playlist.videos;
+					                                   if (videos.empty()) {
+						                                   notice_show(tr("This video is not in a playlist", "Este vídeo no está en una lista"));
+						                                   return;
+					                                   }
+					                                   std::vector<std::pair<std::string, std::string>> items;
+					                                   for (auto &v : videos) {
+						                                   if (youtube_get_video_id_by_url(v.url) != cur_video_info.id) items.push_back({v.url, v.title});
+					                                   }
+					                                   for (size_t k = items.size(); k > 1; k--) std::swap(items[k - 1], items[rand() % k]);
+					                                   play_queue_clear();
+					                                   for (auto &item : items) play_queue_toggle(item.first, item.second);
+					                                   notice_show(tr("Queued in random order: ", "En cola al azar: ") + std::to_string(items.size()));
+				                                   }),
 				                         make_tool([]() { return tr("Info", "Info"); }, 50,
 				                                   []() { // facts of the video, as text
 					                                   if (cur_video_info.id == "") return;

@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Player tools: Loop on/off toggles repeating the video (the same setting as in Settings).
+- Player tools: Shuffle playlist puts the rest of the playlist of the video in the queue in random order.
