@@ -478,6 +478,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"A video leaves the Watch later list (also on your account) when it plays until the end.", {"Une vidéo quitte la liste (aussi sur votre compte) quand elle est lue jusqu'au bout.", "Ein Video verlässt die Liste (auch im Konto), wenn es bis zum Ende läuft.", "Un video esce dalla lista (anche sul tuo account) quando arriva alla fine.", "Um vídeo sai da lista (também na conta) quando chega ao fim.", "最後まで再生すると一覧（アカウント側も）から削除されます。"}},
 	    {"Next video", {"Suivante", "Nächstes", "Successivo", "Próximo", "次へ"}},
 	    {"There is no next video", {"Il n'y a pas de vidéo suivante", "Es gibt kein nächstes Video", "Non c'è un video successivo", "Não há próximo vídeo", "次の動画はありません"}},
+	    {"Delete the ones already watched", {"Supprimer celles déjà vues", "Bereits gesehene löschen", "Elimina quelle già viste", "Excluir as já assistidas", "視聴済みを削除"}},
+	    {"Deleted: ", {"Supprimées : ", "Gelöscht: ", "Eliminate: ", "Excluídas: ", "削除： "}},
 	};
 	return table;
 }

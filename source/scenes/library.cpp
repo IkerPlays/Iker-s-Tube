@@ -598,6 +598,19 @@ static void build_offline(VerticalListView *list) {
 			                                  rebuild_request = true;
 		                                  }));
 	}
+	if (items.size() > 0) { // free room : the saved videos that are already in the watch history
+		list->views.push_back(make_button(tr("Delete the ones already watched", "Borrar las ya vistas"), 320, []() {
+			int removed = 0;
+			for (auto &item : offline_list()) {
+				if (history_has_id(item.id)) {
+					offline_remove(item.id);
+					removed++;
+				}
+			}
+			notice_show(tr("Deleted: ", "Borradas: ") + std::to_string(removed));
+			rebuild_request = true;
+		}));
+	}
 	if (items.size() > 0) { // delete everything (asks first)
 		list->views.push_back(make_button(tr("Delete all downloads", "Borrar todas las descargas"), 320, []() {
 			show_dialog({make_option(tr("Yes, delete everything", "Sí, borrar todo"), []() {
