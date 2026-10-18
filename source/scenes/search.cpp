@@ -603,9 +603,10 @@ static void load_account_feed(void *) {
 	}
 }
 
-static std::string feed_first_url; // the Shorts feed opens its first video by itself
+static std::vector<std::pair<std::string, std::string>> feed_items; // the Shorts found by the last feed search (installed with the results)
+static bool feed_shuffle = true;
 static void load_search_results(void *) {
-	feed_first_url = "";
+	feed_items.clear();
 	// pre-access processing
 	resource_lock.lock();
 	std::string search_word = cur_search_word;
@@ -652,11 +653,10 @@ static void load_search_results(void *) {
 				for (auto &id : more) items.push_back({youtube_get_video_url_by_id(id), "Short"});
 			}
 		}
-		if (items.size() && global_current_scene == SceneType::SEARCH) { // (nothing found or the user left : the queue stays as it is)
-			play_queue_clear();                                           // the Shorts replace the queue
-			for (size_t i = 1; i < items.size(); i++) play_queue_toggle(items[i].first, items[i].second);
-			play_queue_set_repeat(items, !feed_from_sequence);
-			feed_first_url = items[0].first;
+		// the queue is only replaced once the results are installed, and only by real Shorts (see the end of this function)
+		if (items.size() && (feed_from_sequence || only_shorts.size() >= 3)) {
+			feed_items = items;
+			feed_shuffle = !feed_from_sequence;
 		}
 	}
 
@@ -708,9 +708,12 @@ static void load_search_results(void *) {
 
 	search_done = true;
 	var_need_refresh = true;
-	if (feed && feed_first_url != "" && shorts_feed && global_current_scene == SceneType::SEARCH && cur_search_word == search_word) { // (the user may have left)
-		clicked_url = feed_first_url;
-		feed_first_url = "";
+	if (feed && feed_items.size() && shorts_feed && global_current_scene == SceneType::SEARCH && cur_search_word == search_word) { // (the user may have left)
+		play_queue_clear(); // the Shorts replace the queue
+		for (size_t i = 1; i < feed_items.size(); i++) play_queue_toggle(feed_items[i].first, feed_items[i].second);
+		play_queue_set_repeat(feed_items, feed_shuffle);
+		clicked_url = feed_items[0].first;
+		feed_items.clear();
 		notice_show(tr("Shorts: D-pad Down = next, Up = previous", "Shorts: cruceta Abajo = siguiente, Arriba = anterior"));
 	}
 	resource_lock.unlock();

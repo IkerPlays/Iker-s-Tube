@@ -2747,7 +2747,7 @@ debug_info_view =
 	    bool going_back = back_nav_target != "" && back_nav_target == tmp_video_info.url;
 	    if (going_back) back_nav_target = "";
 	    LightLock_Unlock(&back_lock);
-	    if (!going_back && playing_video_info.url != "" && tmp_video_info.url != "" && playing_video_info.id != tmp_video_info.id) {
+	    if (!going_back && playing_video_info.url != "" && tmp_video_info.url != "" && (playing_video_info.id != tmp_video_info.id || (playing_video_info.id == "" && playing_video_info.url != tmp_video_info.url))) {
 		    back_stack_push(playing_video_info.url, playing_video_info.title); // D-pad up comes back to it
 	    }
 	    playing_video_info = tmp_video_info;

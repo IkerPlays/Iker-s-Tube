@@ -168,19 +168,19 @@ bool youtube_account_run_endpoint(const std::string &endpoint_json) {
 		api = doc["commandMetadata"]["webCommandMetadata"]["apiUrl"].GetString();
 	}
 	std::string fields;
-	bool fields_candidate_seen = false;
-	for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
-		std::string name = it->name.GetString();
-		if (name == "clickTrackingParams" || name == "commandMetadata" || !it->value.IsObject()) continue;
-		bool service = name.size() > 8 && name.compare(name.size() - 8, 8, "Endpoint") == 0; // the "xxxEndpoint" member is the request
-		if (!service && fields_candidate_seen) continue;
-		fields_candidate_seen = true;
-		rapidjson::StringBuffer buffer;
-		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-		it->value.Accept(writer);
-		fields = buffer.GetString();
-		if (fields.size() >= 2) fields = fields.substr(1, fields.size() - 2); // without the braces
-		break;
+	for (int pass = 0; pass < 2 && fields == ""; pass++) { // first the "xxxEndpoint" member (the request), then any object member
+		for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
+			std::string name = it->name.GetString();
+			if (name == "clickTrackingParams" || name == "commandMetadata" || !it->value.IsObject()) continue;
+			bool service = name.size() > 8 && name.compare(name.size() - 8, 8, "Endpoint") == 0;
+			if (pass == 0 && !service) continue;
+			rapidjson::StringBuffer buffer;
+			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+			it->value.Accept(writer);
+			fields = buffer.GetString();
+			if (fields.size() >= 2) fields = fields.substr(1, fields.size() - 2); // without the braces
+			break;
+		}
 	}
 	const std::string prefix = "/youtubei/v1/";
 	if (api.compare(0, prefix.size(), prefix) != 0) {
