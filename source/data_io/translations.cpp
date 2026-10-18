@@ -562,6 +562,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Pause downloads", {"Mettre les téléchargements en pause", "Downloads pausieren", "Metti in pausa i download", "Pausar os downloads", "ダウンロードを一時停止"}},
 	    {"The history is off (incognito or disabled)", {"L'historique est désactivé (incognito ou désactivé)", "Der Verlauf ist aus (Inkognito oder deaktiviert)", "La cronologia è disattivata (incognito o disabilitata)", "O histórico está desligado (anônimo ou desativado)", "履歴はオフです（シークレットまたは無効）"}},
 	    {"This chat has only one mode", {"Ce chat n'a qu'un seul mode", "Dieser Chat hat nur einen Modus", "Questa chat ha una sola modalità", "Este chat tem apenas um modo", "このチャットにはモードが1つだけです"}},
+	    {"Clear what is older than 30 days", {"Effacer ce qui date de plus de 30 jours", "Älteres als 30 Tage löschen", "Cancella ciò che ha più di 30 giorni", "Apagar o que tem mais de 30 dias", "30日より古いものを消去"}},
+	    {"Removed: ", {"Retiré : ", "Entfernt: ", "Rimossi: ", "Removidos: ", "削除： "}},
 	};
 	return table;
 }

@@ -9,6 +9,7 @@
 #include "scenes/video_player.hpp"
 #include "youtube_parser/parser.hpp"
 #include "ui/ui.hpp"
+#include "ui/notice.hpp"
 #include "ui/overlay.hpp"
 #include "network_decoder/thumbnail_loader.hpp"
 #include "data_io/history.hpp"
@@ -27,6 +28,7 @@ std::string erase_request;
 
 int cur_sort_type = 0;
 int sort_request = -1;
+static bool clear_old_request = false;   // Clear what is older than 30 days (handled after the views update)
 static bool filter_request = false;      // the search-in-history button was pressed (the keyboard opens after the views update)
 static std::string history_filter;       // only the videos whose title or channel contain this text are listed
 
@@ -122,6 +124,15 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 	}
 	std::string needle = history_filter;
 	for (auto &c : needle) c = tolower(c);
+	if (watch_history.size() > 5) {
+		video_list_view->views.push_back((new TextView(0, 0, 320, 22))
+		                                     ->set_text(tr("Clear what is older than 30 days", "Borrar lo de hace más de 30 días"))
+		                                     ->set_x_alignment(TextView::XAlign::CENTER)
+		                                     ->set_y_alignment(TextView::YAlign::CENTER)
+		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                                     ->set_corner_radius(6)
+		                                     ->set_on_view_released([](View &) { clear_old_request = true; }));
+	}
 	long long last_day = -1;
 	const long long today = (long long)time(NULL) / 86400;
 	for (auto i : watch_history) {
@@ -279,6 +290,23 @@ void History_draw(void) {
 				global_intent.next_scene = SceneType::VIDEO_PLAYER;
 				global_intent.arg = clicked_url;
 				clicked_url = "";
+			}
+			if (clear_old_request) {
+				clear_old_request = false;
+				time_t limit = time(NULL) - 30 * 86400;
+				std::vector<HistoryVideo> kept;
+				int removed = 0;
+				for (auto &video : watch_history) {
+					if (video.last_watch_time < limit) {
+						history_erase_by_id(video.id);
+						removed++;
+					} else {
+						kept.push_back(video);
+					}
+				}
+				update_watch_history(kept);
+				misc_tasks_request(TASK_SAVE_HISTORY);
+				notice_show(tr("Removed: ", "Quitado: ") + std::to_string(removed));
 			}
 			if (filter_request) {
 				filter_request = false;
