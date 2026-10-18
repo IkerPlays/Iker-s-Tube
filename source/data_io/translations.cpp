@@ -137,7 +137,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Data limit reached", {"Limite de données atteinte", "Datenlimit erreicht", "Limite dati raggiunto", "Limite de dados atingido", "データ上限に達しました"}},
 	    {"None", {"Aucune", "Keine", "Nessuna", "Nenhuma", "なし"}},
 	    {"Next in queue", {"Suivante de la file", "Nächstes der Warteschlange", "Prossimo della coda", "Próximo da fila", "キューの次"}},
-	    {"Restart", {"Recommencer", "Neu starten", "Riavvia", "Reiniciar", "最初から"}},
+	    {"Restart", {"Recommencer", "Neu starten", "Ricomincia", "Reiniciar", "最初から"}},
 	    {"Bookmark", {"Marque-page", "Lesezeichen", "Segnalibro", "Marcador", "しおり"}},
 	    {"Stop after video", {"Arrêter après la vidéo", "Nach dem Video stoppen", "Ferma dopo il video", "Parar ao acabar", "動画の後で停止"}},
 	    {"Stop after: yes", {"Arrêt après : oui", "Stopp danach: ja", "Stop dopo: sì", "Parar depois: sim", "終了後に停止：オン"}},

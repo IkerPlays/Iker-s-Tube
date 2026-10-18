@@ -3,6 +3,7 @@
 #include "scenes/account_tasks.hpp"
 #include "ui/qr_popup.hpp"
 #include "ui/notice.hpp"
+#include "scenes/offline_tasks.hpp"
 #include "util/play_queue.hpp"
 #include <vector>
 #include <string>
@@ -477,16 +478,25 @@ void Channel_init(void) {
 				        ->set_on_view_released([action](View &) { action(); });
 			    };
 			    video_views.push_back((new HorizontalListView(0, 0, 22))
-			                              ->set_views({make_button(tr("Play all", "Reproducir todo"), 160, [queue_items]() {
+			                              ->set_views({make_button(tr("Play all", "Reproducir todo"), 106, [queue_items]() {
 				                                           play_queue_clear();
 				                                           for (size_t i = 1; i < queue_items.size(); i++) play_queue_toggle(queue_items[i].first, queue_items[i].second);
 				                                           clicked_url = queue_items[0].first;
 			                                           }),
-			                                           make_button(tr("Queue all", "Poner todo en cola"), 160, [queue_items]() {
+			                                           make_button(tr("Queue all", "Poner todo en cola"), 106, [queue_items]() {
 				                                           for (auto &v : queue_items) {
 					                                           if (play_queue_position(v.first) == 0) play_queue_toggle(v.first, v.second);
 				                                           }
 				                                           notice_show(tr("Queued: ", "En cola: ") + std::to_string(queue_items.size()));
+			                                           }),
+			                                           make_button(tr("Save audio", "Guardar audio"), 108, [queue_items]() {
+				                                           int n = 0;
+				                                           for (auto &v : queue_items) {
+					                                           if (n >= 20) break; // the latest 20
+					                                           offline_save_by_id_async(youtube_get_video_id_by_url(v.first), v.second, "", false);
+					                                           n++;
+				                                           }
+				                                           notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(n) + tr(" videos", " vídeos"));
 			                                           })}));
 		    }
 	    }

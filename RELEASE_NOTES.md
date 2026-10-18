@@ -1,4 +1,4 @@
 Devbuild notes
 
-- Player: a line under the tools shows the next video of the queue.
-- Search, Explore: eight more shortcuts (Sports, Science, Cooking, Technology, Travel, Podcasts, Kids, Live music).
+- Player tools: Restart (back to the beginning).
+- Channel page, Videos tab: the row also has Save audio (the latest 20 videos).

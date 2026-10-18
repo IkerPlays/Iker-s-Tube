@@ -2154,6 +2154,7 @@ debug_info_view =
 						                                   notice_show(tr("There is no next video", "No hay siguiente vídeo"));
 					                                   }
 				                                   }),
+				                         make_tool([]() { return tr("Restart", "Reiniciar"); }, 70, [jump]() { jump(-1e9); }),
 				                         make_tool([]() { return std::string("-1 min"); }, 60, [jump]() { jump(-60); }),
 				                         make_tool([]() { return std::string("+1 min"); }, 60, [jump]() { jump(60); }),
 				                         make_tool([]() { return tr("Links", "Enlaces"); }, 70,
