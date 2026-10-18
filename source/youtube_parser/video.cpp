@@ -14,6 +14,65 @@
 
 volatile bool youtube_load_cancel = false;
 
+bool youtube_audio_probe_request = false;
+int youtube_audio_probe_count = -1;
+
+// All the audio tracks (dubbed languages) of a video, asked to the ANDROID client (raw text scan of its answer)
+static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std::string &video_id) {
+	std::vector<YouTubeVideoDetail::AudioTrack> out;
+	std::string body = R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID","clientVersion": "19.51.37","androidSdkVersion": 34}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})";
+	body = std::regex_replace(body, std::regex("%0"), language_code);
+	body = std::regex_replace(body, std::regex("%1"), country_code);
+	body = std::regex_replace(body, std::regex("%2"), video_id);
+	std::map<std::string, std::string> headers;
+	if (OAuth::is_authenticated()) headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	auto r = http_post_json(get_innertube_api_url("player"), body, headers);
+	if (!r.first) return out;
+	const std::string &json = r.second;
+	auto text_after = [&](size_t from, size_t to, const std::string &key) {
+		size_t p = json.find(key, from);
+		if (p == std::string::npos || p >= to) return std::string();
+		p += key.size();
+		std::string res;
+		for (; p < json.size() && json[p] != '"'; p++) {
+			if (json[p] == '\\' && p + 1 < json.size()) {
+				if (json.compare(p, 6, "\\u0026") == 0) {
+					res += '&';
+					p += 5;
+				} else {
+					res += json[++p];
+				}
+			} else {
+				res += json[p];
+			}
+		}
+		return res;
+	};
+	size_t pos = 0;
+	while ((pos = json.find("\"audioTrack\"", pos)) != std::string::npos) {
+		size_t obj_start = json.rfind("\"itag\"", pos);
+		size_t next = json.find("\"itag\"", pos);
+		size_t end = next == std::string::npos ? json.size() : next;
+		pos += 12;
+		if (obj_start == std::string::npos) continue;
+		std::string mime = text_after(obj_start, pos, "\"mimeType\":\"");
+		if (mime.find("audio") == std::string::npos || mime.find("mp4a") == std::string::npos) continue;
+		std::string track_id = text_after(pos - 12, end, "\"id\":\"");
+		std::string lang = track_id.substr(0, track_id.find('.'));
+		bool known = false;
+		for (auto &t : out) known = known || t.lang == lang;
+		if (lang == "" || known) continue;
+		YouTubeVideoDetail::AudioTrack t;
+		t.lang = lang;
+		t.name = text_after(pos - 12, end, "\"displayName\":\"");
+		t.url = text_after(obj_start, pos, "\"url\":\"");
+		t.selected = json.find("\"audioIsDefault\":true", pos - 12) < end;
+		if (t.name == "") t.name = lang;
+		out.push_back(t);
+	}
+	return out;
+}
+
 static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res) {
 	res.playability_status = player_response["playabilityStatus"]["status"].string_value();
 	res.playability_reason = player_response["playabilityStatus"]["reason"].string_value();
@@ -112,11 +171,36 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 			else if (is_default && chosen < 0) chosen = (int)res.audio_tracks.size() - 1, chosen_default = true;
 		}
 		(void)chosen_default;
-		if (res.audio_tracks.size() > 1 && chosen >= 0) {
-			res.audio_stream_url = res.audio_tracks[chosen].url;
-			res.audio_tracks[chosen].selected = true;
+		if (res.audio_tracks.size() > 1) {
+			if (chosen >= 0) {
+				res.audio_stream_url = res.audio_tracks[chosen].url;
+				res.audio_tracks[chosen].selected = true;
+			}
 		} else {
 			res.audio_tracks.clear(); // a single track : nothing to choose
+		}
+		// The client that gave the streams often lists only one audio track. When a language is wanted (or the tool asked),
+		// the ANDROID client is asked for the full list of dubbed tracks.
+		if (res.audio_tracks.size() < 2 && res.id != "" && (wanted_lang != "" || youtube_audio_probe_request)) {
+			youtube_audio_probe_request = false;
+			std::vector<YouTubeVideoDetail::AudioTrack> probed = probe_audio_tracks(res.id);
+			logger.info("player", "audio tracks found by the probe : " + std::to_string(probed.size()));
+			youtube_audio_probe_count = (int)probed.size();
+			if (probed.size() > 1) {
+				int pick = -1, original = -1;
+				for (size_t k = 0; k < probed.size(); k++) {
+					if (probed[k].selected) original = (int)k; // (the default track is flagged as selected by the probe)
+					if (wanted_lang != "" && probed[k].lang == wanted_lang) pick = (int)k;
+				}
+				for (auto &t : probed) t.selected = false;
+				if (pick >= 0 && pick != original && probed[pick].url != "") {
+					res.audio_stream_url = probed[pick].url;
+					probed[pick].selected = true;
+				} else if (original >= 0) {
+					probed[original].selected = true; // the original audio : the stream of the main client stays
+				}
+				res.audio_tracks = probed;
+			}
 		}
 		if (res.audio_stream_url == "") {
 			for (auto i : audio_formats) {

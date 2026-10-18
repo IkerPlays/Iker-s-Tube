@@ -579,6 +579,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"That name is not valid or already exists", {"Ce nom n'est pas valide ou existe déjà", "Dieser Name ist ungültig oder existiert bereits", "Questo nome non è valido o esiste già", "Esse nome não é válido ou já existe", "その名前は無効か、すでに存在します"}},
 	    {"Save the queue as a list", {"Enregistrer la file comme liste", "Warteschlange als Liste speichern", "Salva la coda come lista", "Salvar a fila como lista", "キューをリストとして保存"}},
 	    {"List saved: ", {"Liste enregistrée : ", "Liste gespeichert: ", "Lista salvata: ", "Lista salva: ", "リストを保存： "}},
+	    {"Looking for audio tracks...", {"Recherche des pistes audio...", "Tonspuren werden gesucht...", "Ricerca delle tracce audio...", "Procurando faixas de áudio...", "音声トラックを検索中..."}},
 	};
 	return table;
 }

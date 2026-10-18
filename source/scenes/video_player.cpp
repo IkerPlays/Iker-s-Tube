@@ -2123,8 +2123,19 @@ debug_info_view =
 				                         make_tool([]() { return tr("Audio language", "Idioma del audio"); }, 110,
 				                                   []() {
 					                                   auto &tracks = cur_video_info.audio_tracks;
-					                                   if (tracks.size() < 2) {
-						                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio"));
+					                                   if (tracks.size() < 2) { // the video page found one : look for the others (the next load asks the ANDROID client)
+						                                   if (youtube_audio_probe_count == 0 || youtube_audio_probe_count == 1) {
+							                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio"));
+							                                   youtube_audio_probe_count = -1;
+							                                   return;
+						                                   }
+						                                   youtube_audio_probe_request = true;
+						                                   notice_show(tr("Looking for audio tracks...", "Buscando pistas de audio..."));
+						                                   if (!is_async_task_running(load_video_page)) {
+							                                   seek_at_init_request = vid_current_pos;
+							                                   send_change_video_request_wo_lock(cur_playing_url, true, false, true);
+							                                   video_retry_left = MAX_RETRY_CNT;
+						                                   }
 						                                   return;
 					                                   }
 					                                   size_t current = 0;

@@ -326,3 +326,7 @@ struct YouTubeDislikeData {
 // The language the audio should be in when the video has several tracks ("" : the original one). Kept in sdmc:/3ds/IkersTube/audio_lang.txt.
 std::string youtube_audio_lang_get();
 void youtube_audio_lang_set(const std::string &lang);
+
+// the Audio language tool asks the next video load to look for the dubbed audio tracks; the count it found (-1 : not asked)
+extern bool youtube_audio_probe_request;
+extern int youtube_audio_probe_count;
