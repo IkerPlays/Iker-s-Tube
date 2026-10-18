@@ -352,16 +352,18 @@ static void suggest_thread(void *) {
 		if (open == std::string::npos) continue;
 		int taken = 0;
 		size_t p = open + 1;
+		size_t array_end = r.second.find(']', p);
+		if (array_end == std::string::npos) continue;
 		while (taken < 3) {
 			size_t q1 = r.second.find('"', p);
-			if (q1 == std::string::npos) break;
+			if (q1 == std::string::npos || q1 > array_end) break;
 			size_t q2 = r.second.find('"', q1 + 1);
 			if (q2 == std::string::npos) break;
 			std::string w = r.second.substr(q1 + 1, q2 - q1 - 1);
 			p = q2 + 1;
 			if (w.find('\\') != std::string::npos || w.size() < 2 || w.size() > 38) continue;
 			LightLock_Lock(&suggest_lock);
-			suggest_words.push_back(w);
+			if (std::find(suggest_words.begin(), suggest_words.end(), w) == suggest_words.end()) suggest_words.push_back(w);
 			LightLock_Unlock(&suggest_lock);
 			taken++;
 		}
@@ -603,6 +605,7 @@ static void load_account_feed(void *) {
 
 static std::string feed_first_url; // the Shorts feed opens its first video by itself
 static void load_search_results(void *) {
+	feed_first_url = "";
 	// pre-access processing
 	resource_lock.lock();
 	std::string search_word = cur_search_word;
@@ -647,8 +650,11 @@ static void load_search_results(void *) {
 				for (auto &id : more) items.push_back({youtube_get_video_url_by_id(id), "Short"});
 			}
 		}
-		play_queue_set_repeat(items, true);
-		if (items.size()) feed_first_url = items[0].first;
+		bool real_feed = items.size() && items[0].second == "Short"; // (the sequence of YouTube : its order is kept)
+		play_queue_clear();                                           // the Shorts replace the queue
+		for (size_t i = 1; i < items.size(); i++) play_queue_toggle(items[i].first, items[i].second);
+		play_queue_set_repeat(items, !real_feed);
+		feed_first_url = items.size() ? items[0].first : "";
 	}
 
 	// wrap and truncate here
@@ -699,7 +705,7 @@ static void load_search_results(void *) {
 
 	search_done = true;
 	var_need_refresh = true;
-	if (feed && feed_first_url != "") {
+	if (feed && feed_first_url != "" && shorts_feed && global_current_scene == SceneType::SEARCH && cur_search_word == search_word) { // (the user may have left)
 		clicked_url = feed_first_url;
 		feed_first_url = "";
 		notice_show(tr("Shorts: D-pad Down = next, Up = previous", "Shorts: cruceta Abajo = siguiente, Arriba = anterior"));

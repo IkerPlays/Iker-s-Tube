@@ -18,13 +18,23 @@ bool youtube_audio_probe_request = false;
 int youtube_audio_probe_count = -1;
 
 // All the audio tracks (dubbed languages) of a video, asked to the ANDROID client (raw text scan of its answer)
-std::string youtube_audio_probe_info;
+static std::string probe_info; // what the last audio probe saw (guarded by probe_info_lock : the loader writes it, the UI reads it)
+static LightLock probe_info_lock;
+static struct ProbeInfoLockInit {
+	ProbeInfoLockInit() { LightLock_Init(&probe_info_lock); }
+} probe_info_lock_init;
+std::string youtube_audio_probe_info_get() {
+	LightLock_Lock(&probe_info_lock);
+	std::string copy = probe_info;
+	LightLock_Unlock(&probe_info_lock);
+	return copy;
+}
 static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std::string &video_id) {
 	std::vector<YouTubeVideoDetail::AudioTrack> out;
 	static const char *clients[2] = {
 	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID","clientVersion": "19.51.37","androidSdkVersion": 34}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})",
 	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android","osVersion": "14"}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})"};
-	youtube_audio_probe_info = "";
+	std::string info;
 	std::vector<YouTubeVideoDetail::AudioTrack> best;
 	for (int c = 0; c < 2 && best.size() < 2; c++) {
 		out.clear();
@@ -67,11 +77,14 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 		    },
 		    [&](const std::string &error) { status = "error " + error.substr(0, 40); });
 		if (out.size() > best.size()) best = out;
-		youtube_audio_probe_info += std::string(c ? " | VR " : "ANDROID ") + status + " formats=" + std::to_string(formats) +
+		info += std::string(c ? " | VR " : "ANDROID ") + status + " formats=" + std::to_string(formats) +
 		                            " audio=" + std::to_string(audio) + " tracks=" + std::to_string(with_track) +
 		                            " urls=" + std::to_string(with_url);
 	}
-	logger.info("player", "audio probe : " + youtube_audio_probe_info);
+	LightLock_Lock(&probe_info_lock);
+	probe_info = info;
+	LightLock_Unlock(&probe_info_lock);
+	logger.info("player", "audio probe : " + info);
 	return best.size() >= out.size() ? best : out;
 }
 

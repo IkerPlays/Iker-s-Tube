@@ -322,7 +322,26 @@ static void caption_lang_remember(const std::string &id) {
 	fclose(f);
 }
 
-static std::vector<std::pair<std::string, std::string>> back_stack; // videos left with D-pad down ({url, title}), emptied when the player starts
+static std::vector<std::pair<std::string, std::string>> back_stack; // videos left behind ({url, title}), emptied when the player starts
+static LightLock back_lock;
+static bool back_navigating = false; // the video change was a "previous" : the video left is not stacked again
+static void back_stack_push(const std::string &url, const std::string &title) {
+	LightLock_Lock(&back_lock);
+	back_stack.push_back({url, title});
+	if (back_stack.size() > 30) back_stack.erase(back_stack.begin());
+	LightLock_Unlock(&back_lock);
+}
+static bool back_stack_pop(std::pair<std::string, std::string> &out) {
+	bool ok = false;
+	LightLock_Lock(&back_lock);
+	if (back_stack.size()) {
+		out = back_stack.back();
+		back_stack.pop_back();
+		ok = true;
+	}
+	LightLock_Unlock(&back_lock);
+	return ok;
+}
 // quick subtitles tool : off -> each subtitle language of the video -> off
 namespace youtube_parser {
 extern std::string language_code;
@@ -936,7 +955,9 @@ static double url_start_time(const std::string &url) {
 }
 
 void VideoPlayer_init(void) {
+	LightLock_Init(&back_lock);
 	back_stack.clear();
+	back_navigating = false;
 	youtube_is_watched_hook = autoplay_is_watched; // (the setting Autoplay picks : skip watched)
 	logger.info(DEF_SAPP0_INIT_STR, "Initializing...");
 	bool new_3ds = false;
@@ -2195,7 +2216,7 @@ debug_info_view =
 					                                   auto &tracks = cur_video_info.audio_tracks;
 					                                   if (tracks.size() < 2) { // the video page found one : look for the others (the next load asks the ANDROID client)
 						                                   if (youtube_audio_probe_count == 0 || youtube_audio_probe_count == 1) {
-							                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio") + (youtube_audio_probe_info != "" ? " (" + youtube_audio_probe_info.substr(0, 90) + ")" : std::string()));
+							                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio") + (youtube_audio_probe_info_get() != "" ? " (" + youtube_audio_probe_info_get().substr(0, 90) + ")" : std::string()));
 							                                   youtube_audio_probe_count = -1;
 							                                   return;
 						                                   }
@@ -2722,6 +2743,10 @@ debug_info_view =
 		    video_info_cache.erase("offline:" + pending_offline_delete);
 		    pending_offline_delete = "";
 	    }
+	    if (!back_navigating && playing_video_info.url != "" && tmp_video_info.url != "" && playing_video_info.url != tmp_video_info.url) {
+		    back_stack_push(playing_video_info.url, playing_video_info.title); // D-pad up comes back to it
+	    }
+	    back_navigating = false;
 	    playing_video_info = tmp_video_info;
 	    if (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0) { // the saved copy that replaced an online video is not remembered under its address
 		    video_info_cache[url] = tmp_video_info;
@@ -4675,18 +4700,13 @@ static void autoplay_countdown_tick() {
 			    if (key.p_d_down) {
 				    std::string queued_url;
 				    if (play_queue_pop(queued_url)) {
-					    if (cur_url != "" && cur_url != queued_url) {
-						    back_stack.push_back({cur_url, cur_title});
-						    if (back_stack.size() > 30) back_stack.erase(back_stack.begin());
-					    }
 					    send_change_video_request(queued_url, true, false, false);
 				    } else {
 					    notice_show(tr("There is no next video", "No hay siguiente vídeo"));
 				    }
-			    } else if (back_stack.size()) {
-				    auto previous = back_stack.back();
-				    back_stack.pop_back();
+			    } else if (std::pair<std::string, std::string> previous; back_stack_pop(previous)) {
 				    if (cur_url != "") play_queue_play_next(cur_url, cur_title); // "down" comes back to this one
+				    back_navigating = true;
 				    send_change_video_request(previous.first, true, false, false);
 			    } else {
 				    notice_show(tr("No previous video", "No hay vídeo anterior"));

@@ -789,7 +789,7 @@ void Channel_init(void) {
 		             }
 		             if (channel_info.id != "") {
 			             account_bell_async(channel_info.id, bell_level);
-			             bell_level = (bell_level + 1) % 3;
+			             if (OAuth::is_authenticated()) bell_level = (bell_level + 1) % 3; // (without a login nothing was sent)
 		             }
 	             }),
 	         (new RuleView(0, 0, 320, SMALL_MARGIN)),

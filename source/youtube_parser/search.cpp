@@ -14,7 +14,7 @@ std::vector<std::string> youtube_shorts_sequence(const std::string &seed_video_i
 	raw += seed_video_id;
 	raw += "\x2A\x02\x18\x05"; // params { number = 5 }
 	raw += "\x50\x19";         // feature_2 = 25
-	raw += "\x68\x00";         // feature_3 = 0
+	raw.append("\x68\x00", 2); // feature_3 = 0 (the zero byte needs the length : a C string would stop there)
 	static const char *tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	std::string b64;
 	for (size_t i = 0; i < raw.size(); i += 3) {

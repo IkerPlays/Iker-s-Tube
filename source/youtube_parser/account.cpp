@@ -188,6 +188,13 @@ bool youtube_account_run_endpoint(const std::string &endpoint_json) {
 	api = api.substr(prefix.size());
 	size_t q = api.find('?');
 	if (q != std::string::npos) api = api.substr(0, q);
+	static const char *blocked[] = {"subscription/", "playlist/", "browse/edit_playlist", "comment/", "channel_edit", "account/", "feedback", "like/dislike", "guide_action"};
+	for (auto b : blocked) { // a page must not make the app run actions that the user did not choose
+		if (api.compare(0, strlen(b), b) == 0) {
+			set_last_error("endpoint not allowed : " + api);
+			return false;
+		}
+	}
 	if (fields == "") fields = "\"x\": 0";
 	return account_post(api, fields, 1).first || account_post(api, fields, 2).first;
 }
