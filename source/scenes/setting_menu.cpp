@@ -1179,6 +1179,20 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Live chat
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Manual", "Manual"); },
+							(std::function<std::string ()>) []() { return tr("Open by itself", "Abrir solo"); }
+						}, var_auto_chat)
+						->set_title([](const SelectorView &) { return tr("Live chat in live streams", "Chat en los directos"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_auto_chat != view.selected_button) {
+								var_auto_chat = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Default speed
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

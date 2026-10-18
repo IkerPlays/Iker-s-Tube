@@ -33,6 +33,7 @@ extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
+extern int var_auto_chat; // 1 : the chat opens by itself when a live stream starts playing
 extern int var_default_speed; // 0..5 : 100%, 75%, 125%, 150%, 175%, 200% (for channels without a speed of their own)
 extern int var_wl_autoremove; // 1 : a video leaves Watch later when it is watched until the end
 extern int var_hide_studio; // 1 : the Studio tab of the Home screen is not shown (takes effect when the app starts)

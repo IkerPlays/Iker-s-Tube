@@ -1,4 +1,3 @@
 Devbuild notes
 
-- Player tools: Restart (back to the beginning).
-- Channel page, Videos tab: the row also has Save audio (the latest 20 videos).
+- Settings, Playback: Live chat in live streams (Manual or Open by itself): the chat opens when a live stream starts playing.

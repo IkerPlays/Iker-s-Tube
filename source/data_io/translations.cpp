@@ -526,6 +526,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Podcasts", {"Podcasts", "Podcasts", "Podcast", "Podcasts", "ポッドキャスト"}},
 	    {"Kids", {"Enfants", "Kinder", "Bambini", "Crianças", "キッズ"}},
 	    {"Live music", {"Musique en direct", "Live-Musik", "Musica dal vivo", "Música ao vivo", "ライブ音楽"}},
+	    {"Manual", {"Manuel", "Manuell", "Manuale", "Manual", "手動"}},
+	    {"Open by itself", {"S'ouvre seul", "Öffnet automatisch", "Si apre da solo", "Abre sozinho", "自動で開く"}},
+	    {"Live chat in live streams", {"Chat en direct dans les directs", "Live-Chat bei Livestreams", "Chat dal vivo nelle dirette", "Chat ao vivo nas transmissões", "ライブ配信のチャット"}},
 	};
 	return table;
 }

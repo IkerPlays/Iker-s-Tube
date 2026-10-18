@@ -4306,6 +4306,13 @@ static void autoplay_countdown_tick() {
 				    notice_show(tr("Loading the channels...", "Cargando los canales..."));
 				    queue_async_task(load_collab_task, id);
 			    }
+			    {
+				    static std::string chat_auto_for; // the chat opens by itself once per live stream (setting)
+				    if (var_auto_chat && cur_video_info.is_livestream && cur_video_info.id != "" && chat_auto_for != cur_video_info.id) {
+					    chat_auto_for = cur_video_info.id;
+					    chat_request = true;
+				    }
+			    }
 			    if (chat_request) {
 				    chat_request = false;
 				    live_chat_open(cur_video_info.id);
