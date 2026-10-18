@@ -23,7 +23,7 @@ necesitan haber iniciado sesión en Ajustes; las de Studio, además, el login de
 ## Reproductor
 Herramientas (se desplazan hacia los lados): saltos de 10 s, 30 s y 1 min, A-B, capítulos, velocidad, Luego, marcas,
 mini reproductor, parar al acabar, guardar audio/vídeo, Me gusta, No me gusta, Mi lista, campana, No me interesa,
-ocultar canal, traducir, **Chat en directo**, **Idioma del audio** (pistas dobladas), **QR del canal**, **Guardar audio de la
+ocultar canal, traducir, **Chat en directo**, **Idioma del audio** (pistas dobladas), **QR del canal**, **QR del vídeo**, **CC** (subtítulos de YouTube: cada pulsación pasa al siguiente idioma y al final los apaga), **<< Cap** (capítulo anterior), **Guardar audio de la
 lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlaces** de la descripción (cada uno da su QR).
 
 - **Chat en directo:** solo en directos. Botón para cambiar entre chat destacado y todo el chat. Escribir necesita el
@@ -43,7 +43,7 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - Editar mis subidas: visibilidad, título, **descripción**, miniatura, borrar y estadísticas (con visitas por vídeo).
 
 ## Ajustes útiles
-- Reproducción: velocidad por defecto, que la reproducción automática salte lo ya visto, quitar de Ver más tarde al
+- Reproducción: subtítulos automáticos (se abren solos con el último idioma usado), velocidad por defecto, que la reproducción automática salte lo ya visto, quitar de Ver más tarde al
   acabar, chat automático y calidad de lo guardado.
 - Datos: estadísticas de uso, informe para enviar, copia de seguridad, vaciar caché y **restablecer ajustes**.
 - Incógnito: no se guarda historial, búsquedas ni posiciones.

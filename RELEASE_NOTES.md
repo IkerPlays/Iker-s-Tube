@@ -1,1 +1,1 @@
-Player: new "Video QR" tool shows the QR code of the video link, to open it on a phone.
+Docs: the Spanish usage guide now covers the CC, Video QR and previous chapter tools and the automatic subtitles setting.
