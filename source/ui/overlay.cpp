@@ -70,7 +70,8 @@ static void video_menu_close() {
 	if (video_menu) video_menu->set_is_visible(false);
 	var_need_refresh = true;
 }
-void overlay_show_video_menu(const std::string &url, const std::string &title, const std::string &author) {
+void overlay_show_video_menu(const std::string &url, const std::string &title, const std::string &author,
+                             const std::string &extra_label, std::function<void()> extra_action) {
 	std::string id = youtube_get_video_id_by_url(url);
 	if (!video_menu) {
 		video_menu = new OverlayView(0, 0, 320, 240);
@@ -116,6 +117,7 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 	if (OAuth::is_authenticated()) {
 		option(tr("Not interested", "No me interesa"), [id]() { account_not_interested_async(id, false); });
 	}
+	if (extra_label != "" && extra_action) option(extra_label, extra_action);
 	rows.push_back((new TextView(0, 0, width, 24))
 	                   ->set_text(LOCALIZED(CANCEL))
 	                   ->set_x_alignment(TextView::XAlign::CENTER)

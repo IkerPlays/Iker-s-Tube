@@ -82,6 +82,33 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 	video_list_view = (new VerticalListView(0, 0, 320))
 	                      ->set_margin(SMALL_MARGIN)
 	                      ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HISTORY);
+	if (watch_history.size() > 1) { // listen to the history like a playlist
+		std::vector<std::pair<std::string, std::string>> items;
+		for (auto &v : watch_history) {
+			if (items.size() < 40) items.push_back({youtube_get_video_url_by_id(v.id), v.title});
+		}
+		auto button = [](const std::string &text, int width, std::function<void()> action) {
+			return (new TextView(0, 0, width, 22))
+			    ->set_text(text)
+			    ->set_x_alignment(TextView::XAlign::CENTER)
+			    ->set_y_alignment(TextView::YAlign::CENTER)
+			    ->set_get_background_color(View::STANDARD_BACKGROUND)
+			    ->set_corner_radius(6)
+			    ->set_on_view_released([action](View &) { action(); });
+		};
+		auto play = [items](bool shuffle) {
+			std::vector<std::pair<std::string, std::string>> list = items;
+			if (shuffle) {
+				for (size_t k = list.size(); k > 1; k--) std::swap(list[k - 1], list[rand() % k]);
+			}
+			play_queue_clear();
+			for (size_t k = 1; k < list.size(); k++) play_queue_toggle(list[k].first, list[k].second);
+			clicked_url = list[0].first;
+		};
+		video_list_view->views.push_back((new HorizontalListView(0, 0, 22))
+		                                     ->set_views({button(tr("Play all", "Reproducir todo"), 160, [play]() { play(false); }),
+		                                                  button(tr("Shuffle", "Aleatorio"), 160, [play]() { play(true); })}));
+	}
 	for (auto i : watch_history) {
 		std::string view_count_str;
 		{
@@ -119,33 +146,11 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		    })
 		    ->set_on_view_released([i](View &view) { clicked_url = youtube_get_video_url_by_id(i.id); })
 		    ->add_on_long_hold(40, [i](View &view) {
-			    on_long_tap_dialog->recursive_delete_subviews();
-			    on_long_tap_dialog
-			        ->set_subview(
-			            (new TextView(0, 0, 180, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
-			                ->set_text((std::function<std::string()>)[]() { return LOCALIZED(REMOVE_HISTORY_ITEM); })
-			                ->set_x_alignment(TextView::XAlign::CENTER)
-			                ->set_y_alignment(TextView::YAlign::CENTER)
-			                ->set_text_offset(0, -1)
-			                ->set_on_view_released([i](View &view) {
-				                erase_request = i.id;
-				                main_view->reset_holding_status();
-				                on_long_tap_dialog->set_is_visible(false);
-				                var_need_refresh = true;
-			                })
-			                ->set_get_background_color([](const View &view) {
-				                int darkness = std::min<int>(0xFF, 0xD0 + 0x30 * (1 - view.touch_darkness));
-				                if (var_night_mode) {
-					                darkness = 0xFF - darkness;
-				                }
-				                return COLOR_GRAY(darkness);
-			                }))
-			        ->set_on_cancel([](OverlayView &view) {
-				        main_view->reset_holding_status();
-				        view.set_is_visible(false);
-				        var_need_refresh = true;
-			        })
-			        ->set_is_visible(true);
+			    overlay_show_video_menu(youtube_get_video_url_by_id(i.id), i.title, i.author_name, tr("Remove from history", "Quitar del historial"), [i]() {
+				    erase_request = i.id;
+				    var_need_refresh = true;
+			    });
+			    view.reset_holding_status(); // the release must not open the video
 			    var_need_refresh = true;
 		    });
 

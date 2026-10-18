@@ -495,6 +495,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Showing: ", {"Affiché : ", "Zeigt: ", "Mostra: ", "Mostrando: ", "表示中： "}},
 	    {"YouTube history", {"Historique YouTube", "YouTube-Verlauf", "Cronologia YouTube", "Histórico do YouTube", "YouTube履歴"}},
 	    {" (tap for the next)", {" (touchez pour le suivant)", " (antippen für das nächste)", " (tocca per il successivo)", " (toque para o próximo)", " （タップで次へ）"}},
+	    {"Remove from history", {"Retirer de l'historique", "Aus dem Verlauf entfernen", "Rimuovi dalla cronologia", "Remover do histórico", "履歴から削除"}},
 	};
 	return table;
 }

@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Library, Liked tab: the button at the top now cycles through Liked, YouTube history and every playlist of your account (they load when you open the tab signed in), so your YouTube playlists can be browsed, played, shuffled and saved from the app.
+- History screen: Play all and Shuffle buttons at the top, and the long press menu is now the full video menu (queue, watch later, favorite, save offline...) with Remove from history as its last option.
