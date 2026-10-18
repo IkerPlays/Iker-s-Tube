@@ -501,6 +501,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Bell: all notifications", {"Cloche : toutes", "Glocke: alle", "Campanella: tutte", "Sino: todas", "通知：すべて"}},
 	    {"Bell: personalized", {"Cloche : personnalisées", "Glocke: personalisiert", "Campanella: personalizzate", "Sino: personalizadas", "通知：おすすめ"}},
 	    {"Bell: none", {"Cloche : aucune", "Glocke: keine", "Campanella: nessuna", "Sino: nenhuma", "通知：なし"}},
+	    {"Applies to the lists loaded from now on.", {"S'applique aux listes chargées à partir de maintenant.", "Gilt für ab jetzt geladene Listen.", "Si applica alle liste caricate da ora in poi.", "Aplica-se às listas carregadas a partir de agora.", "今後読み込むリストに適用されます。"}},
 	};
 	return table;
 }
