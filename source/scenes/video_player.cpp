@@ -542,6 +542,7 @@ static void show_text_popup(const std::string &title, const std::string &text) {
 	        ->set_views({(new TextView(0, 0, width, 22))
 	                         ->set_text(title)
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
 	                     (new ScrollView(0, 0, width, body_height))
 	                         ->set_views({(new VerticalListView(0, 0, width))->set_views(lines)})
@@ -549,6 +550,7 @@ static void show_text_popup(const std::string &title, const std::string &text) {
 	                     (new TextView(0, 0, width, 22))
 	                         ->set_text(LOCALIZED(CLOSE))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_corner_radius(6)
 	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                         ->set_on_view_released([](View &) {
 		                         text_popup_view->set_is_visible(false);
@@ -582,6 +584,7 @@ static void show_account_playlists(const std::string &video_id, const std::vecto
 	        ->set_views({(new TextView(0, 0, width, 22))
 	                         ->set_text(tr("Save to my list", "Guardar en mi lista"))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
 	                     (new ScrollView(0, 0, width, list_height))
 	                         ->set_views({(new VerticalListView(0, 0, width))->set_views(items)})
@@ -589,6 +592,7 @@ static void show_account_playlists(const std::string &video_id, const std::vecto
 	                     (new TextView(0, 0, width, 22))
 	                         ->set_text(LOCALIZED(CLOSE))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_corner_radius(6)
 	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                         ->set_on_view_released([](View &) {
 		                         account_pl_popup_view->set_is_visible(false);
@@ -660,6 +664,7 @@ static void show_live_chat() {
 	        ->set_views({(new TextView(0, 0, width, 22))
 	                         ->set_text(tr("Live chat", "Chat en directo"))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
 	                     (new ScrollView(0, 0, width, list_height))
 	                         ->set_views({list})
@@ -720,6 +725,7 @@ static void show_description_links() {
 	        ->set_views({(new TextView(0, 0, width, 22))
 	                         ->set_text(tr("Links (tap for the QR)", "Enlaces (toca para el QR)"))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
 	                     (new ScrollView(0, 0, width, list_height))
 	                         ->set_views({list})
@@ -727,6 +733,7 @@ static void show_description_links() {
 	                     (new TextView(0, 0, width, 22))
 	                         ->set_text(LOCALIZED(CLOSE))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_corner_radius(6)
 	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                         ->set_on_view_released([](View &) {
 		                         account_pl_popup_view->set_is_visible(false);
@@ -743,9 +750,9 @@ static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &chan
 	VerticalListView *list = (new VerticalListView(0, 0, width))->enable_thumbnail_request_update(6, SceneType::VIDEO_PLAYER);
 	for (auto &channel : channels) {
 		SuccinctChannelView *view = new SuccinctChannelView(0, 0, width, CHANNEL_ICON_HEIGHT);
-		view->set_name(truncate_first_line(channel.name, width - CHANNEL_ICON_WIDTH - 6, 0.6));
+		view->set_name(truncate_first_line(channel.name, width - CHANNEL_ICON_HEIGHT - 24, 0.6));
 		bool subscribed = subscription_is_subscribed(channel.id);
-		view->set_auxiliary_lines({truncate_first_line(channel.subscribers, width - CHANNEL_ICON_WIDTH - 6, 0.5),
+		view->set_auxiliary_lines({truncate_first_line(channel.subscribers, width - CHANNEL_ICON_HEIGHT - 24, 0.5),
 		                           subscribed ? tr("Subscribed - long press to unsubscribe", "Suscrito - mantén para quitar")
 		                                      : tr("Long press to subscribe", "Mantén para suscribirte")});
 		view->set_thumbnail_url(channel.icon_url);
@@ -784,6 +791,7 @@ static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &chan
 	        ->set_views({(new TextView(0, 0, width, 22))
 	                         ->set_text(tr("Channels in this video", "Canales de este vídeo"))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
 	                     (new ScrollView(0, 0, width, list_height))
 	                         ->set_views({list})
@@ -791,6 +799,7 @@ static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &chan
 	                     (new TextView(0, 0, width, 22))
 	                         ->set_text(LOCALIZED(CLOSE))
 	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_corner_radius(6)
 	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                         ->set_on_view_released([](View &) {
 		                         account_pl_popup_view->set_is_visible(false);
@@ -2095,6 +2104,20 @@ debug_info_view =
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 
+				    // modern look : the buttons of the rows are rounded and separated by a small gap
+				    for (View *row : main_tab_views) {
+					    HorizontalListView *h = dynamic_cast<HorizontalListView *>(row);
+					    if (!h) continue;
+					    std::vector<View *> spaced;
+					    for (View *v : h->views) {
+						    spaced.push_back(v);
+						    if (dynamic_cast<TextView *>(v) && v->get_height() <= 24 && v->get_width() > 30) {
+							    v->set_corner_radius(6);
+							    spaced.push_back(new EmptyView(0, 0, 3, 20));
+						    }
+					    }
+					    h->views = spaced;
+				    }
 				    // chapters : lines of the description that start with a timestamp ("0:00 Intro")
 				    std::vector<std::pair<double, std::string>> chapters;
 				    {

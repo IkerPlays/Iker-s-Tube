@@ -22,7 +22,9 @@ struct SuccinctChannelView : public FixedSizeView {
 	std::string thumbnail_url;
 
 	SuccinctChannelView(double x0, double y0, double width, double height)
-	    : View(x0, y0), FixedSizeView(x0, y0, width, height) {}
+	    : View(x0, y0), FixedSizeView(x0, y0, width, height) {
+		corner_radius = 6; // card look
+	}
 	virtual ~SuccinctChannelView() {}
 
 	SuccinctChannelView *set_name(const std::string &name) { // mandatory
@@ -39,14 +41,14 @@ struct SuccinctChannelView : public FixedSizeView {
 	}
 
 	void draw_() const override {
-		Draw_texture(var_square_image[0], DEFAULT_BACK_COLOR, 0, y0, CHANNEL_ICON_WIDTH, y1 - y0);
-		thumbnail_draw(thumbnail_handle, x0 + (CHANNEL_ICON_WIDTH - CHANNEL_ICON_HEIGHT) / 2, y0, CHANNEL_ICON_HEIGHT,
-		               CHANNEL_ICON_HEIGHT);
-		float y = y0;
-		Draw(name, x0 + CHANNEL_ICON_WIDTH + 3, y, NAME_FONT_SIZE, NAME_FONT_SIZE, DEFAULT_TEXT_COLOR);
-		y += NAME_FONT_HEIGHT;
+		// the picture sits at the left of the card, the text gets the rest of the width
+		const float icon_x = x0 + 6, text_x = icon_x + CHANNEL_ICON_HEIGHT + 8;
+		thumbnail_draw(thumbnail_handle, icon_x, y0, CHANNEL_ICON_HEIGHT, CHANNEL_ICON_HEIGHT);
+		float y = y0 + 2;
+		Draw(name, text_x, y, NAME_FONT_SIZE, NAME_FONT_SIZE, DEFAULT_TEXT_COLOR);
+		y += NAME_FONT_HEIGHT + 2;
 		for (auto line : auxiliary_lines) {
-			Draw(line, x0 + CHANNEL_ICON_WIDTH + 3, y, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+			Draw(line, text_x, y, 0.5, 0.5, LIGHT1_TEXT_COLOR);
 			y += DEFAULT_FONT_INTERVAL;
 		}
 	}

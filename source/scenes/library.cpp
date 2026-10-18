@@ -179,6 +179,7 @@ static TextView *make_button(const std::string &text, int width, std::function<v
 	    ->set_x_alignment(TextView::XAlign::CENTER)
 	    ->set_y_alignment(TextView::YAlign::CENTER)
 	    ->set_get_background_color(button_background)
+	    ->set_corner_radius(6)
 	    ->set_on_view_released([action](View &) { action(); });
 	return button;
 }

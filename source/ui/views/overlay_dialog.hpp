@@ -28,7 +28,8 @@ struct OverlayDialogView : public OverlayView {
 		                               ->set_margin(0),
 		                           (new HorizontalListView(0, 0, DEFAULT_DIALOG_BUTTON_HEIGHT))})
 		              ->set_draw_order({0, 2, 1})
-		              ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; });
+		              ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; })
+		              ->set_corner_radius(8);
 		set_on_cancel([](OverlayView &view) {
 			view.set_is_visible(false);
 			var_need_refresh = true;
