@@ -322,6 +322,7 @@ static void caption_lang_remember(const std::string &id) {
 	fclose(f);
 }
 
+static std::vector<std::pair<std::string, std::string>> back_stack; // videos left with D-pad down ({url, title}), emptied when the player starts
 // quick subtitles tool : off -> each subtitle language of the video -> off
 namespace youtube_parser {
 extern std::string language_code;
@@ -935,6 +936,7 @@ static double url_start_time(const std::string &url) {
 }
 
 void VideoPlayer_init(void) {
+	back_stack.clear();
 	youtube_is_watched_hook = autoplay_is_watched; // (the setting Autoplay picks : skip watched)
 	logger.info(DEF_SAPP0_INIT_STR, "Initializing...");
 	bool new_3ds = false;
@@ -4493,8 +4495,8 @@ static void autoplay_countdown_tick() {
 			    }
 			    {
 				    static std::string cc_auto_for; // the subtitles of the remembered language open by themselves (setting)
-				    if (var_auto_captions && cur_video_info.id != "" && cc_auto_for != cur_video_info.id) {
-					    cc_auto_for = cur_video_info.id;
+				    if (var_auto_captions && cur_video_info.id != "" && cc_auto_for != cur_video_info.id && cur_video_info.caption_base_languages.size()) {
+					    cc_auto_for = cur_video_info.id; // (once the list of subtitle tracks is there)
 					    std::string remembered = caption_lang_remembered();
 					    for (size_t i = 0; remembered != "" && i < cur_video_info.caption_base_languages.size(); i++) {
 						    if (cur_video_info.caption_base_languages[i].id == remembered) {
@@ -4669,7 +4671,6 @@ static void autoplay_countdown_tick() {
 				    send_seek_request(pos);
 			    }
 		    } else if (key.p_d_down || key.p_d_up) { // like swiping the Shorts : down = next video of the queue, up = the one before
-			    static std::vector<std::pair<std::string, std::string>> back_stack; // videos left with "down" ({url, title})
 			    std::string cur_url = cur_playing_url, cur_title = playing_video_info.title;
 			    if (key.p_d_down) {
 				    std::string queued_url;

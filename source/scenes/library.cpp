@@ -600,8 +600,10 @@ static void build_liked(VerticalListView *list) {
 			}));
 			list->views.push_back(make_button(tr("Delete this list (tap twice)", "Borrar esta lista (toca dos veces)"), 320, [playlist_id]() {
 				static std::string armed;
-				if (armed != playlist_id) {
+				static u64 armed_at = 0;
+				if (armed != playlist_id || osGetTime() - armed_at > 5000) { // the second tap has to come within 5 seconds
 					armed = playlist_id;
+					armed_at = osGetTime();
 					notice_show(tr("Tap again to DELETE it for good", "Toca otra vez para BORRARLA del todo"));
 					return;
 				}

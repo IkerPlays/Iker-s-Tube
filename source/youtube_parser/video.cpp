@@ -25,7 +25,8 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID","clientVersion": "19.51.37","androidSdkVersion": 34}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})",
 	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android","osVersion": "14"}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})"};
 	youtube_audio_probe_info = "";
-	for (int c = 0; c < 2 && out.size() < 2; c++) {
+	std::vector<YouTubeVideoDetail::AudioTrack> best;
+	for (int c = 0; c < 2 && best.size() < 2; c++) {
 		out.clear();
 		std::string body = clients[c];
 		body = std::regex_replace(body, std::regex("%0"), language_code);
@@ -65,12 +66,13 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 			    }
 		    },
 		    [&](const std::string &error) { status = "error " + error.substr(0, 40); });
+		if (out.size() > best.size()) best = out;
 		youtube_audio_probe_info += std::string(c ? " | VR " : "ANDROID ") + status + " formats=" + std::to_string(formats) +
 		                            " audio=" + std::to_string(audio) + " tracks=" + std::to_string(with_track) +
 		                            " urls=" + std::to_string(with_url);
 	}
 	logger.info("player", "audio probe : " + youtube_audio_probe_info);
-	return out;
+	return best.size() >= out.size() ? best : out;
 }
 
 static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res) {

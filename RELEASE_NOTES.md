@@ -1,1 +1,1 @@
-Video menu (long press on any video): new "More from this channel" option searches the videos of its author.
+Fixes from a code review: search suggestions retry after an offline start, automatic subtitles wait for the subtitle list, the channel Bell starts at "all" on each channel, the Previous/Next history of the D-pad is emptied when the player starts, the list delete needs the second tap within 5 seconds, poll labels do not cut a character in half, the audio probe keeps the best answer of the two clients, and the vote picks the xxxEndpoint member of the endpoint.

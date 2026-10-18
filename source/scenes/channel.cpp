@@ -432,7 +432,9 @@ void Channel_init(void) {
 			    for (size_t i = 0; i < choices.size() && i < endpoints.size(); i++) {
 				    if (endpoints[i] == "") continue;
 				    std::string endpoint = endpoints[i];
-				    options.push_back({tr("Vote: ", "Votar: ") + choices[i].substr(0, 30), [endpoint]() { account_run_endpoint_async(endpoint); }});
+				    std::string label = choices[i].substr(0, 30);
+				    while (label.size() && choices[i].size() > label.size() && (choices[i][label.size()] & 0xC0) == 0x80) label.pop_back(); // (do not cut a character in half)
+				    options.push_back({tr("Vote: ", "Votar: ") + label, [endpoint]() { account_run_endpoint_async(endpoint); }});
 			    }
 			    if (options.size()) overlay_show_menu(tr("Community post", "Publicación de la comunidad"), options);
 		    });
@@ -780,6 +782,11 @@ void Channel_init(void) {
 	             ->set_get_background_color(View::STANDARD_BACKGROUND)
 	             ->set_on_view_released([](View &) {
 		             static int bell_level = 0; // all -> personalized -> none -> all ...
+		             static std::string bell_channel;
+		             if (bell_channel != channel_info.id) {
+			             bell_channel = channel_info.id;
+			             bell_level = 0;
+		             }
 		             if (channel_info.id != "") {
 			             account_bell_async(channel_info.id, bell_level);
 			             bell_level = (bell_level + 1) % 3;

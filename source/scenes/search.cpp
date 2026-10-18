@@ -342,7 +342,10 @@ static void suggest_thread(void *) {
 	for (char c = 'a'; c <= 'z'; c++) {
 		auto r = youtube_parser::http_get(std::string("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=") + c, {});
 		if (!r.first) {
-			if (c == 'a') return; // no connection : try again at the next start of the scene
+			if (c == 'a') { // no connection : try again at the next start of the scene
+				suggest_started = false;
+				return;
+			}
 			continue;
 		}
 		size_t open = r.second.find('[', r.second.find('[') + 1);

@@ -171,6 +171,8 @@ bool youtube_account_run_endpoint(const std::string &endpoint_json) {
 	for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
 		std::string name = it->name.GetString();
 		if (name == "clickTrackingParams" || name == "commandMetadata" || !it->value.IsObject()) continue;
+		bool service = name.size() > 8 && name.compare(name.size() - 8, 8, "Endpoint") == 0; // the "xxxEndpoint" member is the request
+		if (!service && doc.MemberCount() > 3) continue;
 		rapidjson::StringBuffer buffer;
 		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 		it->value.Accept(writer);
