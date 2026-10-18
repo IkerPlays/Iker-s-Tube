@@ -1,3 +1,3 @@
 Devbuild notes
 
-- Video menu (long press): Search similar opens the search with the title of the video.
+- Library, Playlists: an open local list has a button Save this list to my YouTube (private playlist with its first 40 videos).

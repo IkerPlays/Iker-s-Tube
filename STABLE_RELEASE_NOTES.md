@@ -5,7 +5,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ### Account and YouTube
 - **History.** Videos you watch while signed in (not in incognito) are reported to your YouTube history.
 - **Liked tab.** The Library shows the videos you liked on YouTube.
-- **Queue to YouTube.** Save the play queue as a private playlist of your account.
+- **Queue and lists to YouTube.** Save the play queue or one of your local lists as a private playlist of your account.
 - **Subscribe from the channel page.** It now also subscribes on your YouTube account.
 - **Live and upcoming in the feed.** The subscriptions feed puts live streams first, then upcoming premieres with the time left, and warns when one starts within 15 minutes.
 - **Comments.** Without a comments token (comments not opened) writing and replying now work, and when a comment or chat message fails a screen shows the whole reason. With the Studio login the Data API is tried first (YouTube may refuse it for lack of scopes, then the old way is used). Liking a video falls back to the Data API too.

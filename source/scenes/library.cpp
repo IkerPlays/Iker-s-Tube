@@ -756,6 +756,17 @@ static void build_playlists(VerticalListView *list) {
 		                                       playlist_repeat = !playlist_repeat;
 		                                       rebuild_request = true;
 	                                       })}));
+	if (OAuth::is_authenticated() && pl.videos.size()) { // this local list as a private playlist of the YouTube account
+		list->views.push_back(make_button(tr("Save this list to my YouTube", "Guardar esta lista en mi YouTube"), 320, [pl]() {
+			QueueSaveJob *job = new QueueSaveJob();
+			job->name = pl.name;
+			for (auto &v : pl.videos) {
+				if (job->ids.size() < 40) job->ids.push_back(v.id);
+			}
+			notice_show(tr("Saving the list...", "Guardando la lista..."));
+			queue_async_task(save_queue_to_account_task, job);
+		}));
+	}
 	for (auto &v : pl.videos) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
 		std::string id = v.id, url = youtube_get_video_url_by_id(v.id);

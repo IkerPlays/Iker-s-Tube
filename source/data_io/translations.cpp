@@ -546,6 +546,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Skip watched", {"Ignorer les vues", "Gesehene überspringen", "Salta i già visti", "Pular os assistidos", "視聴済みを飛ばす"}},
 	    {"Autoplay picks", {"La lecture auto choisit", "Autoplay wählt", "La riproduzione automatica sceglie", "A reprodução automática escolhe", "自動再生の選択"}},
 	    {"Search similar", {"Chercher similaires", "Ähnliche suchen", "Cerca simili", "Buscar semelhantes", "似た動画を検索"}},
+	    {"Save this list to my YouTube", {"Enregistrer cette liste sur mon YouTube", "Diese Liste in meinem YouTube speichern", "Salva questa lista nel mio YouTube", "Salvar esta lista no meu YouTube", "このリストを自分のYouTubeに保存"}},
+	    {"Saving the list...", {"Enregistrement de la liste...", "Liste wird gespeichert...", "Salvataggio della lista...", "Salvando a lista...", "リストを保存中..."}},
 	};
 	return table;
 }
