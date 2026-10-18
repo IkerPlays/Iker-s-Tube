@@ -1,4 +1,3 @@
 Devbuild notes
 
-- Player tools: Sleep timer button (off, 15, 30 or 60 minutes, one press cycles).
-- Settings, Data tab: also shows the three channels you watched most.
+- Library, Queue (signed in): new button Save the queue to my YouTube, which asks for a name and creates a private playlist in your account with the first 40 videos of the queue.

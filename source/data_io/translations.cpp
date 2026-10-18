@@ -297,7 +297,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Edit my uploads", {"Modifier mes envois", "Meine Uploads bearbeiten", "Modifica i miei caricamenti", "Editar meus envios", "アップロードを編集"}},
 	    {"New playlist", {"Nouvelle liste", "Neue Playlist", "Nuova playlist", "Nova lista", "新しいリスト"}},
 	    {"Playlist created: ", {"Liste créée : ", "Playlist erstellt: ", "Playlist creata: ", "Lista criada: ", "リストを作成: "}},
-	    {"Could not create the playlist", {"Impossible de créer la liste", "Playlist konnte nicht erstellt werden", "Impossibile creare la playlist", "Não foi possível criar a lista", "リストを作成できません"}},
+	    {"Could not create the playlist", {"Impossible de créer la liste", "Playlist konnte nicht erstellt werden", "Impossibile creare la playlist", "Não foi possível criar a lista", "リストを作成できませんでした"}},
 	    {"Pinned", {"Épinglé", "Angeheftet", "Fissato", "Fixado", "固定"}},
 	    {"Play all", {"Tout lire", "Alle abspielen", "Riproduci tutto", "Reproduzir tudo", "すべて再生"}},
 	    {"Studio connected", {"Studio connecté", "Studio verbunden", "Studio connesso", "Studio conectado", "Studio接続済み"}},
@@ -451,6 +451,9 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Sleep timer: ", {"Minuterie : ", "Schlaf-Timer: ", "Timer: ", "Timer de sono: ", "スリープタイマー："}},
 	    {"Sleep timer off", {"Minuterie désactivée", "Schlaf-Timer aus", "Timer spento", "Timer desligado", "スリープタイマー オフ"}},
 	    {"Most watched: ", {"Les plus vus : ", "Am meisten gesehen: ", "Più visti: ", "Mais assistidos: ", "よく見る："}},
+	    {"Save the queue to my YouTube", {"Enregistrer la file sur mon YouTube", "Warteschlange in meinem YouTube speichern", "Salva la coda nel mio YouTube", "Salvar a fila no meu YouTube", "キューを自分のYouTubeに保存"}},
+	    {"Saved to YouTube: ", {"Enregistrée sur YouTube : ", "Auf YouTube gespeichert: ", "Salvata su YouTube: ", "Salva no YouTube: ", "YouTubeに保存："}},
+	    {"Saving the queue...", {"Enregistrement de la file...", "Warteschlange wird gespeichert...", "Salvataggio della coda...", "Salvando a fila...", "キューを保存中..."}},
 	};
 	return table;
 }

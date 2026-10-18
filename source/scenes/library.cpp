@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include "oauth/oauth.hpp"
 #include "util/async_task.hpp"
+#include "ui/notice.hpp"
+#include "youtube_parser/account.hpp"
 #include <vector>
 #include <string>
 #include <cstdlib>
@@ -271,6 +273,27 @@ void Library_resume(std::string arg) {
 	rebuild_views();
 }
 
+// the queue as a private playlist of the YouTube account
+struct QueueSaveJob {
+	std::string name;
+	std::vector<std::string> ids;
+};
+static void save_queue_to_account_task(void *arg) {
+	QueueSaveJob *job = (QueueSaveJob *)arg;
+	std::string playlist_id;
+	if (!youtube_account_playlist_create(job->name, "PRIVATE", playlist_id) || playlist_id == "") {
+		notice_show(tr("Could not create the playlist", "No se pudo crear la lista") + std::string(" (") + youtube_account_last_error().substr(0, 50) + ")");
+		delete job;
+		return;
+	}
+	int added = 0;
+	for (auto &id : job->ids) {
+		if (youtube_account_playlist_edit(playlist_id, id, true)) added++;
+	}
+	notice_show(tr("Saved to YouTube: ", "Guardada en YouTube: ") + std::to_string(added) + "/" + std::to_string(job->ids.size()));
+	delete job;
+}
+
 static void build_queue(VerticalListView *list) {
 	int n = play_queue_size();
 	for (int i = 0; i < n; i++) {
@@ -308,6 +331,20 @@ static void build_queue(VerticalListView *list) {
 			                   play_queue_clear();
 			                   rebuild_request = true;
 		                   }));
+		if (OAuth::is_authenticated()) {
+			list->views.insert(list->views.begin(), make_button(tr("Save the queue to my YouTube", "Guardar la cola en mi YouTube"), 320, []() {
+				                   std::string name;
+				                   if (!ask_text(tr("Playlist name", "Nombre de la lista").c_str(), name) || name == "") return;
+				                   QueueSaveJob *job = new QueueSaveJob();
+				                   job->name = name;
+				                   for (int i = 0; i < play_queue_size() && i < 40; i++) {
+					                   std::string url, title;
+					                   if (play_queue_get(i, url, title)) job->ids.push_back(youtube_get_video_id_by_url(url));
+				                   }
+				                   notice_show(tr("Saving the queue...", "Guardando la cola..."));
+				                   queue_async_task(save_queue_to_account_task, job);
+			                   }));
+		}
 	}
 }
 
