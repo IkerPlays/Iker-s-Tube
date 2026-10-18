@@ -480,6 +480,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"There is no next video", {"Il n'y a pas de vidéo suivante", "Es gibt kein nächstes Video", "Non c'è un video successivo", "Não há próximo vídeo", "次の動画はありません"}},
 	    {"Delete the ones already watched", {"Supprimer celles déjà vues", "Bereits gesehene löschen", "Elimina quelle già viste", "Excluir as já assistidas", "視聴済みを削除"}},
 	    {"Deleted: ", {"Supprimées : ", "Gelöscht: ", "Eliminate: ", "Excluídas: ", "削除： "}},
+	    {"Clear the picture cache", {"Vider le cache d'images", "Bildcache leeren", "Svuota la cache immagini", "Limpar o cache de imagens", "画像キャッシュを消去"}},
+	    {"Pictures removed: ", {"Images supprimées : ", "Bilder entfernt: ", "Immagini rimosse: ", "Imagens removidas: ", "削除した画像： "}},
 	};
 	return table;
 }
