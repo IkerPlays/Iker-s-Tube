@@ -515,6 +515,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Sort: date", {"Tri : date", "Sortierung: Datum", "Ordine: data", "Ordem: data", "並べ替え：日付"}},
 	    {"Sort: views", {"Tri : vues", "Sortierung: Aufrufe", "Ordine: visualizzazioni", "Ordem: visualizações", "並べ替え：再生数"}},
 	    {"HD", {"HD", "HD", "HD", "HD", "HD"}},
+	    {"Channel QR", {"QR de la chaîne", "Kanal-QR", "QR del canale", "QR do canal", "チャンネルQR"}},
 	};
 	return table;
 }

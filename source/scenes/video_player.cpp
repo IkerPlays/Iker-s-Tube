@@ -2139,6 +2139,10 @@ debug_info_view =
 					                                   }
 					                                   notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(n) + tr(" videos", " vídeos"));
 				                                   }),
+				                         make_tool([]() { return tr("Channel QR", "QR del canal"); }, 90,
+				                                   []() {
+					                                   if (cur_video_info.author.id != "") qr_popup_show("https://www.youtube.com/channel/" + cur_video_info.author.id);
+				                                   }),
 				                         make_tool([]() { return tr("Next video", "Siguiente"); }, 90,
 				                                   []() {
 					                                   std::string next;
