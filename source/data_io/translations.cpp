@@ -516,6 +516,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Sort: views", {"Tri : vues", "Sortierung: Aufrufe", "Ordine: visualizzazioni", "Ordem: visualizações", "並べ替え：再生数"}},
 	    {"HD", {"HD", "HD", "HD", "HD", "HD"}},
 	    {"Channel QR", {"QR de la chaîne", "Kanal-QR", "QR del canale", "QR do canal", "チャンネルQR"}},
+	    {"Today", {"Aujourd'hui", "Heute", "Oggi", "Hoje", "今日"}},
+	    {"Yesterday", {"Hier", "Gestern", "Ieri", "Ontem", "昨日"}},
 	};
 	return table;
 }

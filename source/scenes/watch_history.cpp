@@ -109,7 +109,29 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		                                     ->set_views({button(tr("Play all", "Reproducir todo"), 160, [play]() { play(false); }),
 		                                                  button(tr("Shuffle", "Aleatorio"), 160, [play]() { play(true); })}));
 	}
+	long long last_day = -1;
+	const long long today = (long long)time(NULL) / 86400;
 	for (auto i : watch_history) {
+		long long day = (long long)i.last_watch_time / 86400;
+		if (day != last_day) { // a header for each day
+			last_day = day;
+			std::string title;
+			if (today - day == 0) title = tr("Today", "Hoy");
+			else if (today - day == 1) title = tr("Yesterday", "Ayer");
+			else {
+				char buf[40];
+				time_t t = i.last_watch_time;
+				strftime(buf, sizeof buf, "%Y/%m/%d", gmtime(&t));
+				title = buf;
+			}
+			video_list_view->views.push_back((new TextView(0, 0, 320, 18))
+			                                     ->set_text(title)
+			                                     ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+			                                     ->set_y_alignment(TextView::YAlign::CENTER)
+			                                     ->set_text_offset(SMALL_MARGIN, 0)
+			                                     ->set_get_text_color([]() { return (u32)COLOR_ACCENT; })
+			                                     ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
+		}
 		std::string view_count_str;
 		{
 			std::string view_count_str_tmp = LOCALIZED(MY_VIEW_COUNT_WITH_NUMBER);

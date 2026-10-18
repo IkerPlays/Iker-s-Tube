@@ -1,3 +1,4 @@
 Devbuild notes
 
-- Player tools: Channel QR (the QR code of the channel of the video).
+- Lists: videos you started watching show a thin red progress bar on the thumbnail.
+- History: the list has a header for each day (Today, Yesterday, then the date).

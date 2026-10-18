@@ -8,6 +8,7 @@
 #include "ui/overlay.hpp"
 #include "util/util.hpp"
 #include "data_io/history.hpp"
+#include "data_io/resume_position.hpp"
 #include "data_io/offline.hpp"
 #include "youtube_parser/parser.hpp"
 
@@ -109,6 +110,23 @@ struct SuccinctVideoView : public FixedSizeView {
 			float tag_width = Draw_get_width("DL", 0.4) + 4;
 			Draw_texture(var_square_image[0], 0xE0408040, x0, y0 + get_thumbnail_height() - 10, tag_width, 10);
 			Draw("DL", x0 + 2, y0 + get_thumbnail_height() - 11, 0.4, 0.4, (u32)-1);
+		}
+		if (queue_url.size() && bottom_right_overlay.size()) { // how much of the video was already watched : a thin red bar
+			double seconds = resume_get(youtube_get_video_id_by_url(queue_url));
+			if (seconds > 0) {
+				int parts[3] = {0, 0, 0}, n = 0, value = 0;
+				for (char c : bottom_right_overlay + ":") {
+					if (c >= '0' && c <= '9') value = value * 10 + (c - '0');
+					else if (c == ':' && n < 3) parts[n++] = value, value = 0;
+				}
+				double total = n == 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : n == 2 ? parts[0] * 60 + parts[1] : 0;
+				if (total > 0) {
+					float width = get_thumbnail_width(), fill = width * std::min(1.0, seconds / total);
+					float by = y0 + get_thumbnail_height() - 3;
+					Draw_texture(var_square_image[0], 0x90000000, x0, by, width, 3);
+					Draw_texture(var_square_image[0], 0xFF2020E0, x0, by, fill, 3);
+				}
+			}
 		}
 		if (queue_url.size()) {
 			int pos = play_queue_position(queue_url);
