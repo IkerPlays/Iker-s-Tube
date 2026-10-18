@@ -1,1 +1,1 @@
-Fixes from a fourth code review: the vote picks the xxxEndpoint member again (a regression of the last fix), the Shorts feed only replaces your queue when it found real Shorts and the search is still the current one, and D-pad Up also records videos without an id.
+Release notes for the stable version 1.0.5 were tidied (no code changes).

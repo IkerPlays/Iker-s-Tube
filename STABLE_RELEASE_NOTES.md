@@ -3,20 +3,20 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ## What's new since 1.0.4
 
 ### Player
-- **Subtitles.** New "CC" tool turns YouTube subtitles on and cycles their languages. A setting (Subtitles, Open by itself) turns on the language you used last time automatically.
-- **Video QR.** New tool shows the QR code of the video link.
-- **Bell on the channel page.** The Info tab of a channel changes its notification level.
-- **Translated subtitles.** The CC tool can translate the subtitles to the language of the app.
-- **Long videos.** New -5 min and +5 min tools.
-- **Audio tracks fix.** Dubbed audio tracks are now found by parsing the answer properly and trying two clients; report.txt shows what the probe saw.
-- **Reload.** New tool reloads the current video from the same minute.
+- **Subtitles.** New "CC" tool turns YouTube subtitles on and cycles their languages, with a last step that translates them to the language of the app. A setting (Subtitles, Open by itself) turns on the language you used last time automatically.
+- **Audio tracks.** Dubbed audio tracks are now found by parsing the YouTube answer properly and trying two clients. If a video still shows one track, the notice and report.txt say what YouTube returned.
+- **New tools.** Video QR (QR code of the video link), "<< Chap" (previous chapter), -5 min and +5 min, and Reload (reloads the video from the same minute).
+- **Shorts.** The Shorts shortcut opens the first Short at once and tries YouTube's real Shorts feed (experimental). D-pad Down and Up in the player go to the next and the previous video.
+
+### Search and library
 - **More search filters.** Subtitles (CC), Creative Commons, 4K, HDR and 360 degrees.
 - **Search suggestions.** The keyboard offers YouTube autocomplete suggestions while you type.
-- **Community posts.** Long press a post to like it or vote in its poll (experimental).
-- **Manage your YouTube lists.** Rename or delete your own playlists from the Library (Liked tab).
-- **Shorts.** The Shorts shortcut opens the first Short at once and tries YouTube's real Shorts feed (experimental); D-pad Down/Up in the player go to the next and previous video.
 - **More from this channel.** New option in the long press menu of a video.
-- **Chapters.** New "<< Chap" tool goes to the previous chapter.
+- **Manage your YouTube lists.** Rename or delete your own playlists from the Library (Liked tab).
+
+### Channels and account
+- **Bell on the channel page.** The Info tab of a channel changes its notification level.
+- **Community posts.** Long press a post to like it or vote in its poll (experimental).
 
 ## Installing
 
