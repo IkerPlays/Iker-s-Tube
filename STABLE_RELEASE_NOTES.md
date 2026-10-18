@@ -47,6 +47,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Reset the settings** from Settings, Data (lists, history and downloads are kept).
 - **Autoplay skips watched.** A setting makes autoplay avoid the videos already in your history.
 - **Hide channels in lists.** Choose channels whose videos never show in search, Home or the feeds (Settings, Data lists how many and shows them again).
+- **Links with a time.** A YouTube link with &t= or &start= starts the video at that moment.
 
 ## Installing
 

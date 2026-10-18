@@ -906,6 +906,27 @@ static bool autoplay_is_watched(const std::string &url) {
 	return var_autoplay_skip_watched && history_has_id(youtube_get_video_id_by_url(url));
 }
 
+// the start time of a YouTube link : "&t=95s", "?t=1m30s", "&start=95" (0 if there is none)
+static double url_start_time(const std::string &url) {
+	for (const char *key : {"&t=", "?t=", "&start=", "?start="}) {
+		size_t p = url.find(key);
+		if (p == std::string::npos) continue;
+		p += strlen(key);
+		double total = 0, number = 0;
+		bool any = false;
+		for (; p < url.size(); p++) {
+			char c = url[p];
+			if (c >= '0' && c <= '9') number = number * 10 + (c - '0'), any = true;
+			else if (c == 'h') total += number * 3600, number = 0;
+			else if (c == 'm') total += number * 60, number = 0;
+			else if (c == 's') total += number, number = 0;
+			else break;
+		}
+		return total + number > 0 && any ? total + number : 0;
+	}
+	return 0;
+}
+
 void VideoPlayer_init(void) {
 	youtube_is_watched_hook = autoplay_is_watched; // (the setting Autoplay picks : skip watched)
 	logger.info(DEF_SAPP0_INIT_STR, "Initializing...");
@@ -3746,6 +3767,10 @@ static void autoplay_countdown_tick() {
 			    if (vid_play_request) { // from now on the position is remembered for this video
 				    strncpy(vid_resume_id, snap_id.c_str(), sizeof(vid_resume_id) - 1);
 				    vid_resume_id[sizeof(vid_resume_id) - 1] = 0;
+			    }
+			    if (vid_play_request && seek_at_init_request < 0 && !playing_video_info.is_livestream) {
+				    double start_at = url_start_time(playing_video_info.url != "" ? playing_video_info.url : std::string(cur_playing_url)); // a link with &t=95s
+				    if (start_at > 0) seek_at_init_request = start_at;
 			    }
 			    if (vid_play_request && seek_at_init_request < 0 && !playing_video_info.is_livestream && var_resume_videos) {
 				    // continue where the video was left
