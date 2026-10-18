@@ -55,6 +55,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Live chat.** Read the chat of a live stream from the player tools, and write in it with the Studio login.
 - **Audio language and links.** Choose the dubbed audio of videos that have several tracks, and open the links of the description through a QR code.
 - **Night downloads.** A setting makes the downloads wait for the hours 1:00 to 7:00.
+- **Quick sleep timer and most watched channels.** A Sleep timer button in the player tools, and your top three channels in Settings, Data.
 
 ## Installing
 

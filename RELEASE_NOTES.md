@@ -1,3 +1,4 @@
 Devbuild notes
 
-- Comments: with the Studio login, writing a comment and deleting your own no longer need the comments tab to be opened first (they use the Data API, which does not need it).
+- Player tools: Sleep timer button (off, 15, 30 or 60 minutes, one press cycles).
+- Settings, Data tab: also shows the three channels you watched most.

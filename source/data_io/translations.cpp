@@ -446,6 +446,11 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Only at night (1:00-7:00)", {"Seulement la nuit (1h-7h)", "Nur nachts (1-7 Uhr)", "Solo di notte (1:00-7:00)", "Só à noite (1h-7h)", "夜のみ（1:00〜7:00）"}},
 	    {"When to download", {"Quand télécharger", "Wann herunterladen", "Quando scaricare", "Quando baixar", "ダウンロードの時間帯"}},
 	    {"At night the downloads wait for the hours 1:00 to 7:00 of the console clock. The app must stay open.", {"La nuit, les téléchargements attendent de 1h à 7h sur l'horloge de la console. L'appli doit rester ouverte.", "Nachts warten Downloads auf 1 bis 7 Uhr der Konsolenuhr. Die App muss geöffnet bleiben.", "Di notte i download aspettano le ore 1:00-7:00 dell'orologio della console. L'app deve restare aperta.", "À noite os downloads esperam das 1h às 7h do relógio do console. O app deve ficar aberto.", "夜間は本体時計の1:00〜7:00までダウンロードを待ちます。アプリは開いたままにしてください。"}},
+	    {"Sleep: ", {"Veille : ", "Schlaf: ", "Sospensione: ", "Dormir: ", "スリープ："}},
+	    {"Sleep timer", {"Minuterie", "Schlaf-Timer", "Timer di spegnimento", "Timer de sono", "スリープタイマー"}},
+	    {"Sleep timer: ", {"Minuterie : ", "Schlaf-Timer: ", "Timer: ", "Timer de sono: ", "スリープタイマー："}},
+	    {"Sleep timer off", {"Minuterie désactivée", "Schlaf-Timer aus", "Timer spento", "Timer desligado", "スリープタイマー オフ"}},
+	    {"Most watched: ", {"Les plus vus : ", "Am meisten gesehen: ", "Più visti: ", "Mais assistidos: ", "よく見る："}},
 	};
 	return table;
 }

@@ -1248,6 +1248,17 @@ void Sem_init(void) {
 							}
 							return tr("Watched: ", "Visto: ") + std::to_string(list.size()) + tr(" videos, about ", " vídeos, unas ") + std::to_string(seconds / 3600) + " h";
 						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 3 + SMALL_MARGIN))
+						->set_text((std::function<std::string ()>) [] () -> std::string {
+							std::map<std::string, int> count; // the channels you watched most
+							for (auto &v : get_valid_watch_history()) if (v.author_name != "") count[v.author_name] += std::max(1, v.my_view_count);
+							std::vector<std::pair<int, std::string>> top;
+							for (auto &c : count) top.push_back({c.second, c.first});
+							std::sort(top.rbegin(), top.rend());
+							std::string res = tr("Most watched: ", "Más vistos: ");
+							for (size_t i = 0; i < top.size() && i < 3; i++) res += (i ? ", " : "") + top[i].second + " (" + std::to_string(top[i].first) + ")";
+							return top.empty() ? res + "-" : res;
+						}),
 					// network status and last errors
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
 						->set_text((std::function<std::string ()>) [] () -> std::string {

@@ -2048,6 +2048,21 @@ debug_info_view =
 						                                   video_retry_left = MAX_RETRY_CNT;
 					                                   }
 				                                   }),
+				                         make_tool(
+				                             []() {
+					                             u64 now = osGetTime();
+					                             if (var_sleep_timer_end > now) return tr("Sleep: ", "Dormir: ") + std::to_string((var_sleep_timer_end - now) / 60000 + 1) + " min";
+					                             return tr("Sleep timer", "Temporizador");
+				                             },
+				                             100,
+				                             []() { // off -> 15 -> 30 -> 60 -> off
+					                             u64 now = osGetTime();
+					                             int left = var_sleep_timer_end > now ? (int)((var_sleep_timer_end - now) / 60000) + 1 : 0;
+					                             int next = left == 0 ? 15 : left <= 15 ? 30 : left <= 30 ? 60 : 0;
+					                             var_sleep_timer_end = next ? now + (u64)next * 60000ULL : 0;
+					                             notice_show(next ? tr("Sleep timer: ", "Temporizador: ") + std::to_string(next) + " min" : tr("Sleep timer off", "Temporizador apagado"));
+					                             var_need_refresh = true;
+				                             }),
 				                         make_tool([]() { return tr("Links", "Enlaces"); }, 70,
 				                                   []() { if (cur_video_info.description != "") show_description_links(); })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
