@@ -422,13 +422,67 @@ void draw_overlay_menu(int y) {
 	}
 	if (video_menu && video_menu->is_visible) video_menu->draw();
 }
+// the news of a new version : shown once after an update (the version is kept in sdmc:/3ds/IkersTube/last_version.txt)
+static std::string core_version() {
+	std::string v = DEF_CURRENT_APP_VER;
+	return v.substr(0, v.find('-'));
+}
+static bool whats_new_pending() {
+	static bool checked = false, pending = false;
+	if (checked) return pending;
+	checked = true;
+	char buf[40] = {0};
+	FILE *f = fopen("sdmc:/3ds/IkersTube/last_version.txt", "r");
+	if (f) {
+		if (!fgets(buf, sizeof buf, f)) buf[0] = 0;
+		fclose(f);
+	}
+	std::string last = buf;
+	while (last.size() && (last.back() == '\n' || last.back() == '\r')) last.pop_back();
+	pending = last != core_version();
+	return pending;
+}
+static void whats_new_done() {
+	FILE *w = fopen("sdmc:/3ds/IkersTube/last_version.txt", "w");
+	if (w) {
+		fprintf(w, "%s\n", core_version().c_str());
+		fclose(w);
+	}
+}
+static void show_whats_new() {
+	dialog_view->get_message_view()
+	    ->set_text_lines(std::vector<std::string>{tr("What's new in ", "Novedades de ") + core_version(),
+	                                              tr("Long press a video: full menu", "Mantén pulsado un vídeo: menú completo"),
+	                                              tr("Live chat and audio language", "Chat en directo e idioma del audio"),
+	                                              tr("Library: liked, history, YouTube lists", "Biblioteca: Me gusta, historial, listas"),
+	                                              tr("Hide channels, filters, pause downloads", "Ocultar canales, filtros, pausar descargas"),
+	                                              tr("Studio: schedule, playlist, description", "Studio: programar, lista, descripción"),
+	                                              tr("Details: Documentation/GUIA_DE_USO.md", "Detalles: Documentation/GUIA_DE_USO.md")})
+	    ->update_y_range(0, DEFAULT_FONT_INTERVAL * 7 + 6);
+	dialog_view->set_buttons<std::function<std::string()>>({[]() { return LOCALIZED(OK); }}, [](OverlayDialogView &, int) {
+		menu_status = CLOSED;
+		whats_new_done();
+		var_need_refresh = true;
+		return true;
+	});
+	dialog_view->set_on_cancel([](OverlayView &view) {
+		menu_status = CLOSED;
+		whats_new_done();
+		view.set_is_visible(false);
+		var_need_refresh = true;
+	});
+	dialog_view->set_is_visible(true);
+	menu_status = CONFIRMING_CLOSE;
+	var_need_refresh = true;
+}
+
 // the first-use tour : a dialog with the main things of the app, shown once on the Home screen
 static void show_first_use_tour() {
 	dialog_view->get_message_view()
 	    ->set_text_lines(std::vector<std::string>{tr("Welcome to Iker's Tube!", "¡Bienvenido a Iker's Tube!"),
 	                                              tr("Bottom bar: Home, Search, Library,", "Barra de abajo: Inicio, Buscar, Biblioteca,"),
 	                                              tr("Downloads and More (settings, menu).", "Descargas y Más (ajustes, menú)."),
-	                                              tr("Long press a video to queue it.", "Mantén pulsado un vídeo para encolarlo."),
+	                                              tr("Long press a video for its menu.", "Mantén pulsado un vídeo: su menú."),
 	                                              tr("In a video: Save video / Save audio", "En un vídeo: Guardar vídeo / audio"),
 	                                              tr("to watch it without internet.", "para verlo sin internet."),
 	                                              tr("The Studio tab is for your channel.", "La pestaña Studio es para tu canal.")})
@@ -436,6 +490,7 @@ static void show_first_use_tour() {
 	dialog_view->set_buttons<std::function<std::string()>>({[]() { return LOCALIZED(OK); }}, [](OverlayDialogView &, int) {
 		menu_status = CLOSED;
 		var_tour_done = true;
+		whats_new_done(); // (a new user does not need the news of this version)
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 		var_need_refresh = true;
 		return true;
@@ -443,6 +498,7 @@ static void show_first_use_tour() {
 	dialog_view->set_on_cancel([](OverlayView &view) {
 		menu_status = CLOSED;
 		var_tour_done = true;
+		whats_new_done();
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 		view.set_is_visible(false);
 		var_need_refresh = true;
@@ -484,6 +540,11 @@ void update_overlay_menu(Hid_info *key) {
 			if (++home_frames > 60) {
 				home_frames = 0;
 				show_first_use_tour();
+			}
+		} else if (var_tour_done && nav_enabled && global_current_scene == SceneType::HOME && menu_status == CLOSED && whats_new_pending()) {
+			if (++home_frames > 90) {
+				home_frames = 0;
+				show_whats_new();
 			}
 		} else {
 			home_frames = 0;

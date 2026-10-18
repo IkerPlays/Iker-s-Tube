@@ -567,6 +567,14 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Unmute", {"Réactiver le son", "Ton an", "Riattiva audio", "Ativar som", "ミュート解除"}},
 	    {"Mute", {"Couper le son", "Stumm", "Silenzia", "Silenciar", "ミュート"}},
 	    {"Remove the watched ones", {"Retirer les vidéos déjà vues", "Gesehene entfernen", "Rimuovi quelli già visti", "Remover os já assistidos", "視聴済みを削除"}},
+	    {"What's new in ", {"Nouveautés de la ", "Neu in ", "Novità della ", "Novidades da ", "新機能： "}},
+	    {"Long press a video: full menu", {"Appui long sur une vidéo : menu complet", "Video lang drücken: volles Menü", "Pressione lunga su un video: menu completo", "Toque longo num vídeo: menu completo", "動画を長押し：フルメニュー"}},
+	    {"Live chat and audio language", {"Chat en direct et langue audio", "Live-Chat und Audiosprache", "Chat dal vivo e lingua audio", "Chat ao vivo e idioma do áudio", "ライブチャットと音声言語"}},
+	    {"Library: liked, history, YouTube lists", {"Bibliothèque : j'aime, historique, listes", "Bibliothek: Gefällt mir, Verlauf, Listen", "Libreria: piaciuti, cronologia, liste", "Biblioteca: curtidos, histórico, listas", "ライブラリ：高評価、履歴、リスト"}},
+	    {"Hide channels, filters, pause downloads", {"Masquer chaînes, filtres, pause des téléchargements", "Kanäle ausblenden, Filter, Downloads pausieren", "Nascondi canali, filtri, pausa download", "Ocultar canais, filtros, pausar downloads", "チャンネル非表示、フィルター、一時停止"}},
+	    {"Studio: schedule, playlist, description", {"Studio : programmer, liste, description", "Studio: planen, Playlist, Beschreibung", "Studio: pianifica, playlist, descrizione", "Studio: agendar, lista, descrição", "Studio：予約、リスト、説明"}},
+	    {"Details: Documentation/GUIA_DE_USO.md", {"Détails : Documentation/GUIA_DE_USO.md", "Details: Documentation/GUIA_DE_USO.md", "Dettagli: Documentation/GUIA_DE_USO.md", "Detalhes: Documentation/GUIA_DE_USO.md", "詳細：Documentation/GUIA_DE_USO.md"}},
+	    {"Long press a video for its menu.", {"Appui long sur une vidéo : son menu.", "Video lang drücken: sein Menü.", "Pressione lunga su un video: il suo menu.", "Toque longo num vídeo: o menu dele.", "動画を長押しでメニュー。"}},
 	};
 	return table;
 }
