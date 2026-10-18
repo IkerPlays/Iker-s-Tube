@@ -652,6 +652,7 @@ static void edit_task(void *arg) {
 	bool ok = job->action == 0   ? youtube_studio_set_privacy(job->id, job->value, error)
 	          : job->action == 1 ? youtube_studio_set_title(job->id, job->value, error)
 	          : job->action == 3 ? youtube_studio_set_description(job->id, job->value, error)
+	          : job->action == 4 ? youtube_studio_set_tags(job->id, job->value, error)
 	                             : youtube_studio_delete(job->id, error);
 	if (ok) {
 		LightLock_Lock(&state_lock);
@@ -739,6 +740,11 @@ static std::vector<View *> build_video() {
 	v.push_back(button([]() { return tr("Change the description", "Cambiar la descripción"); }, []() {
 		std::string out;
 		if (ask_text(tr("Description", "Descripción"), "", 1000, true, out)) edit_async(3, locked_copy(sel_video.id), out);
+		var_need_refresh = true;
+	}));
+	v.push_back(button([]() { return tr("Change the tags", "Cambiar las etiquetas"); }, []() {
+		std::string out;
+		if (ask_text(tr("Tags (separated by commas)", "Etiquetas (separadas por comas)"), "", 300, true, out)) edit_async(4, locked_copy(sel_video.id), out);
 		var_need_refresh = true;
 	}));
 	v.push_back(button([]() { return tr("Watch it", "Verlo"); }, []() {

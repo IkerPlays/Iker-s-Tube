@@ -678,6 +678,41 @@ bool youtube_studio_set_description(const std::string &video_id, const std::stri
 	return true;
 }
 
+bool youtube_studio_set_tags(const std::string &video_id, const std::string &comma_separated_tags, std::string &error) {
+	std::string body;
+	auto r = api_request("GET", "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + video_id, "", "", body);
+	if (r.fail || !r.status_code_is_success() || body.find("\"snippet\"") == std::string::npos) {
+		error = api_error(r, body);
+		return false;
+	}
+	size_t snippet = body.find("\"snippet\"");
+	std::string category = raw_string(body, snippet, "categoryId");
+	std::string title = raw_string(body, snippet, "title");
+	std::string description = raw_string(body, snippet, "description");
+	std::string default_language = raw_string(body, snippet, "defaultLanguage");
+	std::string tags_json;
+	size_t start = 0;
+	while (start <= comma_separated_tags.size()) {
+		size_t comma = comma_separated_tags.find(',', start);
+		std::string tag = comma_separated_tags.substr(start, comma == std::string::npos ? std::string::npos : comma - start);
+		while (tag.size() && tag[0] == ' ') tag.erase(0, 1);
+		while (tag.size() && tag.back() == ' ') tag.pop_back();
+		if (tag != "") tags_json += (tags_json == "" ? "" : ", ") + json_quote(tag);
+		if (comma == std::string::npos) break;
+		start = comma + 1;
+	}
+	std::string snippet_json = "{\"title\": \"" + title + "\", \"description\": \"" + description + "\", \"categoryId\": \"" + (category == "" ? "22" : category) + "\"" +
+	                           (tags_json != "" ? ", \"tags\": [" + tags_json + "]" : "") + (default_language != "" ? ", \"defaultLanguage\": \"" + default_language + "\"" : "") + "}";
+	r = api_request("PUT", "https://www.googleapis.com/youtube/v3/videos?part=snippet",
+	                "{\"id\": " + json_quote(video_id) + ", \"snippet\": " + snippet_json + "}", "application/json; charset=UTF-8", body);
+	if (r.fail || !r.status_code_is_success()) {
+		error = api_error(r, body);
+		logger.warning("studio", "set tags failed : " + error);
+		return false;
+	}
+	return true;
+}
+
 bool youtube_studio_set_thumbnail(const std::string &video_id, const std::string &path, std::string &error) {
 	struct stat st;
 	if (stat(path.c_str(), &st) != 0 || st.st_size <= 0 || st.st_size > 2 * 1024 * 1024) {

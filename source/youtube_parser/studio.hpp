@@ -39,6 +39,7 @@ bool youtube_studio_set_title(const std::string &video_id, const std::string &ti
 // views, likes and comments of one of your videos ("1.2K", "35", "4"), "-" when a number is hidden
 bool youtube_studio_video_stats(const std::string &video_id, std::string &views, std::string &likes, std::string &comments);
 bool youtube_studio_set_description(const std::string &video_id, const std::string &description, std::string &error);
+bool youtube_studio_set_tags(const std::string &video_id, const std::string &comma_separated_tags, std::string &error);
 bool youtube_studio_delete(const std::string &video_id, std::string &error);
 // custom thumbnail from a .jpg / .png file on the SD card (max 2 MB). The account must be verified by YouTube.
 bool youtube_studio_set_thumbnail(const std::string &video_id, const std::string &path, std::string &error);
