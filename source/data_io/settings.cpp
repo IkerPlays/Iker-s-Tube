@@ -93,7 +93,7 @@ void load_settings() {
 	var_hide_shorts = load_int("hide_shorts", 0);
 	var_incognito = load_int("incognito", 0);
 	var_tour_done = load_int("tour_done", 0);
-	var_autoplay_delay = std::max(0, std::min(3, load_int("autoplay_delay", 0)));
+	var_autoplay_delay = std::max(0, std::min(5, load_int("autoplay_delay", 0)));
 	var_studio_category = std::max(0, std::min(30, load_int("studio_category", 0)));
 	var_autoplay_skip_watched = std::max(0, std::min(1, load_int("autoplay_skip_watched", 0)));
 	var_download_quality = std::max(0, std::min(3, load_int("download_quality", 0)));

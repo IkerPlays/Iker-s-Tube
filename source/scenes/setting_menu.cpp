@@ -1171,7 +1171,9 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("None", "Ninguna"); },
 							(std::function<std::string ()>) []() { return std::string("3 s"); },
 							(std::function<std::string ()>) []() { return std::string("5 s"); },
-							(std::function<std::string ()>) []() { return std::string("10 s"); }
+							(std::function<std::string ()>) []() { return std::string("10 s"); },
+							(std::function<std::string ()>) []() { return std::string("15 s"); },
+							(std::function<std::string ()>) []() { return std::string("30 s"); }
 						}, var_autoplay_delay)
 						->set_title([](const SelectorView &) { return tr("Wait before the next video", "Espera antes del siguiente vídeo"); })
 						->set_info([](const SelectorView &) { return tr("A countdown is shown; pressing A cancels the autoplay.", "Se muestra una cuenta atrás; pulsar A cancela la reproducción automática."); })

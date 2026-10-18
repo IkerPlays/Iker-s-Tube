@@ -3884,7 +3884,7 @@ static void autoplay_countdown_tick() {
 							    if ((var_autoplay_level == 2 && playing_video_info.has_next_video()) ||
 							        (var_autoplay_level == 1 && playing_video_info.has_next_video_in_playlist())) {
 								    if (var_autoplay_delay > 0) { // wait : the countdown is handled by the UI thread
-									    static const int delays[4] = {0, 3, 5, 10};
+									    static const int delays[6] = {0, 3, 5, 10, 15, 30};
 									    autoplay_pending_url = playing_video_info.get_next_video().url;
 									    autoplay_pending_for = playing_video_info.id;
 									    autoplay_due_ms = osGetTime() + delays[var_autoplay_delay] * 1000;
