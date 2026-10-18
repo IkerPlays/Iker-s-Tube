@@ -636,6 +636,7 @@ static void load_search_results(void *) {
 		                         new_result.results.end());
 	} else { // Shorts feed : play them all in a shuffled loop once you open one
 		std::vector<std::pair<std::string, std::string>> items, only_shorts;
+		bool feed_from_sequence = false;
 		for (auto &item : new_result.results) {
 			if (item.type != YouTubeSuccinctItem::VIDEO) continue;
 			items.push_back({item.video.url, item.video.title});
@@ -646,15 +647,17 @@ static void load_search_results(void *) {
 			std::string seed = youtube_get_video_id_by_url(only_shorts[0].first);
 			std::vector<std::string> more = youtube_shorts_sequence(seed);
 			if (more.size() >= 3) {
+				feed_from_sequence = true; // (its order is kept : no shuffle)
 				items.clear();
 				for (auto &id : more) items.push_back({youtube_get_video_url_by_id(id), "Short"});
 			}
 		}
-		bool real_feed = items.size() && items[0].second == "Short"; // (the sequence of YouTube : its order is kept)
-		play_queue_clear();                                           // the Shorts replace the queue
-		for (size_t i = 1; i < items.size(); i++) play_queue_toggle(items[i].first, items[i].second);
-		play_queue_set_repeat(items, !real_feed);
-		feed_first_url = items.size() ? items[0].first : "";
+		if (items.size() && global_current_scene == SceneType::SEARCH) { // (nothing found or the user left : the queue stays as it is)
+			play_queue_clear();                                           // the Shorts replace the queue
+			for (size_t i = 1; i < items.size(); i++) play_queue_toggle(items[i].first, items[i].second);
+			play_queue_set_repeat(items, !feed_from_sequence);
+			feed_first_url = items[0].first;
+		}
 	}
 
 	// wrap and truncate here

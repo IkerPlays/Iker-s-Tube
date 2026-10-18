@@ -168,11 +168,13 @@ bool youtube_account_run_endpoint(const std::string &endpoint_json) {
 		api = doc["commandMetadata"]["webCommandMetadata"]["apiUrl"].GetString();
 	}
 	std::string fields;
+	bool fields_candidate_seen = false;
 	for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
 		std::string name = it->name.GetString();
 		if (name == "clickTrackingParams" || name == "commandMetadata" || !it->value.IsObject()) continue;
 		bool service = name.size() > 8 && name.compare(name.size() - 8, 8, "Endpoint") == 0; // the "xxxEndpoint" member is the request
-		if (!service && doc.MemberCount() > 3) continue;
+		if (!service && fields_candidate_seen) continue;
+		fields_candidate_seen = true;
 		rapidjson::StringBuffer buffer;
 		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 		it->value.Accept(writer);
@@ -188,12 +190,12 @@ bool youtube_account_run_endpoint(const std::string &endpoint_json) {
 	api = api.substr(prefix.size());
 	size_t q = api.find('?');
 	if (q != std::string::npos) api = api.substr(0, q);
-	static const char *blocked[] = {"subscription/", "playlist/", "browse/edit_playlist", "comment/", "channel_edit", "account/", "feedback", "like/dislike", "guide_action"};
-	for (auto b : blocked) { // a page must not make the app run actions that the user did not choose
-		if (api.compare(0, strlen(b), b) == 0) {
-			set_last_error("endpoint not allowed : " + api);
-			return false;
-		}
+	// only the endpoint of a poll vote is run (a page must not make the app do anything else with the login)
+	std::string lower = api;
+	for (auto &ch : lower) ch = tolower((unsigned char)ch);
+	if (lower != "comment/perform_comment_action") {
+		set_last_error("endpoint not allowed : " + api.substr(0, 60));
+		return false;
 	}
 	if (fields == "") fields = "\"x\": 0";
 	return account_post(api, fields, 1).first || account_post(api, fields, 2).first;

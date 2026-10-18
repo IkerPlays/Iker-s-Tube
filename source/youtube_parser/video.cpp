@@ -85,7 +85,7 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 	probe_info = info;
 	LightLock_Unlock(&probe_info_lock);
 	logger.info("player", "audio probe : " + info);
-	return best.size() >= out.size() ? best : out;
+	return best;
 }
 
 static bool extract_player_data(Document &json_root, RJson player_response, YouTubeVideoDetail &res) {

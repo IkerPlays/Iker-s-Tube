@@ -324,7 +324,7 @@ static void caption_lang_remember(const std::string &id) {
 
 static std::vector<std::pair<std::string, std::string>> back_stack; // videos left behind ({url, title}), emptied when the player starts
 static LightLock back_lock;
-static bool back_navigating = false; // the video change was a "previous" : the video left is not stacked again
+static std::string back_nav_target; // the video that a "previous" is loading : the video left is not stacked again (guarded by back_lock)
 static void back_stack_push(const std::string &url, const std::string &title) {
 	LightLock_Lock(&back_lock);
 	back_stack.push_back({url, title});
@@ -957,7 +957,7 @@ static double url_start_time(const std::string &url) {
 void VideoPlayer_init(void) {
 	LightLock_Init(&back_lock);
 	back_stack.clear();
-	back_navigating = false;
+	back_nav_target = "";
 	youtube_is_watched_hook = autoplay_is_watched; // (the setting Autoplay picks : skip watched)
 	logger.info(DEF_SAPP0_INIT_STR, "Initializing...");
 	bool new_3ds = false;
@@ -2743,10 +2743,13 @@ debug_info_view =
 		    video_info_cache.erase("offline:" + pending_offline_delete);
 		    pending_offline_delete = "";
 	    }
-	    if (!back_navigating && playing_video_info.url != "" && tmp_video_info.url != "" && playing_video_info.url != tmp_video_info.url) {
+	    LightLock_Lock(&back_lock);
+	    bool going_back = back_nav_target != "" && back_nav_target == tmp_video_info.url;
+	    if (going_back) back_nav_target = "";
+	    LightLock_Unlock(&back_lock);
+	    if (!going_back && playing_video_info.url != "" && tmp_video_info.url != "" && playing_video_info.id != tmp_video_info.id) {
 		    back_stack_push(playing_video_info.url, playing_video_info.title); // D-pad up comes back to it
 	    }
-	    back_navigating = false;
 	    playing_video_info = tmp_video_info;
 	    if (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0) { // the saved copy that replaced an online video is not remembered under its address
 		    video_info_cache[url] = tmp_video_info;
@@ -4706,7 +4709,9 @@ static void autoplay_countdown_tick() {
 				    }
 			    } else if (std::pair<std::string, std::string> previous; back_stack_pop(previous)) {
 				    if (cur_url != "") play_queue_play_next(cur_url, cur_title); // "down" comes back to this one
-				    back_navigating = true;
+				    LightLock_Lock(&back_lock);
+				    back_nav_target = previous.first;
+				    LightLock_Unlock(&back_lock);
 				    send_change_video_request(previous.first, true, false, false);
 			    } else {
 				    notice_show(tr("No previous video", "No hay vídeo anterior"));
