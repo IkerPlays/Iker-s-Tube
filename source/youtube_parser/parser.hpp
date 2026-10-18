@@ -233,6 +233,10 @@ struct YouTubeChannelDetail {
 	int current_shorts_sort_type = 0; // 0: newest, 1: popular, 2: oldest
 	std::string playlist_tab_browse_id;
 	std::string playlist_tab_params;
+	struct ExtraTab { // other tabs made of playlists (Podcasts, Courses, Releases) : added to the playlists
+		std::string title, browse_id, params;
+	};
+	std::vector<ExtraTab> extra_tabs;
 
 	std::vector<std::pair<std::string, std::vector<YouTubePlaylistSuccinct>>>
 	    playlists; // {category title, list of playlists}

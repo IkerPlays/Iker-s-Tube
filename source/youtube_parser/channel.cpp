@@ -230,6 +230,16 @@ static void parse_channel_data(RJson data, YouTubeChannelDetail &res) {
 			}
 		}
 		tab_url = tab["tabRenderer"]["endpoint"]["commandMetadata"]["webCommandMetadata"]["url"].string_value();
+		for (const char *extra : {"/podcasts", "/courses", "/releases"}) {
+			if (ends_with(tab_url, extra)) {
+				YouTubeChannelDetail::ExtraTab t;
+				t.title = tab["tabRenderer"]["title"].string_value();
+				t.browse_id = tab["tabRenderer"]["endpoint"]["browseEndpoint"]["browseId"].string_value();
+				t.params = tab["tabRenderer"]["endpoint"]["browseEndpoint"]["params"].string_value();
+				if (t.title == "") t.title = std::string(extra + 1);
+				if (t.browse_id != "" && t.params != "") res.extra_tabs.push_back(t);
+			}
+		}
 		if (ends_with(tab_url, "/playlists")) {
 			res.playlist_tab_browse_id = tab["tabRenderer"]["endpoint"]["browseEndpoint"]["browseId"].string_value();
 			res.playlist_tab_params = tab["tabRenderer"]["endpoint"]["browseEndpoint"]["params"].string_value();
@@ -734,9 +744,28 @@ void YouTubeChannelDetail::load_playlists() {
 	post_content = std::regex_replace(post_content, std::regex("%2"), playlist_tab_browse_id);
 	post_content = std::regex_replace(post_content, std::regex("%3"), playlist_tab_params);
 
+	std::vector<YouTubeChannelDetail::ExtraTab> extras = extra_tabs;
 	access_and_parse_json([&]() { return http_post_json(get_innertube_api_url("browse"), post_content); },
 	                      [&](Document &, RJson json) { channel_load_playlists_(json, *this); },
 	                      [&](const std::string &error) { debug_error((this->error = "[ch/pl] " + error)); });
+	// Podcasts / Courses / Releases : their playlists join the list as categories named after the tab
+	for (auto &tab : extras) {
+		std::string content =
+		    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00", "utcOffsetMinutes": 0}}, "browseId": "%2", "params": "%3"})";
+		content = std::regex_replace(content, std::regex("%0"), language_code);
+		content = std::regex_replace(content, std::regex("%1"), country_code);
+		content = std::regex_replace(content, std::regex("%2"), tab.browse_id);
+		content = std::regex_replace(content, std::regex("%3"), tab.params);
+		YouTubeChannelDetail extra;
+		std::string ignored;
+		access_and_parse_json([&]() { return http_post_json(get_innertube_api_url("browse"), content); },
+		                      [&](Document &, RJson json) { channel_load_playlists_(json, extra); },
+		                      [&](const std::string &e) { ignored = e; });
+		for (auto &category : extra.playlists) {
+			std::string name = category.first == "" || category.first == tab.title ? tab.title : tab.title + ": " + category.first;
+			playlists.push_back({name, category.second});
+		}
+	}
 }
 
 static void load_community_items(RJson contents, YouTubeChannelDetail &res) {

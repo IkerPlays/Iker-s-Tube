@@ -126,6 +126,15 @@ static void run_job(void *arg) {
 	} else if (!ok) {
 		std::string why = youtube_account_last_error();
 		notice_show(failed + (why != "" && job->type != TRANSLATE ? " (" + why.substr(0, 70) + ")" : ""));
+		if (why != "" && (job->type == COMMENT || job->type == COMMENT_REPLY || job->type == COMMENT_DELETE || job->type == LIVE_CHAT)) {
+			logger.warning("account", "job failed : " + why);
+			result_lock.lock(); // the whole reason on a screen, to read it and send it
+			translation_title = tr("Why it failed", "Por qué falló");
+			translation_text = why;
+			translation_ready = true;
+			result_lock.unlock();
+			var_need_refresh = true;
+		}
 	}
 	delete job;
 }

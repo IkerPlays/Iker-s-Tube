@@ -1,3 +1,5 @@
 Devbuild notes
 
-- Look: channel rows (collaborations, search, lists) are now cards with the picture on the left and more room for the name; the player tool buttons are rounded and spaced; popups have accent titles and rounded Close buttons; dialogs and Library buttons have rounded corners.
+- Channels: the Podcasts, Courses and Releases tabs of a channel (when it has them) now appear inside the Playlists tab as extra categories.
+- Channel cards: the name and the lines are cut to fit inside the card, and the rounded corners were removed from them (they could draw outside the list).
+- Comments: writing a comment or reply no longer needs the comments tab to be opened first, and when a comment or chat message fails a screen shows the whole reason (Why it failed) so it can be reported.

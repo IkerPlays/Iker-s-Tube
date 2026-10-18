@@ -223,13 +223,14 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 		if (std::find(clients.begin(), clients.end(), c) == clients.end()) clients.push_back(c);
 	}
 	for (int client : clients) {
-		auto r = account_post("next", "\"continuation\": \"" + json_escape(token) + "\"", client);
+		auto r = token != "" ? account_post("next", "\"continuation\": \"" + json_escape(token) + "\"", client)
+		                     : std::make_pair(false, std::string()); // no token (comments not opened) : straight to the page of the video
 		if (r.first && comment_section_usable(r.second, need_params)) {
 			comment_client = client;
 			json = r.second;
 			return true;
 		}
-		if (!r.first) continue; // this client does not take the login (or the token) : the next one
+		if (!r.first && token != "") continue; // this client does not take the login (or the token) : the next one
 		std::string video_id = get_context_video();
 		if (video_id != "") { // the page of the video as this client sees it has its own comment tokens
 			auto page = account_post("next", "\"videoId\": \"" + json_escape(video_id) + "\"", client);
@@ -264,7 +265,7 @@ bool youtube_account_comment_create(const std::string &comments_token, const std
 		set_last_error("data api: " + err);
 	}
 	std::string json;
-	if (comments_token == "" || !fetch_comment_section(comments_token, json, true)) return false;
+	if (!fetch_comment_section(comments_token, json, true)) return false;
 	size_t end = json.size();
 	std::string params = text_after(json, 0, end, "\"createCommentParams\":\"");
 	if (params == "") {
@@ -334,7 +335,7 @@ static std::string find_comment_token(const std::string &json, const std::string
 
 bool youtube_account_comment_like(const std::string &comments_token, const std::string &comment_id) {
 	std::string json;
-	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
+	if (!fetch_comment_section(comments_token, json, false)) return false;
 	std::string action = find_comment_token(json, "\"likeCommand\"", 1500, "\"action\":\"", comment_id);
 	if (action == "") { // older layout : the action sits inside the comment itself
 		size_t p = json.find("\"commentId\":\"" + comment_id + "\"");
@@ -351,7 +352,7 @@ bool youtube_account_comment_delete(const std::string &comments_token, const std
 	std::string err;
 	if (studio_ready() && comment_id != "" && youtube_studio_comment_delete(comment_id, err)) return true;
 	std::string json;
-	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
+	if (!fetch_comment_section(comments_token, json, false)) return false;
 	// the menu of an own comment has an entry with the DELETE icon, followed by the action that does it
 	std::string action;
 	for (const char *marker : {"\"iconType\":\"DELETE\"", "\"iconType\":\"TRASH\"", "\"icon\":\"DELETE\"", "\"icon\":\"TRASH\"", "\"DELETE\""}) {
@@ -381,7 +382,7 @@ bool youtube_account_comment_reply(const std::string &comments_token, const std:
 		set_last_error("data api: " + err);
 	}
 	std::string json;
-	if (comments_token == "" || !fetch_comment_section(comments_token, json, false)) return false;
+	if (!fetch_comment_section(comments_token, json, false)) return false;
 	std::string params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createReplyParams\":\"", comment_id);
 	if (params == "") params = find_comment_token(json, "\"replyCommand\"", 6000, "\"createCommentReplyParams\":\"", comment_id);
 	if (params == "") {
