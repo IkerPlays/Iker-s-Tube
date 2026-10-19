@@ -77,33 +77,16 @@ static void video_menu_close() {
 	if (video_menu) video_menu->set_is_visible(false);
 	var_need_refresh = true;
 }
+static bool menu_next_request = false; // "More options..." was tapped : the next page opens after the update (a menu cannot rebuild itself while it handles a tap)
+static std::string menu_next_title;
+static std::vector<std::pair<std::string, std::function<void()>>> menu_next_options;
+static size_t menu_next_first = 0;
+static void show_menu_rows(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options, size_t first = 0);
 void overlay_show_video_menu(const std::string &url, const std::string &title, const std::string &author,
                              const std::string &extra_label, std::function<void()> extra_action) {
 	std::string id = youtube_get_video_id_by_url(url);
-	if (!video_menu) {
-		video_menu = new OverlayView(0, 0, 320, 240);
-		video_menu->set_on_cancel([](OverlayView &) { video_menu_close(); });
-	}
-	video_menu->recursive_delete_subviews();
-	const int width = 250;
-	std::vector<View *> rows;
-	rows.push_back((new TextView(0, 0, width, 22))
-	                   ->set_text(truncate_first_line(title, width - 8, 0.5))
-	                   ->set_x_alignment(TextView::XAlign::CENTER)
-	                   ->set_y_alignment(TextView::YAlign::CENTER)
-	                   ->set_get_text_color([]() { return COLOR_ACCENT; })
-	                   ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
-	auto option = [&](const std::string &text, std::function<void()> action) {
-		rows.push_back((new TextView(0, 0, width, 24))
-		                   ->set_text(text)
-		                   ->set_x_alignment(TextView::XAlign::CENTER)
-		                   ->set_y_alignment(TextView::YAlign::CENTER)
-		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
-		                   ->set_on_view_released([action](View &) {
-			                   video_menu_close();
-			                   action();
-		                   }));
-	};
+	std::vector<std::pair<std::string, std::function<void()>>> options;
+	auto option = [&](const std::string &text, std::function<void()> action) { options.push_back({text, action}); };
 	FavoriteVideo video;
 	video.id = id;
 	video.title = title;
@@ -172,27 +155,18 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 		option(tr("Not interested", "No me interesa"), [id]() { account_not_interested_async(id, false); });
 	}
 	if (extra_label != "" && extra_action) option(extra_label, extra_action);
-	rows.push_back((new TextView(0, 0, width, 24))
-	                   ->set_text(LOCALIZED(CANCEL))
-	                   ->set_x_alignment(TextView::XAlign::CENTER)
-	                   ->set_y_alignment(TextView::YAlign::CENTER)
-	                   ->set_get_background_color(View::STANDARD_BACKGROUND)
-	                   ->set_on_view_released([](View &) { video_menu_close(); }));
-	video_menu->set_subview((new VerticalListView(0, 0, width))
-	                            ->set_views(rows)
-	                            ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
-	video_menu->set_is_visible(true);
-	var_need_refresh = true;
+	show_menu_rows(title, options);
 }
 
-// rows of a small menu (title + options + Cancel) shown on the video menu overlay
-static void show_menu_rows(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options) {
+static void show_menu_rows(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options, size_t first) {
 	if (!video_menu) {
 		video_menu = new OverlayView(0, 0, 320, 240);
 		video_menu->set_on_cancel([](OverlayView &) { video_menu_close(); });
 	}
 	video_menu->recursive_delete_subviews();
 	const int width = 250;
+	const size_t per_page = 6; // 22 + 6 * 24 + More + Cancel stays inside the 240 pixels of the screen
+	if (first >= options.size()) first = 0;
 	std::vector<View *> rows;
 	rows.push_back((new TextView(0, 0, width, 22))
 	                   ->set_text(truncate_first_line(title, width - 8, 0.5))
@@ -200,10 +174,12 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 	                   ->set_y_alignment(TextView::YAlign::CENTER)
 	                   ->set_get_text_color([]() { return COLOR_ACCENT; })
 	                   ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
-	for (auto &option : options) {
-		auto action = option.second;
+	size_t last = std::min(options.size(), first + per_page);
+	if (options.size() - first <= per_page + 1) last = options.size(); // (the last page may hold one more : no "More" for a single option)
+	for (size_t i = first; i < last; i++) {
+		auto action = options[i].second;
 		rows.push_back((new TextView(0, 0, width, 24))
-		                   ->set_text(option.first)
+		                   ->set_text(options[i].first)
 		                   ->set_x_alignment(TextView::XAlign::CENTER)
 		                   ->set_y_alignment(TextView::YAlign::CENTER)
 		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
@@ -211,6 +187,15 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 			                   video_menu_close();
 			                   action();
 		                   }));
+	}
+	if (last < options.size()) { // more options on the next page
+		rows.push_back((new TextView(0, 0, width, 24))
+		                   ->set_text(tr("More options...", "Más opciones..."))
+		                   ->set_x_alignment(TextView::XAlign::CENTER)
+		                   ->set_y_alignment(TextView::YAlign::CENTER)
+		                   ->set_get_text_color([]() { return COLOR_ACCENT; })
+		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                   ->set_on_view_released([title, options, last](View &) { menu_next_request = true; menu_next_title = title; menu_next_options = options; menu_next_first = last; }));
 	}
 	rows.push_back((new TextView(0, 0, width, 24))
 	                   ->set_text(LOCALIZED(CANCEL))
@@ -528,6 +513,10 @@ static void show_first_use_tour() {
 
 void update_overlay_menu(Hid_info *key) {
 	static bool exit_confirmed = false;
+	if (menu_next_request) {
+		menu_next_request = false;
+		show_menu_rows(menu_next_title, menu_next_options, menu_next_first);
+	}
 	if (waiting_account_playlists && osGetTime() - waiting_account_playlists_since > 20000) waiting_account_playlists = false; // (nothing came : stop waiting)
 	if (waiting_account_playlists) {
 		std::string playlists_video;

@@ -32,6 +32,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Top channels.** The history lists the channels you watch most and searches them.
 - **Liked tab.** Remove your like from the long press menu.
 - **Video menu.** Like a video on YouTube from its long press menu.
+- **Menus.** The long press menus use pages with a More options row, so all the options fit on the screen.
 
 ## Installing
 
