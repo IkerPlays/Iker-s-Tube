@@ -1,1 +1,1 @@
-The audio-only screen shows the name of the chapter that is playing.
+The Library entry of the side menu is translated.

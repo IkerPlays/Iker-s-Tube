@@ -626,7 +626,7 @@ void update_overlay_menu(Hid_info *key) {
 	}
 	if (!nav_enabled && global_current_scene != SceneType::LIBRARY) {
 		int queued = play_queue_size();
-		contents.push_back({queued ? "Biblioteca (" + std::to_string(queued) + ")" : std::string("Biblioteca"),
+		contents.push_back({queued ? tr("Library", "Biblioteca") + " (" + std::to_string(queued) + ")" : tr("Library", "Biblioteca"),
 		                    Content::Type::LIBRARY});
 	}
 	if (global_current_scene != SceneType::HISTORY) {
