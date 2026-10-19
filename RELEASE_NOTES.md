@@ -1,1 +1,1 @@
-Fixes: backups are written safely and an import is applied at the next start (it can no longer be overwritten); the search filter menus open without touching a freed row; Skip intro waits for the decoder to decide the start; the thumbnail cache is read under its lock; a bad tempo value cannot hang the audio filter; a paused video can be reloaded.
+Fix: the position shown no longer jumps back for a moment after a seek.

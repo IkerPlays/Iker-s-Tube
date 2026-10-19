@@ -4762,7 +4762,7 @@ static void autoplay_countdown_tick() {
 							    }
 						    }
 					    }
-					    vid_current_pos = pts;
+					    if (!vid_seek_request && !vid_change_video_request) vid_current_pos = pts; // (a pending seek already set the new position)
 
 					    {   // remember the position every 10 s so the video can be continued later
 						    static u64 last_resume_save = 0;
