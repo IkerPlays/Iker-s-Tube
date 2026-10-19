@@ -1,1 +1,1 @@
-Player: new Controls tool lists what each button does.
+My Wrapped has a Share my numbers (QR) row: scan it with a phone to read your stats.

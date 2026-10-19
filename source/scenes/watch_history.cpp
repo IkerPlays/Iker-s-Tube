@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include "util/badges.hpp"
+#include "ui/qr_popup.hpp"
 #include <map>
 #include <numeric>
 
@@ -318,6 +319,7 @@ void History_draw(void) {
 		}
 		draw_overlay_menu(video_playing_bar_show ? 240 - OVERLAY_MENU_ICON_SIZE - VIDEO_PLAYING_BAR_HEIGHT
 		                                         : 240 - OVERLAY_MENU_ICON_SIZE);
+		qr_popup_draw();
 
 		if (Util_expl_query_show_flag()) {
 			Util_expl_draw();
@@ -339,7 +341,9 @@ void History_draw(void) {
 	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
 	} else {
-		if (on_long_tap_dialog->is_visible) {
+		if (qr_popup_update(key)) {
+			// the QR popup takes the input while it is open
+		} else if (on_long_tap_dialog->is_visible) {
 			on_long_tap_dialog->update(key);
 		} else {
 			update_overlay_menu(&key);
@@ -411,6 +415,11 @@ void History_draw(void) {
 				if (replayed) {
 					const std::string replay_url = youtube_get_video_url_by_id(replayed->id);
 					rows.push_back({tr("Most replayed: ", "Más repetido: ") + truncate_first_line(replayed->title, 190, 0.5) + " (" + std::to_string(replayed->my_view_count) + ")", [replay_url]() { clicked_url = replay_url; }});
+				}
+				{ // the numbers as a QR code: scanning it shows the text on a phone
+					std::string share = std::string("Iker's Tube: ") + std::to_string(watch_history.size()) + " videos, " + std::to_string(total_views) + " views, " +
+					                    std::to_string(play_seconds / 3600) + " h, " + std::to_string(streak) + " day streak, " + std::to_string(unlocked) + "/" + std::to_string(badges.size()) + " badges";
+					rows.push_back({tr("Share my numbers (QR)", "Compartir mis números (QR)"), [share]() { qr_popup_show(share); }});
 				}
 				rows.push_back({tr("Badges: ", "Logros: ") + std::to_string(unlocked) + "/" + std::to_string(badges.size()), [badge_rows]() {
 					overlay_show_menu_deferred(tr("Badges", "Logros"), badge_rows);
