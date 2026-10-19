@@ -1,6 +1,7 @@
 #include "data_io/feed_seen.hpp"
 #include "ui/notice.hpp"
 #include "headers.hpp"
+#include "util/pinned_channels.hpp"
 #include <vector>
 #include <string>
 #include <set>
@@ -1210,9 +1211,10 @@ static void update_subscribed_channels(const std::vector<SubscriptionChannel> &n
 		for (auto &c : y) c = tolower(c);
 		return x < y;
 	});
+	std::stable_partition(sorted_channels.begin(), sorted_channels.end(), [](const SubscriptionChannel &c) { return pinned_channel_is(c.id); }); // pinned first
 	for (auto channel : sorted_channels) {
 		SuccinctChannelView *cur_view = (new SuccinctChannelView(0, 0, 320, CHANNEL_ICON_HEIGHT));
-		cur_view->set_name(channel.name);
+		cur_view->set_name((pinned_channel_is(channel.id) ? "* " : "") + channel.name);
 		cur_view->set_auxiliary_lines({channel.subscriber_count_str});
 		cur_view->set_thumbnail_url(channel.icon_url);
 		cur_view->set_get_background_color(View::STANDARD_BACKGROUND);

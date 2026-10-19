@@ -11,6 +11,8 @@
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
 #include "util/result_filter.hpp"
+#include "util/pinned_channels.hpp"
+#include "scenes/home.hpp"
 #include "data_io/history.hpp"
 #include "data_io/subscription_util.hpp"
 #include "scenes/account_tasks.hpp"
@@ -239,6 +241,14 @@ void overlay_show_channel_menu(const std::string &id, const std::string &name, c
 		if (OAuth::is_authenticated()) account_subscribe_async(id, !subscribed);
 		notice_show(subscribed ? tr("Unsubscribed", "Suscripción quitada") : tr("Subscribed", "Suscrito"));
 	}});
+	if (subscribed) { // the channels pinned on top of the subscribed channels list
+		bool pinned = pinned_channel_is(id);
+		options.push_back({pinned ? tr("Unpin from the top", "Quitar de arriba") : tr("Pin on top", "Fijar arriba"), [id, pinned]() {
+			pinned_channel_set(id, !pinned);
+			Home_update_local_channels();
+			notice_show(pinned ? tr("Unpinned", "Quitado de arriba") : tr("Pinned on top of your channels", "Fijado arriba en tus canales"));
+		}});
+	}
 	bool hidden = hidden_channel_is(name);
 	options.push_back({hidden ? tr("Show in lists again", "Mostrar en las listas") : tr("Hide in lists", "Ocultar en las listas"), [name, hidden]() {
 		hidden_channel_set(name, !hidden);
