@@ -6,6 +6,7 @@
 #include "util/recent_channels.hpp"
 #include "scenes/offline_tasks.hpp"
 #include "util/play_queue.hpp"
+#include "data_io/history.hpp"
 #include <vector>
 #include <string>
 #include <set>
@@ -774,11 +775,22 @@ void Channel_init(void) {
 	    }
 	    // video info
 	    info_view->recursive_delete_subviews();
+	    std::string history_line; // what your history says about this channel
+	    if (!var_incognito && channel_info.name != "") {
+		    int watched_videos = 0, watched_times = 0;
+		    for (auto &h : get_valid_watch_history()) {
+			    if (h.author_name == channel_info.name) watched_videos++, watched_times += std::max(1, h.my_view_count);
+		    }
+		    if (watched_videos) history_line = tr("In your history: ", "En tu historial: ") + std::to_string(watched_videos) + tr(" videos, watched ", " vídeos, vistos ") + std::to_string(watched_times) + tr(" times", " veces");
+	    }
 	    info_view->set_views(
 	        {(new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
 	             ->set_text((std::function<std::string()>)[]() { return LOCALIZED(CHANNEL_DESCRIPTION); })
 	             ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	         (new RuleView(0, 0, 320, SMALL_MARGIN)),
+	         (new TextView(SMALL_MARGIN, 0, 320, history_line == "" ? 0 : DEFAULT_FONT_INTERVAL))
+	             ->set_text(history_line)
+	             ->set_font_size(0.45, DEFAULT_FONT_INTERVAL),
 	         (new TextView(0, 0, 320, 24))
 	             ->set_text(tr("QR code of this channel", "Código QR de este canal"))
 	             ->set_x_alignment(TextView::XAlign::CENTER)

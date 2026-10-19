@@ -15,6 +15,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Memories.** The History shows a video from about a week or a month ago to watch again.
 - **Fixes.** Spanish and Portuguese interface languages are kept after restarting the app, and the translation table no longer needs a huge stack frame at startup.
 - **Portuguese.** The interface language can be set to Portuguese.
+- **Channel history.** The channel page tells how many of its videos you have watched.
 
 ## Installing
 
