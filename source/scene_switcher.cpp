@@ -231,6 +231,26 @@ void Menu_init(void) {
 	std::string last_id, last_title;
 	if (!var_welcome_done) { // first launch : show the settings so language, theme and quality can be picked
 		var_welcome_done = true;
+		{ // the language of the console is the starting language of the app (it can be changed in the settings that open now)
+			u8 system_language = 1; // 1 : English
+			if (R_SUCCEEDED(CFGU_GetSystemLanguage(&system_language))) {
+				std::string detected = "en", content = "en";
+				switch (system_language) {
+				case CFG_LANGUAGE_JP: detected = content = "ja"; break;
+				case CFG_LANGUAGE_FR: detected = content = "fr"; break;
+				case CFG_LANGUAGE_DE: detected = content = "de"; break;
+				case CFG_LANGUAGE_IT: detected = content = "it"; break;
+				case CFG_LANGUAGE_ES: detected = content = "es"; break;
+				case CFG_LANGUAGE_PT: detected = "br"; break;
+				default: break;
+				}
+				if (detected != var_lang) {
+					var_lang = detected;
+					var_lang_content = content;
+					load_string_resources(var_lang);
+				}
+			}
+		}
 		misc_tasks_request(TASK_SAVE_SETTINGS);
 		global_intent.next_scene = SceneType::SETTINGS;
 	} else if (var_start_scene == 3 && last_played_get(last_id, last_title)) { // continue the last video (it resumes where it stopped)

@@ -48,6 +48,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Surprise from the feed.** A button in the Feed tab opens a random video of your feed.
 - **Fixes.** Playlists keep full video titles, the queue tab acts on the right video, typed searches leave Radio mode, and a full SD card can no longer damage favorites, playlists or the queue.
 - **Retry.** A failed search or results page can be retried by tapping the error.
+- **Console language.** On the first start the app uses the language of the console when it is supported.
 
 ## Installing
 
