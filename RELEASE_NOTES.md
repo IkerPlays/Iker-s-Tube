@@ -1,1 +1,1 @@
-Fix: the content language of searches also follows the console language on the first start.
+When a video continues where you left it, it starts 3 seconds earlier.

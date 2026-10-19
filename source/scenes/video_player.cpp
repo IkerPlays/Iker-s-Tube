@@ -4482,7 +4482,7 @@ static void autoplay_countdown_tick() {
 				    // continue where the video was left
 				    double resume_pos = resume_get(snap_id);
 				    if (resume_pos > 0 && vid_duration - resume_pos > 15) {
-					    seek_at_init_request = resume_pos;
+					    seek_at_init_request = resume_pos > 8 ? resume_pos - 3 : resume_pos; // a few seconds back: the sentence is not cut in half
 				    }
 			    }
 			    intro_skip_blocked = seek_at_init_request >= 0; // a link time, a bookmark or a resume point decides the start
