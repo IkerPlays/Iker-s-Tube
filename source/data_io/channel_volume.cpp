@@ -52,9 +52,14 @@ void channel_volume_set(const std::string &channel_id, double volume) {
 	FILE *f = fopen(VOLUME_TMP_PATH, "w");
 	if (f) {
 		for (auto &p : volumes) fprintf(f, "%s\t%.2f\n", p.first.c_str(), p.second);
-		fclose(f);
-		remove(VOLUME_PATH);
-		rename(VOLUME_TMP_PATH, VOLUME_PATH);
+		bool good = !ferror(f);
+		if (fclose(f) != 0) good = false;
+		if (good) {
+			remove(VOLUME_PATH);
+			rename(VOLUME_TMP_PATH, VOLUME_PATH);
+		} else {
+			remove(VOLUME_TMP_PATH);
+		}
 	}
 	prefs_lock.unlock();
 }

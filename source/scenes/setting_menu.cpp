@@ -1859,7 +1859,7 @@ void Sem_init(void) {
 						->set_get_background_color(View::STANDARD_BACKGROUND)
 						->set_on_view_released([] (View &) {
 							int count = backup_import();
-							std::string message = count < 0 ? tr("SD card error or no backup found", "Error de la SD o no hay copia") : std::to_string(count) + " " + tr("files restored - restart the app", "archivos restaurados - reinicia la app");
+							std::string message = count <= 0 ? tr("SD card error or no backup found", "Error de la SD o no hay copia") : std::to_string(count) + " " + tr("files restored - restart the app", "archivos restaurados - reinicia la app");
 							toast_view
 								->set_text((std::function<std::string ()>) [message] () { return message; })
 								->set_x_alignment(TextView::XAlign::CENTER)

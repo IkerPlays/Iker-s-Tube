@@ -52,9 +52,14 @@ void channel_speed_set(const std::string &channel_id, double speed) {
 	FILE *f = fopen(SPEED_TMP_PATH, "w");
 	if (f) {
 		for (auto &p : speeds) fprintf(f, "%s\t%.2f\n", p.first.c_str(), p.second);
-		fclose(f);
-		remove(SPEED_PATH);
-		rename(SPEED_TMP_PATH, SPEED_PATH);
+		bool good = !ferror(f);
+		if (fclose(f) != 0) good = false;
+		if (good) {
+			remove(SPEED_PATH);
+			rename(SPEED_TMP_PATH, SPEED_PATH);
+		} else {
+			remove(SPEED_TMP_PATH);
+		}
 	}
 	prefs_lock.unlock();
 }

@@ -1,1 +1,1 @@
-Next episode now prefers the number after Ep, Part, Cap or #; keyboard suggestions with accents or quotes are no longer dropped.
+Fix: the Go to time tool no longer freezes the app when the time is accepted. Skip intro works even when the decoder is ready early, Loop chapter works on the last chapter, Go to time ignores live streams, the badge list is only trusted when it was fully written, and a few more saves check for write errors.

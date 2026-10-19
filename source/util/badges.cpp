@@ -83,7 +83,8 @@ void badges_check_new() {
 	earned.insert(-1);
 	if (changed || !existed) {
 		if (FILE *f = fopen(BADGES_PATH, "w")) {
-			for (int id : earned) fprintf(f, "%d\n", id);
+			for (int id : earned) if (id >= 0) fprintf(f, "%d\n", id);
+			fprintf(f, "-1\n"); // (last: a file cut while writing has no end mark and counts as no file)
 			fclose(f);
 		}
 	}

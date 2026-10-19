@@ -428,6 +428,18 @@ static void rebuild_bookmarks_list() {
 // applies the speed remembered for the channel of the playing video once its decoder is ready
 static void channel_speed_tick() {
 	static std::string applied_for;
+	if (network_decoder.ready && playing_video_info.id != "") {
+	// the intro of this channel is skipped, once per video, after the decoder thread has decided where this video starts
+	static std::string intro_done_for;
+	if (intro_done_for != playing_video_info.id && strncmp(intro_decided_id, playing_video_info.id.c_str(), sizeof(intro_decided_id) - 1) == 0) {
+		intro_done_for = playing_video_info.id;
+		double skip = channel_skip_get(playing_video_info.author.id);
+		if (skip > 0 && !playing_video_info.is_livestream && !intro_skip_blocked && vid_current_pos < 1 && vid_duration > skip + 15 &&
+		    playing_video_info.url.compare(0, 8, "offline:") != 0) {
+			send_seek_request_wo_lock(skip);
+		}
+	}
+	}
 	if (!network_decoder.ready || playing_video_info.id == "" || applied_for == playing_video_info.id) return;
 	applied_for = playing_video_info.id;
 	double volume = channel_volume_get(playing_video_info.author.id);
@@ -437,16 +449,6 @@ static void channel_speed_tick() {
 	if (!(speed >= 0.25 && speed <= 4)) {
 		static const double defaults[6] = {1.0, 0.75, 1.25, 1.5, 1.75, 2.0};
 		speed = playing_video_info.is_livestream ? 1.0 : defaults[std::max(0, std::min(5, var_default_speed))];
-	}
-	// the intro of this channel is skipped, once per video, after the decoder thread has decided where this video starts
-	static std::string intro_done_for;
-	if (intro_done_for != playing_video_info.id && strncmp(intro_decided_id, playing_video_info.id.c_str(), sizeof(intro_decided_id) - 1) == 0) {
-		intro_done_for = playing_video_info.id;
-		double skip = channel_skip_get(playing_video_info.author.id);
-		if (skip > 0 && !playing_video_info.is_livestream && !intro_skip_blocked && vid_current_pos < 1 && vid_duration > skip + 15 &&
-		    !(var_resume_videos && resume_get(playing_video_info.id) > 0) && playing_video_info.url.compare(0, 8, "offline:") != 0) {
-			send_seek_request_wo_lock(skip);
-		}
 	}
 	if (speed != quick_speed) {
 		quick_speed = speed;
@@ -2659,7 +2661,7 @@ debug_info_view =
 					                                   for (size_t k = 0; k < current_chapters.size(); k++) {
 						                                   if (current_chapters[k].first <= vid_current_pos) {
 							                                   start = current_chapters[k].first;
-							                                   stop = k + 1 < current_chapters.size() ? current_chapters[k + 1].first : vid_duration;
+							                                   stop = k + 1 < current_chapters.size() ? current_chapters[k + 1].first : std::max(0.0, vid_duration - 1); // (the last chapter ends a little before the end: the position may never reach it)
 						                                   }
 					                                   }
 					                                   if (stop > start + 2) {
@@ -5317,8 +5319,8 @@ static void autoplay_countdown_tick() {
 				    }
 				    double target = -1;
 				    if (valid) target = count == 1 ? parts[0] * 60.0 : count == 2 ? parts[0] * 60.0 + parts[1] : parts[0] * 3600.0 + parts[1] * 60.0 + parts[2];
-				    if (target >= 0 && network_decoder.ready) {
-					    send_seek_request(std::min(target, std::max(0.0, vid_duration - 1)));
+				    if (target >= 0 && network_decoder.ready && vid_duration > 0 && !playing_video_info.is_livestream) {
+					    send_seek_request_wo_lock(std::min(target, std::max(0.0, vid_duration - 1))); // (this block runs with small_resource_lock held)
 				    } else {
 					    notice_show(tr("That is not a valid time", "Ese tiempo no es válido"));
 				    }

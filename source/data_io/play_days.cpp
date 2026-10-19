@@ -42,9 +42,14 @@ void play_days_record(int day, int seconds) {
 		FILE *f = fopen(PLAY_DAYS_TMP_PATH, "w");
 		if (f) {
 			for (auto &p : days) fprintf(f, "%d\t%d\n", p.first, p.second);
-			fclose(f);
-			remove(PLAY_DAYS_PATH);
-			rename(PLAY_DAYS_TMP_PATH, PLAY_DAYS_PATH);
+			bool good = !ferror(f);
+			if (fclose(f) != 0) good = false;
+			if (good) {
+				remove(PLAY_DAYS_PATH);
+				rename(PLAY_DAYS_TMP_PATH, PLAY_DAYS_PATH);
+			} else {
+				remove(PLAY_DAYS_TMP_PATH);
+			}
 		}
 	}
 	days_lock.unlock();

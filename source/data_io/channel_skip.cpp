@@ -52,9 +52,14 @@ void channel_skip_set(const std::string &channel_id, double seconds) {
 	FILE *f = fopen(SKIP_TMP_PATH, "w");
 	if (f) {
 		for (auto &p : skips) fprintf(f, "%s\t%.0f\n", p.first.c_str(), p.second);
-		fclose(f);
-		remove(SKIP_PATH);
-		rename(SKIP_TMP_PATH, SKIP_PATH);
+		bool good = !ferror(f);
+		if (fclose(f) != 0) good = false;
+		if (good) {
+			remove(SKIP_PATH);
+			rename(SKIP_TMP_PATH, SKIP_PATH);
+		} else {
+			remove(SKIP_TMP_PATH);
+		}
 	}
 	prefs_lock.unlock();
 }
