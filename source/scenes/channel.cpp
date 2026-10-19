@@ -582,7 +582,7 @@ void Channel_init(void) {
 		    return;
 	    }
 	    channel_info = result;
-	    channel_info_cache[url] = result;
+	    if (result.error == "") channel_info_cache[url] = result; // (a failed load is not remembered: opening the channel again retries)
 	    if (result.error == "" && result.name != "") recent_channel_add(result.name, result.url_original != "" ? result.url_original : url); // (for the Recent channels of Search)
 
 	    // Update sort selector to match loaded content

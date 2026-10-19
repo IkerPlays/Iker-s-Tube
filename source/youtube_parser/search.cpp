@@ -115,6 +115,7 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 	YouTubeSearchResult res;
 	res.error = "";
 
+	int skipped_items = 0;
 	bool success = true;
 
 	std::string query_word;
@@ -149,6 +150,15 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 		} else {
 			new_query_word.push_back(query_word[i++]);
 		}
+	}
+	{ // the word goes inside a JSON string: quotes, backslashes and control characters are escaped
+		std::string escaped;
+		for (unsigned char c : new_query_word) {
+			if (c == '"' || c == '\\') escaped += '\\', escaped += (char)c;
+			else if (c < 0x20) escaped += ' ';
+			else escaped += (char)c;
+		}
+		new_query_word = escaped;
 	}
 	query_word = new_query_word;
 
@@ -186,8 +196,8 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 							    continue;
 						    }
 						    if (!parse_searched_item(j, res.results)) {
-							    debug_error("Error parsing search result item");
-							    success = false;
+							    debug_error("Error parsing search result item"); // (an item of a kind that is not known is skipped, the rest is fine)
+							    skipped_items++;
 						    }
 					    }
 				    }
@@ -210,7 +220,7 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 		    success = false;
 	    });
 
-	if (!success) {
+	if (!success || (skipped_items > 0 && res.results.empty())) {
 		res.error = "[se] Unknown error occurred during search load";
 	}
 

@@ -1,1 +1,1 @@
-Downloads: a cancel no longer leaks into the next download, a full SD card cannot wipe the list, the same video is not queued twice, an answer without a size is not saved as a whole file, leftover .part files are cleaned, and Delete all downloads is instant and cancels running downloads.
+Fixes from an audit: a channel or video page that failed to load is not remembered (opening it again retries); search words with quotes or backslashes work; an unknown kind of result no longer stops the whole search; a channel with one metadata row no longer reads out of range.

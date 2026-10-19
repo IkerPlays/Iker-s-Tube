@@ -3068,8 +3068,8 @@ debug_info_view =
 	    return;
     }
     cur_video_info = tmp_video_info;
-    if (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0) {
-	    video_info_cache[url] = tmp_video_info; // (not the saved copy that replaced an online video)
+    if (tmp_video_info.error == "" && (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0)) {
+	    video_info_cache[url] = tmp_video_info; // (not the saved copy that replaced an online video, nor a failed load)
     }
     while (video_info_cache.size() > 5) { // every cached page holds suggestions and comments : keep only a few
 	    auto victim = video_info_cache.begin();
@@ -3167,7 +3167,7 @@ debug_info_view =
 		    back_stack_push(playing_video_info.url, playing_video_info.title); // D-pad up comes back to it
 	    }
 	    playing_video_info = tmp_video_info;
-	    if (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0) { // the saved copy that replaced an online video is not remembered under its address
+	    if (tmp_video_info.error == "" && (tmp_video_info.url.compare(0, 8, "offline:") != 0 || url.compare(0, 8, "offline:") == 0)) { // the saved copy that replaced an online video is not remembered under its address
 		    video_info_cache[url] = tmp_video_info;
 	    }
 	    vid_resume_id[0] = 0; // the old video may still be decoding : its position must not be saved for the new id.
