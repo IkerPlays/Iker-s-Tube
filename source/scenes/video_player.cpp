@@ -388,7 +388,7 @@ static void rebuild_bookmarks_list() {
 	auto marks = bookmarks_get(bookmarks_video_id);
 	if (marks.empty()) return;
 	bookmarks_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-	                                         ->set_text(tr("Bookmarks (long press to delete)", "Marcadores (pulsación larga: borrar)"))
+	                                         ->set_text(tr("Bookmarks (long press: QR or delete)", "Marcadores (pulsación larga: QR o borrar)"))
 	                                         ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 	                                         ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
 	for (size_t i = 0; i < marks.size(); i++) {
@@ -403,11 +403,15 @@ static void rebuild_bookmarks_list() {
 		        ->set_on_view_released([t](View &) {
 			        if (network_decoder.ready && cur_video_info.id == playing_video_info.id) send_seek_request_wo_lock(t);
 		        })
-		        ->add_on_long_hold(35, [id, i](View &view) {
-			        bookmark_remove(id, i);
+		        ->add_on_long_hold(35, [id, i, t](View &view) { // a menu: share the moment as a QR, or delete the bookmark
 			        view.reset_holding_status();
-			        bookmarks_rebuild_request = true;
-			        var_need_refresh = true;
+			        overlay_show_menu(tr("Bookmark", "Marcador") + std::string(" ") + Util_convert_seconds_to_time(t),
+			                          {{tr("QR of this moment", "QR de este momento"), [id, t]() { qr_popup_show("https://www.youtube.com/watch?v=" + id + "&t=" + std::to_string((int)t) + "s"); }},
+			                           {tr("Delete the bookmark", "Borrar el marcador"), [id, i]() {
+				                           bookmark_remove(id, i);
+				                           bookmarks_rebuild_request = true;
+				                           var_need_refresh = true;
+			                           }}});
 		        }));
 	}
 	bookmarks_list_view->views.push_back((new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
