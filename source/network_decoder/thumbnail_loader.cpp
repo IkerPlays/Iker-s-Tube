@@ -422,7 +422,11 @@ void thumbnail_downloader_thread_func(void *arg) {
 		std::vector<int> uncached_index_list;
 		std::vector<int> cached_index_list;
 		for (size_t i = 0; i < download_list.size(); i++) {
-			if (!thumbnail_cache.count(download_list[i].url) && !var_data_saver) { // maybe it is on the SD card from an earlier run
+			// (the cache is shared with the threads that download: it is only read under the lock)
+			resource_lock.lock();
+			bool in_cache = thumbnail_cache.count(download_list[i].url) > 0;
+			resource_lock.unlock();
+			if (!in_cache && !var_data_saver) { // maybe it is on the SD card from an earlier run
 				std::vector<u8> from_disk;
 				if (disk_cache_read(download_list[i].url, from_disk)) {
 					resource_lock.lock();
@@ -430,9 +434,13 @@ void thumbnail_downloader_thread_func(void *arg) {
 					resource_lock.unlock();
 				}
 			}
-			if (thumbnail_cache.count(download_list[i].url)) {
+			resource_lock.lock();
+			auto cached_it = thumbnail_cache.find(download_list[i].url);
+			bool cached = cached_it != thumbnail_cache.end();
+			if (cached) results[i].data = cached_it->second;
+			resource_lock.unlock();
+			if (cached) {
 				results[i].status_code = 0; // cached
-				results[i].data = thumbnail_cache[download_list[i].url];
 				cached_index_list.push_back(i);
 			} else {
 				uncached_index_list.push_back(i);

@@ -305,6 +305,7 @@ static void auto_quality_tick() {
 }
 
 static volatile bool intro_skip_blocked = false; // the video starts at a time chosen by a link, bookmark or resume point
+static char intro_decided_id[24] = {0};       // the video for which the decoder thread has decided where the playback starts
 static std::vector<std::pair<double, std::string>> current_chapters; // chapters of the displayed video (from its description)
 static VerticalListView *bookmarks_list_view = NULL; // the list shown in the page; rebuilt outside of the view updates
 static VerticalListView *pending_bookmarks_list_view = NULL; // created by the loader, becomes bookmarks_list_view when the page is installed
@@ -437,10 +438,15 @@ static void channel_speed_tick() {
 		static const double defaults[6] = {1.0, 0.75, 1.25, 1.5, 1.75, 2.0};
 		speed = playing_video_info.is_livestream ? 1.0 : defaults[std::max(0, std::min(5, var_default_speed))];
 	}
-	double skip = channel_skip_get(playing_video_info.author.id); // the intro of this channel is skipped (not when resuming)
-	if (skip > 0 && !playing_video_info.is_livestream && !intro_skip_blocked && vid_current_pos < 1 && vid_duration > skip + 15 &&
-	    !(var_resume_videos && resume_get(playing_video_info.id) > 0) && playing_video_info.url.compare(0, 8, "offline:") != 0) {
-		send_seek_request_wo_lock(skip);
+	// the intro of this channel is skipped, once per video, after the decoder thread has decided where this video starts
+	static std::string intro_done_for;
+	if (intro_done_for != playing_video_info.id && strncmp(intro_decided_id, playing_video_info.id.c_str(), sizeof(intro_decided_id) - 1) == 0) {
+		intro_done_for = playing_video_info.id;
+		double skip = channel_skip_get(playing_video_info.author.id);
+		if (skip > 0 && !playing_video_info.is_livestream && !intro_skip_blocked && vid_current_pos < 1 && vid_duration > skip + 15 &&
+		    !(var_resume_videos && resume_get(playing_video_info.id) > 0) && playing_video_info.url.compare(0, 8, "offline:") != 0) {
+			send_seek_request_wo_lock(skip);
+		}
 	}
 	if (speed != quick_speed) {
 		quick_speed = speed;
@@ -4444,6 +4450,8 @@ static void autoplay_countdown_tick() {
 				    }
 			    }
 			    intro_skip_blocked = seek_at_init_request >= 0; // a link time, a bookmark or a resume point decides the start
+			    strncpy(intro_decided_id, snap_id.c_str(), sizeof(intro_decided_id) - 1);
+			    intro_decided_id[sizeof(intro_decided_id) - 1] = 0;
 			    if (seek_at_init_request >= 0) {
 				    vid_seek_request = true;
 				    vid_seek_pos = seek_at_init_request;
@@ -4632,7 +4640,7 @@ static void autoplay_countdown_tick() {
 
 			    network_waiting_status = NULL;
 
-			    while (Util_speaker_is_playing(0) && vid_play_request) {
+			    while (Util_speaker_is_playing(0) && vid_play_request && !vid_change_video_request) { // (a paused channel never drains)
 				    usleep(10000);
 			    }
 			    Util_speaker_exit(0);

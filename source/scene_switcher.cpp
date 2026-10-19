@@ -106,6 +106,7 @@ static void auto_backup_task(void *) {
 }
 
 void Menu_init(void) {
+	backup_apply_pending(); // a backup imported in the last run is restored before anything is loaded
 	Result_with_string result;
 
 	logger.init();

@@ -232,7 +232,7 @@ static void show_search_filter_menu() {
 	auto choose = [](const std::string &title, const std::vector<std::string> &names, int current, std::function<void(int)> set) {
 		std::vector<Option> options;
 		for (int i = 0; i < (int)names.size(); i++) options.push_back({(i == current ? "> " : "") + names[i], [i, set]() { set(i); search_filter_changed(); }});
-		overlay_show_menu(title, options);
+		overlay_show_menu_deferred(title, options); // (a menu cannot be replaced while one of its rows is handling the tap)
 	};
 	std::vector<Option> main_options;
 	main_options.push_back({tr("Sort by", "Ordenar por"), [choose]() {
@@ -247,7 +247,7 @@ static void show_search_filter_menu() {
 	main_options.push_back({tr("Length", "Duración"), [choose]() {
 		choose(tr("Length", "Duración"), {tr("Any", "Cualquiera"), "< 4 min", "4-20 min", "> 20 min"}, search_filter.duration, [](int v) { search_filter.duration = v; });
 	}});
-	main_options.push_back({tr("Features", "Características"), []() { show_search_features_menu(false); }});
+	main_options.push_back({tr("Features", "Características"), []() { show_search_features_menu(true); }});
 	main_options.push_back({tr("Reset the filter", "Quitar el filtro"), []() {
 		search_filter = SearchFilterState();
 		search_filter_changed();

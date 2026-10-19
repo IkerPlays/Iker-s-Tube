@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <sys/stat.h>
 #include <string>
+#include <unistd.h>
 
 #define MAIN_DIR "sdmc:/3ds/IkersTube/"
 #define BACKUP_DIR "sdmc:/3ds/IkersTube/backup/"
@@ -15,23 +16,32 @@ static bool copy_file(const std::string &from, const std::string &to) {
 	if (!in) {
 		return false;
 	}
-	FILE *out = fopen(to.c_str(), "wb");
+	// copied to a .tmp first: a full SD card or a write error leaves the old copy of the file as it was
+	const std::string tmp = to + ".tmp";
+	FILE *out = fopen(tmp.c_str(), "wb");
 	if (!out) {
 		fclose(in);
 		return false;
 	}
 	char buf[4096];
 	size_t n;
+	size_t total = 0;
 	bool ok = true;
 	while ((n = fread(buf, 1, sizeof buf, in)) > 0) {
 		if (fwrite(buf, 1, n, out) != n) {
 			ok = false;
 			break;
 		}
+		total += n;
 	}
 	fclose(in);
-	fclose(out);
-	return ok;
+	if (fclose(out) != 0) ok = false;
+	if (!ok || total == 0) { // an empty source (a damaged file) never replaces a good one
+		remove(tmp.c_str());
+		return false;
+	}
+	remove(to.c_str());
+	return rename(tmp.c_str(), to.c_str()) == 0;
 }
 
 static int copy_all(const std::string &from_dir, const std::string &to_dir) {
@@ -56,10 +66,31 @@ int backup_export() {
 	return copy_all(MAIN_DIR, BACKUP_DIR);
 }
 
+#define RESTORE_FLAG "sdmc:/3ds/IkersTube/restore_backup.flag"
+
+// The files are not copied right away: the running app still holds the old data and would write it over the restored files
+// (on the next save or when it exits). The restore is done at the next start, before anything is loaded.
 int backup_import() {
 	struct stat st;
 	if (stat("sdmc:/3ds/IkersTube/backup", &st) != 0) {
 		return -1;
 	}
-	return copy_all(BACKUP_DIR, MAIN_DIR);
+	int available = 0;
+	for (auto name : backup_files) {
+		struct stat file_stat;
+		if (stat((std::string(BACKUP_DIR) + name).c_str(), &file_stat) == 0 && file_stat.st_size > 0) available++;
+	}
+	if (available > 0) {
+		if (FILE *flag = fopen(RESTORE_FLAG, "w")) {
+			fputs("1\n", flag);
+			fclose(flag);
+		}
+	}
+	return available;
+}
+
+void backup_apply_pending() {
+	if (access(RESTORE_FLAG, F_OK) != 0) return;
+	copy_all(BACKUP_DIR, MAIN_DIR);
+	remove(RESTORE_FLAG);
 }

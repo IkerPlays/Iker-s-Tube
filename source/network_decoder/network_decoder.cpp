@@ -318,7 +318,7 @@ Result_with_string NetworkDecoderFilterData::init(AVCodecContext *audio_context)
 	input_time_base = av_q2d(audio_context->time_base);
 
 	volume = volume_request;
-	tempo = tempo_request;
+	tempo = (tempo_request >= 0.25 && tempo_request <= 4) ? tempo_request : 1.0; // (also rejects nan and torn reads: a tempo of 0 would loop forever below)
 	pitch = pitch_request;
 	memcpy(equalizer_values, (void *)equalizer_values_request, sizeof(equalizer_values));
 
