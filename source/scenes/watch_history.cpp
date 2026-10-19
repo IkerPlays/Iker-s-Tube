@@ -45,6 +45,9 @@ using namespace WatchHistory;
 static void update_watch_history(const std::vector<HistoryVideo> &new_watch_history);
 
 void History_init(void) {
+	delete_day_request = -1; // (a request of a previous visit must not run)
+	clear_old_request = false;
+	top_channels_request = false;
 	logger.info("history/init", "Initializing...");
 
 	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
@@ -173,8 +176,14 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 			                                     ->set_text_offset(SMALL_MARGIN, 0)
 			                                     ->set_get_text_color([]() { return (u32)COLOR_ACCENT; })
 			                                     ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; })
-			                                     ->add_on_long_hold(35, [day, title, count = per_day[day]](View &v) { // long press : delete this whole day
-				                                     overlay_show_menu(title, {{tr("Delete this day (", "Borrar este día (") + std::to_string(count) + ")", [day]() { delete_day_request = day; }}});
+			                                     ->add_on_long_hold(35, [day, title, count = per_day[day], filtered = needle != ""](View &v) { // long press : delete this whole day (asks again)
+				                                     if (filtered) {
+					                                     notice_show(tr("Clear the filter first", "Quita antes el filtro"));
+				                                     } else {
+					                                     overlay_show_menu(title, {{tr("Delete this day (", "Borrar este día (") + std::to_string(count) + ")", [day, count]() {
+						                                     overlay_show_menu_deferred(tr("Sure?", "¿Seguro?"), {{tr("Yes, delete ", "Sí, borrar ") + std::to_string(count), [day]() { delete_day_request = day; }}});
+					                                     }}});
+				                                     }
 				                                     v.reset_holding_status();
 			                                     }));
 		}

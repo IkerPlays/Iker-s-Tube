@@ -127,6 +127,12 @@ void play_queue_set_repeat(const std::vector<std::pair<std::string, std::string>
 	repeat_shuffle = shuffle;
 	queue_lock.unlock();
 }
+void play_queue_shuffle() {
+	queue_lock.lock();
+	shuffle_items(queue);
+	save_queue();
+	queue_lock.unlock();
+}
 void play_queue_clear() {
 	queue_lock.lock();
 	queue.clear();

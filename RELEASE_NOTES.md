@@ -1,1 +1,1 @@
-Docs: the Spanish usage guide describes the latest additions (history, Library, comments, Studio, paged menus, tip of the day).
+Fixes from a code review: Shuffle queue keeps the repeat list and saves once, Delete this day asks again and is not offered while a filter is active, Forget where I stopped is hidden in incognito, and the tip of the day is cheaper.

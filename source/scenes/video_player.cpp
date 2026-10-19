@@ -2203,20 +2203,12 @@ debug_info_view =
 				                           }),
 				                 make_tool([]() { return tr("Shuffle queue", "Mezclar cola"); }, 100,
 				                           []() {
-					                           std::vector<std::pair<std::string, std::string>> items;
-					                           for (int i = 0; i < play_queue_size(); i++) {
-						                           std::string url, title;
-						                           if (play_queue_get(i, url, title)) items.push_back({url, title});
-					                           }
-					                           if (items.size() < 2) {
-						                           notice_show(tr("The queue has less than two videos", "La cola tiene menos de dos vídeos"));
-						                           return;
-					                           }
-					                           srand((unsigned)osGetTime());
-					                           for (size_t i = items.size(); i > 1; i--) std::swap(items[i - 1], items[rand() % i]);
-					                           play_queue_clear();
-					                           for (auto &item : items) play_queue_toggle(item.first, item.second);
-					                           notice_show(tr("Queue shuffled: ", "Cola mezclada: ") + std::to_string(items.size()));
+					                           if (play_queue_size() < 2) {
+					                           notice_show(tr("The queue has less than two videos", "La cola tiene menos de dos vídeos"));
+					                           return;
+				                           }
+				                           play_queue_shuffle();
+				                           notice_show(tr("Queue shuffled: ", "Cola mezclada: ") + std::to_string(play_queue_size()));
 				                           }),
 				                 make_tool([]() { return tr("Slower", "Más lento"); }, 70,
 				                           []() {
