@@ -40,6 +40,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Studio templates.** upload_description.txt and upload_tags.txt fill the form of every new upload.
 - **Library tab.** The Library opens on the tab you used last.
 - **Quick phrases.** The comment keyboard offers ready phrases (your own in comment_phrases.txt).
+- **Search filters.** The Filter button opens a menu with all the filters, including the new Medium (4-20 min).
 
 ## Installing
 

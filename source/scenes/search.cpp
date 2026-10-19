@@ -142,6 +142,7 @@ static const struct {
                       {"Esta semana", "EgQIAxAB"},
                       {"Este mes", "EgQIBBAB"},
                       {"Cortos (< 4 min)", "EgQQARgB"},
+                      {"Medios (4-20 min)", "EgQQARgC"},
                       {"Largos (> 20 min)", "EgQQARgD"},
                       {"En directo", "EgJAAQ=="},
                       {"Listas", "EgIQAw=="},
@@ -157,7 +158,7 @@ static const struct {
                       {"En HDR", "EgPIAQE="},
                       {"360 grados", "EgJ4AQ=="}};
 static std::string search_filter_name(int i) {
-	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Long (> 20 min)", "Live now", "Playlists", "Channels", "Last hour", "This year", "Sort: date", "Sort: views", "HD", "With subtitles (CC)", "Creative Commons", "4K", "HDR", "360 degrees"};
+	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Medium (4-20 min)", "Long (> 20 min)", "Live now", "Playlists", "Channels", "Last hour", "This year", "Sort: date", "Sort: views", "HD", "With subtitles (CC)", "Creative Commons", "4K", "HDR", "360 degrees"};
 	return tr(en[i], search_filters[i].name);
 }
 static int search_filter_index = 0;
@@ -446,11 +447,17 @@ void Search_init(void) {
 		                             v.reset_holding_status();
 		                             var_need_refresh = true;
 	                             })
-	                             ->set_on_view_released([](View &) {
-		                             search_filter_index = (search_filter_index + 1) % (sizeof(search_filters) / sizeof(search_filters[0]));
-		                             youtube_search_filter_params = search_filters[search_filter_index].params;
-		                             if (cur_search_word != "") filter_search_due = osGetTime() + 800; // (the filters are many : one search for all the taps)
-		                             var_need_refresh = true;
+	                             ->set_on_view_released([](View &) { // a menu with all the filters (long press : back to All)
+		                             std::vector<std::pair<std::string, std::function<void()>>> options;
+		                             for (int i = 0; i < (int)(sizeof(search_filters) / sizeof(search_filters[0])); i++) {
+			                             options.push_back({(i == search_filter_index ? "> " : "") + search_filter_name(i), [i]() {
+				                                                search_filter_index = i;
+				                                                youtube_search_filter_params = search_filters[i].params;
+				                                                if (cur_search_word != "") filter_search_due = osGetTime() + 300;
+				                                                var_need_refresh = true;
+			                                                }});
+		                             }
+		                             overlay_show_menu(tr("Search filter", "Filtro de búsqueda"), options);
 	                             }),
 	                         (new RuleView(0, 0, 320, 1))
 	                             ->set_get_color([]() { return 0xFF000000; })

@@ -1,1 +1,1 @@
-Comments: the keyboard offers quick phrases while you type a comment or a reply (edit them in 3ds/IkersTube/comment_phrases.txt, one per line).
+Search: tapping the Filter button opens a menu with every filter (long press still goes back to All); new Medium (4-20 min) filter.

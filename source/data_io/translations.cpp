@@ -189,6 +189,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Previous options...", {"Options précédentes...", "Vorherige Optionen...", "Opzioni precedenti...", "Opções anteriores...", "前のオプション..."}},
 	    {"Shortcut: 3DS camera (DCIM)", {"Raccourci : appareil photo 3DS (DCIM)", "Abkürzung: 3DS-Kamera (DCIM)", "Scorciatoia: fotocamera 3DS (DCIM)", "Atalho: câmera do 3DS (DCIM)", "ショートカット: 3DSカメラ (DCIM)"}},
 	    {"Shortcut: Movies", {"Raccourci : Movies", "Abkürzung: Movies", "Scorciatoia: Movies", "Atalho: Movies", "ショートカット: Movies"}},
+	    {"Medium (4-20 min)", {"Moyennes (4-20 min)", "Mittel (4-20 Min.)", "Medi (4-20 min)", "Médios (4-20 min)", "中（4〜20分）"}},
+	    {"Search filter", {"Filtre de recherche", "Suchfilter", "Filtro di ricerca", "Filtro de busca", "検索フィルター"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
