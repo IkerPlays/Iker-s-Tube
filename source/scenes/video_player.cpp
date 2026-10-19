@@ -4032,6 +4032,17 @@ static void autoplay_countdown_tick() {
 		                     400, 160, 180, 0.55, 0.55, DEFAULT_TEXT_COLOR);
 		    Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, 40, 188, 320, 6);
 		    Draw_texture(var_square_image[0], COLOR_ACCENT, 40, 188, 320 * pos / dur, 6);
+			    { // a little equalizer that dances while the audio plays (decoration: it is not tied to the real sound)
+				    static double dance = 0;
+				    if (!vid_pausing && !var_eco_mode) dance += 0.09;
+				    const int bars = 32;
+				    for (int b = 0; b < bars; b++) {
+					    float level = vid_pausing ? 0.08f : 0.5f + 0.25f * sinf(dance * 1.7 + b * 0.55) + 0.2f * sinf(dance * 2.9 + b * 1.3) + 0.05f * sinf(dance * 6.1 + b * 2.1);
+					    level = std::max(0.06f, std::min(1.0f, level));
+					    float h = 30 * level;
+					    Draw_texture(var_square_image[0], COLOR_ACCENT, 40 + b * 10, 234 - h, 7, h);
+				    }
+			    }
 	    } else {
 		    logo_draw(200, 120);
 	    }
