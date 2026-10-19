@@ -1,1 +1,1 @@
-Fixes from a code review: the 4-20 min and over 20 min filters use the right YouTube values, the Features menu opens again after each tap, the filter text is in Spanish and fits the row, Clear favorites saves once, the Library only restores the first four tabs, the Studio templates and the comment phrases handle accents, BOM and long lines, the comments Reload cannot get stuck, and a few texts were translated.
+History: long press a day header and choose Delete this day to remove all the videos of that day.

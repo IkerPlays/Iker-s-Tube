@@ -29,6 +29,7 @@ std::string erase_request;
 int cur_sort_type = 0;
 int sort_request = -1;
 static bool top_channels_request = false; // the Top channels button was pressed (the menu opens after the views update)
+static long long delete_day_request = -1; // a day header was long pressed and Delete this day chosen (done after the views update)
 static bool clear_old_request = false;   // Clear what is older than 30 days (handled after the views update)
 static bool filter_request = false;      // the search-in-history button was pressed (the keyboard opens after the views update)
 static std::string history_filter;       // only the videos whose title or channel contain this text are listed
@@ -171,7 +172,11 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 			                                     ->set_y_alignment(TextView::YAlign::CENTER)
 			                                     ->set_text_offset(SMALL_MARGIN, 0)
 			                                     ->set_get_text_color([]() { return (u32)COLOR_ACCENT; })
-			                                     ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
+			                                     ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; })
+			                                     ->add_on_long_hold(35, [day, title, count = per_day[day]](View &v) { // long press : delete this whole day
+				                                     overlay_show_menu(title, {{tr("Delete this day (", "Borrar este día (") + std::to_string(count) + ")", [day]() { delete_day_request = day; }}});
+				                                     v.reset_holding_status();
+			                                     }));
 		}
 		std::string view_count_str;
 		{
@@ -321,6 +326,23 @@ void History_draw(void) {
 					}});
 				}
 				if (options.size()) overlay_show_menu(tr("Top channels", "Canales más vistos"), options);
+			}
+			if (delete_day_request >= 0) {
+				long long day = delete_day_request;
+				delete_day_request = -1;
+				std::vector<HistoryVideo> kept;
+				int removed = 0;
+				for (auto &video : watch_history) {
+					if ((long long)video.last_watch_time / 86400 == day) {
+						history_erase_by_id(video.id);
+						removed++;
+					} else {
+						kept.push_back(video);
+					}
+				}
+				update_watch_history(kept);
+				misc_tasks_request(TASK_SAVE_HISTORY);
+				notice_show(tr("Removed: ", "Quitado: ") + std::to_string(removed));
 			}
 			if (clear_old_request) {
 				clear_old_request = false;

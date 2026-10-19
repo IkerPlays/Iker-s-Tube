@@ -219,6 +219,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"This week", {"Cette semaine", "Diese Woche", "Questa settimana", "Esta semana", "今週"}},
 	    {"This month", {"Ce mois-ci", "Diesen Monat", "Questo mese", "Este mês", "今月"}},
 	    {"#Tags", {"#Tags", "#Tags", "#Tag", "#Tags", "#タグ"}},
+	    {"Delete this day (", {"Supprimer ce jour (", "Diesen Tag löschen (", "Elimina questo giorno (", "Apagar este dia (", "この日を削除 ("}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
