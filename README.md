@@ -20,6 +20,17 @@ Resumen; la guía completa está en [`Documentation/GUIA_DE_USO.md`](Documentati
 - **Comodidad:** menú al mantener pulsado un vídeo o canal (con páginas), fijar y ocultar canales, filtros de búsqueda combinables, sugerencias y búsquedas relacionadas, incógnito, copias, e importar y exportar suscripciones.
 - **Subtítulos y Shorts:** subtítulos de YouTube con traducción y ajustes rápidos; los Shorts abren el feed y se cambia de vídeo con la cruceta Abajo y Arriba.
 
+## Descargar la última versión
+<p align="center">
+  <a href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.cia">
+    <img src="images/qr-latest.png" alt="QR para descargar la última versión estable (IkersTube.cia)" width="240">
+  </a>
+</p>
+
+Escanea el QR con **FBI** (*Remote Install → Scan QR code*) o pulsa la imagen: el enlace apunta siempre al
+`IkersTube.cia` de la **última versión estable**, así que el QR no caduca ni hay que volver a generarlo cuando sale una nueva.
+Las devbuilds (pre-release) están en [Releases](../../releases).
+
 ## Instalar y actualizar
 - Cada build sube el **devbuild** a [Releases](../../releases) con `IkersTube.cia` y `IkersTube.3dsx`.
   Instala el `.cia` con **FBI** (SD → el `.cia` → Install); el `.3dsx` sirve para probar desde el Homebrew Launcher.

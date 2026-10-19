@@ -108,6 +108,11 @@ void About_init(void) {
 	                    (new TextView(SMALL_MARGIN * 2, 0, 320, DEFAULT_FONT_INTERVAL))
 	                        ->set_text(tr("Tap the address for its QR code. Problems: open Issues there.", "Toca la dirección para ver su QR. Problemas: abre Issues ahí."))
 	                        ->set_font_size(0.4, DEFAULT_FONT_INTERVAL),
+	                    (new TextView(SMALL_MARGIN * 2, 0, 320, DEFAULT_FONT_INTERVAL))
+	                        ->set_text(tr("Latest version: tap for the download QR", "Última versión: toca para el QR de descarga"))
+	                        ->set_font_size(0.44, DEFAULT_FONT_INTERVAL)
+	                        ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                        ->set_on_view_released([](View &) { qr_popup_show(GITHUB_URL + "/releases/latest/download/IkersTube.cia"); }),
 	                    (new EmptyView(0, 0, 320, SMALL_MARGIN * 2)),
 
 	                    // Story section
