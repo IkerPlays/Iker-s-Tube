@@ -342,6 +342,9 @@ static bool back_stack_pop(std::pair<std::string, std::string> &out) {
 	LightLock_Unlock(&back_lock);
 	return ok;
 }
+namespace SceneSwitcher {
+extern bool manual_screen_off; // scene_switcher.cpp : the screens chosen in the settings are switched off by hand
+}
 // quick subtitles tool : off -> each subtitle language of the video -> off
 namespace youtube_parser {
 extern std::string language_code;
@@ -2199,6 +2202,19 @@ debug_info_view =
 					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
 					                           notice_show(std::to_string((int)std::round(quick_speed * 100)) + "%");
 					                           var_need_refresh = true;
+				                           }),
+				                 make_tool([]() { return tr("Screens off", "Pantallas off"); }, 90,
+				                           []() {
+					                           SceneSwitcher::manual_screen_off = !SceneSwitcher::manual_screen_off; // the screens of the setting (Settings, Screen and battery) go dark or come back
+					                           var_need_refresh = true;
+				                           }),
+				                 make_tool([]() { return tr("Status", "Estado"); }, 60,
+				                           []() {
+					                           time_t now = time(NULL);
+					                           struct tm *t = localtime(&now);
+					                           char clock_text[16] = "";
+					                           if (t) strftime(clock_text, sizeof clock_text, "%H:%M", t);
+					                           notice_show(std::string(clock_text) + " - " + tr("Battery ", "Batería ") + std::to_string(var_battery_level_raw) + "%" + (var_battery_charge ? tr(" (charging)", " (cargando)") : ""));
 				                           }),
 				                 make_tool([]() { return tr("CC size", "CC tamaño"); }, 70,
 				                           []() {
