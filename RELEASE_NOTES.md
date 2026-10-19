@@ -1,1 +1,1 @@
-History shows a memory row: a video you watched about a week (or a month) ago; tap to play it again.
+Fixes: the Spanish interface language was reset to English on every start (it is now kept). The translation table is built from read-only data with a loop instead of a 70 KB stack frame (safer on small thread stacks).
