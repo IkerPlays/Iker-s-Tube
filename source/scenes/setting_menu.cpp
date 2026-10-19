@@ -637,6 +637,20 @@ void Sem_init(void) {
 						->set_title([] (const BarView &view) { return tr("Custom theme color (hue): ", "Color del tema propio (tono): ") + std::to_string((int) var_custom_hue_double); })
 						->set_while_holding([] (BarView &view) { var_custom_hue = (int) var_custom_hue_double; var_need_refresh = true; })
 						->set_on_release([] (const BarView &view) { var_custom_hue = (int) var_custom_hue_double; misc_tasks_request(TASK_SAVE_SETTINGS); var_need_refresh = true; }),
+					// Rounded buttons
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_round_buttons)
+						->set_title([](const SelectorView &) { return tr("Rounded buttons", "Botones redondeados"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_round_buttons != view.selected_button) {
+								var_round_buttons = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
 					// High contrast
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

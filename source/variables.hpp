@@ -31,6 +31,7 @@ extern int var_button_r; // same for R (default next in queue)
 extern int var_button_y; // same for Y
 extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
+extern int var_round_buttons; // 1 : tappable buttons (not the full width rows) have rounded corners
 extern bool var_high_contrast; // pure black/white texts and backgrounds
 extern bool var_welcome_done; // false on the very first launch : the settings open once so language, theme and quality can be chosen
 extern int var_studio_privacy; // privacy preselected in the Studio upload form : 0 private, 1 unlisted, 2 public

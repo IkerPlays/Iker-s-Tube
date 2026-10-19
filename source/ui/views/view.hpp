@@ -85,8 +85,13 @@ struct View {
 	virtual void draw_background() const {
 		u32 color = get_background_color ? get_background_color(*this) : background_color;
 		if (color >> 24) {
-			if (corner_radius > 0) {
-				Draw_round_rect((int)x0, (int)y0, (int)get_width(), (int)get_height(), corner_radius, color);
+			float radius = corner_radius;
+			if (radius <= 0 && var_round_buttons && on_view_released && get_background_color) { // a tappable button (not a full width row of a list): rounded
+				float w = get_width(), h = get_height();
+				if (w >= 40 && w <= 260 && h >= 16 && h <= 34) radius = 5;
+			}
+			if (radius > 0) {
+				Draw_round_rect((int)x0, (int)y0, (int)get_width(), (int)get_height(), radius, color);
 			} else {
 				Draw_texture(var_square_image[0], color, (int)x0, (int)y0, (int)get_width(), (int)get_height());
 			}

@@ -1,1 +1,1 @@
-Stable version 1.0.6 was published. The stable release notes now start from it.
+UI: the tappable buttons (tools, settings buttons, menus) have rounded corners; a setting (Appearance) turns it off.
