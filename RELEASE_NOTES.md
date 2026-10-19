@@ -1,1 +1,1 @@
-UI: the selectors of the settings and tabs have a soft track and a rounded pill for the chosen button (the Rounded buttons setting turns it off).
+Startup: if the last start did not finish (a crash), the app now starts in safe mode: the settings and the optional files are renamed to *.crashed (nothing is deleted), the dialogs and the background extras stay off and a notice says so. The starting flag is removed after 20 seconds of running or on a normal exit.

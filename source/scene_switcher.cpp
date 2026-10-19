@@ -1,4 +1,5 @@
 ﻿#include "headers.hpp"
+#include "data_io/settings.hpp"
 #include "ui/logo_draw.hpp"
 #include "data_io/last_played.hpp"
 #include "youtube_parser/parser.hpp"
@@ -83,6 +84,7 @@ static void Menu_loading_screen(int milliseconds) {
 #define AUTO_BACKUP_MARK "sdmc:/3ds/IkersTube/backup/last_auto.txt"
 // copies the user data to the SD card if the last automatic copy is older than a week
 static void auto_backup_task(void *) {
+	if (var_safe_mode) return; // (safe mode: nothing optional runs)
 	long long last = 0;
 	FILE *f = fopen(AUTO_BACKUP_MARK, "r");
 	if (f) {
@@ -255,6 +257,7 @@ void Menu_init(void) {
 			rename("sdmc:/3ds/IkersTube/crash.txt", "sdmc:/3ds/IkersTube/crash_last.txt");
 			notice_show(tr("The app closed unexpectedly last time (crash_last.txt)", "La app se cerró sola la última vez (crash_last.txt)"));
 		}
+		if (var_safe_mode) notice_show(tr("Safe mode: the last start failed, the settings were reset (settings.txt.crashed)", "Modo seguro: el último inicio falló, se restablecieron los ajustes (settings.txt.crashed)"));
 	}
 
 	logger.info(DEF_MENU_INIT_STR, "Initialized.");
@@ -262,6 +265,7 @@ void Menu_init(void) {
 
 void Menu_exit(void) {
 	logger.info(DEF_MENU_EXIT_STR, "Exiting...");
+	settings_mark_stable(); // a normal exit is not a crash
 	u64 time_out = 10000000000;
 	Result_with_string result;
 
@@ -593,6 +597,14 @@ void Menu_worker_thread(void *arg) {
 			count = 0;
 		}
 
+		{
+			static u64 first_seen = osGetTime();
+			static bool marked = false;
+			if (!marked && osGetTime() - first_seen > 20000) { // 20 seconds without a crash: the start was good
+				marked = true;
+				settings_mark_stable();
+			}
+		}
 		if (video_is_playing()) {
 			var_total_play_seconds += 0.05;
 			int today = (int)(time(NULL) / 86400);

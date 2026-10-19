@@ -5,7 +5,33 @@
 
 #define SETTINGS_FILE_PATH (DEF_MAIN_DIR + "settings.txt")
 
+#define STARTING_FLAG (DEF_MAIN_DIR + "starting.flag")
+// Crash loop breaker: a flag file exists while the app is starting (it is removed after 20 seconds of running, or when the
+// app exits). If it is still there at the next start, the last start died: the settings and the optional files are set
+// aside (renamed, nothing is deleted) and the app starts in "safe mode" without the background extras.
+void settings_mark_started() {
+	FILE *f = fopen(STARTING_FLAG.c_str(), "w");
+	if (f) {
+		fputs("1\n", f);
+		fclose(f);
+	}
+}
+void settings_mark_stable() { remove(STARTING_FLAG.c_str()); }
+
 void load_settings() {
+	if (access(STARTING_FLAG.c_str(), F_OK) == 0) {
+		var_safe_mode = true;
+		static const char *aside[] = {"settings.txt", "pinned_channels.txt", "recent_channels.txt", "hidden_channels.txt", "last_version.txt", "feed_seen.txt", "caption_lang.txt", "audio_lang.txt"};
+		for (auto name : aside) {
+			std::string from = DEF_MAIN_DIR + name, to = DEF_MAIN_DIR + std::string(name) + ".crashed";
+			if (access(from.c_str(), F_OK) == 0) {
+				remove(to.c_str());
+				rename(from.c_str(), to.c_str());
+			}
+		}
+		logger.warning("startup", "the last start did not finish : safe mode (settings set aside as *.crashed)");
+	}
+	settings_mark_started();
 	// "Reset the settings" (Settings, Data) leaves a flag : the settings file is dropped at the next start, so the defaults load
 	if (access((DEF_MAIN_DIR + "reset_settings.flag").c_str(), F_OK) == 0) {
 		remove(SETTINGS_FILE_PATH.c_str());

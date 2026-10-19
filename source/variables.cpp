@@ -37,6 +37,7 @@ int var_round_buttons = 1;
 double var_play_today = 0;
 int var_play_day = 0;
 int var_daily_limit = 0;
+bool var_safe_mode = false;
 int var_auto_chat = 0;
 int var_download_quality = 0;
 int var_autoplay_skip_watched = 0;

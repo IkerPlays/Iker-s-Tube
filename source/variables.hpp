@@ -50,6 +50,7 @@ extern int var_library_tab; // the tab of the Library that was open last (0 queu
 extern double var_play_today;   // seconds played today
 extern int var_play_day;         // the day (days since 1970) that var_play_today belongs to
 extern int var_daily_limit;      // 0 off, 1 : 30 min, 2 : 60, 3 : 120, 4 : 240 minutes of playing per day
+extern bool var_safe_mode; // the last start did not finish (a crash): the settings and the optional files were set aside and the extras stay off
 extern int var_auto_chat; // 1 : the chat opens by itself when a live stream starts playing
 extern int var_default_speed; // 0..5 : 100%, 75%, 125%, 150%, 175%, 200% (for channels without a speed of their own)
 extern int var_wl_autoremove; // 1 : a video leaves Watch later when it is watched until the end

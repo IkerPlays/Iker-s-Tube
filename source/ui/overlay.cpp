@@ -479,6 +479,7 @@ static bool whats_new_pending() {
 	static bool checked = false, pending = false;
 	if (checked) return pending;
 	checked = true;
+	if (var_safe_mode) return pending = false; // (safe mode: no dialogs)
 	char buf[40] = {0};
 	FILE *f = fopen("sdmc:/3ds/IkersTube/last_version.txt", "r");
 	if (f) {

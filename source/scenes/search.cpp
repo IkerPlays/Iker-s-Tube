@@ -542,7 +542,7 @@ static void suggest_thread(void *) {
 }
 
 void Search_init(void) {
-	if (!suggest_started) {
+	if (!suggest_started && !var_safe_mode) {
 		suggest_started = true;
 		LightLock_Init(&suggest_lock);
 		if (!threadCreate(suggest_thread, NULL, 64 * 1024, 0x30, -1, true)) suggest_started = false;
