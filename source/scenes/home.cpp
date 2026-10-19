@@ -76,7 +76,7 @@ using namespace Home;
 static void load_home_page(void *);
 static void load_home_page_more(void *);
 static void load_subscription_feed(void *);
-static SuccinctVideoView *make_feed_view(const YouTubeVideoSuccinct &video);
+static SuccinctVideoView *make_feed_view(const YouTubeVideoSuccinct &video, bool is_new);
 static std::vector<YouTubeVideoSuccinct> feed_cache_load();
 static std::vector<std::string> feed_latest_ids; // ids of the videos of the last local feed load
 static void load_oauth_subscription_feed(void *);
@@ -302,7 +302,7 @@ void Home_init(void) {
 		resource_lock.lock();
 		for (auto &video : cached) {
 			if (result_video_hidden(video.url, video.author)) continue; // same filter as the fresh feed
-			local_feed_videos_list_view->views.push_back(make_feed_view(video));
+			local_feed_videos_list_view->views.push_back(make_feed_view(video, false));
 		}
 		resource_lock.unlock();
 	}
@@ -759,7 +759,7 @@ static void load_home_page_more(void *) {
 #define FEED_CACHE_PATH "sdmc:/3ds/IkersTube/feed_cache.txt"
 #define FEED_CACHE_MAX 60
 
-static SuccinctVideoView *make_feed_view(const YouTubeVideoSuccinct &video) {
+static SuccinctVideoView *make_feed_view(const YouTubeVideoSuccinct &video, bool is_new) {
 	SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 	cur_view->set_title_lines(truncate_str(video.title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
 	cur_view->set_thumbnail_url(video.thumbnail_url);
@@ -767,6 +767,7 @@ static SuccinctVideoView *make_feed_view(const YouTubeVideoSuccinct &video) {
 	cur_view->set_bottom_right_overlay(video.duration_text);
 	cur_view->set_queue_item(video.url, video.title, video.author);
 	cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
+	cur_view->badge_new = is_new;
 	cur_view->set_on_view_released([video](View &view) {
 		clicked_url = video.url;
 		clicked_is_video = true;
@@ -910,11 +911,13 @@ static void load_subscription_feed(void *) {
 	}
 
 	std::vector<View *> new_feed_video_views;
+	std::set<std::string> new_feed_ids;
 	{ // new videos since the last time the feed tab was opened : red dot on the menu icon
 		feed_latest_ids.clear();
 		for (auto &i : loaded_videos) {
 			for (auto &video : i.second) feed_latest_ids.push_back(youtube_get_video_id_by_url(video.url));
 		}
+		new_feed_ids = feed_seen_new_set(feed_latest_ids); // (asked before feed_seen_count_new, which records the ids on the very first run)
 		var_new_feed_videos = feed_seen_count_new(feed_latest_ids);
 		static bool told_this_session = false; // once per session: how many new videos your channels have
 		if (var_new_feed_videos > 0 && !told_this_session) {
@@ -927,7 +930,7 @@ static void load_subscription_feed(void *) {
 	for (auto &i : loaded_videos) {
 		for (auto video : i.second) {
 			if (result_video_hidden(video.url, video.author)) continue; // the settings hide Shorts / watched videos
-			new_feed_video_views.push_back(make_feed_view(video));
+			new_feed_video_views.push_back(make_feed_view(video, new_feed_ids.count(youtube_get_video_id_by_url(video.url)) > 0));
 			shown_videos.push_back(video);
 		}
 	}

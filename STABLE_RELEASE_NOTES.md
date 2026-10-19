@@ -19,6 +19,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Ends at.** The Status tool of the player says when the video will be over.
 - **Dislikes.** A new player tool shows the estimated likes and dislikes of a video, using the public Return YouTube Dislike API (only the video id is sent).
 - **Late-night hint.** After 25 minutes of playing late at night without a sleep timer, a notice suggests the Sleep timer tool.
+- **NEW badge.** Feed videos you had not been told about carry a NEW badge.
 
 ## Installing
 

@@ -1,1 +1,1 @@
-Playing late at night (00:30-05:00) for 25 minutes without a sleep timer shows a hint, once per night.
+The Feed tab marks videos you have not seen before with a NEW badge on the thumbnail.

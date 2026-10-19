@@ -35,6 +35,7 @@ struct SuccinctVideoView : public FixedSizeView {
 
 	bool is_playlist = false;
 	std::string queue_url; // set for videos that can be added to the play queue
+	bool badge_new = false; // "NEW": a video of the feed that you had not been told about
 	mutable u64 loading_since = 0; // when the placeholder started pulsing
 	mutable int thumbnail_fade = 0; // frames since the thumbnail appeared (fade-in animation)
 
@@ -109,6 +110,11 @@ struct SuccinctVideoView : public FixedSizeView {
 				Draw_round_rect((int)x0, (int)y0, (int)get_thumbnail_width(), (int)get_thumbnail_height(), 4, 0xFF000000 | (shade << 16) | (shade << 8) | shade);
 				var_need_refresh = true;
 			}
+		}
+		if (badge_new) {
+			float tag_width = Draw_get_width("NEW", 0.4) + 4;
+			Draw_round_rect((int)x0, (int)y0, (int)tag_width, 10, 3, 0xFF000000 | (COLOR_ACCENT & 0x00FFFFFF));
+			Draw("NEW", x0 + 2, y0 - 1, 0.4, 0.4, (u32)-1);
 		}
 		if (var_mark_watched && queue_url.size() && history_has_id(youtube_get_video_id_by_url(queue_url))) {
 			// already watched : a small check mark on the thumbnail

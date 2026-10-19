@@ -58,3 +58,16 @@ void feed_seen_mark(const std::vector<std::string> &ids) {
 	}
 	seen_lock.unlock();
 }
+
+std::set<std::string> feed_seen_new_set(const std::vector<std::string> &ids) {
+	std::set<std::string> result;
+	seen_lock.lock();
+	std::vector<std::string> seen;
+	bool existed = read_seen(seen);
+	if (existed) {
+		std::set<std::string> known(seen.begin(), seen.end());
+		for (auto &id : ids) if (id != "" && !known.count(id)) result.insert(id);
+	}
+	seen_lock.unlock();
+	return result;
+}
