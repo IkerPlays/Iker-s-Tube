@@ -41,7 +41,7 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 
 ## Más herramientas del reproductor
 - **Subtítulos:** CC (idiomas y traducción), CC tamaño, CC color.
-- **Listas:** +Lista (añade el vídeo a una lista local), Mezclar cola, Guardar lista en YouTube.
+- **Listas:** +Lista (añade el vídeo a una lista local) y Mezclar cola.
 - **Velocidad:** Más lento / Más rápido (de 5 en 5 %). **Auto:** cambia entre no, lista y todo.
 - **QR en este minuto**, **#Tags** (busca los hashtags del vídeo), **Guardar lista en YouTube**, **Recargar**, **Pantallas off** (SELECT + START las vuelve a encender) y **Estado** (hora y batería).
 - La cruceta izquierda/derecha salta 5, 10, 15 o 30 s (Ajustes). Abajo/Arriba: siguiente/anterior vídeo.

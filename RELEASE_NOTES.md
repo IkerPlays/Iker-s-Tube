@@ -1,1 +1,1 @@
-Fixes from a code review: Shuffle queue keeps the repeat list and saves once, Delete this day asks again and is not offered while a filter is active, Forget where I stopped is hidden in incognito, and the tip of the day is cheaper.
+Docs: a repeated line of the usage guide was removed.
