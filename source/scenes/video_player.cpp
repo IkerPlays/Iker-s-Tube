@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "data_io/settings.hpp"
 #include "data_io/history.hpp"
 #include "data_io/user_playlists.hpp"
 #include "util/result_filter.hpp"
@@ -4877,6 +4878,22 @@ static void autoplay_countdown_tick() {
 				    if (var_break_reminder && var_total_play_seconds - reminder_base >= minutes[var_break_reminder] * 60) {
 					    reminder_base = var_total_play_seconds;
 					    notice_show(tr("You have been playing for a while: time for a break?", "Llevas un rato reproduciendo: ¿un descanso?"));
+				    }
+			    }
+			    {
+				    static double late_base = -1; // playing late at night with no sleep timer: one gentle hint per night
+				    static int late_noticed_day = -1;
+				    time_t clock_now = time(NULL);
+				    struct tm *clock_tm = localtime(&clock_now);
+				    bool late = clock_tm && ((clock_tm->tm_hour == 0 && clock_tm->tm_min >= 30) || (clock_tm->tm_hour >= 1 && clock_tm->tm_hour < 5));
+				    if (!late || var_sleep_timer_end > osGetTime()) late_base = -1;
+				    else {
+					    if (late_base < 0 || var_total_play_seconds < late_base) late_base = var_total_play_seconds;
+					    int night = local_day_number();
+					    if (var_total_play_seconds - late_base >= 25 * 60 && late_noticed_day != night) {
+						    late_noticed_day = night;
+						    notice_show(tr("It is late: the Sleep timer tool can stop the video for you", "Es tarde: la herramienta de temporizador puede parar el vídeo por ti"));
+					    }
 				    }
 			    }
 			    {
