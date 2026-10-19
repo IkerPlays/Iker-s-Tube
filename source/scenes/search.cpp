@@ -496,43 +496,58 @@ std::pair<bool, std::string> http_get(const std::string &url, std::map<std::stri
 static LightLock suggest_lock;
 static std::vector<std::string> suggest_words;
 static bool suggest_started = false;
-// the autocomplete suggestions of YouTube for a text (at most `max`, without the odd ones)
-static std::vector<std::string> suggestions_for(const std::string &query, int max, bool *connected = NULL) {
+// the words of the answer of the autocomplete of YouTube (at most `max`, without the odd ones)
+static std::vector<std::string> parse_suggestions(const std::string &body, int max) {
 	std::vector<std::string> res;
-	std::string encoded;
-	for (auto c : query) {
-		encoded.push_back('%');
-		encoded.push_back("0123456789ABCDEF"[(u8)c / 16]);
-		encoded.push_back("0123456789ABCDEF"[(u8)c % 16]);
-	}
-	auto r = youtube_parser::http_get("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=" + encoded, {});
-	if (connected) *connected = r.first;
-	if (!r.first) return res;
-	size_t open = r.second.find('[', r.second.find('[') + 1);
+	size_t open = body.find('[', body.find('[') + 1);
 	if (open == std::string::npos) return res;
 	size_t p = open + 1;
-	size_t array_end = r.second.find(']', p);
+	size_t array_end = body.find(']', p);
 	if (array_end == std::string::npos) return res;
 	while ((int)res.size() < max) {
-		size_t q1 = r.second.find('"', p);
+		size_t q1 = body.find('"', p);
 		if (q1 == std::string::npos || q1 > array_end) break;
-		size_t q2 = r.second.find('"', q1 + 1);
+		size_t q2 = body.find('"', q1 + 1);
 		if (q2 == std::string::npos) break;
-		std::string w = r.second.substr(q1 + 1, q2 - q1 - 1);
+		std::string w = body.substr(q1 + 1, q2 - q1 - 1);
 		p = q2 + 1;
 		if (w.find('\\') != std::string::npos || w.size() < 2 || w.size() > 38) continue;
 		res.push_back(w);
 	}
 	return res;
 }
+static std::string encode_query(const std::string &query) {
+	std::string encoded;
+	for (auto c : query) {
+		encoded.push_back('%');
+		encoded.push_back("0123456789ABCDEF"[(u8)c / 16]);
+		encoded.push_back("0123456789ABCDEF"[(u8)c % 16]);
+	}
+	return encoded;
+}
+// (used by the async worker, which owns the shared network sessions)
+static std::vector<std::string> suggestions_for(const std::string &query, int max, bool *connected = NULL) {
+	auto r = youtube_parser::http_get("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=" + encode_query(query), {});
+	if (connected) *connected = r.first;
+	if (!r.first) return {};
+	return parse_suggestions(r.second, max);
+}
+// The prefetch for the keyboard runs in its own thread: it must NOT use the network sessions of the async worker (one
+// NetworkSessionList per thread), so it has its own, and it waits until the start of the app is over.
 static void suggest_thread(void *) {
-	for (char c = 'a'; c <= 'z'; c++) {
-		bool connected = true;
-		auto words = suggestions_for(std::string(1, c), 3, &connected);
-		if (!connected && c == 'a') { // no connection : try again at the next start of the scene
-			suggest_started = false;
-			return;
+	for (int i = 0; i < 25 && !exiting; i++) usleep(1000000);
+	static NetworkSessionList sessions;
+	sessions.init();
+	for (char c = 'a'; c <= 'z' && !exiting; c++) {
+		auto result = sessions.perform(HttpRequest::GET(std::string("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=") + c, {}));
+		if (result.fail || result.status_code != 200) {
+			if (c == 'a') { // no connection: try again at the next start of the scene
+				suggest_started = false;
+				return;
+			}
+			continue;
 		}
+		auto words = parse_suggestions(std::string(result.data.begin(), result.data.end()), 3);
 		for (auto &w : words) {
 			LightLock_Lock(&suggest_lock);
 			if (std::find(suggest_words.begin(), suggest_words.end(), w) == suggest_words.end()) suggest_words.push_back(w);
@@ -545,7 +560,7 @@ void Search_init(void) {
 	if (!suggest_started && !var_safe_mode) {
 		suggest_started = true;
 		LightLock_Init(&suggest_lock);
-		if (!threadCreate(suggest_thread, NULL, 64 * 1024, 0x30, -1, true)) suggest_started = false;
+		if (!threadCreate(suggest_thread, NULL, DEF_STACKSIZE, DEF_THREAD_PRIORITY_LOW, -1, true)) suggest_started = false;
 	}
 	logger.info("search/init", "Initializing...");
 	Result_with_string result;
