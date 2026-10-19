@@ -27,6 +27,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Controls help.** A player tool lists what each button does.
 - **Share my numbers.** My Wrapped can show your stats as a QR code.
 - **Hardening.** The app recovers list files interrupted while saving and ignores damaged values in its data files.
+- **Weekly chart.** My Wrapped shows how long you played on each of the last 7 days.
 
 ## Installing
 

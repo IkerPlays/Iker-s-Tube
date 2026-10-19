@@ -1,1 +1,1 @@
-Settings are written to a temporary file first so a kill while saving cannot leave an empty settings.txt.
+My Wrapped has a chart of the minutes played on each of the last 7 days.

@@ -2,6 +2,7 @@
 #include "data_io/settings.hpp"
 #include "data_io/history.hpp"
 #include "util/badges.hpp"
+#include "data_io/play_days.hpp"
 #include "data_io/user_playlists.hpp"
 #include "util/result_filter.hpp"
 #include <vector>
@@ -4922,6 +4923,7 @@ static void autoplay_countdown_tick() {
 				    if (var_total_play_seconds - badge_check_at >= 60 || var_total_play_seconds < badge_check_at) {
 					    badge_check_at = var_total_play_seconds;
 					    badges_check_new();
+					    if (!var_incognito && var_play_day == local_day_number()) play_days_record(var_play_day, (int)var_play_today);
 				    }
 			    }
 			    {

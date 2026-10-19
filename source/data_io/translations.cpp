@@ -193,6 +193,8 @@ static const TrEntry kTrEntries[] = {
 	{"L, R, X, Y: choose what they do in Settings", {"L, R, X, Y : choisissez leur action dans les Réglages", "L, R, X, Y: Funktion in den Einstellungen wählen", "L, R, X, Y: scegli cosa fanno nelle Impostazioni", "L, R, X, Y: escolha o que fazem nos Ajustes", "L, R, X, Y：設定で動作を選べます"}},
 	{"Hold X and press B: stop the video", {"Maintenir X puis B : arrêter la vidéo", "X halten und B drücken: Video stoppen", "Tieni X e premi B: ferma il video", "Segure X e aperte B: parar o vídeo", "Xを押しながらB：動画を停止"}},
 	{"Share my numbers (QR)", {"Partager mes chiffres (QR)", "Meine Zahlen teilen (QR)", "Condividi i miei numeri (QR)", "Compartilhar meus números (QR)", "数字を共有 (QR)"}},
+	{"Last 7 days (chart)", {"7 derniers jours (graphique)", "Letzte 7 Tage (Diagramm)", "Ultimi 7 giorni (grafico)", "Últimos 7 dias (gráfico)", "直近7日間（グラフ）"}},
+	{"Last 7 days", {"7 derniers jours", "Letzte 7 Tage", "Ultimi 7 giorni", "Últimos 7 dias", "直近7日間"}},
 	{"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	{"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	{"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},

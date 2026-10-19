@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include "util/badges.hpp"
+#include "data_io/play_days.hpp"
 #include "ui/qr_popup.hpp"
 #include <map>
 #include <numeric>
@@ -421,6 +422,21 @@ void History_draw(void) {
 					                    std::to_string(play_seconds / 3600) + " h, " + std::to_string(streak) + " day streak, " + std::to_string(unlocked) + "/" + std::to_string(badges.size()) + " badges";
 					rows.push_back({tr("Share my numbers (QR)", "Compartir mis números (QR)"), [share]() { qr_popup_show(share); }});
 				}
+				rows.push_back({tr("Last 7 days (chart)", "Últimos 7 días (gráfico)"), []() {
+					std::vector<std::pair<std::string, std::function<void()>>> chart;
+					auto last_days = play_days_last(7);
+					int biggest = 1;
+					for (auto &d : last_days) biggest = std::max(biggest, d.second);
+					for (auto &d : last_days) {
+						time_t day_time = (time_t)d.first * 86400 + 43200;
+						struct tm *date = gmtime(&day_time);
+						char label[16] = "";
+						if (date) strftime(label, sizeof label, "%m-%d", date);
+						std::string bar(d.second * 14 / biggest, '#');
+						chart.push_back({std::string(label) + " " + bar + " " + std::to_string(d.second / 60) + " min", []() {}});
+					}
+					overlay_show_menu_deferred(tr("Last 7 days", "Últimos 7 días"), chart);
+				}});
 				rows.push_back({tr("Badges: ", "Logros: ") + std::to_string(unlocked) + "/" + std::to_string(badges.size()), [badge_rows]() {
 					overlay_show_menu_deferred(tr("Badges", "Logros"), badge_rows);
 				}});
