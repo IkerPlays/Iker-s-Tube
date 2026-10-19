@@ -3491,6 +3491,17 @@ static void autoplay_countdown_tick() {
 
     bool video_is_playing() {
 	    autoplay_countdown_tick();
+	    {
+		    static bool fading = false; // sleep timer: the volume goes down during the last 30 seconds
+		    u64 now_ms = osGetTime();
+		    if (var_sleep_timer_end > now_ms && var_sleep_timer_end - now_ms < 30000) {
+			    fading = true;
+			    network_decoder.set_preamp(mini_volume * (double)(var_sleep_timer_end - now_ms) / 30000.0);
+		    } else if (fading) { // the timer ended or was changed : the volume comes back
+			    fading = false;
+			    network_decoder.set_preamp(mini_volume);
+		    }
+	    }
 	    if (var_sleep_timer_end && osGetTime() >= var_sleep_timer_end) { // sleep timer : pause the playback
 		    var_sleep_timer_end = 0;
 		    small_resource_lock.lock();

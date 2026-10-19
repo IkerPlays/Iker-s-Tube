@@ -1,1 +1,1 @@
-History: new My Wrapped button shows a summary made from your history (videos, times watched, time playing, top channel, favorite hour, this week and days in a row).
+Player: the sleep timer lowers the volume during its last 30 seconds before pausing, and the volume comes back afterwards.
