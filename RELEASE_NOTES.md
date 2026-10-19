@@ -1,1 +1,1 @@
-Settings, Data: Export lists as text files also writes one export_list_NAME.txt for each of your local playlists.
+Player: new CC size and CC color tools change the subtitles on the spot (they are saved).

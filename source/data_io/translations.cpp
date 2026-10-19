@@ -147,6 +147,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},
 	    {"import_subscriptions.csv not found in 3ds/IkersTube", {"import_subscriptions.csv introuvable dans 3ds/IkersTube", "import_subscriptions.csv nicht in 3ds/IkersTube gefunden", "import_subscriptions.csv non trovato in 3ds/IkersTube", "import_subscriptions.csv não encontrado em 3ds/IkersTube", "3ds/IkersTubeにimport_subscriptions.csvがありません"}},
 	    {"Subscriptions added: ", {"Abonnements ajoutés : ", "Abos hinzugefügt: ", "Iscrizioni aggiunte: ", "Inscrições adicionadas: ", "追加した登録: "}},
+	    {"CC size", {"CC taille", "CC Größe", "CC dimensione", "CC tamanho", "CC サイズ"}},
+	    {"CC color", {"CC couleur", "CC Farbe", "CC colore", "CC cor", "CC 色"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

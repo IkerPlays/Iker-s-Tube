@@ -2122,6 +2122,18 @@ debug_info_view =
 					                                 cur_video_info.caption_base_languages[cc_index].name);
 					                     queue_async_task(load_caption, &cc_arg);
 				                     }),
+				                 make_tool([]() { return tr("CC size", "CC tamaño"); }, 70,
+				                           []() {
+					                           var_caption_size = (var_caption_size + 1) % 3;
+					                           misc_tasks_request(TASK_SAVE_SETTINGS);
+					                           notice_show(tr("Subtitle size", "Tamaño de subtítulos") + std::string(": ") + std::to_string(var_caption_size + 1) + "/3");
+				                           }),
+				                 make_tool([]() { return tr("CC color", "CC color"); }, 70,
+				                           []() {
+					                           var_caption_color = (var_caption_color + 1) % 4;
+					                           misc_tasks_request(TASK_SAVE_SETTINGS);
+					                           notice_show(tr("Subtitle color", "Color de subtítulos") + std::string(": ") + std::to_string(var_caption_color + 1) + "/4");
+				                           }),
 				                 make_tool([]() { return tr("<< Chap", "<< Cap"); }, 60,
 				                           [is_current]() {
 					                           if (!is_current()) return;
