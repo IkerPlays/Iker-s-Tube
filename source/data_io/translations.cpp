@@ -236,6 +236,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Sure?", {"Sûr ?", "Sicher?", "Sicuro?", "Tem certeza?", "よろしいですか？"}},
 	    {"Yes, delete ", {"Oui, supprimer ", "Ja, löschen ", "Sì, elimina ", "Sim, apagar ", "はい、削除 "}},
 	    {"Surprise me (random topic)", {"Surprends-moi (sujet au hasard)", "Überrasch mich (Zufallsthema)", "Sorprendimi (argomento a caso)", "Surpreenda-me (tema aleatório)", "おまかせ（ランダムなテーマ）"}},
+	    {"Watched: yes", {"Vu : oui", "Gesehen: ja", "Visto: sì", "Visto: sim", "視聴済み: はい"}},
+	    {"Mark watched", {"Marquer vu", "Als gesehen", "Segna visto", "Marcar visto", "視聴済みにする"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

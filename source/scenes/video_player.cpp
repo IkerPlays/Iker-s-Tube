@@ -2201,6 +2201,25 @@ debug_info_view =
 					                           misc_tasks_request(TASK_SAVE_SETTINGS);
 					                           var_need_refresh = true;
 				                           }),
+				                 make_tool([]() { return history_has_id(cur_video_info.id) ? tr("Watched: yes", "Visto: sí") : tr("Mark watched", "Marcar visto"); }, 90,
+				                           []() { // add it to / remove it from the watch history by hand
+					                           if (cur_video_info.id == "" || cur_video_info.title == "") return;
+					                           if (history_has_id(cur_video_info.id)) {
+						                           history_erase_by_id(cur_video_info.id);
+					                           } else if (!var_incognito) {
+						                           HistoryVideo h;
+						                           h.id = cur_video_info.id;
+						                           h.title = cur_video_info.title;
+						                           h.title_lines = {cur_video_info.title};
+						                           h.author_name = cur_video_info.author.name;
+						                           h.length_text = Util_convert_seconds_to_time((double)cur_video_info.duration_ms / 1000);
+						                           h.my_view_count = 1;
+						                           h.last_watch_time = time(NULL);
+						                           add_watched_video(h);
+					                           }
+					                           misc_tasks_request(TASK_SAVE_HISTORY);
+					                           var_need_refresh = true;
+				                           }),
 				                 make_tool([]() { return tr("Shuffle queue", "Mezclar cola"); }, 100,
 				                           []() {
 					                           if (play_queue_size() < 2) {
