@@ -501,11 +501,11 @@ static void whats_new_done() {
 static void show_whats_new() {
 	dialog_view->get_message_view()
 	    ->set_text_lines(std::vector<std::string>{tr("What's new in ", "Novedades de ") + core_version(),
-	                                              tr("Subtitles (CC) and many new player tools", "Subtítulos (CC) y muchas herramientas nuevas"),
-	                                              tr("Search: combinable filters, suggestions", "Búsqueda: filtros combinables, sugerencias"),
-	                                              tr("Shorts feed, D-pad Down / Up = next / previous", "Shorts: cruceta Abajo / Arriba = siguiente / anterior"),
-	                                              tr("Pin channels, import / export subscriptions", "Fijar canales, importar / exportar suscripciones"),
-	                                              tr("Manage your YouTube lists, community votes", "Gestiona tus listas de YouTube, votos en Comunidad"),
+	                                              tr("Feed: instant start, NEW badges, play the new ones", "Feed: arranque al instante, etiquetas NEW, ver los nuevos"),
+	                                              tr("Player: all tools reachable, skip intro, go to time", "Reproductor: todas las herramientas, saltar intro, ir al minuto"),
+	                                              tr("My Wrapped: badges, weekly chart, share as QR", "Mi resumen: logros, gráfico semanal, compartir en QR"),
+	                                              tr("Equalizer and lyrics on the audio-only screen", "Ecualizador y letras en la pantalla de solo audio"),
+	                                              tr("Safe mode if the app fails to start", "Modo seguro si la app falla al arrancar"),
 	                                              tr("Details: Documentation/GUIA_DE_USO.md", "Detalles: Documentation/GUIA_DE_USO.md")})
 	    ->update_y_range(0, DEFAULT_FONT_INTERVAL * 7 + 6);
 	dialog_view->set_buttons<std::function<std::string()>>({[]() { return LOCALIZED(OK); }}, [](OverlayDialogView &, int) {
