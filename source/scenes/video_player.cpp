@@ -308,7 +308,7 @@ static volatile bool intro_skip_blocked = false; // the video starts at a time c
 static std::vector<std::pair<double, std::string>> current_chapters; // chapters of the displayed video (from its description)
 static VerticalListView *bookmarks_list_view = NULL; // the list shown in the page; rebuilt outside of the view updates
 static VerticalListView *pending_bookmarks_list_view = NULL; // created by the loader, becomes bookmarks_list_view when the page is installed
-static bool bookmarks_rebuild_request = false, bookmark_add_request = false;
+static bool bookmarks_rebuild_request = false, bookmark_add_request = false, goto_time_request = false;
 static std::string bookmarks_video_id;
 static std::vector<std::pair<double, std::string>> pending_chapters; // same, built by the loader thread
 static std::string pending_bookmarks_video_id;
@@ -2616,6 +2616,26 @@ debug_info_view =
 					                             channel_skip_set(playing_video_info.author.id, steps[next]);
 					                             notice_show(steps[next] ? tr("Every video of this channel starts ", "Cada vídeo de este canal empieza ") + std::to_string(steps[next]) + tr(" s later", " s más tarde") : tr("Intro skip off", "Saltar intro desactivado"));
 				                             }),
+				                         make_tool([]() { return tr("Go to time", "Ir al minuto"); }, 80, []() { if (network_decoder.ready) goto_time_request = true; }),
+				                         make_tool([]() { return ab_loop_a >= 0 ? tr("Loop: stop", "Bucle: parar") : tr("Loop chapter", "Repetir capítulo"); }, 90,
+				                                   []() { // repeats the part of the video between two chapter marks
+					                                   if (ab_loop_a >= 0) { ab_loop_a = ab_loop_b = -1; return; }
+					                                   if (!network_decoder.ready || current_chapters.empty()) {
+						                                   notice_show(tr("This video has no chapters", "Este vídeo no tiene capítulos"));
+						                                   return;
+					                                   }
+					                                   double start = 0, stop = vid_duration;
+					                                   for (size_t k = 0; k < current_chapters.size(); k++) {
+						                                   if (current_chapters[k].first <= vid_current_pos) {
+							                                   start = current_chapters[k].first;
+							                                   stop = k + 1 < current_chapters.size() ? current_chapters[k + 1].first : vid_duration;
+						                                   }
+					                                   }
+					                                   if (stop > start + 2) {
+						                                   ab_loop_a = start, ab_loop_b = stop;
+						                                   notice_show(tr("Repeating this chapter", "Repitiendo este capítulo"));
+					                                   }
+				                                   }),
 				                         make_tool([]() { return tr("Controls", "Controles"); }, 70,
 				                             []() {
 					                             show_text_popup(tr("Controls", "Controles"), tr("A: pause / play", "A: pausar / reproducir") + "\n" + tr("B: back", "B: atrás") + "\n" + tr("D-pad Left / Right: seek", "Cruceta izquierda / derecha: saltar") + "\n" + tr("D-pad Down / Up: next / previous video", "Cruceta abajo / arriba: siguiente / anterior vídeo") + "\n" + tr("ZL / ZR: 5 seconds back / forward", "ZL / ZR: 5 segundos atrás / adelante") + "\n" + tr("L, R, X, Y: choose what they do in Settings", "L, R, X, Y: elige qué hacen en Ajustes") + "\n" + tr("Hold X and press B: stop the video", "Mantén X y pulsa B: parar el vídeo"));
@@ -5113,6 +5133,38 @@ static void autoplay_countdown_tick() {
 			    }
 		    }
 
+		    if (goto_time_request) { // type a time (m:ss, h:mm:ss or plain minutes) and jump there
+			    goto_time_request = false;
+			    SwkbdState keyboard;
+			    swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 9);
+			    swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY);
+			    swkbdSetHintText(&keyboard, tr("Time to jump to (m:ss or h:mm:ss)", "Tiempo al que ir (m:ss o h:mm:ss)").c_str());
+			    swkbdSetInitialText(&keyboard, "");
+			    char typed[16] = {0};
+			    video_set_skip_drawing(true);
+			    auto pressed = swkbdInputText(&keyboard, typed, sizeof(typed));
+			    video_set_skip_drawing(false);
+			    if (pressed == SWKBD_BUTTON_RIGHT && typed[0]) {
+				    int parts[3] = {0, 0, 0}, count = 0, value = 0;
+				    bool valid = true, has_digit = false;
+				    for (const char *c = typed;; c++) {
+					    if (*c >= '0' && *c <= '9') value = std::min(value * 10 + (*c - '0'), 99999), has_digit = true;
+					    else if (*c == ':' || *c == 0) {
+						    if (!has_digit || count >= 3) { valid = false; break; }
+						    parts[count++] = value, value = 0, has_digit = false;
+						    if (*c == 0) break;
+					    } else { valid = false; break; }
+				    }
+				    double target = -1;
+				    if (valid) target = count == 1 ? parts[0] * 60.0 : count == 2 ? parts[0] * 60.0 + parts[1] : parts[0] * 3600.0 + parts[1] * 60.0 + parts[2];
+				    if (target >= 0 && network_decoder.ready) {
+					    send_seek_request(std::min(target, std::max(0.0, vid_duration - 1)));
+				    } else {
+					    notice_show(tr("That is not a valid time", "Ese tiempo no es válido"));
+				    }
+			    }
+			    var_need_refresh = true;
+		    }
 		    if (bookmark_add_request) { // asked from a button : the keyboard must be opened outside of the view update
 			    bookmark_add_request = false;
 			    std::string vid = playing_video_info.id;
