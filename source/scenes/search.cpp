@@ -132,37 +132,123 @@ View *Search_get_search_bar_view() { return top_bar_view; }
 static void load_search_results(void *);
 static void load_more_search_results(void *);
 
-// search filters : the button below the search box cycles through them ("params" of the search request)
-static const struct {
-	const char *name;
-	const char *params;
-} search_filters[] = {{"Todos", ""},
-                      {"Solo videos", "EgIQAQ=="},
-                      {"Hoy", "EgQIAhAB"},
-                      {"Esta semana", "EgQIAxAB"},
-                      {"Este mes", "EgQIBBAB"},
-                      {"Cortos (< 4 min)", "EgQQARgB"},
-                      {"Medios (4-20 min)", "EgQQARgC"},
-                      {"Largos (> 20 min)", "EgQQARgD"},
-                      {"En directo", "EgJAAQ=="},
-                      {"Listas", "EgIQAw=="},
-                      {"Canales", "EgIQAg=="},
-                      {"Última hora", "EgQIARAB"},
-                      {"Este año", "EgQIBRAB"},
-                      {"Orden: fecha", "CAI="},
-                      {"Orden: visitas", "CAM="},
-                      {"En HD", "EgIgAQ=="},
-                      {"Con subtítulos (CC)", "EgIoAQ=="},
-                      {"Creative Commons", "EgIwAQ=="},
-                      {"En 4K", "EgJwAQ=="},
-                      {"En HDR", "EgPIAQE="},
-                      {"360 grados", "EgJ4AQ=="}};
-static std::string search_filter_name(int i) {
-	static const char *en[] = {"All", "Videos only", "Today", "This week", "This month", "Short (< 4 min)", "Medium (4-20 min)", "Long (> 20 min)", "Live now", "Playlists", "Channels", "Last hour", "This year", "Sort: date", "Sort: views", "HD", "With subtitles (CC)", "Creative Commons", "4K", "HDR", "360 degrees"};
-	return tr(en[i], search_filters[i].name);
+// search filters : the button below the search box opens menus; the filters combine (sort + date + type + length + features)
+// and are written as the "params" protobuf of the search request
+struct SearchFilterState {
+	int sort = 0;     // 0 relevance, 1 rating, 2 upload date, 3 views
+	int date = 0;     // 0 any, 1 last hour, 2 today, 3 this week, 4 this month, 5 this year
+	int type = 0;     // 0 any, 1 video, 2 channel, 3 playlist
+	int duration = 0; // 0 any, 1 under 4 min, 2 4-20 min, 3 over 20 min
+	unsigned features = 0; // bits : 1 HD, 2 CC, 4 Creative Commons, 8 live, 16 4K, 32 360, 64 HDR
+};
+static SearchFilterState search_filter;
+static std::string search_filter_params() {
+	std::string inner;
+	auto put = [&](int tag, int value) {
+		inner.push_back((char)tag);
+		inner.push_back((char)value);
+	};
+	if (search_filter.date) put(0x08, search_filter.date);
+	if (search_filter.type) put(0x10, search_filter.type);
+	if (search_filter.duration) put(0x18, search_filter.duration);
+	if (search_filter.features & 1) put(0x20, 1);
+	if (search_filter.features & 2) put(0x28, 1);
+	if (search_filter.features & 4) put(0x30, 1);
+	if (search_filter.features & 8) put(0x40, 1);
+	if (search_filter.features & 16) put(0x70, 1);
+	if (search_filter.features & 32) put(0x78, 1);
+	if (search_filter.features & 64) { // HDR : field 25 (two bytes of tag)
+		inner.push_back((char)0xC8);
+		inner.push_back((char)0x01);
+		inner.push_back((char)0x01);
+	}
+	std::string raw;
+	if (search_filter.sort) {
+		raw.push_back(0x08);
+		raw.push_back((char)search_filter.sort);
+	}
+	if (inner.size()) {
+		raw.push_back(0x12);
+		raw.push_back((char)inner.size());
+		raw += inner;
+	}
+	static const char *tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	std::string b64;
+	for (size_t i = 0; i < raw.size(); i += 3) {
+		unsigned v = ((unsigned char)raw[i]) << 16;
+		if (i + 1 < raw.size()) v |= ((unsigned char)raw[i + 1]) << 8;
+		if (i + 2 < raw.size()) v |= (unsigned char)raw[i + 2];
+		b64 += tbl[(v >> 18) & 63];
+		b64 += tbl[(v >> 12) & 63];
+		b64 += i + 1 < raw.size() ? tbl[(v >> 6) & 63] : '=';
+		b64 += i + 2 < raw.size() ? tbl[v & 63] : '=';
+	}
+	return b64;
 }
-static int search_filter_index = 0;
+static std::string search_filter_text() { // "Today + Videos + 4-20 min"
+	static const char *sorts[] = {"", "Rating", "Newest", "Views"};
+	static const char *dates[] = {"", "Last hour", "Today", "This week", "This month", "This year"};
+	static const char *types[] = {"", "Videos", "Channels", "Playlists"};
+	static const char *durations[] = {"", "< 4 min", "4-20 min", "> 20 min"};
+	static const char *feature_names[] = {"HD", "CC", "Creative Commons", "Live", "4K", "360", "HDR"};
+	std::vector<std::string> parts;
+	if (search_filter.sort) parts.push_back(tr(sorts[search_filter.sort], sorts[search_filter.sort]));
+	if (search_filter.date) parts.push_back(tr(dates[search_filter.date], dates[search_filter.date]));
+	if (search_filter.type) parts.push_back(tr(types[search_filter.type], types[search_filter.type]));
+	if (search_filter.duration) parts.push_back(durations[search_filter.duration]);
+	for (int i = 0; i < 7; i++) {
+		if (search_filter.features & (1u << i)) parts.push_back(feature_names[i]);
+	}
+	if (parts.empty()) return tr("All", "Todos");
+	std::string res;
+	for (size_t i = 0; i < parts.size(); i++) res += (i ? " + " : "") + parts[i];
+	return res;
+}
+static void search_filter_changed();
 static u64 filter_search_due = 0; // the search with the new filter starts when the button was not tapped again for a moment
+static void search_filter_changed() {
+	youtube_search_filter_params = search_filter_params();
+	if (cur_search_word != "") filter_search_due = osGetTime() + 300;
+	var_need_refresh = true;
+}
+// the menus of the filter button : one for each part of the filter
+static void show_search_filter_menu() {
+	using Option = std::pair<std::string, std::function<void()>>;
+	auto choose = [](const std::string &title, const std::vector<std::string> &names, int current, std::function<void(int)> set) {
+		std::vector<Option> options;
+		for (int i = 0; i < (int)names.size(); i++) options.push_back({(i == current ? "> " : "") + names[i], [i, set]() { set(i); search_filter_changed(); }});
+		overlay_show_menu(title, options);
+	};
+	std::vector<Option> main_options;
+	main_options.push_back({tr("Sort by", "Ordenar por"), [choose]() {
+		choose(tr("Sort by", "Ordenar por"), {tr("Relevance", "Relevancia"), tr("Rating", "Valoración"), tr("Newest", "Más recientes"), tr("Views", "Visitas")}, search_filter.sort, [](int v) { search_filter.sort = v; });
+	}});
+	main_options.push_back({tr("Upload date", "Fecha de subida"), [choose]() {
+		choose(tr("Upload date", "Fecha de subida"), {tr("Any", "Cualquiera"), tr("Last hour", "Última hora"), tr("Today", "Hoy"), tr("This week", "Esta semana"), tr("This month", "Este mes"), tr("This year", "Este año")}, search_filter.date, [](int v) { search_filter.date = v; });
+	}});
+	main_options.push_back({tr("Type", "Tipo"), [choose]() {
+		choose(tr("Type", "Tipo"), {tr("Any", "Cualquiera"), tr("Videos", "Vídeos"), tr("Channels", "Canales"), tr("Playlists", "Listas")}, search_filter.type, [](int v) { search_filter.type = v; });
+	}});
+	main_options.push_back({tr("Length", "Duración"), [choose]() {
+		choose(tr("Length", "Duración"), {tr("Any", "Cualquiera"), "< 4 min", "4-20 min", "> 20 min"}, search_filter.duration, [](int v) { search_filter.duration = v; });
+	}});
+	main_options.push_back({tr("Features", "Características"), []() {
+		std::vector<Option> options;
+		static const char *names[] = {"HD", "CC", "Creative Commons", "Live", "4K", "360", "HDR"};
+		for (int i = 0; i < 7; i++) {
+			options.push_back({std::string((search_filter.features & (1u << i)) ? "[x] " : "[ ] ") + names[i], [i]() {
+				search_filter.features ^= (1u << i); // each tap turns one on or off
+				search_filter_changed();
+			}});
+		}
+		overlay_show_menu(tr("Features", "Características"), options);
+	}});
+	main_options.push_back({tr("Reset the filter", "Quitar el filtro"), []() {
+		search_filter = SearchFilterState();
+		search_filter_changed();
+	}});
+	overlay_show_menu(tr("Search filter", "Filtro de búsqueda") + ": " + search_filter_text(), main_options);
+}
 static int account_feed_kind = 0; // 1 : recommendations, 2 : notifications of the YouTube account
 static void load_account_feed(void *);
 static bool history_clear_request = false;
@@ -434,31 +520,18 @@ void Search_init(void) {
 	                             ->set_margin(0),
 	                         (new TextView(0, 0, 320, FILTER_ROW_HEIGHT - 1))
 	                             ->set_text((std::function<std::string()>)[]() {
-		                             return std::string(tr("Filter: ", "Filtro: ")) + search_filter_name(search_filter_index);
+		                             return std::string(tr("Filter: ", "Filtro: ")) + search_filter_text();
 	                             })
 	                             ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
 	                             ->set_x_alignment(TextView::XAlign::CENTER)
 	                             ->set_y_alignment(TextView::YAlign::CENTER)
 	                             ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; })
 	                             ->add_on_long_hold(35, [](View &v) { // long press : back to All
-		                             search_filter_index = 0;
-		                             youtube_search_filter_params = search_filters[0].params;
-		                             if (cur_search_word != "") filter_search_due = osGetTime() + 300;
+		                             search_filter = SearchFilterState();
+		                             search_filter_changed();
 		                             v.reset_holding_status();
-		                             var_need_refresh = true;
 	                             })
-	                             ->set_on_view_released([](View &) { // a menu with all the filters (long press : back to All)
-		                             std::vector<std::pair<std::string, std::function<void()>>> options;
-		                             for (int i = 0; i < (int)(sizeof(search_filters) / sizeof(search_filters[0])); i++) {
-			                             options.push_back({(i == search_filter_index ? "> " : "") + search_filter_name(i), [i]() {
-				                                                search_filter_index = i;
-				                                                youtube_search_filter_params = search_filters[i].params;
-				                                                if (cur_search_word != "") filter_search_due = osGetTime() + 300;
-				                                                var_need_refresh = true;
-			                                                }});
-		                             }
-		                             overlay_show_menu(tr("Search filter", "Filtro de búsqueda"), options);
-	                             }),
+	                             ->set_on_view_released([](View &) { show_search_filter_menu(); }),
 	                         (new RuleView(0, 0, 320, 1))
 	                             ->set_get_color([]() { return 0xFF000000; })
 	                             ->set_margin(0)});
