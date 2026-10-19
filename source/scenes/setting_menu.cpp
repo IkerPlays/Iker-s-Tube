@@ -532,7 +532,7 @@ static void oauth_worker_thread_func(void *) {
 }
 
 namespace {
-	const std::vector<std::string> languages_ui = {"en", "ja", "de", "fr", "it", "es"};
+	const std::vector<std::string> languages_ui = {"en", "ja", "de", "fr", "it", "es", "br"};
 	const std::vector<std::string> languages_content = {"en", "ja", "de", "fr", "it", "es"};
 
 	int get_language_index(const std::vector<std::string>& codes, const std::string& lang) {
@@ -848,9 +848,10 @@ void Sem_init(void) {
 							"Deutsch",
 							"Français",
 							"Italiano",
-							"Español"
+							"Español",
+							"Português"
 						}, get_language_index(languages_ui, var_lang))
-						->set_row_counts({3, 3})
+						->set_row_counts({4, 3})
 						->set_title([](const GridSelectorView &) { return LOCALIZED(UI_LANGUAGE); })
 						->set_on_change([](const GridSelectorView &view) {
 							auto next_lang = languages_ui[view.selected_button];

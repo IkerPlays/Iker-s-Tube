@@ -1,1 +1,1 @@
-Fixes: the Spanish interface language was reset to English on every start (it is now kept). The translation table is built from read-only data with a loop instead of a 70 KB stack frame (safer on small thread stacks).
+Settings, Language: Portuguese interface (the translations already existed).
