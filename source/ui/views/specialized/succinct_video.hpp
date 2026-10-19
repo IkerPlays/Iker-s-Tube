@@ -102,13 +102,13 @@ struct SuccinctVideoView : public FixedSizeView {
 		if (var_mark_watched && queue_url.size() && history_has_id(youtube_get_video_id_by_url(queue_url))) {
 			// already watched : a small check mark on the thumbnail
 			float bx = x0 + get_thumbnail_width() - 14;
-			Draw_texture(var_square_image[0], 0xE0000000, bx, y0, 14, 12);
+			Draw_round_rect((int)bx, (int)y0, 14, 12, 3, 0xE0000000);
 			Draw("v", bx + 3, y0 - 2, 0.45, 0.45, 0xFF60E060);
 		}
 		if (queue_url.size() && offline_has_id(youtube_get_video_id_by_url(queue_url))) {
 			// saved on the SD card : a small tag at the bottom left of the thumbnail
 			float tag_width = Draw_get_width("DL", 0.4) + 4;
-			Draw_texture(var_square_image[0], 0xE0408040, x0, y0 + get_thumbnail_height() - 10, tag_width, 10);
+			Draw_round_rect((int)x0, (int)(y0 + get_thumbnail_height() - 10), (int)tag_width, 10, 3, 0xE0408040);
 			Draw("DL", x0 + 2, y0 + get_thumbnail_height() - 11, 0.4, 0.4, (u32)-1);
 		}
 		if (queue_url.size() && bottom_right_overlay.size()) { // how much of the video was already watched : a thin red bar
@@ -133,14 +133,13 @@ struct SuccinctVideoView : public FixedSizeView {
 			if (pos) {
 				std::string text = "#" + std::to_string(pos);
 				float w = Draw_get_width(text, 0.45) + 6;
-				Draw_texture(var_square_image[0], 0xE03B3BE6, x0, y0, w, 12);
+				Draw_round_rect((int)x0, (int)y0, (int)w, 12, 3, 0xE03B3BE6);
 				Draw(text, x0 + 3, y0 - 1, 0.45, 0.45, (u32)-1);
 			}
 		}
 		if (bottom_right_overlay.size()) {
 			float overlay_width = Draw_get_width(bottom_right_overlay, DURATION_FONT_SIZE);
-			Draw_texture(var_square_image[0], 0xBB000000, x0 + get_thumbnail_width() - overlay_width - 2,
-			             y0 + get_thumbnail_height() - 10, overlay_width + 2, 10);
+			Draw_round_rect((int)(x0 + get_thumbnail_width() - overlay_width - 3), (int)(y0 + get_thumbnail_height() - 11), (int)overlay_width + 4, 10, 3, 0xBB000000);
 			Draw(bottom_right_overlay, x0 + get_thumbnail_width() - overlay_width - 1, y0 + get_thumbnail_height() - 11,
 			     DURATION_FONT_SIZE, DURATION_FONT_SIZE, (u32)-1);
 		}

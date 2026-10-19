@@ -1,1 +1,1 @@
-Search: the start page greets you by the time of the day and by your name when you are signed in.
+UI: the duration, queue number, saved and watched badges on the thumbnails have rounded corners.
