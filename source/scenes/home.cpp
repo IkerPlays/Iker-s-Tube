@@ -932,9 +932,23 @@ static void load_subscription_feed(void *) {
 		var_need_refresh = true;
 	}
 	std::vector<YouTubeVideoSuccinct> shown_videos;
+	int last_bucket = -1; // day headers: Today / Yesterday / This week / This month / Older
 	for (auto &i : loaded_videos) {
+		const int unit = i.first.first, number = i.first.second;
+		const int bucket = unit <= 2 ? 0 : (unit == 3 && number <= 1) ? 1 : unit == 3 ? 2 : unit == 4 ? 3 : 4;
 		for (auto video : i.second) {
 			if (result_video_hidden(video.url, video.author)) continue; // the settings hide Shorts / watched videos
+			if (bucket != last_bucket) {
+				last_bucket = bucket;
+				const std::string labels[5] = {tr("Today", "Hoy"), tr("Yesterday", "Ayer"), tr("This week", "Esta semana"), tr("This month", "Este mes"), tr("Older", "Antes")};
+				new_feed_video_views.push_back((new TextView(0, 0, 320, 18))
+				                                   ->set_text(labels[bucket])
+				                                   ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+				                                   ->set_y_alignment(TextView::YAlign::CENTER)
+				                                   ->set_text_offset(SMALL_MARGIN, 0)
+				                                   ->set_get_text_color([]() { return (u32)COLOR_ACCENT; })
+				                                   ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
+			}
 			new_feed_video_views.push_back(make_feed_view(video, new_feed_ids.count(youtube_get_video_id_by_url(video.url)) > 0));
 			shown_videos.push_back(video);
 		}

@@ -231,6 +231,7 @@ static const TrEntry kTrEntries[] = {
 	{"At night", {"La nuit", "Nachts", "Di notte", "À noite", "夜のみ"}},
 	{"Always", {"Toujours", "Immer", "Sempre", "Sempre", "常に"}},
 	{"Warm screen (night comfort)", {"Écran chaud (confort la nuit)", "Warmer Bildschirm (Nachtkomfort)", "Schermo caldo (comfort notturno)", "Tela quente (conforto à noite)", "暖色画面（夜に目に優しく）"}},
+	{"Older", {"Plus ancien", "Älter", "Più vecchi", "Mais antigos", "それ以前"}},
 	{"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	{"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	{"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},
