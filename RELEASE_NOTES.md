@@ -1,1 +1,2 @@
-README now has a QR code that always downloads the latest stable IkersTube.cia.
+About screen: new row that shows a QR code for the latest stable download.
+README: QR that always points to the latest stable release.
