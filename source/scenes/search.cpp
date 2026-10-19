@@ -603,10 +603,9 @@ static void load_account_feed(void *) {
 	}
 }
 
-static std::vector<std::pair<std::string, std::string>> feed_items; // the Shorts found by the last feed search (installed with the results)
-static bool feed_shuffle = true;
 static void load_search_results(void *) {
-	feed_items.clear();
+	std::vector<std::pair<std::string, std::string>> feed_items; // the Shorts found by this feed search (installed with the results)
+	bool feed_shuffle = true;
 	// pre-access processing
 	resource_lock.lock();
 	std::string search_word = cur_search_word;

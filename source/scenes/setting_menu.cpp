@@ -1615,10 +1615,14 @@ void Sem_init(void) {
 							items.clear();
 							for (auto &v : get_valid_watch_history()) items.push_back({v.id, v.title});
 							write("export_history.txt", items);
+							std::vector<std::string> used_names;
 							for (auto &pl : playlists_get()) { // every local list in its own file
 								std::string safe;
 								for (auto ch : pl.name) safe += (isalnum((unsigned char)ch) || ch == '-' || ch == '_') ? ch : '_';
 								if (safe == "") safe = "list";
+								safe = safe.substr(0, 36);
+								if (std::find(used_names.begin(), used_names.end(), safe) != used_names.end()) safe += "_" + std::to_string(used_names.size() + 1); // (two lists with the same file name)
+								used_names.push_back(safe);
 								items.clear();
 								for (auto &v : pl.videos) items.push_back({v.id, v.title});
 								write(("export_list_" + safe.substr(0, 40) + ".txt").c_str(), items);
@@ -1679,6 +1683,7 @@ void Sem_init(void) {
 									}
 								}
 								fclose(f);
+								if (added > 0) misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 							}
 							toast_view
 								->set_text((std::function<std::string ()>) [added] () { return added < 0 ? tr("import_subscriptions.csv not found in 3ds/IkersTube", "No se encontró import_subscriptions.csv en 3ds/IkersTube") : tr("Subscriptions added: ", "Suscripciones añadidas: ") + std::to_string(added); })

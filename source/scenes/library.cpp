@@ -368,17 +368,17 @@ static void build_queue(VerticalListView *list) {
 		if (n > 1) {
 			list->views.insert(list->views.begin(), make_button(tr("Remove duplicates", "Quitar repetidos"), 320, []() {
 				                   std::vector<std::string> seen;
-				                   int removed = 0;
-				                   for (int i = 0; i < play_queue_size();) {
+				                   std::vector<int> duplicates;
+				                   for (int i = 0; i < play_queue_size(); i++) {
 					                   std::string url, title;
 					                   if (!play_queue_get(i, url, title)) break;
-					                   if (std::find(seen.begin(), seen.end(), url) != seen.end()) {
-						                   play_queue_remove_at(i);
-						                   removed++;
-					                   } else {
-						                   seen.push_back(url);
-						                   i++;
-					                   }
+					                   if (std::find(seen.begin(), seen.end(), url) != seen.end()) duplicates.push_back(i);
+					                   else seen.push_back(url);
+				                   }
+				                   int removed = 0;
+				                   for (int k = (int)duplicates.size() - 1; k >= 0; k--) { // from the end : the indexes before stay valid
+					                   play_queue_remove_at(duplicates[k]);
+					                   removed++;
 				                   }
 				                   notice_show(tr("Removed: ", "Quitados: ") + std::to_string(removed));
 				                   rebuild_request = true;

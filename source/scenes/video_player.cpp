@@ -3324,6 +3324,7 @@ static void autoplay_countdown_tick() {
 		} else if (osGetTime() >= autoplay_due_ms) {
 			std::string next = autoplay_pending_url;
 			autoplay_pending_url = "";
+			auto_advanced++;
 			send_change_video_request_wo_lock(next, true, false, false);
 		} else {
 			static int last_shown = -1;
@@ -4072,7 +4073,7 @@ static void autoplay_countdown_tick() {
 						    bool stop_here = stop_after_video; // "stop after this video" was requested
 						    stop_after_video = false;
 						    static const int limits[4] = {0, 3, 5, 10};
-						    if (!stop_here && limits[var_autoplay_limit] > 0 && auto_advanced >= limits[var_autoplay_limit]) { // enough videos in a row
+						    if (!stop_here && limits[var_autoplay_limit] > 0 && auto_advanced + 1 >= limits[var_autoplay_limit]) { // enough videos in a row
 							    stop_here = true;
 							    auto_advanced = 0;
 							    notice_show(tr("Stopped after the videos in a row you chose", "Parado tras los vídeos seguidos que elegiste"));
@@ -4591,7 +4592,7 @@ static void autoplay_countdown_tick() {
 			    {
 				    static double reminder_base = -1; // time playing at the last reminder
 				    static const int minutes[4] = {0, 30, 60, 120};
-				    if (reminder_base < 0 || var_break_reminder == 0) reminder_base = var_total_play_seconds;
+				    if (reminder_base < 0 || var_break_reminder == 0 || var_total_play_seconds < reminder_base) reminder_base = var_total_play_seconds;
 				    if (var_break_reminder && var_total_play_seconds - reminder_base >= minutes[var_break_reminder] * 60) {
 					    reminder_base = var_total_play_seconds;
 					    notice_show(tr("You have been playing for a while: time for a break?", "Llevas un rato reproduciendo: ¿un descanso?"));

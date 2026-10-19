@@ -1,1 +1,1 @@
-Settings: Remind me to take a break shows a notice after 30, 60 or 120 minutes of playing.
+Fixes from a code review: the subscription import is saved, the stop after N videos also counts the delayed autoplay and stops after exactly N, the break reminder re-bases itself, exported lists never overwrite each other, Remove duplicates is safer, and the channel Shuffle is really random.
