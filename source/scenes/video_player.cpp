@@ -798,7 +798,10 @@ static void show_description_hashtags() {
 		size_t e = p + 1;
 		while (e < text.size() && (isalnum((unsigned char)text[e]) || text[e] == '_' || (unsigned char)text[e] >= 0x80)) e++;
 		std::string tag = text.substr(p, e - p);
-		if (tag.size() > 2 && tag.size() < 40 && std::find(tags.begin(), tags.end(), tag) == tags.end()) tags.push_back(tag);
+		bool word_start = p == 0 || isspace((unsigned char)text[p - 1]) || strchr("(,;:\"'", text[p - 1]) != NULL; // (not a link fragment or an HTML entity)
+		bool has_letter = false;
+		for (auto ch : tag) has_letter = has_letter || isalpha((unsigned char)ch) || (unsigned char)ch >= 0x80;
+		if (word_start && has_letter && tag.size() > 2 && tag.size() < 40 && std::find(tags.begin(), tags.end(), tag) == tags.end()) tags.push_back(tag);
 		p = e;
 	}
 	if (tags.empty()) {
@@ -2205,6 +2208,10 @@ debug_info_view =
 				                           }),
 				                 make_tool([]() { return tr("Screens off", "Pantallas off"); }, 90,
 				                           []() {
+					                           if (var_model == CFG_MODEL_2DS) { // (the SELECT + START combo that brings them back is disabled on this model)
+						                           notice_show(tr("Not available on the 2DS", "No disponible en la 2DS"));
+						                           return;
+					                           }
 					                           SceneSwitcher::manual_screen_off = !SceneSwitcher::manual_screen_off; // the screens of the setting (Settings, Screen and battery) go dark or come back
 					                           if (SceneSwitcher::manual_screen_off) notice_show(tr("Screens off: SELECT + START brings them back", "Pantallas apagadas: SELECT + START las enciende"));
 					                           var_need_refresh = true;

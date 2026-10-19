@@ -188,6 +188,15 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 			                   action();
 		                   }));
 	}
+	if (first > 0) { // back to the page before
+		rows.push_back((new TextView(0, 0, width, 24))
+		                   ->set_text(tr("Previous options...", "Opciones anteriores..."))
+		                   ->set_x_alignment(TextView::XAlign::CENTER)
+		                   ->set_y_alignment(TextView::YAlign::CENTER)
+		                   ->set_get_text_color([]() { return COLOR_ACCENT; })
+		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                   ->set_on_view_released([title, options, first, per_page](View &) { menu_next_request = true; menu_next_title = title; menu_next_options = options; menu_next_first = first >= per_page ? first - per_page : 0; }));
+	}
 	if (last < options.size()) { // more options on the next page
 		rows.push_back((new TextView(0, 0, width, 24))
 		                   ->set_text(tr("More options...", "Más opciones..."))

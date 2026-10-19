@@ -1708,7 +1708,7 @@ void Sem_init(void) {
 							auto names = hidden_channels_list();
 							for (size_t i = 0; i < names.size() && i < 30; i++) {
 								std::string name = names[i];
-								options.push_back({tr("Show: ", "Mostrar: ") + name.substr(0, 26), [name]() { hidden_channel_set(name, false); var_need_refresh = true; }});
+								options.push_back({tr("Show: ", "Mostrar: ") + truncate_first_line(name, 200, 0.5), [name]() { hidden_channel_set(name, false); var_need_refresh = true; }});
 							}
 							if (names.size() > 1) options.push_back({tr("Show all", "Mostrar todos"), []() { hidden_channels_clear(); var_need_refresh = true; }});
 							if (options.size()) overlay_show_menu(tr("Hidden channels", "Canales ocultos"), options);

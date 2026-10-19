@@ -185,6 +185,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Piano", {"Piano", "Klavier", "Pianoforte", "Piano", "ピアノ"}},
 	    {"Minecraft", {"Minecraft", "Minecraft", "Minecraft", "Minecraft", "マインクラフト"}},
 	    {"Pokemon", {"Pokémon", "Pokémon", "Pokémon", "Pokémon", "ポケモン"}},
+	    {"Not available on the 2DS", {"Non disponible sur la 2DS", "Auf der 2DS nicht verfügbar", "Non disponibile sul 2DS", "Indisponível no 2DS", "2DSでは使えません"}},
+	    {"Previous options...", {"Options précédentes...", "Vorherige Optionen...", "Opzioni precedenti...", "Opções anteriores...", "前のオプション..."}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

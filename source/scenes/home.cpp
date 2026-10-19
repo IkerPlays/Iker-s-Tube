@@ -1237,9 +1237,11 @@ static void update_oauth_subscribed_channels(const std::vector<SubscriptionChann
 	oauth_subscribed_channels = new_oauth_channels;
 
 	std::vector<View *> new_views;
-	for (auto channel : new_oauth_channels) {
+	std::vector<SubscriptionChannel> ordered_channels = new_oauth_channels;
+	std::stable_partition(ordered_channels.begin(), ordered_channels.end(), [](const SubscriptionChannel &c) { return pinned_channel_is(c.id); }); // pinned first
+	for (auto channel : ordered_channels) {
 		SuccinctChannelView *cur_view = (new SuccinctChannelView(0, 0, 320, CHANNEL_ICON_HEIGHT));
-		cur_view->set_name(channel.name);
+		cur_view->set_name((pinned_channel_is(channel.id) ? "* " : "") + channel.name);
 		cur_view->set_auxiliary_lines({channel.subscriber_count_str});
 		cur_view->set_thumbnail_url(channel.icon_url);
 		cur_view->set_get_background_color(View::STANDARD_BACKGROUND);

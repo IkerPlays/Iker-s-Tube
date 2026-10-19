@@ -1,1 +1,1 @@
-Search: seven more Explore shortcuts (Nintendo, Retro games, Anime, Lo-fi, Piano, Minecraft, Pokemon).
+Fixes from a code review: the related searches load after the results are shown, Screens off is not offered on the 2DS, Remove my like removes it from the list, pinned channels also work in the account list, the paged menus have Previous options, long names are cut safely, hashtags ignore link fragments and the Top channels order is stable.

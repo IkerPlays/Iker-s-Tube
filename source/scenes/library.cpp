@@ -645,7 +645,13 @@ static void build_liked(VerticalListView *list) {
 			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
-			                 make_option(tr("Remove my like", "Quitar mi Me gusta"), [id]() { account_like_async(id, 0); })});
+			                 make_option(tr("Remove my like", "Quitar mi Me gusta"), [id]() {
+				             account_like_async(id, 0);
+				             resource_lock_lib.lock();
+				             liked_videos.erase(std::remove_if(liked_videos.begin(), liked_videos.end(), [&](const FavoriteVideo &x) { return x.id == id; }), liked_videos.end());
+				             resource_lock_lib.unlock();
+				             rebuild_request = true;
+			             })});
 		    });
 		list->views.push_back(view);
 	}

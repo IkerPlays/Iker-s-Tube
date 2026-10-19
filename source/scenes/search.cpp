@@ -706,35 +706,9 @@ static void load_search_results(void *) {
 			                                            })}));
 		}
 	}
+	const size_t first_result_index = new_result_views.size(); // the related searches go after the first five results
 	for (size_t i = 0; i < new_result.results.size(); i++) {
 		new_result_views.push_back(result_item_to_view(new_result.results[i]));
-	}
-	std::vector<View *> related_views;
-	if (!feed && search_word.size() > 1 && search_word.compare(0, 4, "http") != 0) { // related searches : what people type after this
-		auto related = suggestions_for(search_word, 5);
-		std::vector<std::string> shown;
-		for (auto &w : related) {
-			if (w != search_word && shown.size() < 4) shown.push_back(w);
-		}
-		if (shown.size()) {
-			related_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
-			                               ->set_text(tr("Related searches", "Búsquedas relacionadas"))
-			                               ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
-			                               ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
-			for (auto &w : shown) {
-				related_views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 24))
-				                               ->set_text(w)
-				                               ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
-				                               ->set_y_alignment(TextView::YAlign::CENTER)
-				                               ->set_get_text_color([]() { return COLOR_ACCENT; })
-				                               ->set_get_background_color(View::STANDARD_BACKGROUND)
-				                               ->set_on_view_released([w](View &) { related_search_request = w; var_need_refresh = true; }));
-			}
-		}
-	}
-	if (related_views.size()) { // after the first results, not before them
-		size_t at = std::min(new_result_views.size(), (size_t)(new_result_views.size() > 6 ? new_result_views.size() - new_result.results.size() + 5 : new_result_views.size()));
-		new_result_views.insert(new_result_views.begin() + at, related_views.begin(), related_views.end());
 	}
 	logger.info("search", "truncate/view creation end");
 
@@ -758,6 +732,40 @@ static void load_search_results(void *) {
 		notice_show(tr("Shorts: D-pad Down = next, Up = previous", "Shorts: cruceta Abajo = siguiente, Arriba = anterior"));
 	}
 	resource_lock.unlock();
+
+	// related searches : what people type after this. Asked once the results are on the screen (the request only decorates the page)
+	if (!feed && search_word.size() > 1 && search_word.compare(0, 4, "http") != 0) {
+		auto related = suggestions_for(search_word, 5);
+		std::vector<std::string> shown;
+		for (auto &w : related) {
+			if (w != search_word && shown.size() < 4) shown.push_back(w);
+		}
+		if (shown.size()) {
+			std::vector<View *> related_views;
+			related_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+			                            ->set_text(tr("Related searches", "Búsquedas relacionadas"))
+			                            ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+			                            ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+			for (auto &w : shown) {
+				related_views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 24))
+				                            ->set_text(w)
+				                            ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+				                            ->set_y_alignment(TextView::YAlign::CENTER)
+				                            ->set_get_text_color([]() { return COLOR_ACCENT; })
+				                            ->set_get_background_color(View::STANDARD_BACKGROUND)
+				                            ->set_on_view_released([w](View &) { related_search_request = w; var_need_refresh = true; }));
+			}
+			resource_lock.lock();
+			if (!exiting && search_done && cur_search_word == search_word && result_list_view->views.size() >= first_result_index) {
+				size_t at = std::min(result_list_view->views.size(), first_result_index + 5);
+				result_list_view->views.insert(result_list_view->views.begin() + at, related_views.begin(), related_views.end());
+				var_need_refresh = true;
+			} else {
+				for (auto v : related_views) delete v;
+			}
+			resource_lock.unlock();
+		}
+	}
 }
 static void load_more_search_results(void *) {
 	auto new_result = search_result;

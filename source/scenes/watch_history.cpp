@@ -311,11 +311,11 @@ void History_draw(void) {
 				}
 				std::vector<std::pair<int, std::string>> ranking;
 				for (auto &c : counts) ranking.push_back({c.second, c.first});
-				std::sort(ranking.begin(), ranking.end(), [](const std::pair<int, std::string> &a, const std::pair<int, std::string> &b) { return a.first > b.first; });
+				std::sort(ranking.begin(), ranking.end(), [](const std::pair<int, std::string> &a, const std::pair<int, std::string> &b) { return a.first != b.first ? a.first > b.first : a.second < b.second; });
 				std::vector<std::pair<std::string, std::function<void()>>> options;
 				for (size_t k = 0; k < ranking.size() && k < 7; k++) {
 					std::string name = ranking[k].second;
-					options.push_back({name.substr(0, 28) + " (" + std::to_string(ranking[k].first) + ")", [name]() {
+					options.push_back({truncate_first_line(name, 200, 0.5) + " (" + std::to_string(ranking[k].first) + ")", [name]() {
 						global_intent.next_scene = SceneType::SEARCH;
 						global_intent.arg = "q:" + name;
 					}});
