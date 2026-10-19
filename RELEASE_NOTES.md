@@ -1,1 +1,1 @@
-Fix: comments or suggestions that finish loading after you opened another video are dropped instead of overwriting the new page.
+New setting (Appearance): turn the badge and late-night notices off.

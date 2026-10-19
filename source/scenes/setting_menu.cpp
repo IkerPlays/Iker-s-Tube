@@ -653,6 +653,19 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Notices for badges and the late-night hint
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
+						}, var_fun_notices)
+						->set_title([](const SelectorView &) { return tr("Badge and night notices", "Avisos de logros y de noche"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_fun_notices != view.selected_button) {
+								var_fun_notices = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// High contrast
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

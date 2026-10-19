@@ -78,7 +78,7 @@ void badges_check_new() {
 		if (!badge.done || earned.count(badge.id)) continue;
 		earned.insert(badge.id);
 		changed = true;
-		if (existed) notice_show(tr("Badge unlocked: ", "Logro desbloqueado: ") + badge.name);
+		if (existed && var_fun_notices) notice_show(tr("Badge unlocked: ", "Logro desbloqueado: ") + badge.name);
 	}
 	earned.insert(-1);
 	if (changed || !existed) {

@@ -5059,7 +5059,7 @@ static void autoplay_countdown_tick() {
 				    else {
 					    if (late_base < 0 || var_total_play_seconds < late_base) late_base = var_total_play_seconds;
 					    int night = local_day_number();
-					    if (var_total_play_seconds - late_base >= 25 * 60 && late_noticed_day != night) {
+					    if (var_fun_notices && var_total_play_seconds - late_base >= 25 * 60 && late_noticed_day != night) {
 						    late_noticed_day = night;
 						    notice_show(tr("It is late: the Sleep timer tool can stop the video for you", "Es tarde: la herramienta de temporizador puede parar el vídeo por ti"));
 					    }
