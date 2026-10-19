@@ -1625,6 +1625,47 @@ void Sem_init(void) {
 							var_need_refresh = true;
 						}),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Import subscriptions (import_subscriptions.csv)", "Importar suscripciones (import_subscriptions.csv)"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							// a file in 3ds/IkersTube/import_subscriptions.csv with the "Channel Id,Channel Url,Channel Title" lines of Google Takeout
+							int added = -1;
+							FILE *f = fopen("sdmc:/3ds/IkersTube/import_subscriptions.csv", "r");
+							if (f) {
+								added = 0;
+								char line[600];
+								while (fgets(line, sizeof line, f)) {
+									std::string text = line;
+									while (text.size() && (text.back() == '\n' || text.back() == '\r')) text.pop_back();
+									size_t c1 = text.find(','), c2 = c1 == std::string::npos ? std::string::npos : text.find(',', c1 + 1);
+									if (c2 == std::string::npos) continue;
+									SubscriptionChannel channel;
+									channel.id = text.substr(0, c1);
+									if (channel.id.size() < 20 || channel.id.compare(0, 2, "UC") != 0) continue; // (the header and anything else)
+									channel.name = text.substr(c2 + 1);
+									if (channel.name.size() >= 2 && channel.name.front() == '"' && channel.name.back() == '"') channel.name = channel.name.substr(1, channel.name.size() - 2);
+									channel.url = "https://m.youtube.com/channel/" + channel.id;
+									if (!subscription_is_subscribed(channel.id)) {
+										subscription_subscribe(channel);
+										added++;
+									}
+								}
+								fclose(f);
+							}
+							toast_view
+								->set_text((std::function<std::string ()>) [added] () { return added < 0 ? tr("import_subscriptions.csv not found in 3ds/IkersTube", "No se encontró import_subscriptions.csv en 3ds/IkersTube") : tr("Subscriptions added: ", "Suscripciones añadidas: ") + std::to_string(added); })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 150;
+							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Hidden channels: ", "Canales ocultos: ") + std::to_string(hidden_channel_count()) + tr(" (tap to show all)", " (toca para mostrar todos)"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)

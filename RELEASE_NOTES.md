@@ -1,1 +1,1 @@
-Settings, Data: Export lists as text files also writes export_subscriptions.csv (YouTube Takeout format) with your local subscriptions.
+Settings, Data: new Import subscriptions button reads 3ds/IkersTube/import_subscriptions.csv (the Channel Id,Channel Url,Channel Title format of Google Takeout or of the export) and adds the channels to your local subscriptions.
