@@ -2456,14 +2456,19 @@ debug_info_view =
 					                                 ->set_text(tr("Chapters", "Capítulos"))
 					                                 ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 					                                 ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
-					    for (auto &chapter : chapters) {
+					    for (size_t chapter_index = 0; chapter_index < chapters.size(); chapter_index++) {
+						    auto &chapter = chapters[chapter_index];
 						    double seconds = chapter.first;
+						    double chapter_end = chapter_index + 1 < chapters.size() ? chapters[chapter_index + 1].first : 1e9;
 						    main_tab_views.push_back(
 						        (new TextView(SMALL_MARGIN, 0, 320 - SMALL_MARGIN * 2, 22))
 						            ->set_text(Util_convert_seconds_to_time(seconds) + "  " + truncate_first_line(chapter.second, 250, 0.5))
 						            ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 						            ->set_y_alignment(TextView::YAlign::CENTER)
-						            ->set_get_background_color(View::STANDARD_BACKGROUND)
+						            ->set_get_background_color([seconds, chapter_end](const View &view) -> u32 { // the chapter being played is highlighted
+							            if (cur_video_info.id == playing_video_info.id && vid_current_pos >= seconds && vid_current_pos < chapter_end) return LIGHT1_BACK_COLOR;
+							            return View::STANDARD_BACKGROUND(view);
+						            })
 						            ->set_on_view_released([seconds](View &) {
 							            if (network_decoder.ready && cur_video_info.id == playing_video_info.id)
 								            send_seek_request_wo_lock(seconds);

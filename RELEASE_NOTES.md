@@ -1,1 +1,1 @@
-Player: new "Save list to YouTube" tool saves the playlist of the video you are watching to your YouTube library (needs the YouTube login).
+Player: the chapter being played is highlighted in the chapter list of the General tab.
