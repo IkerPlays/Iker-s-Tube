@@ -173,6 +173,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Related searches", {"Recherches associées", "Ähnliche Suchanfragen", "Ricerche correlate", "Pesquisas relacionadas", "関連する検索"}},
 	    {"Top channels", {"Chaînes les plus vues", "Meistgesehene Kanäle", "Canali più visti", "Canais mais vistos", "よく見るチャンネル"}},
 	    {"Remove my like", {"Retirer mon j'aime", "Mein Like entfernen", "Rimuovi il mio mi piace", "Remover minha curtida", "高評価を取り消す"}},
+	    {"Like on YouTube", {"J'aime sur YouTube", "Auf YouTube liken", "Mi piace su YouTube", "Curtir no YouTube", "YouTubeで高評価"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

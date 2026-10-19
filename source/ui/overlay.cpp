@@ -120,6 +120,7 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 		notice_show(added ? tr("Added to Favorites", "Añadido a Favoritos") : tr("Removed from Favorites", "Quitado de Favoritos"));
 	});
 	if (OAuth::is_authenticated()) {
+		option(tr("Like on YouTube", "Me gusta en YouTube"), [id]() { account_like_async(id, 1); });
 		option(tr("Add to my YouTube playlist", "Añadir a mi lista de YouTube"), [id]() {
 			waiting_account_playlists = true;
 			waiting_account_playlists_since = osGetTime();
