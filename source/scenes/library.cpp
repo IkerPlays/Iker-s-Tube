@@ -467,6 +467,13 @@ static void build_favorites(VerticalListView *list) {
 			}
 			rebuild_request = true;
 		}));
+		list->views.push_back(make_button(tr("Clear all favorites", "Vaciar favoritos"), 320, []() {
+			show_dialog({make_option(tr("Yes, remove all of them", "Sí, quitarlos todos"), []() {
+				             for (auto &v : favorites_get()) favorites_remove(v.id);
+				             rebuild_request = true;
+			             }),
+			             make_option(LOCALIZED(CANCEL), []() {})});
+		}));
 	}
 	for (auto &v : favs) {
 		SuccinctVideoView *view = make_item(v.id, v.title, (v.tag != "" ? "[" + v.tag + "] " : std::string()) + v.author, v.length_text);
@@ -680,6 +687,13 @@ static void build_watch_later(VerticalListView *list) {
 				if (history_has_id(v.id)) watch_later_remove(v.id);
 			}
 			rebuild_request = true;
+		}));
+		list->views.push_back(make_button(tr("Clear Watch later", "Vaciar Ver más tarde"), 320, []() {
+			show_dialog({make_option(tr("Yes, remove all of them", "Sí, quitarlos todos"), []() {
+				             for (auto &v : watch_later_get()) watch_later_remove(v.id);
+				             rebuild_request = true;
+			             }),
+			             make_option(LOCALIZED(CANCEL), []() {})});
 		}));
 	}
 	for (auto &v : favs) {

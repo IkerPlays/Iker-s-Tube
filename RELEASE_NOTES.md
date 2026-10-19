@@ -1,1 +1,1 @@
-Video menu: the long press menu of any video can add it to one of your local playlists.
+Library: Favorites and Later have a Clear button that asks before removing everything.
