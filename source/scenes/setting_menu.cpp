@@ -2,6 +2,7 @@
 #include "data_io/backup.hpp"
 #include "headers.hpp"
 #include "data_io/subscription_util.hpp"
+#include "data_io/user_playlists.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
 #include "util/result_filter.hpp"
@@ -1597,6 +1598,14 @@ void Sem_init(void) {
 							items.clear();
 							for (auto &v : get_valid_watch_history()) items.push_back({v.id, v.title});
 							write("export_history.txt", items);
+							for (auto &pl : playlists_get()) { // every local list in its own file
+								std::string safe;
+								for (auto ch : pl.name) safe += (isalnum((unsigned char)ch) || ch == '-' || ch == '_') ? ch : '_';
+								if (safe == "") safe = "list";
+								items.clear();
+								for (auto &v : pl.videos) items.push_back({v.id, v.title});
+								write(("export_list_" + safe.substr(0, 40) + ".txt").c_str(), items);
+							}
 							{ // the subscriptions in the CSV format of YouTube (Google Takeout) : other apps can import it
 								auto subs = get_valid_subscribed_channels();
 								if (subs.size()) {

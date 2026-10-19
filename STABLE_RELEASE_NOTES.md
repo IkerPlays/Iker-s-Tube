@@ -20,6 +20,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Downloads.** The sort button can also sort by channel.
 - **Export.** Export lists also writes your subscriptions as a CSV that other apps can import.
 - **Import.** Import subscriptions from a Google Takeout style CSV file.
+- **Export.** Every local playlist is exported to its own text file.
 
 ## Installing
 
