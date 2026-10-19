@@ -341,6 +341,26 @@ static void show_search_history() {
 			                                      ->set_on_view_released([query](View &) { start_search(query, true, true); }));
 		}
 	}
+	if (!var_hide_explore) { // a seasonal shortcut: a few weeks a year
+		time_t season_now = time(NULL);
+		struct tm *season_tm = localtime(&season_now);
+		std::string season_label, season_query;
+		if (season_tm) {
+			int month = season_tm->tm_mon + 1, day = season_tm->tm_mday;
+			if (month == 10 && day >= 10) season_label = tr("Halloween (this season)", "Halloween (de temporada)"), season_query = "halloween music and spooky stories";
+			else if (month == 12 && day <= 26) season_label = tr("Christmas (this season)", "Navidad (de temporada)"), season_query = "christmas songs and specials";
+			else if ((month == 12 && day >= 27) || (month == 1 && day <= 6)) season_label = tr("New Year (this season)", "Año Nuevo (de temporada)"), season_query = "new year celebration";
+		}
+		if (season_label != "") {
+			result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+			                                      ->set_text(season_label)
+			                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+			                                      ->set_y_alignment(TextView::YAlign::CENTER)
+			                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
+			                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+			                                      ->set_on_view_released([season_query](View &) { start_search(season_query); }));
+		}
+	}
 	if (!var_hide_explore) { // a random topic
 		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
 		                                      ->set_text(tr("Surprise me (random topic)", "Sorpréndeme (tema al azar)"))

@@ -1,1 +1,1 @@
-My Wrapped has a chart of the minutes played on each of the last 7 days.
+Search, Explore: a seasonal shortcut appears around Halloween, Christmas and New Year.
