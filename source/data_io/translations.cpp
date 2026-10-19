@@ -230,6 +230,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Tip: Settings, Data can export and import your subscriptions.", {"Astuce : Réglages, Données exporte et importe vos abonnements.", "Tipp: Einstellungen, Daten exportiert und importiert deine Abos.", "Suggerimento: Impostazioni, Dati esporta e importa le iscrizioni.", "Dica: Ajustes, Dados exporta e importa suas inscrições.", "ヒント: 設定のデータで登録を書き出し/読み込み。"}},
 	    {"Tip: the Sleep timer tool stops the video after a while.", {"Astuce : l'outil Minuteur arrête la vidéo après un moment.", "Tipp: Der Schlaf-Timer stoppt das Video nach einer Weile.", "Suggerimento: il timer di spegnimento ferma il video.", "Dica: o temporizador para o vídeo depois de um tempo.", "ヒント: スリープタイマーで動画を止める。"}},
 	    {"Tip: the QR tools show a link to open on your phone.", {"Astuce : les outils QR montrent un lien pour le téléphone.", "Tipp: Die QR-Werkzeuge zeigen einen Link fürs Handy.", "Suggerimento: gli strumenti QR mostrano un link per il telefono.", "Dica: as ferramentas QR mostram um link para o celular.", "ヒント: QRツールでスマホ用リンクを表示。"}},
+	    {"The queue has less than two videos", {"La file a moins de deux vidéos", "Die Warteschlange hat weniger als zwei Videos", "La coda ha meno di due video", "A fila tem menos de dois vídeos", "キューの動画が2本未満です"}},
+	    {"Queue shuffled: ", {"File mélangée : ", "Warteschlange gemischt: ", "Coda mescolata: ", "Fila embaralhada: ", "キューをシャッフル: "}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

@@ -1,1 +1,1 @@
-Search: the start page of Search shows a tip of the day about the less obvious features.
+Player: new Shuffle queue tool mixes the order of the videos in your queue.
