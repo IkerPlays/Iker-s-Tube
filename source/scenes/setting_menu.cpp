@@ -1114,6 +1114,23 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Videos in a row
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("No limit", "Sin límite"); },
+							(std::function<std::string ()>) []() { return std::string("3"); },
+							(std::function<std::string ()>) []() { return std::string("5"); },
+							(std::function<std::string ()>) []() { return std::string("10"); }
+						}, var_autoplay_limit)
+						->set_title([](const SelectorView &) { return tr("Stop after this many videos in a row", "Parar tras tantos vídeos seguidos"); })
+						->set_info([](const SelectorView &) { return tr("Counts the videos that start by themselves (queue or autoplay) since the player was opened. Good to fall asleep.", "Cuenta los vídeos que empiezan solos (cola o reproducción automática) desde que abriste el reproductor. Bueno para dormir."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_autoplay_limit != view.selected_button) {
+								var_autoplay_limit = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Time shown in the player bar
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

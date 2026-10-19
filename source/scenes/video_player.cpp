@@ -353,6 +353,7 @@ static std::string autoplay_pending_url; // the next video waits for the countdo
 static std::string autoplay_pending_for; // the id of the video that ended
 static u64 autoplay_due_ms = 0;
 static std::string pending_offline_delete; // a saved video that was watched to the end : deleted when another video starts
+static int auto_advanced = 0; // videos that started by themselves since the player was opened (setting: stop after N in a row)
 static bool stop_after_video = false; // do not continue with the queue / autoplay when the current video ends
 static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
@@ -956,6 +957,7 @@ static double url_start_time(const std::string &url) {
 
 void VideoPlayer_init(void) {
 	LightLock_Init(&back_lock);
+	auto_advanced = 0;
 	back_stack.clear();
 	back_nav_target = "";
 	youtube_is_watched_hook = autoplay_is_watched; // (the setting Autoplay picks : skip watched)
@@ -4033,8 +4035,14 @@ static void autoplay_countdown_tick() {
 					    bool break_flag = false;
 					    if (!eof_reached) { // the first time it reaches EOF
 						    small_resource_lock.lock();
-						    const bool stop_here = stop_after_video; // "stop after this video" was requested
+						    bool stop_here = stop_after_video; // "stop after this video" was requested
 						    stop_after_video = false;
+						    static const int limits[4] = {0, 3, 5, 10};
+						    if (!stop_here && limits[var_autoplay_limit] > 0 && auto_advanced >= limits[var_autoplay_limit]) { // enough videos in a row
+							    stop_here = true;
+							    auto_advanced = 0;
+							    notice_show(tr("Stopped after the videos in a row you chose", "Parado tras los vídeos seguidos que elegiste"));
+						    }
 						    resume_set(playing_video_info.id, 0, 0); // watched until the end : next time from the start
 						    resume_save();
 						    if (var_wl_autoremove && watch_later_contains(playing_video_info.id)) watch_later_remove(playing_video_info.id);
@@ -4044,6 +4052,7 @@ static void autoplay_countdown_tick() {
 						    std::string queued_url;
 						    if (var_loop_mode == false && !stop_here && play_queue_pop(queued_url)) {
 							    // something was queued by the user : play it before any autoplay suggestion
+							    auto_advanced++;
 							    send_change_video_request_wo_lock(queued_url, true, false, false);
 							    break_flag = true;
 						    } else if (var_loop_mode == false && !stop_here) {
@@ -4055,6 +4064,7 @@ static void autoplay_countdown_tick() {
 									    autoplay_pending_for = playing_video_info.id;
 									    autoplay_due_ms = osGetTime() + delays[var_autoplay_delay] * 1000;
 								    } else {
+									    auto_advanced++;
 									    send_change_video_request_wo_lock(playing_video_info.get_next_video().url, true,
 									                                      false, false);
 									    break_flag = true;
