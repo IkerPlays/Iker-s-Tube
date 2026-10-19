@@ -4262,6 +4262,15 @@ static void autoplay_countdown_tick() {
 			    y += 22;
 		    }
 		    Draw_xy_centered(audio_author, 0, 400, y + 2, y + 20, 0.5, 0.5, LIGHT1_TEXT_COLOR);
+		    { // the chapter that is playing
+			    std::string chapter_name;
+			    small_resource_lock.lock();
+			    for (auto &chapter : current_chapters) {
+				    if (chapter.first <= vid_current_pos) chapter_name = chapter.second;
+			    }
+			    small_resource_lock.unlock();
+			    if (chapter_name != "") Draw_xy_centered(truncate_first_line(chapter_name, 340, 0.5), 0, 400, y + 20, y + 38, 0.5, 0.5, COLOR_ACCENT);
+		    }
 		    double dur = vid_duration > 0 ? vid_duration : 1;
 		    double pos = std::min(dur, std::max(0.0, vid_current_pos));
 		    Draw_xy_centered(Util_convert_seconds_to_time(pos) + " / " + Util_convert_seconds_to_time(vid_duration), 0,

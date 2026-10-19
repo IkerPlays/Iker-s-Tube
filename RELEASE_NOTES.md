@@ -1,1 +1,1 @@
-When a video continues where you left it, it starts 3 seconds earlier.
+The audio-only screen shows the name of the chapter that is playing.
