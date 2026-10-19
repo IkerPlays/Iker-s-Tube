@@ -6,7 +6,7 @@ necesitan haber iniciado sesión en Ajustes; las de Studio, además, el login de
 ## Pantallas principales (barra de abajo)
 - **Inicio:** vídeos recomendados, "Continuar viendo", canales suscritos, vídeos nuevos (directos y estrenos primero)
   y la pestaña Studio (se puede ocultar en Ajustes).
-- **Buscar:** búsqueda con filtros (el botón Filtro los recorre: tipo, fecha, duración, en directo, orden, HD, subtítulos CC, Creative Commons, 4K, HDR y 360 grados). El teclado ofrece las sugerencias de YouTube mientras escribes,
+- **Buscar:** búsqueda con filtros (el botón Filtro abre menús que se combinan: ordenar, fecha de subida, tipo, duración y características como HD, subtítulos CC, Creative Commons, en directo, 4K, HDR o 360 grados; mantenerlo pulsado lo quita). El teclado ofrece las sugerencias de YouTube mientras escribes,
   atajos de Explorar, búsquedas recientes y, arriba de los resultados, **Reproducir todo** y **Poner todo en cola**.
 - **Biblioteca:** Cola, Favoritos, Listas, Luego (Ver más tarde), Offline y **Me gusta**. La pestaña Me gusta tiene un
   botón que recorre tus Me gusta, el historial de YouTube y cada lista de tu cuenta. Con una de tus listas a la vista salen los botones para renombrarla o borrarla (tocar dos veces).
@@ -36,6 +36,8 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Colaboraciones:** toca el autor de un vídeo con varios canales; los ves de tres en tres, con "Suscribirme a todos".
 - **Comentarios:** escribir, responder, dar Me gusta y borrar los tuyos. Si algo falla, una pantalla "Por qué falló"
   enseña el motivo para poder mandarlo.
+
+- Tras los resultados salen **Búsquedas relacionadas** (el autocompletado de YouTube).
 
 ## Más herramientas del reproductor
 - **Subtítulos:** CC (idiomas y traducción), CC tamaño, CC color.

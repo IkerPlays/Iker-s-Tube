@@ -1,1 +1,1 @@
-News: the What's new dialog of the new version lists the main changes (subtitles, search filters, Shorts, pinned channels, YouTube lists).
+Docs: the usage guide and the README describe the combinable search filters, related searches, subtitles, Shorts and the import and export of subscriptions.

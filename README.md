@@ -17,7 +17,8 @@ Resumen; la guía completa está en [`Documentation/GUIA_DE_USO.md`](Documentati
 - **Offline:** guardar audio o vídeo, cola de descargas, pausa, noche, calidad y limpieza.
 - **Studio:** estadísticas, subidas con lista y publicación programada, edición de subidas
   (necesita un cliente de Google Cloud propio: [`Documentation/STUDIO_SETUP.md`](Documentation/STUDIO_SETUP.md)).
-- **Comodidad:** menú al mantener pulsado un vídeo o canal, ocultar canales, filtros de búsqueda, incógnito y copias.
+- **Comodidad:** menú al mantener pulsado un vídeo o canal (con páginas), fijar y ocultar canales, filtros de búsqueda combinables, sugerencias y búsquedas relacionadas, incógnito, copias, e importar y exportar suscripciones.
+- **Subtítulos y Shorts:** subtítulos de YouTube con traducción y ajustes rápidos; los Shorts abren el feed y se cambia de vídeo con la cruceta Abajo y Arriba.
 
 ## Instalar y actualizar
 - Cada build sube el **devbuild** a [Releases](../../releases) con `IkersTube.cia` y `IkersTube.3dsx`.
