@@ -305,8 +305,14 @@ static void show_search_history() {
 		    {"Tip: Settings, Data can export and import your subscriptions.", "Consejo: Ajustes, Datos exporta e importa tus suscripciones."},
 		    {"Tip: the Sleep timer tool stops the video after a while.", "Consejo: la herramienta Temporizador para el vídeo pasado un rato."},
 		    {"Tip: the QR tools show a link to open on your phone.", "Consejo: las herramientas QR muestran un enlace para abrir en el móvil."},
+		    {"Tip: SELECT + D-pad changes the volume and the brightness in the player.", "Consejo: SELECT + cruceta cambia el volumen y el brillo en el reproductor."},
+		    {"Tip: Skip intro (player tools) remembers a start time for each channel.", "Consejo: Saltar intro (herramientas) recuerda el inicio de cada canal."},
+		    {"Tip: My Wrapped in the History has badges and a weekly chart.", "Consejo: Mi resumen, en el Historial, tiene logros y un gráfico semanal."},
+		    {"Tip: Go to time (player tools) jumps to a minute you type.", "Consejo: Ir al minuto (herramientas) salta al minuto que escribas."},
+		    {"Tip: the Radio shortcuts keep playing a mix by themselves.", "Consejo: los atajos de Radio siguen reproduciendo una mezcla solos."},
+		    {"Tip: the Feed marks videos you have not seen with NEW.", "Consejo: el Feed marca con NEW los vídeos que no has visto."},
 		};
-		int day_index = (int)((time(NULL) + 3600 * 12) / 86400) % 8;
+		int day_index = (int)((time(NULL) + 3600 * 12) / 86400) % 14;
 		std::string tip = tr(tips[day_index][0], tips[day_index][1]);
 		result_list_view->views.push_back((new TextView(SMALL_MARGIN, 0, 320 - SMALL_MARGIN * 2, DEFAULT_FONT_INTERVAL * 2))
 		                                      ->set_text_lines(truncate_str(tip, 320 - SMALL_MARGIN * 4, 2, 0.45, 0.45))
