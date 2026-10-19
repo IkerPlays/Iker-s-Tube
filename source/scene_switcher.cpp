@@ -597,17 +597,10 @@ void Menu_worker_thread(void *arg) {
 			count = 0;
 		}
 
-		{
-			static u64 first_seen = osGetTime();
-			static bool marked = false;
-			if (!marked && osGetTime() - first_seen > 20000) { // 20 seconds without a crash: the start was good
-				marked = true;
-				settings_mark_stable();
-			}
-		}
+		settings_check_stable();
 		if (video_is_playing()) {
 			var_total_play_seconds += 0.05;
-			int today = (int)(time(NULL) / 86400);
+			int today = local_day_number();
 			if (today != var_play_day) { // a new day (UTC): the count of today starts again
 				var_play_day = today;
 				var_play_today = 0;

@@ -271,7 +271,7 @@ static void start_search(const std::string &word, bool feed = false, bool radio 
 	double search_box_width = 320 - SEARCH_BOX_MARGIN * 3 - URL_BUTTON_WIDTH;
 	search_box_view->set_text(truncate_search_text_for_display(word, search_box_width, 0.5));
 	search_box_view->set_get_text_color([]() { return DEFAULT_TEXT_COLOR; });
-	search_history_add(word);
+	if (!feed) search_history_add(word); // (the Shorts and Radio shortcuts do not fill the recent searches)
 	remove_all_async_tasks_with_type(load_search_results);
 	remove_all_async_tasks_with_type(load_more_search_results);
 	queue_async_task(load_search_results, NULL);
@@ -532,36 +532,28 @@ static std::vector<std::string> suggestions_for(const std::string &query, int ma
 	if (!r.first) return {};
 	return parse_suggestions(r.second, max);
 }
-// The prefetch for the keyboard runs in its own thread: it must NOT use the network sessions of the async worker (one
-// NetworkSessionList per thread), so it has its own, and it waits until the start of the app is over.
-static void suggest_thread(void *) {
-	for (int i = 0; i < 25 && !exiting; i++) usleep(1000000);
-	static NetworkSessionList sessions;
-	sessions.init();
-	for (char c = 'a'; c <= 'z' && !exiting; c++) {
-		auto result = sessions.perform(HttpRequest::GET(std::string("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=") + c, {}));
-		if (result.fail || result.status_code != 200) {
-			if (c == 'a') { // no connection: try again at the next start of the scene
-				suggest_started = false;
-				return;
-			}
-			continue;
+// The prefetch for the keyboard runs in the async worker (it owns the network sessions : a thread of its own would race with
+// it), five letters at a time, once the Search screen is opened for the first time.
+static void suggest_task(void *arg) {
+	int first = (int)(intptr_t)arg;
+	for (int c = first; c < first + 5 && c < 26 && !exiting; c++) {
+		bool connected = true;
+		auto words = suggestions_for(std::string(1, (char)('a' + c)), 3, &connected);
+		if (!connected && c == 0) { // no connection: try again at the next opening
+			suggest_started = false;
+			return;
 		}
-		auto words = parse_suggestions(std::string(result.data.begin(), result.data.end()), 3);
 		for (auto &w : words) {
 			LightLock_Lock(&suggest_lock);
 			if (std::find(suggest_words.begin(), suggest_words.end(), w) == suggest_words.end()) suggest_words.push_back(w);
 			LightLock_Unlock(&suggest_lock);
 		}
 	}
+	if (first + 5 < 26 && !exiting) queue_async_task(suggest_task, (void *)(intptr_t)(first + 5));
 }
 
 void Search_init(void) {
-	if (!suggest_started && !var_safe_mode) {
-		suggest_started = true;
-		LightLock_Init(&suggest_lock);
-		if (!threadCreate(suggest_thread, NULL, DEF_STACKSIZE, DEF_THREAD_PRIORITY_LOW, -1, true)) suggest_started = false;
-	}
+	LightLock_Init(&suggest_lock);
 	logger.info("search/init", "Initializing...");
 	Result_with_string result;
 
@@ -658,6 +650,10 @@ void Search_suspend(void) { thread_suspend = true; }
 
 void Search_resume(std::string arg) {
 	overlay_menu_on_resume();
+	if (!suggest_started && !var_safe_mode) { // the suggestions for the keyboard are fetched in the background, once
+		suggest_started = true;
+		queue_async_task(suggest_task, (void *)(intptr_t)0);
+	}
 	resource_lock.lock();
 	show_search_history();
 	if (arg.compare(0, 2, "q:") == 0 && arg.size() > 2) start_search(arg.substr(2)); // "Search similar" of the video menu
@@ -789,6 +785,7 @@ static void load_search_results(void *) {
 	resource_lock.lock();
 	std::string search_word = cur_search_word;
 	bool feed = shorts_feed;
+	const bool radio_mode = radio_feed; // (a new search may change the global while this one loads)
 	search_done = false;
 
 	result_list_view->recursive_delete_subviews();
@@ -818,6 +815,7 @@ static void load_search_results(void *) {
 		bool feed_from_sequence = false;
 		for (auto &item : new_result.results) {
 			if (item.type != YouTubeSuccinctItem::VIDEO) continue;
+			if (radio_feed && result_video_hidden(item.video.url, item.video.author)) continue; // (hidden channels and the hide settings)
 			items.push_back({item.video.url, item.video.title});
 			if (item.video.url.find("/shorts/") != std::string::npos) only_shorts.push_back({item.video.url, item.video.title});
 		}
@@ -894,7 +892,7 @@ static void load_search_results(void *) {
 		play_queue_set_repeat(feed_items, feed_shuffle);
 		clicked_url = feed_items[0].first;
 		feed_items.clear();
-		notice_show(radio_feed ? tr("Radio: D-pad Down = next, Up = previous", "Radio: cruceta Abajo = siguiente, Arriba = anterior")
+		notice_show(radio_mode ? tr("Radio: D-pad Down = next, Up = previous", "Radio: cruceta Abajo = siguiente, Arriba = anterior")
 		                       : tr("Shorts: D-pad Down = next, Up = previous", "Shorts: cruceta Abajo = siguiente, Arriba = anterior"));
 	}
 	resource_lock.unlock();

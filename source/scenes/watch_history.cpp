@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "data_io/settings.hpp"
 #include <vector>
 #include <string>
 #include <set>
@@ -362,7 +363,7 @@ void History_draw(void) {
 				    row(tr("Favorite hour: ", "Hora favorita: ") + std::to_string(busiest) + ":00"),
 				    row(tr("This week: ", "Esta semana: ") + std::to_string(this_week)),
 				    row(tr("Days in a row: ", "Días seguidos: ") + std::to_string(streak)),
-				    row(tr("Playing today: ", "Hoy reproduciendo: ") + std::to_string((int)var_play_today / 60) + " min")};
+				    row(tr("Playing today: ", "Hoy reproduciendo: ") + std::to_string(var_play_day == local_day_number() ? (int)var_play_today / 60 : 0) + " min")};
 				overlay_show_menu(tr("My Wrapped", "Mi resumen"), rows);
 			}
 			if (top_channels_request) {

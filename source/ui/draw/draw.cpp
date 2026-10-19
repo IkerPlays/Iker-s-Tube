@@ -586,13 +586,16 @@ void Draw_round_rect(float x, float y, float w, float h, float r, int abgr8888) 
 		Draw_texture(var_square_image[0], abgr8888, x, y, w, h);
 		return;
 	}
-	Draw_texture(var_square_image[0], abgr8888, x, y + rr, w, h - 2 * rr);
-	for (int k = 0; k < rr; k++) { // the corners : one row at a time, narrower towards the edge
+	int rows = 0; // the corner rows that really cut something (the others are part of the middle rectangle)
+	for (int k = 0; k < rr; k++) {
 		float dy = rr - k - 0.5f;
 		float inset = rr - sqrtf((float)rr * rr - dy * dy);
+		if (inset < 0.5f) break;
 		Draw_texture(var_square_image[0], abgr8888, x + inset, y + k, w - 2 * inset, 1);
 		Draw_texture(var_square_image[0], abgr8888, x + inset, y + h - 1 - k, w - 2 * inset, 1);
+		rows++;
 	}
+	Draw_texture(var_square_image[0], abgr8888, x, y + rows, w, h - 2 * rows);
 }
 
 void Draw_line(float x_0, float y_0, int abgr8888_0, float x_1, float y_1, int abgr8888_1, float width) {

@@ -9,7 +9,9 @@
 // Crash loop breaker: a flag file exists while the app is starting (it is removed after 20 seconds of running, or when the
 // app exits). If it is still there at the next start, the last start died: the settings and the optional files are set
 // aside (renamed, nothing is deleted) and the app starts in "safe mode" without the background extras.
+static u64 started_at_ms = 0;
 void settings_mark_started() {
+	started_at_ms = osGetTime();
 	FILE *f = fopen(STARTING_FLAG.c_str(), "w");
 	if (f) {
 		fputs("1\n", f);
@@ -17,6 +19,22 @@ void settings_mark_started() {
 	}
 }
 void settings_mark_stable() { remove(STARTING_FLAG.c_str()); }
+void settings_check_stable() { // called all the time: after 30 seconds of running the start counts as good
+	static bool done = false;
+	if (!done && started_at_ms && osGetTime() - started_at_ms > 30000) {
+		done = true;
+		settings_mark_stable();
+	}
+}
+// the number of the day in the time zone of the console (the daily limit starts again at midnight of the console)
+int local_day_number() {
+	time_t t = time(NULL);
+	struct tm local = *localtime(&t);
+	long offset = (long)(local.tm_hour * 3600 + local.tm_min * 60 + local.tm_sec) - (long)(t % 86400);
+	if (offset > 43200) offset -= 86400;
+	if (offset < -43200) offset += 86400;
+	return (int)((t + offset) / 86400);
+}
 
 void load_settings() {
 	if (access(STARTING_FLAG.c_str(), F_OK) == 0) {
@@ -24,8 +42,7 @@ void load_settings() {
 		static const char *aside[] = {"settings.txt", "pinned_channels.txt", "recent_channels.txt", "hidden_channels.txt", "last_version.txt", "feed_seen.txt", "caption_lang.txt", "audio_lang.txt"};
 		for (auto name : aside) {
 			std::string from = DEF_MAIN_DIR + name, to = DEF_MAIN_DIR + std::string(name) + ".crashed";
-			if (access(from.c_str(), F_OK) == 0) {
-				remove(to.c_str());
+			if (access(from.c_str(), F_OK) == 0 && access(to.c_str(), F_OK) != 0) { // (a copy that is already there is never overwritten)
 				rename(from.c_str(), to.c_str());
 			}
 		}

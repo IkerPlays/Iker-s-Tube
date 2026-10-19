@@ -813,7 +813,9 @@ static std::string next_episode_query(const std::string &title) {
 			size_t j = i;
 			while (j < title.size() && isdigit((unsigned char)title[j])) j++;
 			int value = atoi(title.substr(i, j - i).c_str());
-			if (j - i <= 3 && value >= 1 && value < 999 && !(value >= 100 && value <= 999 && title.compare(i, 3, "720") == 0)) best_start = (int)i, best_len = (int)(j - i); // (the last small number : the episode)
+			char after = j < title.size() ? title[j] : ' ';
+			bool resolution = after == 'p' || after == 'P' || after == 'k' || after == 'K' || (value >= 144 && value <= 2160 && (value == 144 || value == 240 || value == 360 || value == 480 || value == 720 || value == 1080));
+			if (j - i <= 3 && value >= 1 && value < 999 && !resolution) best_start = (int)i, best_len = (int)(j - i); // (the last small number that is not a quality : the episode)
 			i = j;
 		} else {
 			i++;
@@ -821,7 +823,9 @@ static std::string next_episode_query(const std::string &title) {
 	}
 	if (best_start < 0) return "";
 	int value = atoi(title.substr(best_start, best_len).c_str());
-	return title.substr(0, best_start) + std::to_string(value + 1) + title.substr(best_start + best_len);
+	std::string next = std::to_string(value + 1);
+	while ((int)next.size() < best_len) next = "0" + next; // "Ep 05" -> "Ep 06"
+	return title.substr(0, best_start) + next + title.substr(best_start + best_len);
 }
 
 // the #hashtags of the title and the description : tap one to search it
@@ -3533,10 +3537,14 @@ static void autoplay_countdown_tick() {
 	    autoplay_countdown_tick();
 	    {
 		    static bool fading = false; // sleep timer: the volume goes down during the last 30 seconds
+		    static u64 last_fade_ms = 0;
 		    u64 now_ms = osGetTime();
 		    if (var_sleep_timer_end > now_ms && var_sleep_timer_end - now_ms < 30000) {
 			    fading = true;
-			    network_decoder.set_preamp(mini_volume * (double)(var_sleep_timer_end - now_ms) / 30000.0);
+			    if (now_ms - last_fade_ms >= 1000) { // (changing the volume rebuilds the audio filters : once a second is enough)
+				    last_fade_ms = now_ms;
+				    network_decoder.set_preamp(mini_volume * (double)(var_sleep_timer_end - now_ms) / 30000.0);
+			    }
 		    } else if (fading) { // the timer ended or was changed : the volume comes back
 			    fading = false;
 			    network_decoder.set_preamp(mini_volume);
