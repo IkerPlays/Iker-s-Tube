@@ -4742,6 +4742,26 @@ static void autoplay_countdown_tick() {
 				    swkbdSetHintText(&keyboard, hint.c_str());
 				    swkbdSetButton(&keyboard, SWKBD_BUTTON_LEFT, LOCALIZED(CANCEL).c_str(), false);
 				    swkbdSetButton(&keyboard, SWKBD_BUTTON_RIGHT, LOCALIZED(OK).c_str(), true);
+				    // quick phrases offered while typing (the keyboard dictionary) : your own lines of 3ds/IkersTube/comment_phrases.txt, or a few ready ones
+				    static SwkbdDictWord phrase_words[40];
+				    int phrase_count = 0;
+				    auto add_phrase = [&](const std::string &w) {
+					    if (w.empty() || w.size() > 38 || phrase_count >= 40) return;
+					    swkbdSetDictWord(&phrase_words[phrase_count++], w.c_str(), w.c_str());
+				    };
+				    if (FILE *pf = fopen("sdmc:/3ds/IkersTube/comment_phrases.txt", "r")) {
+					    char line[128];
+					    while (fgets(line, sizeof line, pf)) {
+						    std::string w = line;
+						    while (w.size() && (w.back() == '\n' || w.back() == '\r')) w.pop_back();
+						    add_phrase(w);
+					    }
+					    fclose(pf);
+				    }
+				    if (phrase_count == 0) {
+					    for (auto w : {"Great video!", "Thanks for sharing!", "Very useful, thank you", "Nice one", "Love this", "Watching on my Nintendo 3DS"}) add_phrase(w);
+				    }
+				    swkbdSetDictionary(&keyboard, phrase_words, phrase_count);
 				    static char buffer[2048];
 				    buffer[0] = 0;
 				    video_set_skip_drawing(true);
