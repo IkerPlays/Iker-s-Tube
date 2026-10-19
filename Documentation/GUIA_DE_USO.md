@@ -62,6 +62,15 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Ajustes:** límite diario de reproducción, botones redondeados (se pueden quitar).
 - **Modo seguro:** si la app se cierra al arrancar, el siguiente inicio renombra los ajustes a `*.crashed` y arranca sin extras. Si la app no abre: borra o renombra `3ds/IkersTube/settings.txt`.
 
+## Después de la 1.0.7
+- **Feed al instante:** la pestaña Feed del Inicio enseña el último feed guardado mientras carga el nuevo (y lo conserva si no hay conexión).
+- **Historial:** "Mi resumen" (con este mes, mejor racha, vídeo más repetido y **10 logros**) y un recuerdo de hace una semana o un mes.
+- **Reproductor:** herramienta "No me gusta" (votos estimados con returnyoutubedislikeapi.com, solo se envía el id del vídeo),
+  "Estado" dice a qué hora termina el vídeo, Info cuenta cuántas veces lo has visto y el modo solo audio tiene un ecualizador animado.
+- **Canal:** en la descripción verás cuántos vídeos de ese canal has visto.
+- **Idioma:** el español y el portugués ya no se pierden al reiniciar.
+- **Acerca de:** QR para descargar la última versión estable.
+
 ## Descargas y almacenamiento
 - Guardar audio o vídeo desde el reproductor o desde cualquier lista; las listas tienen "Guardar audio" en bloque.
 - Ajustes: calidad de los vídeos guardados, descargar solo de noche (1:00 a 7:00), borrar tras ver y vaciar la caché de imágenes.
