@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "data_io/user_playlists.hpp"
 #include "util/result_filter.hpp"
 #include <vector>
 #include <numeric>
@@ -2270,6 +2271,29 @@ debug_info_view =
 						                           watch_later_toggle(v);
 						                           var_need_refresh = true;
 					                           }
+				                           }),
+				                 make_tool([]() { return tr("+List", "+Lista"); }, 56,
+				                           []() { // add the video to one of your local lists
+					                           if (cur_video_info.id == "" || cur_video_info.title == "") return;
+					                           auto lists = playlists_get();
+					                           if (lists.empty()) {
+						                           notice_show(tr("You have no playlists. Create one in the Library.", "No tienes listas. Crea una en la Biblioteca."));
+						                           return;
+					                           }
+					                           FavoriteVideo v;
+					                           v.id = cur_video_info.id;
+					                           v.title = cur_video_info.title;
+					                           v.author = cur_video_info.author.name;
+					                           v.length_text = Util_convert_seconds_to_time((double)cur_video_info.duration_ms / 1000);
+					                           std::vector<std::pair<std::string, std::function<void()>>> options;
+					                           for (size_t i = 0; i < lists.size(); i++) {
+						                           int index = (int)i;
+						                           std::string name = lists[i].name;
+						                           options.push_back({truncate_first_line(name, 200, 0.5) + " (" + std::to_string(lists[i].videos.size()) + ")", [index, name, v]() {
+							                           notice_show(playlist_add(index, v) ? tr("Added to ", "Añadido a ") + name : tr("Already in that list", "Ya está en esa lista"));
+						                           }});
+					                           }
+					                           overlay_show_menu(tr("Add to a list", "Añadir a una lista"), options);
 				                           }),
 				                 make_tool([]() { return tr("+Mark", "+Marca"); }, 56,
 				                           [is_current]() {
