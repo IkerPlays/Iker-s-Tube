@@ -1131,6 +1131,24 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Daily limit
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return std::string("30 min"); },
+							(std::function<std::string ()>) []() { return std::string("60 min"); },
+							(std::function<std::string ()>) []() { return std::string("120 min"); },
+							(std::function<std::string ()>) []() { return std::string("240 min"); }
+						}, var_daily_limit)
+						->set_title([](const SelectorView &) { return tr("Daily watch limit", "Límite diario de reproducción"); })
+						->set_info([](const SelectorView &) { return tr("A notice appears when you reach this much playing time in one day.", "Sale un aviso al llegar a tanto tiempo reproduciendo en un día."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_daily_limit != view.selected_button) {
+								var_daily_limit = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Break reminder
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

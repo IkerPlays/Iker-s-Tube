@@ -595,6 +595,12 @@ void Menu_worker_thread(void *arg) {
 
 		if (video_is_playing()) {
 			var_total_play_seconds += 0.05;
+			int today = (int)(time(NULL) / 86400);
+			if (today != var_play_day) { // a new day (UTC): the count of today starts again
+				var_play_day = today;
+				var_play_today = 0;
+			}
+			var_play_today += 0.05;
 		}
 		{ // data limit : warn once per session when it is exceeded
 			static const u64 limits_mb[6] = {0, 100, 250, 500, 1000, 2000};

@@ -361,7 +361,8 @@ void History_draw(void) {
 				    row(tr("Top channel: ", "Canal top: ") + truncate_first_line(top_channel, 150, 0.5)),
 				    row(tr("Favorite hour: ", "Hora favorita: ") + std::to_string(busiest) + ":00"),
 				    row(tr("This week: ", "Esta semana: ") + std::to_string(this_week)),
-				    row(tr("Days in a row: ", "Días seguidos: ") + std::to_string(streak))};
+				    row(tr("Days in a row: ", "Días seguidos: ") + std::to_string(streak)),
+				    row(tr("Playing today: ", "Hoy reproduciendo: ") + std::to_string((int)var_play_today / 60) + " min")};
 				overlay_show_menu(tr("My Wrapped", "Mi resumen"), rows);
 			}
 			if (top_channels_request) {

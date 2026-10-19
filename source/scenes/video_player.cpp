@@ -4791,6 +4791,14 @@ static void autoplay_countdown_tick() {
 				    }
 			    }
 			    {
+				    static int limit_notified_day = -1; // the daily limit: one notice per day
+				    static const int limit_minutes[5] = {0, 30, 60, 120, 240};
+				    if (var_daily_limit && var_play_today >= limit_minutes[var_daily_limit] * 60 && limit_notified_day != var_play_day) {
+					    limit_notified_day = var_play_day;
+					    notice_show(tr("Daily limit reached: ", "Límite diario alcanzado: ") + std::to_string(limit_minutes[var_daily_limit]) + " min");
+				    }
+			    }
+			    {
 				    static double reminder_base = -1; // time playing at the last reminder
 				    static const int minutes[4] = {0, 30, 60, 120};
 				    if (reminder_base < 0 || var_break_reminder == 0 || var_total_play_seconds < reminder_base) reminder_base = var_total_play_seconds;

@@ -80,6 +80,9 @@ void load_settings() {
 	var_data_saver = load_int("data_saver", 0);
 	var_data_limit_index = std::max(0, std::min(5, load_int("data_limit_index", 0)));
 	var_total_play_seconds = load_double("total_play_seconds", 0.0);
+	var_play_today = load_double("play_today", 0.0);
+	var_play_day = load_int("play_day", 0);
+	var_daily_limit = std::max(0, std::min(4, load_int("daily_limit", 0)));
 	var_button_x = std::max(0, std::min(10, load_int("button_x", 1)));
 	var_button_y = std::max(0, std::min(10, load_int("button_y", 4)));
 	var_button_l = std::max(0, std::min(10, load_int("button_l", 3)));
@@ -213,6 +216,9 @@ void save_settings() {
 	add_int("data_saver", var_data_saver);
 	add_int("data_limit_index", var_data_limit_index);
 	add_double("total_play_seconds", var_total_play_seconds);
+	add_double("play_today", var_play_today);
+	add_int("play_day", var_play_day);
+	add_int("daily_limit", var_daily_limit);
 	add_int("grid_view", var_grid_view);
 	add_int("start_scene", var_start_scene);
 	add_int("auto_theme", var_auto_theme);
