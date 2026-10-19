@@ -840,6 +840,11 @@ static void load_subscription_feed(void *) {
 			for (auto &video : i.second) feed_latest_ids.push_back(youtube_get_video_id_by_url(video.url));
 		}
 		var_new_feed_videos = feed_seen_count_new(feed_latest_ids);
+		static bool told_this_session = false; // once per session: how many new videos your channels have
+		if (var_new_feed_videos > 0 && !told_this_session) {
+			told_this_session = true;
+			notice_show(std::to_string(var_new_feed_videos) + tr(" new videos from your channels", " vídeos nuevos de tus canales"));
+		}
 		var_need_refresh = true;
 	}
 	for (auto &i : loaded_videos) {

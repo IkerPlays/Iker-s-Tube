@@ -9,6 +9,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Next episode.** New player tool finds the next episode of a series by number.
 - **Radio.** Eight mood mixes (Chill, Focus, Workout, Sleep...) that keep playing by themselves.
 - **Notices.** The notices are rounded, fit their text, slide in and fade out.
+- **New videos notice.** Once per session the app tells how many new videos your channels have.
 
 ## Installing
 

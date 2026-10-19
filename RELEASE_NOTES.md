@@ -1,1 +1,1 @@
-UI: the notices are rounded, fit their text, slide in and fade out.
+Home: once per session a notice says how many new videos your subscribed channels have.

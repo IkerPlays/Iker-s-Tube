@@ -258,6 +258,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Classical", {"Classique", "Klassik", "Classica", "Clássica", "クラシック"}},
 	    {"Game music", {"Musique de jeux", "Spielmusik", "Musica dei giochi", "Música de jogos", "ゲーム音楽"}},
 	    {"Jazz", {"Jazz", "Jazz", "Jazz", "Jazz", "ジャズ"}},
+	    {" new videos from your channels", {" nouvelles vidéos de vos chaînes", " neue Videos deiner Kanäle", " nuovi video dei tuoi canali", " vídeos novos dos seus canais", " 本の新しい動画があります"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
