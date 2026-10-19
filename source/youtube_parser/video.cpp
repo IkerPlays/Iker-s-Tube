@@ -809,6 +809,14 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 			ParserNetGuard net_guard;
 			results = thread_network_session_list.perform(requests);
 		}
+		if (results.size() == 2 && (results[0].fail || results[0].data.empty()) && !results[1].fail && !results[1].data.empty()) {
+			// the page data (/next, a big answer) failed but the player data is there: it is asked once more
+			std::vector<HttpRequest> again;
+			again.push_back(http_post_json_request(urls[0], post_content, headers));
+			ParserNetGuard net_guard;
+			auto retry = thread_network_session_list.perform(again);
+			if (retry.size() == 1 && !retry[0].fail && !retry[0].data.empty()) results[0] = retry[0];
+		}
 		for (int i = 0; i < 2; i++) {
 			if (results[i].fail) {
 				res.error = "[v-#" + std::to_string(i) + "] Network request failed";

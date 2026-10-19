@@ -93,8 +93,9 @@ bool ends_with(const std::string &str, const std::string &pattern) {
 std::string url_decode(std::string input) {
 	std::string res;
 	for (size_t i = 0; i < input.size(); i++) {
-		if (input[i] == '%') {
-			res.push_back((char)stoi(input.substr(i + 1, 2), nullptr, 16));
+		// (a bad escape stays as it is: stoi would throw, and without exceptions that is an abort of the whole app)
+		if (input[i] == '%' && i + 2 < input.size() + 0 && isxdigit((unsigned char)input[i + 1]) && isxdigit((unsigned char)input[i + 2])) {
+			res.push_back((char)strtol(input.substr(i + 1, 2).c_str(), nullptr, 16));
 			i += 2;
 		} else {
 			res.push_back(input[i]);

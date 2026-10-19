@@ -1,1 +1,1 @@
-Small fixes: the warm veil state is reset at each frame; Next episode keeps the first number that follows Ep/Part.
+Fixes from audits: a malformed percent escape in a URL could abort the app (stoi without exceptions), now it is kept as text; when the video page data fails but the player data arrived, it is requested once more.
