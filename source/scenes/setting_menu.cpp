@@ -1703,7 +1703,15 @@ void Sem_init(void) {
 						->set_text_offset(0, -2)
 						->set_get_background_color(View::STANDARD_BACKGROUND)
 						->set_on_view_released([] (View &) {
-							hidden_channels_clear();
+							// a menu : show one channel again, or all of them
+							std::vector<std::pair<std::string, std::function<void()>>> options;
+							auto names = hidden_channels_list();
+							for (size_t i = 0; i < names.size() && i < 30; i++) {
+								std::string name = names[i];
+								options.push_back({tr("Show: ", "Mostrar: ") + name.substr(0, 26), [name]() { hidden_channel_set(name, false); var_need_refresh = true; }});
+							}
+							if (names.size() > 1) options.push_back({tr("Show all", "Mostrar todos"), []() { hidden_channels_clear(); var_need_refresh = true; }});
+							if (options.size()) overlay_show_menu(tr("Hidden channels", "Canales ocultos"), options);
 							var_need_refresh = true;
 						}),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))

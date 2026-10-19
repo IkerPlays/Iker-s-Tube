@@ -63,6 +63,14 @@ int hidden_channel_count() {
 	LightLock_Unlock(&hidden_lock);
 	return n;
 }
+std::vector<std::string> hidden_channels_list() {
+	hidden_prepare();
+	LightLock_Lock(&hidden_lock);
+	hidden_load_locked();
+	std::vector<std::string> res(hidden_names.begin(), hidden_names.end());
+	LightLock_Unlock(&hidden_lock);
+	return res;
+}
 void hidden_channels_clear() {
 	hidden_prepare();
 	LightLock_Lock(&hidden_lock);
