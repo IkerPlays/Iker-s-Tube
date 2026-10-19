@@ -300,7 +300,10 @@ void Home_init(void) {
 	if (!var_safe_mode) { // the previous feed, until the fresh one arrives
 		auto cached = feed_cache_load();
 		resource_lock.lock();
-		for (auto &video : cached) local_feed_videos_list_view->views.push_back(make_feed_view(video));
+		for (auto &video : cached) {
+			if (result_video_hidden(video.url, video.author)) continue; // same filter as the fresh feed
+			local_feed_videos_list_view->views.push_back(make_feed_view(video));
+		}
 		resource_lock.unlock();
 	}
 
@@ -942,8 +945,12 @@ static void load_subscription_feed(void *) {
 	}
 	update_subscribed_channels(get_valid_subscribed_channels());
 
-	local_feed_videos_list_view->recursive_delete_subviews();
-	local_feed_videos_list_view->views = new_feed_video_views;
+	if (new_feed_video_views.empty() && !local_feed_videos_list_view->views.empty()) {
+		// nothing could be loaded (offline?): keep what is on screen (the cached feed)
+	} else {
+		local_feed_videos_list_view->recursive_delete_subviews();
+		local_feed_videos_list_view->views = new_feed_video_views;
+	}
 
 	if (local_feed_videos_view && !var_disable_pull_to_refresh) {
 		local_feed_videos_view->finish_pull_refresh();

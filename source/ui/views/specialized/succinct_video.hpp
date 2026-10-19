@@ -56,6 +56,7 @@ struct SuccinctVideoView : public FixedSizeView {
 	}
 	SuccinctVideoView *set_thumbnail_url(const std::string &thumbnail_url) {
 		this->thumbnail_url = thumbnail_url;
+		loading_since = 0; // a new picture: the placeholder may pulse again
 		return this;
 	}
 	// long press : add to (or remove from) the "play next" queue
@@ -104,7 +105,7 @@ struct SuccinctVideoView : public FixedSizeView {
 			u64 now = osGetTime();
 			if (!loading_since) loading_since = now;
 			if (now - loading_since < 8000) {
-				u32 shade = 0x18 + (u32)(10 * (1 + sinf(now / 220.0f)));
+				u32 shade = 0x18 + (u32)(10 * (1 + sinf((now - loading_since) / 220.0f)));
 				Draw_round_rect((int)x0, (int)y0, (int)get_thumbnail_width(), (int)get_thumbnail_height(), 4, 0xFF000000 | (shade << 16) | (shade << 8) | shade);
 				var_need_refresh = true;
 			}
