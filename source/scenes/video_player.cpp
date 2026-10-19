@@ -5320,7 +5320,7 @@ static void autoplay_countdown_tick() {
 				    double target = -1;
 				    if (valid) target = count == 1 ? parts[0] * 60.0 : count == 2 ? parts[0] * 60.0 + parts[1] : parts[0] * 3600.0 + parts[1] * 60.0 + parts[2];
 				    if (target >= 0 && network_decoder.ready && vid_duration > 0 && !playing_video_info.is_livestream) {
-					    send_seek_request_wo_lock(std::min(target, std::max(0.0, vid_duration - 1))); // (this block runs with small_resource_lock held)
+					    send_seek_request(std::min(target, std::max(0.0, vid_duration - 1))); // (the lock is not held here: the view update ended above)
 				    } else {
 					    notice_show(tr("That is not a valid time", "Ese tiempo no es válido"));
 				    }
