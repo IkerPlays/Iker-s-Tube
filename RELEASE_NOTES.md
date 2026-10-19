@@ -1,1 +1,1 @@
-Settings, Data: the exported subscriptions CSV also includes the channels of your YouTube account when they have been loaded.
+Player, Comments: new Reload button loads the comments again with the same sort (to see the comment you just sent).

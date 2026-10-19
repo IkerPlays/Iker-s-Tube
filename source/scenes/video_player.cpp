@@ -158,8 +158,9 @@ ScrollView *suggestion_tab_view;
 // comment tab
 static void comment_sort_clicked();
 static bool comment_write_request = false; // set by the "+ Comment" button, handled after the view update
+static bool comment_reload_same = false;   // the Reload button of the comments : the same sort again (to see a comment you just sent)
 View *comments_top_view = (new HorizontalListView(0, 0, 20))
-                              ->set_views({(new TextView(0, 0, 200, 20))
+                              ->set_views({(new TextView(0, 0, 130, 20))
                                                ->set_text((std::function<std::string()>)[]() -> std::string {
 	                                               if (cur_video_info.comment_sort_tokens[0] == "" && cur_video_info.comment_sort_tokens[1] == "") {
 		                                               return "";
@@ -170,6 +171,12 @@ View *comments_top_view = (new HorizontalListView(0, 0, 20))
                                                ->set_y_alignment(TextView::YAlign::CENTER)
                                                ->set_get_background_color(View::STANDARD_BACKGROUND)
                                                ->set_on_view_released([](View &) { comment_sort_clicked(); }),
+                                           (new TextView(0, 0, 70, 20))
+                                               ->set_text((std::function<std::string()>)[]() -> std::string { return tr("Reload", "Recargar"); })
+                                               ->set_x_alignment(TextView::XAlign::CENTER)
+                                               ->set_y_alignment(TextView::YAlign::CENTER)
+                                               ->set_get_background_color(View::STANDARD_BACKGROUND)
+                                               ->set_on_view_released([](View &) { comment_reload_same = true; comment_sort_clicked(); }),
                                            (new TextView(0, 0, 120, 20))
                                                ->set_text((std::function<std::string()>)[]() -> std::string { return tr("+ Comment", "+ Comentar"); })
                                                ->set_x_alignment(TextView::XAlign::CENTER)
@@ -3138,6 +3145,8 @@ debug_info_view =
     static void change_comment_sort(void *) {
 	    small_resource_lock.lock();
 	    int target = cur_video_info.comment_sort_type == 0 ? 1 : 0;
+	    if (comment_reload_same) target = cur_video_info.comment_sort_type; // Reload : the same sort again
+	    comment_reload_same = false;
 	    auto new_result = cur_video_info;
 	    small_resource_lock.unlock();
 	    if (new_result.comment_sort_tokens[target] == "") {
