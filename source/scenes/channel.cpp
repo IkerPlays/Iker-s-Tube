@@ -515,6 +515,17 @@ void Channel_init(void) {
 				                                           }
 				                                           notice_show(tr("Saving the audio of ", "Guardando el audio de ") + std::to_string(n) + tr(" videos", " vídeos"));
 			                                           })}));
+			    video_views.push_back((new HorizontalListView(0, 0, 22))
+			                              ->set_views({make_button(tr("Shuffle", "Aleatorio"), 160, [queue_items]() {
+				                                           auto items = queue_items;
+				                                           for (size_t i = items.size(); i > 1; i--) std::swap(items[i - 1], items[rand() % i]);
+				                                           play_queue_clear();
+				                                           for (size_t i = 1; i < items.size(); i++) play_queue_toggle(items[i].first, items[i].second);
+				                                           clicked_url = items[0].first;
+			                                           }),
+			                                           make_button(tr("Surprise me", "Sorpréndeme"), 160, [queue_items]() {
+				                                           clicked_url = queue_items[rand() % queue_items.size()].first;
+			                                           })}));
 		    }
 	    }
 	    for (auto video : result.videos) {

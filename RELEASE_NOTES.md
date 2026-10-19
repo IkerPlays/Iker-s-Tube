@@ -1,1 +1,1 @@
-Player: the chapter being played is highlighted in the chapter list of the General tab.
+Channel page: new Shuffle and Surprise me buttons for the videos of the channel.

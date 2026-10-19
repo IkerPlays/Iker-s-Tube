@@ -13,6 +13,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Battery.** The player warns at 15% and 5% battery.
 - **Save playlists.** New player tool saves the playlist you are watching to your YouTube library.
 - **Current chapter.** The chapter list highlights the chapter that is playing.
+- **Channel page.** Shuffle and Surprise me buttons for the videos of a channel.
 
 ## Installing
 
