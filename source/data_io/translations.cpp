@@ -167,6 +167,7 @@ static const TrEntry kTrEntries[] = {
 	{"In your history: ", {"Dans votre historique : ", "In deinem Verlauf: ", "Nella tua cronologia: ", "No seu histórico: ", "履歴: "}},
 	{" videos, watched ", {" vidéos, vues ", " Videos, ", " video, visti ", " vídeos, vistos ", " 本の動画、視聴 "}},
 	{" times", {" fois", " Mal gesehen", " volte", " vezes", " 回"}},
+	{"Ends at ", {"Fin à ", "Ende um ", "Finisce alle ", "Termina às ", "終了 "}},
 	{"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	{"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	{"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},

@@ -2306,7 +2306,15 @@ debug_info_view =
 					                           struct tm *t = localtime(&now);
 					                           char clock_text[16] = "";
 					                           if (t) strftime(clock_text, sizeof clock_text, "%H:%M", t);
-					                           notice_show(std::string(clock_text) + " - " + tr("Battery ", "Batería ") + std::to_string(var_battery_level_raw) + "%" + (var_battery_charge ? tr(" (charging)", " (cargando)") : ""));
+					                           std::string ends_text; // when the video will be over, at the current speed
+					                           if (vid_play_request && vid_duration > 0 && !playing_video_info.is_livestream && quick_speed > 0.05) {
+						                           time_t end = now + (time_t)(std::max(0.0, vid_duration - vid_current_pos) / quick_speed);
+						                           struct tm *end_tm = localtime(&end);
+						                           char end_clock[16] = "";
+						                           if (end_tm) strftime(end_clock, sizeof end_clock, "%H:%M", end_tm);
+						                           ends_text = std::string(" - ") + tr("Ends at ", "Termina a las ") + end_clock;
+					                           }
+					                           notice_show(std::string(clock_text) + " - " + tr("Battery ", "Batería ") + std::to_string(var_battery_level_raw) + "%" + (var_battery_charge ? tr(" (charging)", " (cargando)") : "") + ends_text);
 				                           }),
 				                 make_tool([]() { return tr("CC size", "CC tamaño"); }, 70,
 				                           []() {

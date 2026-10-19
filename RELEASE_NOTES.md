@@ -1,1 +1,1 @@
-Fixes: the cached feed stays visible when the refresh finds nothing (offline); loading placeholders really pulse; the cached feed obeys the hide Shorts / watched settings.
+The Status tool also tells at what time the video will end, using the current speed.
