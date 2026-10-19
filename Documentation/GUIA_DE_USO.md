@@ -72,6 +72,11 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Herramientas del reproductor:** las filas largas ahora se reparten en varias filas (antes los botones que no cabían en la pantalla no se podían tocar) y las menos usadas
   están plegadas tras "Más herramientas". Nuevas: "Ir al minuto" (escribes m:ss) y "Repetir capítulo".
 - **Pantalla de solo audio:** ecualizador animado y, con los subtítulos (CC) activados, la letra de la canción.
+- **Atajos del reproductor:** SELECT + cruceta arriba/abajo cambia el volumen y SELECT + izquierda/derecha el brillo. "Controles" lista todos los botones.
+- **Feed:** botón "Ver los vídeos nuevos" (los reproduce seguidos) y "Sorpréndeme con mi feed". Los canales ocultos ya se ocultan también en el feed.
+- **Más fiable:** los cambios hechos justo antes de cerrar la app se guardan, una importación de copia de seguridad se aplica al arrancar de nuevo, una SD llena ya no estropea
+  favoritos/listas/cola, las listas guardadas conservan los títulos completos, y las búsquedas o páginas que fallan se reintentan tocando el aviso.
+- **Idioma:** la primera vez, la app usa el idioma de la consola si lo conoce.
 - **Feed:** los vídeos que no te habían avisado llevan la etiqueta NEW. Al desbloquear un logro sale un aviso, y "Mi resumen" puede enseñar tus números en un QR.
 - **Sin conexión:** si abres la app sin Wi-Fi te recuerda dónde están tus vídeos guardados. Si es muy de noche, te sugiere el temporizador de apagado.
 - **Canal:** en la descripción verás cuántos vídeos de ese canal has visto.
