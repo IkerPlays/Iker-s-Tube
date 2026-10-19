@@ -247,6 +247,7 @@ void Menu_init(void) {
 				if (detected != var_lang) {
 					var_lang = detected;
 					var_lang_content = content;
+					youtube_change_content_language(var_lang_content);
 					load_string_resources(var_lang);
 				}
 			}

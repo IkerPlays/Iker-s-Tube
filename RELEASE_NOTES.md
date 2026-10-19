@@ -1,1 +1,1 @@
-On the first start the app language (and content language) follows the console language when it is supported.
+Fix: the content language of searches also follows the console language on the first start.
