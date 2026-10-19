@@ -9,6 +9,7 @@
 #include <numeric>
 
 #include "scenes/home.hpp"
+#include "util/play_queue.hpp"
 #include "scenes/search.hpp"
 #include "scenes/studio.hpp"
 #include "scenes/video_player.hpp"
@@ -935,6 +936,27 @@ static void load_subscription_feed(void *) {
 		}
 	}
 	feed_cache_save(shown_videos);
+	{ // a button to play only the NEW ones, one after the other
+		std::vector<std::pair<std::string, std::string>> fresh;
+		for (auto &video : shown_videos) {
+			if (new_feed_ids.count(youtube_get_video_id_by_url(video.url))) fresh.push_back({video.url, video.title});
+		}
+		if (fresh.size() >= 2) {
+			new_feed_video_views.insert(new_feed_video_views.begin(),
+			                            (new TextView(0, 0, 320, 24))
+			                                ->set_text(tr("Play the new videos (", "Ver los vídeos nuevos (") + std::to_string(fresh.size()) + ")")
+			                                ->set_x_alignment(TextView::XAlign::CENTER)
+			                                ->set_y_alignment(TextView::YAlign::CENTER)
+			                                ->set_get_background_color(View::STANDARD_BACKGROUND)
+			                                ->set_corner_radius(6)
+			                                ->set_on_view_released([fresh](View &) {
+				                                play_queue_clear();
+				                                for (size_t i = 1; i < fresh.size(); i++) play_queue_toggle(fresh[i].first, fresh[i].second);
+				                                clicked_url = fresh[0].first;
+				                                clicked_is_video = true;
+			                                }));
+		}
+	}
 
 	misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 
