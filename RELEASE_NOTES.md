@@ -1,1 +1,1 @@
-Hardening: the keyboard suggestions are fetched by the async worker (no extra thread or network sessions), the safe mode never overwrites a saved copy and waits 30 seconds before the start counts as good, rounded corners draw fewer pieces, the sleep timer fade changes the volume once a second, the daily limit uses the console day, Radio and Shorts no longer fill the recent searches and Next episode ignores video qualities.
+Release notes for the hotfix were written (no code changes).

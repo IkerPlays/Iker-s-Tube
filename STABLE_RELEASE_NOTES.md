@@ -2,6 +2,11 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 
 ## What's new since 1.0.6
 
+### Fixes (important)
+- **Crash at startup.** Some consoles crashed every time the app opened after the update to 1.0.6. The background fetch of the keyboard suggestions no longer uses its own thread or network sessions (it runs in the async worker, once Search is opened), which removes a race that could crash the app while the home feed was loading.
+- **Safe mode.** If a start does not finish (a crash), the next start renames the settings and the optional files to *.crashed (nothing is deleted, existing copies are never overwritten), skips the dialogs and the background extras and says so with a notice. The start counts as good after 30 seconds of running or on a normal exit.
+- If 1.0.6 crashes on your console and the app cannot update itself: delete or rename 3ds/IkersTube/settings.txt on the SD card, or install this version with FBI.
+
 ### Changes
 - **Rounded buttons.** Buttons have rounded corners (a setting turns it off).
 - **My Wrapped.** A summary of what you watch: top channel, favorite hour, streak and more.
