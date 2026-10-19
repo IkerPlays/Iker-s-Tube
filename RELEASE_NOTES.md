@@ -1,1 +1,1 @@
-Search, Explore: a seasonal shortcut appears around Halloween, Christmas and New Year.
+Fixes: Skip intro no longer overrides a link time, bookmark or resume point and never jumps past the end; the first badge is announced; badge streaks use the console time zone; a null rating is not shown as 0.

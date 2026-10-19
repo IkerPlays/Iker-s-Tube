@@ -13,6 +13,15 @@
 
 #define BADGES_PATH "sdmc:/3ds/IkersTube/badges.txt"
 
+// the number of the day in the time zone of the console
+static long long local_day_of(time_t t) {
+	struct tm local = *localtime(&t);
+	long offset = (long)(local.tm_hour * 3600 + local.tm_min * 60 + local.tm_sec) - (long)(t % 86400);
+	if (offset > 43200) offset -= 86400;
+	if (offset < -43200) offset += 86400;
+	return (long long)((t + offset) / 86400);
+}
+
 std::vector<Badge> badges_compute() {
 	auto history = get_valid_watch_history();
 	std::map<std::string, int> counts;
@@ -25,14 +34,14 @@ std::vector<Badge> badges_compute() {
 		time_t t = video.last_watch_time;
 		struct tm *local = localtime(&t);
 		if (local) hours[local->tm_hour]++;
-		days.insert((long long)video.last_watch_time / 86400);
+		days.insert(local_day_of(video.last_watch_time));
 	}
 	int top_count = 0;
 	for (auto &c : counts) top_count = std::max(top_count, c.second);
 	int busiest = 0;
 	for (int h = 1; h < 24; h++) if (hours[h] > hours[busiest]) busiest = h;
 	int streak = 0; // days in a row with something watched, counting back from today (or yesterday)
-	long long day = (long long)time(NULL) / 86400;
+	long long day = local_day_of(time(NULL));
 	if (!days.count(day)) day--;
 	while (days.count(day)) streak++, day--;
 	const size_t n = history.size();
@@ -61,7 +70,7 @@ void badges_check_new() {
 	if (FILE *f = fopen(BADGES_PATH, "r")) {
 		int id;
 		while (fscanf(f, "%d", &id) == 1) earned.insert(id);
-		existed = !earned.empty(); // an empty file (cut while saving) counts as no file: nothing is announced again
+		existed = earned.count(-1) > 0; // -1 marks a file that was written completely (an empty one, cut while saving, counts as no file)
 		fclose(f);
 	}
 	bool changed = false;
@@ -71,6 +80,7 @@ void badges_check_new() {
 		changed = true;
 		if (existed) notice_show(tr("Badge unlocked: ", "Logro desbloqueado: ") + badge.name);
 	}
+	earned.insert(-1);
 	if (changed || !existed) {
 		if (FILE *f = fopen(BADGES_PATH, "w")) {
 			for (int id : earned) fprintf(f, "%d\n", id);

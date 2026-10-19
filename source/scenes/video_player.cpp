@@ -304,6 +304,7 @@ static void auto_quality_tick() {
 	}
 }
 
+static volatile bool intro_skip_blocked = false; // the video starts at a time chosen by a link, bookmark or resume point
 static std::vector<std::pair<double, std::string>> current_chapters; // chapters of the displayed video (from its description)
 static VerticalListView *bookmarks_list_view = NULL; // the list shown in the page; rebuilt outside of the view updates
 static VerticalListView *pending_bookmarks_list_view = NULL; // created by the loader, becomes bookmarks_list_view when the page is installed
@@ -437,7 +438,8 @@ static void channel_speed_tick() {
 		speed = playing_video_info.is_livestream ? 1.0 : defaults[std::max(0, std::min(5, var_default_speed))];
 	}
 	double skip = channel_skip_get(playing_video_info.author.id); // the intro of this channel is skipped (not when resuming)
-	if (skip > 0 && !playing_video_info.is_livestream && vid_current_pos < skip && resume_get(playing_video_info.id) <= 0 && playing_video_info.url.compare(0, 8, "offline:") != 0) {
+	if (skip > 0 && !playing_video_info.is_livestream && !intro_skip_blocked && vid_current_pos < 1 && vid_duration > skip + 15 &&
+	    !(var_resume_videos && resume_get(playing_video_info.id) > 0) && playing_video_info.url.compare(0, 8, "offline:") != 0) {
 		send_seek_request_wo_lock(skip);
 	}
 	if (speed != quick_speed) {
@@ -490,6 +492,7 @@ static void dislikes_task(void *arg) {
 		return;
 	}
 	char rating_text[16] = "";
+	if (response.second.find("\"rating\":null") != std::string::npos) rating = -1;
 	if (rating >= 0) snprintf(rating_text, sizeof rating_text, " - %.1f/5", rating);
 	notice_show(tr("Likes ", "Me gusta ") + std::to_string((long long)likes) + " - " + tr("Dislikes ", "No me gusta ") + std::to_string((long long)dislikes) + rating_text);
 }
@@ -4321,6 +4324,7 @@ static void autoplay_countdown_tick() {
 					    seek_at_init_request = resume_pos;
 				    }
 			    }
+			    intro_skip_blocked = seek_at_init_request >= 0; // a link time, a bookmark or a resume point decides the start
 			    if (seek_at_init_request >= 0) {
 				    vid_seek_request = true;
 				    vid_seek_pos = seek_at_init_request;
