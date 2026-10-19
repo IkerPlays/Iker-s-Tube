@@ -228,7 +228,7 @@ static void update_worker_thread_func(void *) {
 			std::string new_error_message;
 			
 			bool check_success = false;
-			auto result = session_list.perform(HttpRequest::GET("https://api.github.com/repos/IkerPlays/Iker-s-YT/releases?per_page=10", {}));
+			auto result = session_list.perform(HttpRequest::GET("https://api.github.com/repos/IkerPlays/Iker-s-Tube/releases?per_page=10", {}));
 			if (result.fail) new_error_message = "Failed accessing(deep fail) : " + result.fail;
 			else if (result.status_code == 200) {
 				result.data.push_back('\0');

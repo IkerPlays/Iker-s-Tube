@@ -1,1 +1,1 @@
-Settings: Stop after this many videos in a row (3, 5 or 10) stops the queue and autoplay after that many videos started by themselves.
+Updates: the update check and the About link use the current repository name (IkerPlays/Iker-s-Tube) instead of an old name that only worked through a redirect.

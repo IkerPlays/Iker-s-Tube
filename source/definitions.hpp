@@ -9,7 +9,7 @@
 #endif
 #define DEF_CURRENT_APP_VER (std::string) IKT_VERSION
 #define DEF_CURRENT_APP_VER_INT 0
-#define GITHUB_URL std::string("https://github.com/IkerPlays/Iker-s-YT")
+#define GITHUB_URL std::string("https://github.com/IkerPlays/Iker-s-Tube")
 
 // video player
 #define DEF_SAPP0_NAME (std::string) "Video\nplayer"
