@@ -2124,10 +2124,12 @@ debug_info_view =
 				                           [is_current]() {
 					                           if (!is_current()) return;
 					                           double target = 0;
+					                           std::string name;
 					                           for (auto &chapter : current_chapters) {
-						                           if (chapter.first < vid_current_pos - 3) target = chapter.first;
+						                           if (chapter.first < vid_current_pos - 3) target = chapter.first, name = chapter.second;
 					                           }
 					                           send_seek_request_wo_lock(target);
+					                           if (name != "") notice_show(name.substr(0, 40));
 				                           }),
 				                 make_tool([]() { return tr("Chap >>", "Cap >>"); }, 60,
 				                           [is_current]() {
@@ -2135,6 +2137,7 @@ debug_info_view =
 					                           for (auto &chapter : current_chapters) {
 						                           if (chapter.first > vid_current_pos + 1) {
 							                           send_seek_request_wo_lock(chapter.first);
+							                           if (chapter.second != "") notice_show(chapter.second.substr(0, 40));
 							                           break;
 						                           }
 					                           }
