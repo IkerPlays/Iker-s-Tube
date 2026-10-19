@@ -11,6 +11,7 @@
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
 #include "util/result_filter.hpp"
+#include "data_io/user_playlists.hpp"
 #include "util/pinned_channels.hpp"
 #include "scenes/home.hpp"
 #include "data_io/history.hpp"
@@ -101,6 +102,27 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 	option(favorites_contains(id) ? tr("Remove from favorites", "Quitar de favoritos") : tr("+ Favorite", "+ Favorito"), [video]() {
 		bool added = favorites_toggle(video);
 		notice_show(added ? tr("Added to Favorites", "Añadido a Favoritos") : tr("Removed from Favorites", "Quitado de Favoritos"));
+	});
+	option(tr("Add to a local list", "Añadir a una lista local"), [video]() {
+		auto lists = playlists_get();
+		if (lists.empty()) {
+			notice_show(tr("You have no playlists. Create one in the Library.", "No tienes listas. Crea una en la Biblioteca."));
+			return;
+		}
+		static FavoriteVideo pending_video;
+		pending_video = video;
+		std::vector<std::pair<std::string, std::function<void()>>> options;
+		for (size_t i = 0; i < lists.size(); i++) {
+			int index = (int)i;
+			std::string name = lists[i].name;
+			options.push_back({truncate_first_line(name, 200, 0.5) + " (" + std::to_string(lists[i].videos.size()) + ")", [index, name]() {
+				notice_show(playlist_add(index, pending_video) ? tr("Added to ", "Añadido a ") + name : tr("Already in that list", "Ya está en esa lista"));
+			}});
+		}
+		menu_next_request = true; // (opened after the update : this menu is closing right now)
+		menu_next_title = tr("Add to a list", "Añadir a una lista");
+		menu_next_options = options;
+		menu_next_first = 0;
 	});
 	if (OAuth::is_authenticated()) {
 		option(tr("Like on YouTube", "Me gusta en YouTube"), [id]() { account_like_async(id, 1); });
