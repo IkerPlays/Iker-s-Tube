@@ -464,11 +464,11 @@ static void whats_new_done() {
 static void show_whats_new() {
 	dialog_view->get_message_view()
 	    ->set_text_lines(std::vector<std::string>{tr("What's new in ", "Novedades de ") + core_version(),
-	                                              tr("Long press a video: full menu", "Mantén pulsado un vídeo: menú completo"),
-	                                              tr("Live chat and audio language", "Chat en directo e idioma del audio"),
-	                                              tr("Library: liked, history, YouTube lists", "Biblioteca: Me gusta, historial, listas"),
-	                                              tr("Hide channels, filters, pause downloads", "Ocultar canales, filtros, pausar descargas"),
-	                                              tr("Studio: schedule, playlist, description", "Studio: programar, lista, descripción"),
+	                                              tr("Subtitles (CC) and many new player tools", "Subtítulos (CC) y muchas herramientas nuevas"),
+	                                              tr("Search: combinable filters, suggestions", "Búsqueda: filtros combinables, sugerencias"),
+	                                              tr("Shorts feed, D-pad Down / Up = next / previous", "Shorts: cruceta Abajo / Arriba = siguiente / anterior"),
+	                                              tr("Pin channels, import / export subscriptions", "Fijar canales, importar / exportar suscripciones"),
+	                                              tr("Manage your YouTube lists, community votes", "Gestiona tus listas de YouTube, votos en Comunidad"),
 	                                              tr("Details: Documentation/GUIA_DE_USO.md", "Detalles: Documentation/GUIA_DE_USO.md")})
 	    ->update_y_range(0, DEFAULT_FONT_INTERVAL * 7 + 6);
 	dialog_view->set_buttons<std::function<std::string()>>({[]() { return LOCALIZED(OK); }}, [](OverlayDialogView &, int) {
