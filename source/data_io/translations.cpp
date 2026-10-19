@@ -133,6 +133,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Length", {"Durée", "Länge", "Durata", "Duração", "長さ"}},
 	    {"Time left", {"Temps restant", "Restzeit", "Tempo rimasto", "Tempo restante", "残り時間"}},
 	    {"Second time in the player bar", {"Second temps de la barre", "Zweite Zeit der Leiste", "Secondo tempo della barra", "Segundo tempo da barra", "バーの2番目の時間"}},
+	    {"Battery very low: ", {"Batterie très faible : ", "Akku sehr schwach: ", "Batteria molto scarica: ", "Bateria muito baixa: ", "電池残量わずか: "}},
+	    {"Battery low: ", {"Batterie faible : ", "Akku schwach: ", "Batteria scarica: ", "Bateria baixa: ", "電池残量低下: "}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

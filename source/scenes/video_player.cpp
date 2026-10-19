@@ -4532,6 +4532,18 @@ static void autoplay_countdown_tick() {
 				    }
 			    }
 			    {
+				    static int battery_warned = 0; // low battery while playing : a notice at 15% and again at 5%
+				    int level = var_battery_level_raw;
+				    if (var_battery_charge || level <= 0) battery_warned = 0;
+				    else if (level <= 5 && battery_warned < 2) {
+					    battery_warned = 2;
+					    notice_show(tr("Battery very low: ", "Batería muy baja: ") + std::to_string(level) + "%");
+				    } else if (level <= 15 && battery_warned < 1) {
+					    battery_warned = 1;
+					    notice_show(tr("Battery low: ", "Batería baja: ") + std::to_string(level) + "%");
+				    }
+			    }
+			    {
 				    static std::string cc_auto_for; // the subtitles of the remembered language open by themselves (setting)
 				    if (var_auto_captions && cur_video_info.id != "" && cc_auto_for != cur_video_info.id && cur_video_info.caption_base_languages.size()) {
 					    cc_auto_for = cur_video_info.id; // (once the list of subtitle tracks is there)

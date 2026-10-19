@@ -10,6 +10,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Downloads.** The long press menu of a saved video can show its QR code.
 - **Info.** The Info tool also lists the subtitle languages and chapters.
 - **Time left.** A setting makes the player bar show the time left instead of the length.
+- **Battery.** The player warns at 15% and 5% battery.
 
 ## Installing
 
