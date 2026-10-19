@@ -235,6 +235,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Clear the filter first", {"Retirez d'abord le filtre", "Zuerst den Filter entfernen", "Rimuovi prima il filtro", "Remova o filtro primeiro", "先にフィルターを解除してください"}},
 	    {"Sure?", {"Sûr ?", "Sicher?", "Sicuro?", "Tem certeza?", "よろしいですか？"}},
 	    {"Yes, delete ", {"Oui, supprimer ", "Ja, löschen ", "Sì, elimina ", "Sim, apagar ", "はい、削除 "}},
+	    {"Surprise me (random topic)", {"Surprends-moi (sujet au hasard)", "Überrasch mich (Zufallsthema)", "Sorprendimi (argomento a caso)", "Surpreenda-me (tema aleatório)", "おまかせ（ランダムなテーマ）"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

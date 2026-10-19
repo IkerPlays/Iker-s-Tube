@@ -309,6 +309,21 @@ static void show_search_history() {
 	                                        "live now", "new movie trailers", "world news today", "#shorts", "how it works explained", "funny moments",
 	                                        "sports highlights", "science explained", "easy recipes", "tech reviews", "travel vlog", "podcast full episode", "kids songs and cartoons", "live concert full",
 	                                        "nintendo news and trailers", "retro games longplay", "anime openings", "lofi hip hop radio", "relaxing piano music", "minecraft let's play", "pokemon news and gameplay"};
+	if (!var_hide_explore) { // a random topic
+		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+		                                      ->set_text(tr("Surprise me (random topic)", "Sorpréndeme (tema al azar)"))
+		                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+		                                      ->set_y_alignment(TextView::YAlign::CENTER)
+		                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
+		                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                                      ->set_on_view_released([explore_labels, explore_queries](View &) {
+			                                      srand((unsigned)osGetTime());
+			                                      int pick = rand() % 24;
+			                                      if (pick == 6) pick = 7; // (the Shorts feed is its own button)
+			                                      notice_show(explore_labels[pick]);
+			                                      start_search(explore_queries[pick]);
+		                                      }));
+	}
 	for (int i = 0; i < (var_hide_explore ? 0 : 24); i++) { // (a setting hides the shortcuts)
 		std::string query = explore_queries[i];
 		bool feed = i == 6; // Shorts

@@ -1,1 +1,1 @@
-Docs: a repeated line of the usage guide was removed.
+Search: Explore starts with Surprise me, which opens a random topic.
