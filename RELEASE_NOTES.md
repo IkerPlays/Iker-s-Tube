@@ -1,1 +1,1 @@
-Fix: the Go to time tool no longer freezes the app when the time is accepted. Skip intro works even when the decoder is ready early, Loop chapter works on the last chapter, Go to time ignores live streams, the badge list is only trusted when it was fully written, and a few more saves check for write errors.
+The report hides the whole of a long log line when it may carry private data.

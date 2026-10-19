@@ -28,13 +28,19 @@ static void append_tail(FILE *out, const char *title, const char *path, long max
 	// line by line: a line that may carry a login (tokens, cookies, secrets, e-mail addresses) is replaced before it is written
 	char line[1100];
 	static const char *private_words[] = {"Bearer", "access_token", "refresh_token", "client_secret", "Authorization", "SAPISID", "cookie", "Cookie", "id_token", "@gmail", "@outlook", "@hotmail", "@yahoo"};
+	bool hiding_rest_of_line = false; // a long line comes in several pieces: once a piece is hidden, the rest of that line is too
 	while (fgets(line, sizeof line, f)) {
-		bool hide = false;
+		bool hide = hiding_rest_of_line;
 		for (const char *word : private_words) {
 			if (strstr(line, word)) hide = true;
 		}
-		if (hide) fputs("[line hidden: it may contain private data]\n", out);
-		else fputs(line, out);
+		bool line_ends = strchr(line, '\n') != NULL;
+		hiding_rest_of_line = hide && !line_ends;
+		if (hide) {
+			if (line_ends) fputs("[line hidden: it may contain private data]\n", out); // (one note per hidden line)
+		} else {
+			fputs(line, out);
+		}
 	}
 	fclose(f);
 }
