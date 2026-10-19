@@ -7,6 +7,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **My Wrapped.** A summary of what you watch: top channel, favorite hour, streak and more.
 - **Sleep timer fade.** The volume goes down smoothly during the last 30 seconds of the sleep timer.
 - **Next episode.** New player tool finds the next episode of a series by number.
+- **Radio.** Eight mood mixes (Chill, Focus, Workout, Sleep...) that keep playing by themselves.
 
 ## Installing
 

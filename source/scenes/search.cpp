@@ -262,8 +262,10 @@ static bool qr_scan_pending = false;
 
 // starts a search. Must be called while resource_lock is held (from the update of this scene)
 static bool shorts_feed = false; // the search is the Shorts feed : its videos keep playing one after another
-static void start_search(const std::string &word, bool feed = false) {
+static bool radio_feed = false; // the feed is a Radio (a shuffled mix of a mood), not the Shorts
+static void start_search(const std::string &word, bool feed = false, bool radio = false) {
 	shorts_feed = feed;
+	radio_feed = radio;
 	cur_search_word = word;
 	double search_box_width = 320 - SEARCH_BOX_MARGIN * 3 - URL_BUTTON_WIDTH;
 	search_box_view->set_text(truncate_search_text_for_display(word, search_box_width, 0.5));
@@ -309,6 +311,24 @@ static void show_search_history() {
 	                                        "live now", "new movie trailers", "world news today", "#shorts", "how it works explained", "funny moments",
 	                                        "sports highlights", "science explained", "easy recipes", "tech reviews", "travel vlog", "podcast full episode", "kids songs and cartoons", "live concert full",
 	                                        "nintendo news and trailers", "retro games longplay", "anime openings", "lofi hip hop radio", "relaxing piano music", "minecraft let's play", "pokemon news and gameplay"};
+	if (!var_hide_explore) { // Radio : a shuffled mix for a mood, it keeps playing by itself
+		result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+		                                      ->set_text(tr("Radio (a mix that keeps playing)", "Radio (una mezcla que sigue sonando)"))
+		                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+		                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+		static const char *radio_queries[] = {"chill music mix", "focus study music mix", "workout music mix", "sleep music relaxing mix", "party music mix", "classical music mix", "video game music mix", "jazz cafe music mix"};
+		const std::string radio_labels[] = {tr("Chill", "Tranquila"), tr("Focus", "Concentración"), tr("Workout", "Ejercicio"), tr("Sleep", "Dormir"), tr("Party", "Fiesta"), tr("Classical", "Clásica"), tr("Game music", "Música de juegos"), tr("Jazz", "Jazz")};
+		for (int i = 0; i < 8; i++) {
+			std::string query = radio_queries[i];
+			result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
+			                                      ->set_text("> " + radio_labels[i])
+			                                      ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+			                                      ->set_y_alignment(TextView::YAlign::CENTER)
+			                                      ->set_get_text_color([]() { return COLOR_ACCENT; })
+			                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
+			                                      ->set_on_view_released([query](View &) { start_search(query, true, true); }));
+		}
+	}
 	if (!var_hide_explore) { // a random topic
 		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
 		                                      ->set_text(tr("Surprise me (random topic)", "Sorpréndeme (tema al azar)"))
@@ -846,7 +866,8 @@ static void load_search_results(void *) {
 		play_queue_set_repeat(feed_items, feed_shuffle);
 		clicked_url = feed_items[0].first;
 		feed_items.clear();
-		notice_show(tr("Shorts: D-pad Down = next, Up = previous", "Shorts: cruceta Abajo = siguiente, Arriba = anterior"));
+		notice_show(radio_feed ? tr("Radio: D-pad Down = next, Up = previous", "Radio: cruceta Abajo = siguiente, Arriba = anterior")
+		                       : tr("Shorts: D-pad Down = next, Up = previous", "Shorts: cruceta Abajo = siguiente, Arriba = anterior"));
 	}
 	resource_lock.unlock();
 
