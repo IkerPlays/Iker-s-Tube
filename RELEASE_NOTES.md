@@ -1,1 +1,1 @@
-Fixes from audits: a malformed percent escape in a URL could abort the app (stoi without exceptions), now it is kept as text; when the video page data fails but the player data arrived, it is requested once more.
+Fixes from an audit: the streams of a fallback client no longer mix with those of the first one; the signed-in client falls back to the plain Android client whenever it gives nothing to play.

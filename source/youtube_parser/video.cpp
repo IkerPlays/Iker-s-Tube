@@ -244,6 +244,8 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	}
 	// video
 	{
+		res.video_stream_urls.clear(); // (extract_player_data runs again for every fallback client: the streams of the last one only)
+		res.both_stream_url = "";
 		std::map<int, int> itag_to_resolution = {{160, 144}, {133, 240}, {134, 360}, {135, 480}};
 
 		for (auto i : video_formats) {
@@ -867,7 +869,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 			return res;
 		}
 		// Fallback: If Android VR with auth returns UNPLAYABLE, retry with unauthenticated Android
-		if (use_android_vr && res.playability_status == "UNPLAYABLE") {
+		if (use_android_vr && (res.playability_status == "UNPLAYABLE" || !res.is_playable())) { // (also when the answer is OK but has no stream)
 			debug_info("Fallback to unauthenticated Android Client");
 
 			std::string fallback_content =
