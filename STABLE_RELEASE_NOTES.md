@@ -45,6 +45,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Quick volume and brightness.** In the player, SELECT + D-pad up/down changes the volume and left/right the brightness.
 - **Feed and loaders.** The feed loads in small groups (steadier with hundreds of subscriptions), hidden channels now hide in the feed, the live chat stops when you leave the video, and several race conditions in the captions and comments loaders were fixed.
 - **Saves on exit.** Changes made right before closing the app (settings, history, subscriptions, play time) are no longer lost.
+- **Surprise from the feed.** A button in the Feed tab opens a random video of your feed.
 
 ## Installing
 

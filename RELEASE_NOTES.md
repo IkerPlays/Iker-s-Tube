@@ -1,1 +1,1 @@
-The report hides log lines that may carry tokens, cookies, secrets or e-mail addresses.
+Feed tab: a Surprise me button opens a random video of your feed.

@@ -945,6 +945,22 @@ static void load_subscription_feed(void *) {
 		for (auto &video : shown_videos) {
 			if (new_feed_ids.count(youtube_get_video_id_by_url(video.url))) fresh.push_back({video.url, video.title});
 		}
+		if (shown_videos.size() >= 6) { // one random video of the feed
+			std::vector<std::string> urls;
+			for (auto &video : shown_videos) urls.push_back(video.url);
+			new_feed_video_views.insert(new_feed_video_views.begin(),
+			                            (new TextView(0, 0, 320, 24))
+			                                ->set_text(tr("Surprise me from my feed", "Sorpréndeme con mi feed"))
+			                                ->set_x_alignment(TextView::XAlign::CENTER)
+			                                ->set_y_alignment(TextView::YAlign::CENTER)
+			                                ->set_get_background_color(View::STANDARD_BACKGROUND)
+			                                ->set_corner_radius(6)
+			                                ->set_on_view_released([urls](View &) {
+				                                srand((unsigned)osGetTime());
+				                                clicked_url = urls[rand() % urls.size()];
+				                                clicked_is_video = true;
+			                                }));
+		}
 		if (fresh.size() >= 2) {
 			new_feed_video_views.insert(new_feed_video_views.begin(),
 			                            (new TextView(0, 0, 320, 24))
