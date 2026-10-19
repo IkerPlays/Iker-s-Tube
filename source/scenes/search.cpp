@@ -705,6 +705,10 @@ static void load_search_results(void *) {
 			                                            })}));
 		}
 	}
+	for (size_t i = 0; i < new_result.results.size(); i++) {
+		new_result_views.push_back(result_item_to_view(new_result.results[i]));
+	}
+	std::vector<View *> related_views;
 	if (!feed && search_word.size() > 1 && search_word.compare(0, 4, "http") != 0) { // related searches : what people type after this
 		auto related = suggestions_for(search_word, 5);
 		std::vector<std::string> shown;
@@ -712,12 +716,12 @@ static void load_search_results(void *) {
 			if (w != search_word && shown.size() < 4) shown.push_back(w);
 		}
 		if (shown.size()) {
-			new_result_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+			related_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
 			                               ->set_text(tr("Related searches", "Búsquedas relacionadas"))
 			                               ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 			                               ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
 			for (auto &w : shown) {
-				new_result_views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 24))
+				related_views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 24))
 				                               ->set_text(w)
 				                               ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
 				                               ->set_y_alignment(TextView::YAlign::CENTER)
@@ -727,8 +731,9 @@ static void load_search_results(void *) {
 			}
 		}
 	}
-	for (size_t i = 0; i < new_result.results.size(); i++) {
-		new_result_views.push_back(result_item_to_view(new_result.results[i]));
+	if (related_views.size()) { // after the first results, not before them
+		size_t at = std::min(new_result_views.size(), (size_t)(new_result_views.size() > 6 ? new_result_views.size() - new_result.results.size() + 5 : new_result_views.size()));
+		new_result_views.insert(new_result_views.begin() + at, related_views.begin(), related_views.end());
 	}
 	logger.info("search", "truncate/view creation end");
 

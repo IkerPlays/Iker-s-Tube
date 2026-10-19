@@ -1,1 +1,1 @@
-Search: after the results a Related searches list (YouTube autocomplete of what you searched) offers four more searches.
+Search: the Related searches list now comes after the first five results instead of before them.
