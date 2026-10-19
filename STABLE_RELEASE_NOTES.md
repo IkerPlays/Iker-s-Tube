@@ -33,6 +33,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Lyrics.** With subtitles on, the audio-only screen shows them too (handy for song lyrics).
 - **Go to time and Loop chapter.** Two new player tools: jump to a typed time, and repeat the current chapter.
 - **Play the new videos.** The Feed tab has a button that plays all the NEW videos in a row.
+- **Player tools reachable.** Rows of tools that were wider than the screen wrap into several rows, so every tool can be tapped.
 
 ## Installing
 

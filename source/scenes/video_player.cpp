@@ -2729,19 +2729,53 @@ debug_info_view =
 				    main_tab_views.push_back(
 				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
 
-				    // modern look : the buttons of the rows are rounded and separated by a small gap
-				    for (View *row : main_tab_views) {
-					    HorizontalListView *h = dynamic_cast<HorizontalListView *>(row);
-					    if (!h) continue;
-					    std::vector<View *> spaced;
-					    for (View *v : h->views) {
-						    spaced.push_back(v);
-						    if (dynamic_cast<TextView *>(v) && v->get_height() <= 24 && v->get_width() > 30) {
-							    v->set_corner_radius(6);
-							    spaced.push_back(new EmptyView(0, 0, 3, 20));
+				    // modern look : the buttons of the rows are rounded and separated by a small gap. A row is not scrollable, so a row
+				    // with more buttons than the 320 pixels of the screen is split into several rows (otherwise the extra buttons
+				    // would be out of reach)
+				    {
+					    std::vector<View *> reflowed;
+					    for (View *row : main_tab_views) {
+						    HorizontalListView *h = dynamic_cast<HorizontalListView *>(row);
+						    bool tool_row = h && h->views.size() > 1 && h->get_height() == 20; // (the rows of buttons are 20 pixels high)
+						    if (h) {
+							    for (View *v : h->views) {
+								    if (!dynamic_cast<EmptyView *>(v) && !(dynamic_cast<TextView *>(v) && v->get_height() <= 24)) tool_row = false;
+							    }
 						    }
+						    if (!tool_row) {
+							    reflowed.push_back(row);
+							    continue;
+						    }
+						    std::vector<View *> current;
+						    float used = 0;
+						    auto flush = [&]() {
+							    if (current.empty()) return;
+							    reflowed.push_back((new HorizontalListView(0, 0, 20))->set_views(current));
+							    reflowed.push_back(new EmptyView(0, 0, 320, 3));
+							    current.clear();
+							    used = 0;
+						    };
+						    for (View *v : h->views) {
+							    if (dynamic_cast<EmptyView *>(v)) { // the left margin of the original row
+								    delete v;
+								    continue;
+							    }
+							    float width = v->get_width();
+							    if (used > 0 && used + width + SMALL_MARGIN > 318) flush();
+							    if (current.empty()) {
+								    current.push_back(new EmptyView(0, 0, SMALL_MARGIN, 20));
+								    used = SMALL_MARGIN;
+							    }
+							    v->set_corner_radius(6);
+							    current.push_back(v);
+							    current.push_back(new EmptyView(0, 0, 3, 20));
+							    used += width + 3;
+						    }
+						    flush();
+						    h->views.clear(); // the buttons moved to the new rows
+						    delete h;
 					    }
-					    h->views = spaced;
+					    main_tab_views = reflowed;
 				    }
 				    main_tab_views.push_back((new TextView(0, 0, 320, 18))
 				                                 ->set_text((std::function<std::string()>)[]() {
