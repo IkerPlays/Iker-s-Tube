@@ -50,6 +50,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Reload comments.** A Reload button in the Comments tab shows the comment you just sent.
 - **History.** Long press a day header to delete that whole day.
 - **Resume.** Forget where you stopped in one video from its long press menu.
+- **Tips.** The start page of Search shows a tip of the day.
 
 ## Installing
 

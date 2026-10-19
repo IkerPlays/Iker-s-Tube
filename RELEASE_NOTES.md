@@ -1,1 +1,1 @@
-Video menu: videos you stopped in the middle have a Forget where I stopped option.
+Search: the start page of Search shows a tip of the day about the less obvious features.

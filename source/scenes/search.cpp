@@ -281,6 +281,23 @@ static void show_search_history() {
 		return;
 	}
 	auto words = search_history_get();
+	{ // a tip of the day : the features that hide behind a long press or a tool
+		std::vector<std::string> tips = {
+		    tr("Tip: long press a video for its full menu.", "Consejo: mantén pulsado un vídeo para ver su menú."),
+		    tr("Tip: in the player, D-pad Down / Up = next / previous video.", "Consejo: en el reproductor, cruceta Abajo / Arriba = siguiente / anterior."),
+		    tr("Tip: the Filter button combines date, type, length and more.", "Consejo: el botón Filtro combina fecha, tipo, duración y más."),
+		    tr("Tip: the CC tool turns on the subtitles of a video.", "Consejo: la herramienta CC activa los subtítulos de un vídeo."),
+		    tr("Tip: long press a subscribed channel to pin it on top.", "Consejo: mantén pulsado un canal suscrito para fijarlo arriba."),
+		    tr("Tip: Settings, Data can export and import your subscriptions.", "Consejo: Ajustes, Datos exporta e importa tus suscripciones."),
+		    tr("Tip: the Sleep timer tool stops the video after a while.", "Consejo: la herramienta Temporizador para el vídeo pasado un rato."),
+		    tr("Tip: the QR tools show a link to open on your phone.", "Consejo: las herramientas QR muestran un enlace para abrir en el móvil."),
+		};
+		int day_index = (int)(time(NULL) / 86400) % (int)tips.size();
+		result_list_view->views.push_back((new TextView(SMALL_MARGIN, 0, 320 - SMALL_MARGIN * 2, DEFAULT_FONT_INTERVAL * 2))
+		                                      ->set_text_lines(truncate_str(tips[day_index], 320 - SMALL_MARGIN * 4, 2, 0.45, 0.45))
+		                                      ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+		                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+	}
 	// Explore : ready-made searches (YouTube no longer offers real Music / Trending feeds to this client)
 	result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
 	                                      ->set_text(tr("Explore", "Explorar"))
