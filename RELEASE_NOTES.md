@@ -1,1 +1,1 @@
-History: new Top channels button lists the channels you watched most; tap one to search it.
+Library, Liked: the long press menu of a video can remove your like.

@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "scenes/account_tasks.hpp"
 #include "ui/qr_popup.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/offline.hpp"
@@ -643,7 +644,8 @@ static void build_liked(VerticalListView *list) {
 			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
-			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); })});
+			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
+			                 make_option(tr("Remove my like", "Quitar mi Me gusta"), [id]() { account_like_async(id, 0); })});
 		    });
 		list->views.push_back(view);
 	}
