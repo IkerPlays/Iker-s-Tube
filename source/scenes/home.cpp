@@ -1416,7 +1416,9 @@ void Home_draw(void) {
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
 
 	if (var_new_feed_videos > 0 && main_tab_view->selected_tab == 2) { // the user is looking at the new videos tab
+		resource_lock.lock(); // (the loader replaces feed_latest_ids under this lock)
 		std::vector<std::string> to_mark = feed_latest_ids;
+		resource_lock.unlock();
 		feed_seen_mark(to_mark);
 		var_new_feed_videos = 0;
 		var_need_refresh = true;

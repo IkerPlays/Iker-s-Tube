@@ -3532,6 +3532,9 @@ debug_info_view =
 	    small_resource_lock.lock();
 	    if (!vid_already_init || cur_video_info.url != loading_url || comment_index >= (int)comments_main_view->views.size() ||
 	        comments_main_view->views[comment_index] != comment_view || comment_index >= (int)cur_video_info.comments.size()) {
+		    if (vid_already_init && comment_index < (int)comments_main_view->views.size() && comments_main_view->views[comment_index] == comment_view) {
+			    comment_view->is_loading_replies = false; // (the view is still there: it can ask again)
+		    }
 		    small_resource_lock.unlock(); // the page changed while the replies loaded: they are dropped
 		    for (auto view : new_reply_views) {
 			    view->recursive_delete_subviews();
