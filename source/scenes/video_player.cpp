@@ -4589,6 +4589,15 @@ static void autoplay_countdown_tick() {
 				    }
 			    }
 			    {
+				    static double reminder_base = -1; // time playing at the last reminder
+				    static const int minutes[4] = {0, 30, 60, 120};
+				    if (reminder_base < 0 || var_break_reminder == 0) reminder_base = var_total_play_seconds;
+				    if (var_break_reminder && var_total_play_seconds - reminder_base >= minutes[var_break_reminder] * 60) {
+					    reminder_base = var_total_play_seconds;
+					    notice_show(tr("You have been playing for a while: time for a break?", "Llevas un rato reproduciendo: ¿un descanso?"));
+				    }
+			    }
+			    {
 				    static int battery_warned = 0; // low battery while playing : a notice at 15% and again at 5%
 				    int level = var_battery_level_raw;
 				    if (var_battery_charge || level <= 0) battery_warned = 0;

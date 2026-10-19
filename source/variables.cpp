@@ -31,6 +31,7 @@ int var_auto_captions = 0;
 int var_seek_step = 0;
 int var_time_remaining = 0;
 int var_autoplay_limit = 0;
+int var_break_reminder = 0;
 int var_auto_chat = 0;
 int var_download_quality = 0;
 int var_autoplay_skip_watched = 0;

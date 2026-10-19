@@ -1116,6 +1116,23 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Break reminder
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return std::string("30 min"); },
+							(std::function<std::string ()>) []() { return std::string("60 min"); },
+							(std::function<std::string ()>) []() { return std::string("120 min"); }
+						}, var_break_reminder)
+						->set_title([](const SelectorView &) { return tr("Remind me to take a break", "Recordarme descansar"); })
+						->set_info([](const SelectorView &) { return tr("A notice appears after this much time playing.", "Sale un aviso tras tanto tiempo reproduciendo."); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_break_reminder != view.selected_button) {
+								var_break_reminder = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Videos in a row
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

@@ -1,1 +1,1 @@
-Player: new tools Autoplay (off, list, all), Slower and Faster (5% steps).
+Settings: Remind me to take a break shows a notice after 30, 60 or 120 minutes of playing.
