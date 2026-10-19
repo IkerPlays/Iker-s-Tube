@@ -1,1 +1,1 @@
-Hardening from an audit: a list file left without its final name when the app is killed while saving is recovered; damaged values (eco mode, dark theme, speed, volume, bookmarks, resume points) can no longer break the app.
+Settings are written to a temporary file first so a kill while saving cannot leave an empty settings.txt.

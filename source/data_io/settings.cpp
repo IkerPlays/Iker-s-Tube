@@ -39,6 +39,7 @@ int local_day_number() {
 void load_settings() {
 	if (access(STARTING_FLAG.c_str(), F_OK) == 0) {
 		var_safe_mode = true;
+		remove((SETTINGS_FILE_PATH + ".tmp").c_str()); // (a leftover .tmp must not bring the old settings back)
 		static const char *aside[] = {"settings.txt", "pinned_channels.txt", "recent_channels.txt", "hidden_channels.txt", "last_version.txt", "feed_seen.txt", "feed_cache.txt", "caption_lang.txt", "audio_lang.txt"};
 		for (auto name : aside) {
 			std::string from = DEF_MAIN_DIR + name, to = DEF_MAIN_DIR + std::string(name) + ".crashed";
@@ -52,11 +53,15 @@ void load_settings() {
 	// "Reset the settings" (Settings, Data) leaves a flag : the settings file is dropped at the next start, so the defaults load
 	if (access((DEF_MAIN_DIR + "reset_settings.flag").c_str(), F_OK) == 0) {
 		remove(SETTINGS_FILE_PATH.c_str());
+		remove((SETTINGS_FILE_PATH + ".tmp").c_str());
 		remove((DEF_MAIN_DIR + "reset_settings.flag").c_str());
 	}
 	static char buf[0x4001];
 	memset(buf, 0, sizeof buf);
 	u32 read_size;
+	if (access(SETTINGS_FILE_PATH.c_str(), F_OK) != 0 && access((SETTINGS_FILE_PATH + ".tmp").c_str(), F_OK) == 0) {
+		rename((SETTINGS_FILE_PATH + ".tmp").c_str(), SETTINGS_FILE_PATH.c_str()); // a save was cut after the old file was removed
+	}
 	Result_with_string result = Path(SETTINGS_FILE_PATH).read_file((u8 *)buf, 0x4000, read_size);
 	logger.info(DEF_SEM_INIT_STR, "read_file()..." + result.string + result.error_description, result.code);
 	auto settings = parse_xml_like_text(buf);
@@ -290,6 +295,12 @@ void save_settings() {
 	add_double("dpad_scroll_speed1", var_dpad_scroll_speed1);
 	add_double("dpad_scroll_speed1_threshold", var_dpad_scroll_speed1_threshold);
 
-	Result_with_string result = Path(SETTINGS_FILE_PATH).write_file((u8 *)data.c_str(), data.size());
+	// written to a .tmp first: a kill while saving leaves the old settings (or the finished .tmp) instead of an empty file
+	const std::string settings_tmp = SETTINGS_FILE_PATH + ".tmp";
+	Result_with_string result = Path(settings_tmp).write_file((u8 *)data.c_str(), data.size());
+	if (result.code == 0) {
+		remove(SETTINGS_FILE_PATH.c_str());
+		rename(settings_tmp.c_str(), SETTINGS_FILE_PATH.c_str());
+	}
 	logger.info("settings/save", "write_file()..." + result.string + result.error_description, result.code);
 }
