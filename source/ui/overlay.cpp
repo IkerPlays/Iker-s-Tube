@@ -103,6 +103,14 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
 		bool added = favorites_toggle(video);
 		notice_show(added ? tr("Added to Favorites", "Añadido a Favoritos") : tr("Removed from Favorites", "Quitado de Favoritos"));
 	});
+	if (resume_get(id) > 0) {
+		option(tr("Forget where I stopped", "Olvidar dónde lo dejé"), [id]() {
+			resume_set(id, 0, 0); // (positions under 15 s are not kept : this erases it)
+			resume_save();
+			notice_show(tr("Forgotten", "Olvidado"));
+			var_need_refresh = true;
+		});
+	}
 	option(tr("Add to a local list", "Añadir a una lista local"), [video]() {
 		auto lists = playlists_get();
 		if (lists.empty()) {

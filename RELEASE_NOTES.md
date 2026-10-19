@@ -1,1 +1,1 @@
-History: long press a day header and choose Delete this day to remove all the videos of that day.
+Video menu: videos you stopped in the middle have a Forget where I stopped option.
