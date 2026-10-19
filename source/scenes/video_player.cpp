@@ -2612,6 +2612,10 @@ debug_info_view =
 					                             channel_skip_set(playing_video_info.author.id, steps[next]);
 					                             notice_show(steps[next] ? tr("Every video of this channel starts ", "Cada vídeo de este canal empieza ") + std::to_string(steps[next]) + tr(" s later", " s más tarde") : tr("Intro skip off", "Saltar intro desactivado"));
 				                             }),
+				                         make_tool([]() { return tr("Controls", "Controles"); }, 70,
+				                             []() {
+					                             show_text_popup(tr("Controls", "Controles"), tr("A: pause / play", "A: pausar / reproducir") + "\n" + tr("B: back", "B: atrás") + "\n" + tr("D-pad Left / Right: seek", "Cruceta izquierda / derecha: saltar") + "\n" + tr("D-pad Down / Up: next / previous video", "Cruceta abajo / arriba: siguiente / anterior vídeo") + "\n" + tr("ZL / ZR: 5 seconds back / forward", "ZL / ZR: 5 segundos atrás / adelante") + "\n" + tr("L, R, X, Y: choose what they do in Settings", "L, R, X, Y: elige qué hacen en Ajustes") + "\n" + tr("Hold X and press B: stop the video", "Mantén X y pulsa B: parar el vídeo"));
+				                             }),
 				                         make_tool([]() { return tr("Dislikes", "No me gusta"); }, 70,
 				                                   []() {
 					                                   if (cur_video_info.id == "" || is_async_task_running(dislikes_task)) return;

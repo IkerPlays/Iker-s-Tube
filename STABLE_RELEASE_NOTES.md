@@ -24,6 +24,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **More badges.** 13 badges now, including collector, offline fan and subscriber.
 - **Skip intro.** A player tool makes every video of a channel start 5 to 60 seconds later, remembered per channel.
 - **Richer progress bar.** Chapter starts are marked on the bar, and the parts SponsorBlock skips show in green.
+- **Controls help.** A player tool lists what each button does.
 
 ## Installing
 
