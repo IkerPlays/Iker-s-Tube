@@ -1,1 +1,1 @@
-The Feed tab of Home shows the last feed from the SD card right away while the new one loads (feed_cache.txt).
+History shows a memory row: a video you watched about a week (or a month) ago; tap to play it again.

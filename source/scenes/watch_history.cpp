@@ -144,6 +144,29 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                                     ->set_corner_radius(6)
 		                                     ->set_on_view_released([](View &) { wrapped_request = true; }));
+		{ // a memory: what you watched about a week (or a month) ago
+			const time_t now = time(NULL);
+			const HistoryVideo *memory = NULL;
+			bool month = false;
+			for (int pass = 0; pass < 2 && !memory; pass++) {
+				const long long center = pass == 0 ? 7 * 86400 : 30 * 86400, slack = pass == 0 ? 86400 : 2 * 86400;
+				for (auto &v : watch_history) {
+					long long age = (long long)(now - v.last_watch_time);
+					if (age < center - slack || age > center + slack || v.id == "") continue;
+					if (!memory || v.my_view_count > memory->my_view_count) memory = &v, month = pass == 1;
+				}
+			}
+			if (memory) {
+				const std::string memory_url = youtube_get_video_url_by_id(memory->id);
+				video_list_view->views.push_back((new TextView(0, 0, 320, 22))
+				                                     ->set_text((month ? tr("A month ago: ", "Hace un mes: ") : tr("A week ago: ", "Hace una semana: ")) + truncate_first_line(memory->title, 230, 0.5))
+				                                     ->set_x_alignment(TextView::XAlign::CENTER)
+				                                     ->set_y_alignment(TextView::YAlign::CENTER)
+				                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
+				                                     ->set_corner_radius(6)
+				                                     ->set_on_view_released([memory_url](View &) { clicked_url = memory_url; }));
+			}
+		}
 	}
 	std::string needle = history_filter;
 	for (auto &c : needle) c = tolower(c);

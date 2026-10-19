@@ -161,6 +161,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"You watched it ", {"Vous l'avez vu ", "Du hast es ", "L'hai guardato ", "Você assistiu ", "視聴回数 "}},
 	    {" time(s), last on ", {" fois, la dernière le ", " Mal gesehen, zuletzt am ", " volte, l'ultima il ", " vez(es), a última em ", " 回、最後は "}},
 	    {"Videos of this channel in your history: ", {"Vidéos de cette chaîne dans l'historique : ", "Videos dieses Kanals im Verlauf: ", "Video di questo canale nella cronologia: ", "Vídeos deste canal no histórico: ", "履歴にあるこのチャンネルの動画: "}},
+	    {"A month ago: ", {"Il y a un mois : ", "Vor einem Monat: ", "Un mese fa: ", "Há um mês: ", "1か月前: "}},
+	    {"A week ago: ", {"Il y a une semaine : ", "Vor einer Woche: ", "Una settimana fa: ", "Há uma semana: ", "1週間前: "}},
 	    {"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	    {"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	    {"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},

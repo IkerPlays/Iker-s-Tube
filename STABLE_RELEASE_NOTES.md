@@ -12,6 +12,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Equalizer.** The audio-only screen has a small animated equalizer.
 - **Loading placeholders.** Thumbnails pulse softly while they load.
 - **Instant feed.** The Feed tab shows your last feed immediately when the app opens, then refreshes it.
+- **Memories.** The History shows a video from about a week or a month ago to watch again.
 
 ## Installing
 
