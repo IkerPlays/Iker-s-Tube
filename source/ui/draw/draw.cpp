@@ -786,10 +786,13 @@ void Draw_exit(void) {
 	gfxExit();
 }
 
-void Draw_frame_ready(void) { C3D_FrameBegin(C3D_FRAME_SYNCDRAW); }
+static int current_screen_num = -1; // the screen that is being drawn (for the warm veil)
+void Draw_frame_ready(void) {
+	C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+	current_screen_num = -1; // a new frame starts with no screen
+}
 
 // a thin warm veil over the screens at night (Settings, Appearance): easier on the eyes in the dark
-static int current_screen_num = -1;
 static void draw_warm_veil(int screen_num) {
 	if (screen_num < 0 || var_warm_screen == 0) return;
 	if (var_warm_screen == 1 && !(var_hours >= 21 || var_hours < 6)) return;

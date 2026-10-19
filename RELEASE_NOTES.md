@@ -1,1 +1,1 @@
-The Feed tab groups videos under Today, Yesterday, This week, This month and Older headers.
+Small fixes: the warm veil state is reset at each frame; Next episode keeps the first number that follows Ep/Part.

@@ -883,7 +883,7 @@ static std::string next_episode_query(const std::string &title) {
 				if (marked_by_hash || word == "ep" || word == "episode" || word == "episodio" || word == "part" || word == "parte" || word == "pt" || word == "chapter" ||
 				    word == "capitulo" || word == "cap" || word == "vol" || word == "volume" || word == "day" || word == "dia" || word == "e") priority = 2;
 			}
-			if (j - i <= 3 && value >= 1 && value < 999 && !resolution && priority >= best_priority) best_start = (int)i, best_len = (int)(j - i), best_priority = priority;
+			if (j - i <= 3 && value >= 1 && value < 999 && !resolution && (priority > best_priority || (priority == 1 && best_priority == 1))) best_start = (int)i, best_len = (int)(j - i), best_priority = priority;
 			i = j;
 		} else {
 			i++;
