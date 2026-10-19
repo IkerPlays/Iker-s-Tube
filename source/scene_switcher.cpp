@@ -92,7 +92,7 @@ static void auto_backup_task(void *) {
 		fclose(f);
 	}
 	long long now = (long long)time(NULL);
-	if (now < 1600000000LL || now - last < 7 * 24 * 3600) { // the clock is not set, or it is not time yet
+	if (now < 1600000000LL || (last <= now && now - last < 7 * 24 * 3600)) { // (a mark from the future, after a clock mistake, counts as due) // the clock is not set, or it is not time yet
 		return;
 	}
 	if (backup_export() >= 0) {
@@ -288,6 +288,7 @@ void Menu_exit(void) {
 	Util_expl_exit();
 	Extfont_exit();
 
+	misc_tasks_request(TASK_SAVE_SETTINGS); // (the counters of play time and data are saved only now and then: the last stretch too)
 	thumbnail_downloader_thread_exit_request();
 	async_task_thread_exit_request();
 	misc_tasks_thread_exit_request();
@@ -300,10 +301,11 @@ void Menu_exit(void) {
 	logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(thumbnail_downloader_thread, time_out));
 	logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(async_task_thread, time_out));
 	logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(misc_tasks_thread, time_out));
-	threadFree(menu_worker_thread);
-	threadFree(thumbnail_downloader_thread);
-	threadFree(async_task_thread);
-	threadFree(misc_tasks_thread);
+	// (a thread that did not stop within the time limit is not freed under its own feet)
+	if (R_SUCCEEDED(threadJoin(menu_worker_thread, 0))) threadFree(menu_worker_thread);
+	if (R_SUCCEEDED(threadJoin(thumbnail_downloader_thread, 0))) threadFree(thumbnail_downloader_thread);
+	if (R_SUCCEEDED(threadJoin(async_task_thread, 0))) threadFree(async_task_thread);
+	if (R_SUCCEEDED(threadJoin(misc_tasks_thread, 0))) threadFree(misc_tasks_thread);
 
 	NetworkSessionList::at_exit();
 

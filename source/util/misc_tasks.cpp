@@ -6,8 +6,8 @@
 #include "system/change_setting.hpp"
 #include "headers.hpp"
 
-static bool should_be_running = true;
-static bool request[100];
+static volatile bool should_be_running = true;
+static volatile bool request[100];
 
 void misc_tasks_request(int type) { request[type] = true; }
 
@@ -34,6 +34,11 @@ void misc_tasks_thread_func(void *arg) {
 			usleep(50000);
 		}
 	}
+
+	// a last pass: what was asked just before the app closed is still saved
+	if (request[TASK_SAVE_SETTINGS]) { request[TASK_SAVE_SETTINGS] = false; save_settings(); }
+	if (request[TASK_SAVE_HISTORY]) { request[TASK_SAVE_HISTORY] = false; save_watch_history(); }
+	if (request[TASK_SAVE_SUBSCRIPTION]) { request[TASK_SAVE_SUBSCRIPTION] = false; save_subscription(); }
 
 	logger.info("misc-task", "Thread exit.");
 	threadExit(0);

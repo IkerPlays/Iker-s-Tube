@@ -17,9 +17,15 @@ static void append_to_log_file(const std::string &line) {
 		remove(LOG_PREV_PATH);
 		rename(LOG_PATH, LOG_PREV_PATH);
 	}
+	static size_t written = 0;
+	if (written > 512 * 1024) { // a warning loop must not fill the SD card: the file is rotated
+		remove(LOG_PREV_PATH);
+		rename(LOG_PATH, LOG_PREV_PATH);
+		written = 0;
+	}
 	FILE *f = fopen(LOG_PATH, "a");
 	if (f) {
-		fprintf(f, "%s\n", line.c_str());
+		written += fprintf(f, "%s\n", line.c_str()) > 0 ? line.size() + 1 : 0;
 		fclose(f);
 	}
 }
@@ -55,7 +61,7 @@ void Logger::log(LogLevel level, const std::string &str) {
 	}
 	logs.push_back({acc_time, level, std::string(time_str) + " " + str.substr(0, 120)});
 	if (logs.size() > MAX_BUFFERED_LINES) {
-		logs.pop_front(), draw_offset_y--;
+		logs.pop_front(), draw_offset_y = std::max(0, draw_offset_y - 1);
 	}
 	if (draw_enabled) {
 		var_need_refresh = true;

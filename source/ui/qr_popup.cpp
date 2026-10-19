@@ -34,6 +34,8 @@ void qr_popup_show(const std::string &text) {
 	{ // the 3DS has no clipboard : the link is also written to a text file on the SD card
 		mkdir("sdmc:/3ds", 0777);
 		mkdir("sdmc:/3ds/IkersTube", 0777);
+		struct stat links_stat;
+		if (stat("sdmc:/3ds/IkersTube/shared_links.txt", &links_stat) == 0 && links_stat.st_size > 64 * 1024) remove("sdmc:/3ds/IkersTube/shared_links.txt"); // (it does not grow forever)
 		FILE *f = fopen("sdmc:/3ds/IkersTube/shared_links.txt", "a");
 		if (f) {
 			fprintf(f, "%s\n", text.c_str());
