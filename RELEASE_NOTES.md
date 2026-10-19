@@ -1,1 +1,1 @@
-Player: the Chap tools show the name of the chapter they jump to.
+Library: the Queue tab has a Remove duplicates button.
