@@ -1,1 +1,1 @@
-Docs: the usage guide describes the new features and the safe mode.
+Report: report.txt says if the app is in safe mode and if a settings.txt.crashed copy exists.

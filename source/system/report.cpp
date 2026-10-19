@@ -58,6 +58,7 @@ bool report_create() {
 	}
 	fprintf(f, "settings: autoplay=%d, auto captions=%d, caption size=%d, seek step=%d, autoplay limit=%d, break reminder=%d, library tab=%d\n", (int)var_autoplay_level,
 	        (int)var_auto_captions, (int)var_caption_size, (int)var_seek_step, (int)var_autoplay_limit, (int)var_break_reminder, (int)var_library_tab);
+	fprintf(f, "safe mode: %s, settings.txt.crashed: %s\n", var_safe_mode ? "yes (the last start did not finish)" : "no", access("sdmc:/3ds/IkersTube/settings.txt.crashed", F_OK) == 0 ? "exists" : "no");
 	fprintf(f, "saved items: %d, queue: %d\n", (int)offline_list().size(), play_queue_size());
 	append_tail(f, "crash_last.txt", "sdmc:/3ds/IkersTube/crash_last.txt", 4000);
 	append_tail(f, "log.txt (end)", "sdmc:/3ds/IkersTube/log.txt", 24000);
