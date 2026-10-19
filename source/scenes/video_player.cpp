@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/result_filter.hpp"
 #include <vector>
 #include <numeric>
 #include <math.h>
@@ -2635,6 +2636,8 @@ debug_info_view =
 		    // prepare suggestion view
 		    std::vector<View *> new_suggestion_views;
 		    for (size_t i = 0; i < tmp_video_info.suggestions.size(); i++) {
+			    auto &item = tmp_video_info.suggestions[i];
+			    if (item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url, item.video.author)) continue; // hidden channels, Shorts, watched (settings)
 			    new_suggestion_views.push_back(suggestion_to_view(tmp_video_info.suggestions[i]));
 		    }
 
@@ -3053,6 +3056,8 @@ debug_info_view =
 	    logger.info("player/load-s", "truncate/view creation start");
 	    std::vector<View *> new_suggestion_views;
 	    for (size_t i = arg->suggestions.size(); i < new_result.suggestions.size(); i++) {
+		    auto &item = new_result.suggestions[i];
+		    if (item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url, item.video.author)) continue;
 		    new_suggestion_views.push_back(suggestion_to_view(new_result.suggestions[i]));
 	    }
 	    logger.info("player/load-s", "truncate/view creation end");
