@@ -459,6 +459,7 @@ bool Menu_main(void) {
 		}
 
 		global_current_scene = scene_stack.back().next_scene;
+		Draw_start_transition();
 		std::string arg = scene_stack.back().arg;
 
 		if (global_current_scene == SceneType::VIDEO_PLAYER) {

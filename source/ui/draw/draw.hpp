@@ -68,3 +68,4 @@ void Draw_frame_ready(void);
 void Draw_screen_ready(int screen_num, int abgr8888);
 
 void Draw_apply_draw(void);
+void Draw_start_transition(void); // a short fade-in of the bottom screen when the scene changes (needs the rounded style setting)

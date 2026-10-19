@@ -795,7 +795,23 @@ void Draw_screen_ready(int screen_num, int abgr8888) {
 	}
 }
 
+static u64 transition_start_ms = 0;
+void Draw_start_transition(void) {
+	transition_start_ms = osGetTime();
+	var_need_refresh = true;
+}
+
 void Draw_apply_draw(void) {
+	if (transition_start_ms) { // the bottom screen is the current target here: a veil of the background color that fades out
+		const u64 elapsed = osGetTime() - transition_start_ms;
+		if (elapsed >= 160 || !var_round_buttons) {
+			transition_start_ms = 0;
+		} else {
+			u32 alpha = (u32)(200 * (160 - elapsed) / 160);
+			C2D_DrawRectSolid(0, 0, 0, 320, 240, (alpha << 24) | (DEFAULT_BACK_COLOR & 0x00FFFFFF));
+			var_need_refresh = true;
+		}
+	}
 	C3D_FrameEnd(0);
 	osTickCounterUpdate(&draw_frame_time_timer);
 	draw_frametime[19] = osTickCounterRead(&draw_frame_time_timer);

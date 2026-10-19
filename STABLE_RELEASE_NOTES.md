@@ -29,6 +29,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Hardening.** The app recovers list files interrupted while saving and ignores damaged values in its data files.
 - **Weekly chart.** My Wrapped shows how long you played on each of the last 7 days.
 - **Seasonal shortcut.** Search shows a Halloween, Christmas or New Year shortcut in season.
+- **Fade-in.** Changing screens fades the bottom screen in for a moment (part of the rounded style).
 
 ## Installing
 
