@@ -1,2 +1,1 @@
-About screen: new row that shows a QR code for the latest stable download.
-README: QR that always points to the latest stable release.
+My Wrapped (History) has a new Badges row: 10 badges to unlock (first steps, regular, binge watcher, streaks, loyal, night owl, early bird, hours playing).
