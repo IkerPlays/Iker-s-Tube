@@ -1,1 +1,1 @@
-Search: Explore starts with Surprise me, which opens a random topic.
+Release notes for the stable version were tidied (no code changes).
