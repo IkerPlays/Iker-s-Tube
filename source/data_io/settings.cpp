@@ -39,7 +39,7 @@ int local_day_number() {
 void load_settings() {
 	if (access(STARTING_FLAG.c_str(), F_OK) == 0) {
 		var_safe_mode = true;
-		static const char *aside[] = {"settings.txt", "pinned_channels.txt", "recent_channels.txt", "hidden_channels.txt", "last_version.txt", "feed_seen.txt", "caption_lang.txt", "audio_lang.txt"};
+		static const char *aside[] = {"settings.txt", "pinned_channels.txt", "recent_channels.txt", "hidden_channels.txt", "last_version.txt", "feed_seen.txt", "feed_cache.txt", "caption_lang.txt", "audio_lang.txt"};
 		for (auto name : aside) {
 			std::string from = DEF_MAIN_DIR + name, to = DEF_MAIN_DIR + std::string(name) + ".crashed";
 			if (access(from.c_str(), F_OK) == 0 && access(to.c_str(), F_OK) != 0) { // (a copy that is already there is never overwritten)

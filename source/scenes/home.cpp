@@ -76,6 +76,8 @@ using namespace Home;
 static void load_home_page(void *);
 static void load_home_page_more(void *);
 static void load_subscription_feed(void *);
+static SuccinctVideoView *make_feed_view(const YouTubeVideoSuccinct &video);
+static std::vector<YouTubeVideoSuccinct> feed_cache_load();
 static std::vector<std::string> feed_latest_ids; // ids of the videos of the last local feed load
 static void load_oauth_subscription_feed(void *);
 static void load_oauth_subscription_feed_more(void *);
@@ -294,6 +296,13 @@ void Home_init(void) {
 	resource_lock.lock();
 	update_subscribed_channels(get_valid_subscribed_channels());
 	resource_lock.unlock();
+
+	if (!var_safe_mode) { // the previous feed, until the fresh one arrives
+		auto cached = feed_cache_load();
+		resource_lock.lock();
+		for (auto &video : cached) local_feed_videos_list_view->views.push_back(make_feed_view(video));
+		resource_lock.unlock();
+	}
 
 	queue_async_task(load_subscription_feed, NULL);
 
@@ -744,6 +753,70 @@ static void load_home_page_more(void *) {
 	}
 	resource_lock.unlock();
 }
+#define FEED_CACHE_PATH "sdmc:/3ds/IkersTube/feed_cache.txt"
+#define FEED_CACHE_MAX 60
+
+static SuccinctVideoView *make_feed_view(const YouTubeVideoSuccinct &video) {
+	SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
+	cur_view->set_title_lines(truncate_str(video.title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
+	cur_view->set_thumbnail_url(video.thumbnail_url);
+	cur_view->set_auxiliary_lines({video.publish_date, video.views_str});
+	cur_view->set_bottom_right_overlay(video.duration_text);
+	cur_view->set_queue_item(video.url, video.title, video.author);
+	cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
+	cur_view->set_on_view_released([video](View &view) {
+		clicked_url = video.url;
+		clicked_is_video = true;
+	});
+	return cur_view;
+}
+
+// the last feed is kept on the SD card so the Feed tab has something to show the moment the app opens
+static void feed_cache_save(const std::vector<YouTubeVideoSuccinct> &videos) {
+	if (videos.empty() || var_incognito) return;
+	auto clean = [](std::string text) {
+		for (auto &c : text) if (c == '\t' || c == '\n' || c == '\r') c = ' ';
+		return text;
+	};
+	std::string tmp = std::string(FEED_CACHE_PATH) + ".tmp";
+	FILE *f = fopen(tmp.c_str(), "w");
+	if (!f) return;
+	for (size_t i = 0; i < videos.size() && i < FEED_CACHE_MAX; i++) {
+		auto &v = videos[i];
+		fprintf(f, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", clean(v.url).c_str(), clean(v.title).c_str(), clean(v.author).c_str(), clean(v.duration_text).c_str(),
+		        clean(v.publish_date).c_str(), clean(v.views_str).c_str(), clean(v.thumbnail_url).c_str());
+	}
+	fclose(f);
+	remove(FEED_CACHE_PATH);
+	rename(tmp.c_str(), FEED_CACHE_PATH);
+}
+
+static std::vector<YouTubeVideoSuccinct> feed_cache_load() {
+	std::vector<YouTubeVideoSuccinct> videos;
+	FILE *f = fopen(FEED_CACHE_PATH, "r");
+	if (!f) return videos;
+	char line[2048];
+	while (videos.size() < FEED_CACHE_MAX && fgets(line, sizeof line, f)) {
+		std::string text = line;
+		while (text.size() && (text.back() == '\n' || text.back() == '\r')) text.pop_back();
+		std::vector<std::string> parts;
+		size_t start = 0;
+		while (true) {
+			size_t tab = text.find('\t', start);
+			if (tab == std::string::npos) { parts.push_back(text.substr(start)); break; }
+			parts.push_back(text.substr(start, tab - start));
+			start = tab + 1;
+		}
+		if (parts.size() != 7 || parts[0] == "") continue;
+		YouTubeVideoSuccinct v;
+		v.url = parts[0], v.title = parts[1], v.author = parts[2], v.duration_text = parts[3];
+		v.publish_date = parts[4], v.views_str = parts[5], v.thumbnail_url = parts[6];
+		videos.push_back(v);
+	}
+	fclose(f);
+	return videos;
+}
+
 static void load_subscription_feed(void *) {
 	resource_lock.lock();
 	auto channels = subscribed_channels;
@@ -847,25 +920,15 @@ static void load_subscription_feed(void *) {
 		}
 		var_need_refresh = true;
 	}
+	std::vector<YouTubeVideoSuccinct> shown_videos;
 	for (auto &i : loaded_videos) {
 		for (auto video : i.second) {
 			if (result_video_hidden(video.url, video.author)) continue; // the settings hide Shorts / watched videos
-			SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
-
-			cur_view->set_title_lines(truncate_str(video.title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
-			cur_view->set_thumbnail_url(video.thumbnail_url);
-			cur_view->set_auxiliary_lines({video.publish_date, video.views_str});
-			cur_view->set_bottom_right_overlay(video.duration_text);
-			cur_view->set_queue_item(video.url, video.title, video.author);
-			cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
-			cur_view->set_on_view_released([video](View &view) {
-				clicked_url = video.url;
-				clicked_is_video = true;
-			});
-
-			new_feed_video_views.push_back(cur_view);
+			new_feed_video_views.push_back(make_feed_view(video));
+			shown_videos.push_back(video);
 		}
 	}
+	feed_cache_save(shown_videos);
 
 	misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 
