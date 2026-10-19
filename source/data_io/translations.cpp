@@ -155,6 +155,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"100 hours playing", {"100 heures de lecture", "100 Stunden Wiedergabe", "100 ore di riproduzione", "100 horas reproduzindo", "再生100時間"}},
 	    {"Badges: ", {"Succès : ", "Erfolge: ", "Traguardi: ", "Conquistas: ", "実績: "}},
 	    {"Badges", {"Succès", "Erfolge", "Traguardi", "Conquistas", "実績"}},
+	    {"Most replayed: ", {"Le plus revu : ", "Am häufigsten wiederholt: ", "Più rivisto: ", "Mais repetido: ", "最多リピート: "}},
 	    {"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	    {"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	    {"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},

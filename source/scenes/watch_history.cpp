@@ -381,6 +381,14 @@ void History_draw(void) {
 				for (auto &b : badges) unlocked += b.done;
 				std::vector<std::pair<std::string, std::function<void()>>> badge_rows;
 				for (auto &b : badges) badge_rows.push_back({std::string(b.done ? "[x] " : "[ ] ") + b.name, []() {}});
+				const HistoryVideo *replayed = NULL;
+				for (auto &video : watch_history) {
+					if (video.my_view_count >= 2 && (!replayed || video.my_view_count > replayed->my_view_count)) replayed = &video;
+				}
+				if (replayed) {
+					const std::string replay_url = youtube_get_video_url_by_id(replayed->id);
+					rows.push_back({tr("Most replayed: ", "Más repetido: ") + truncate_first_line(replayed->title, 190, 0.5) + " (" + std::to_string(replayed->my_view_count) + ")", [replay_url]() { clicked_url = replay_url; }});
+				}
 				rows.push_back({tr("Badges: ", "Logros: ") + std::to_string(unlocked) + "/" + std::to_string(badges.size()), [badge_rows]() {
 					overlay_show_menu_deferred(tr("Badges", "Logros"), badge_rows);
 				}});
