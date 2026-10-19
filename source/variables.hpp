@@ -42,6 +42,7 @@ extern int var_autoplay_skip_watched; // 1 : autoplay picks the first suggestion
 extern int var_download_quality; // saved videos : 0 automatic (360p on the New 3DS, 240p on the old one), 1 : 144p, 2 : 240p, 3 : 360p
 extern int var_auto_captions; // 1 : the subtitles of the last used language turn on by themselves
 extern int var_seek_step; // 0 : 10 s, 1 : 5 s, 2 : 15 s, 3 : 30 s (D-pad left / right in the player)
+extern int var_time_remaining; // 1 : the player bar shows the time left instead of the length
 extern int var_auto_chat; // 1 : the chat opens by itself when a live stream starts playing
 extern int var_default_speed; // 0..5 : 100%, 75%, 125%, 150%, 175%, 200% (for channels without a speed of their own)
 extern int var_wl_autoremove; // 1 : a video leaves Watch later when it is watched until the end

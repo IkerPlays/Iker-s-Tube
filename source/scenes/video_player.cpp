@@ -3447,7 +3447,7 @@ static void autoplay_countdown_tick() {
 	    double vid_progress = network_decoder.get_bar_pos_from_timestamp(bar_timestamp);
 
 	    std::string time_str0 = Util_convert_seconds_to_time(bar_timestamp);
-	    std::string time_str1 = "/ " + Util_convert_seconds_to_time(vid_duration);
+	    std::string time_str1 = var_time_remaining ? "- " + Util_convert_seconds_to_time(std::max(0.0, vid_duration - bar_timestamp)) : "/ " + Util_convert_seconds_to_time(vid_duration);
 	    float time_str0_w = Draw_get_width(time_str0, SMALL_FONT_SIZE);
 	    float time_str1_w = Draw_get_width(time_str1, SMALL_FONT_SIZE);
 	    bar_x_l = 30;

@@ -1114,6 +1114,20 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Time shown in the player bar
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Length", "Duración"); },
+							(std::function<std::string ()>) []() { return tr("Time left", "Tiempo restante"); }
+						}, var_time_remaining)
+						->set_title([](const SelectorView &) { return tr("Second time in the player bar", "Segundo tiempo de la barra"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_time_remaining != view.selected_button) {
+								var_time_remaining = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Seek step
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

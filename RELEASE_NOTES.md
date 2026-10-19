@@ -1,1 +1,1 @@
-Player: the Info tool also shows how many subtitle languages and chapters the video has.
+Settings: Second time in the player bar can show the time left instead of the length.
