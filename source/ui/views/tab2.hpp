@@ -42,13 +42,14 @@ struct Tab2View : public FixedWidthView {
 		this->tab_font_size = tab_font_size;
 		return this;
 	}
+	bool has_selected() const { return selected_tab >= 0 && selected_tab < (int)views.size(); } // (the list may have shrunk)
 	void on_scroll() override {
 		tab_holding = -1;
-		views[selected_tab]->on_scroll();
+		if (has_selected()) views[selected_tab]->on_scroll();
 	}
 	void reset_holding_status_() override {
 		tab_holding = -1;
-		views[selected_tab]->reset_holding_status();
+		if (has_selected()) views[selected_tab]->reset_holding_status();
 	}
 	void recursive_delete_subviews() override {
 		for (auto view : views) {
@@ -57,11 +58,11 @@ struct Tab2View : public FixedWidthView {
 		}
 		views.clear();
 	}
-	float get_height() const override { return tab_selector_height + views[selected_tab]->get_height(); }
+	float get_height() const override { return tab_selector_height + (has_selected() ? views[selected_tab]->get_height() : 0); }
 
 	void draw_() const override {
 		int tab_num = get_tab_num();
-		if (!tab_num) {
+		if (!tab_num || !has_selected()) {
 			return;
 		}
 
@@ -83,6 +84,8 @@ struct Tab2View : public FixedWidthView {
 		}
 	}
 	void update_(Hid_info key) override {
+		if (views.empty()) return;
+		selected_tab = std::max(0, std::min<int>(selected_tab, (int)views.size() - 1));
 		if (lr_tab_switch_enabled) {
 			if (key.p_r) {
 				selected_tab++;
@@ -108,7 +111,7 @@ struct Tab2View : public FixedWidthView {
 			tab_holding = tab_holded;
 		}
 		if (key.touch_x == -1 && tab_holding != -1) {
-			selected_tab = tab_holding, var_need_refresh = true;
+			selected_tab = std::min<int>(tab_holding, (int)views.size() - 1), var_need_refresh = true;
 		}
 		if (tab_holded != tab_holding) {
 			tab_holding = -1;

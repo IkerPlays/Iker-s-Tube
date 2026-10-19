@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include "ui/qr_popup.hpp"
 #include "ui/colors.hpp"
+#include "ui/notice.hpp"
 extern "C" {
 #include "util/qrcodegen/qrcodegen.h"
 }
@@ -18,6 +19,7 @@ void qr_popup_show(const std::string &text) {
 	static u8 qrcode[qrcodegen_BUFFER_LEN_MAX];
 	if (!qrcodegen_encodeText(text.c_str(), temp, qrcode, qrcodegen_Ecc_LOW, qrcodegen_VERSION_MIN,
 	                          qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true)) {
+		notice_show(tr("Too long for a QR code", "Demasiado largo para un código QR"));
 		return;
 	}
 	qr_size = qrcodegen_getSize(qrcode);

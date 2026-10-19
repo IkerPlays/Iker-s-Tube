@@ -80,6 +80,8 @@ struct TabView : public FixedSizeView {
 		}
 	}
 	void update_(Hid_info key) override {
+		if (views.empty()) return;
+		selected_tab = std::max(0, std::min<int>(selected_tab, (int)views.size() - 1)); // (the list may have shrunk)
 		if (lr_tab_switch_enabled) {
 			if (key.p_r) {
 				selected_tab++;
@@ -105,7 +107,7 @@ struct TabView : public FixedSizeView {
 			tab_holding = tab_holded;
 		}
 		if (key.touch_x == -1 && tab_holding != -1) {
-			selected_tab = tab_holding, var_need_refresh = true;
+			selected_tab = std::min<int>(tab_holding, (int)views.size() - 1), var_need_refresh = true;
 		}
 		if (tab_holded != tab_holding) {
 			tab_holding = -1;
