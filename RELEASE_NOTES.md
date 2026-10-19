@@ -1,1 +1,1 @@
-Release notes for the stable version mention the Mark watched tool.
+Stable version 1.0.6 was published. The stable release notes now start from it.
