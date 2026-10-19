@@ -1,1 +1,1 @@
-The long list of extra player tools is folded behind a More tools button (tap to show or hide).
+Fix: the folded More tools list holds the long row of extra tools.

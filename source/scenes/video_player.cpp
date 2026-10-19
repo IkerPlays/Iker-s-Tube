@@ -2745,7 +2745,6 @@ debug_info_view =
 				    {
 					    std::vector<View *> reflowed;
 					    std::vector<View *> *target = &reflowed; // the rows go here (the extra tools go to the folded list)
-					    int tool_row_index = 0;
 					    for (View *row : main_tab_views) {
 						    HorizontalListView *h = dynamic_cast<HorizontalListView *>(row);
 						    bool tool_row = h && h->views.size() > 1 && h->get_height() == 20; // (the rows of buttons are 20 pixels high)
@@ -2760,7 +2759,7 @@ debug_info_view =
 						    }
 						    std::vector<View *> current;
 						    std::vector<View *> folded;
-						    const bool fold_this = tool_row_index++ == 3; // the long row (live chat, info, QR, jumps...)
+						    const bool fold_this = h->views.size() > 24; // the long row of extra tools (live chat, info, QR, jumps...)
 						    target = fold_this ? &folded : &reflowed;
 						    float used = 0;
 						    auto flush = [&]() {
