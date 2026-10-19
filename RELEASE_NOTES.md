@@ -1,1 +1,1 @@
-Player: new Shuffle queue tool mixes the order of the videos in your queue.
+Docs: the Spanish usage guide describes the latest additions (history, Library, comments, Studio, paged menus, tip of the day).

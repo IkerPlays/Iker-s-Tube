@@ -41,10 +41,19 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 
 ## Más herramientas del reproductor
 - **Subtítulos:** CC (idiomas y traducción), CC tamaño, CC color.
+- **Listas:** +Lista (añade el vídeo a una lista local), Mezclar cola, Guardar lista en YouTube.
 - **Velocidad:** Más lento / Más rápido (de 5 en 5 %). **Auto:** cambia entre no, lista y todo.
 - **QR en este minuto**, **#Tags** (busca los hashtags del vídeo), **Guardar lista en YouTube**, **Recargar**, **Pantallas off** (SELECT + START las vuelve a encender) y **Estado** (hora y batería).
 - La cruceta izquierda/derecha salta 5, 10, 15 o 30 s (Ajustes). Abajo/Arriba: siguiente/anterior vídeo.
 - Ajustes nuevos: tiempo restante en la barra, parar tras N vídeos seguidos, recordatorio de descanso y subtítulos automáticos.
+
+## Otras novedades
+- **Historial:** "Canales más vistos" y, manteniendo pulsado el título de un día, "Borrar este día".
+- **Biblioteca:** recuerda la última pestaña; Favoritos y Luego tienen "Vaciar" (pregunta antes); en Me gusta, "Quitar mi Me gusta".
+- **Comentarios:** botón Recargar para ver el que acabas de mandar; frases rápidas en el teclado (edítalas en `comment_phrases.txt`).
+- **Studio:** atajo a los vídeos de la cámara de la 3DS (DCIM) y plantillas `upload_description.txt` y `upload_tags.txt`.
+- **Menús largos:** las opciones van en páginas ("Más opciones...", "Opciones anteriores...").
+- En Buscar sale un **consejo del día**.
 
 ## Descargas y almacenamiento
 - Guardar audio o vídeo desde el reproductor o desde cualquier lista; las listas tienen "Guardar audio" en bloque.
