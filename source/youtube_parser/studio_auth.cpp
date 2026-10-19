@@ -7,6 +7,21 @@
 #define CLIENT_PATH "sdmc:/3ds/IkersTube/studio_client.txt"
 #define TOKENS_PATH "sdmc:/3ds/IkersTube/studio_tokens.txt"
 
+// answers of the token endpoint go to the log only with the token values hidden
+static std::string redact_tokens(std::string text) {
+	for (const char *key : {"\"access_token\"", "\"refresh_token\"", "\"id_token\""}) {
+		size_t at = 0;
+		while ((at = text.find(key, at)) != std::string::npos) {
+			size_t open = text.find('"', text.find(':', at) + 1);
+			size_t close = open == std::string::npos ? open : text.find('"', open + 1);
+			if (close == std::string::npos) { text = text.substr(0, at); break; }
+			text.replace(open + 1, close - open - 1, "***");
+			at = open + 4;
+		}
+	}
+	return text;
+}
+
 static LightLock auth_lock;
 static struct AuthLockInit {
 	AuthLockInit() { LightLock_Init(&auth_lock); }
@@ -175,7 +190,7 @@ std::string studio_auth_access_token() {
 	std::string token = json_text(answer, "access_token");
 	LightLock_Lock(&auth_lock);
 	if (token == "") {
-		logger.warning("studio-auth", "refresh failed : http " + std::to_string(r.status_code) + " " + answer.substr(0, 200));
+		logger.warning("studio-auth", "refresh failed : http " + std::to_string(r.status_code) + " " + redact_tokens(answer).substr(0, 200));
 		access_token = "";
 	} else {
 		access_token = token;
@@ -214,7 +229,7 @@ bool studio_auth_request_code(StudioDeviceCode &out, std::string &error) {
 		std::string msg = json_text(answer, "error_description");
 		if (msg == "") msg = json_text(answer, "error");
 		error = r.fail ? r.error : "http " + std::to_string(r.status_code) + " " + msg;
-		logger.warning("studio-auth", "device code failed : " + error + " " + answer.substr(0, 200));
+		logger.warning("studio-auth", "device code failed : " + error + " " + redact_tokens(answer).substr(0, 200));
 		return false;
 	}
 	return true;
@@ -243,6 +258,6 @@ int studio_auth_poll(const StudioDeviceCode &code, std::string &error) {
 	std::string err = json_text(answer, "error");
 	if (err == "authorization_pending" || err == "slow_down") return 0;
 	error = err != "" ? err : (r.fail ? r.error : "http " + std::to_string(r.status_code));
-	logger.warning("studio-auth", "poll failed : " + error + " " + answer.substr(0, 200));
+	logger.warning("studio-auth", "poll failed : " + error + " " + redact_tokens(answer).substr(0, 200));
 	return -1;
 }

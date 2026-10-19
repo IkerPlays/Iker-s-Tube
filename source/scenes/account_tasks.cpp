@@ -155,6 +155,18 @@ static void run_job(void *arg) {
 }
 
 static void queue_job(AccountJob *job) {
+	{ // the same request twice within a moment (a double tap) is sent once
+		static std::string last_key;
+		static u64 last_ms = 0;
+		std::string key = std::to_string(job->type) + "|" + job->a + "|" + job->b + "|" + std::to_string(job->number) + "|" + (job->flag ? "1" : "0");
+		u64 now = osGetTime();
+		if (key == last_key && now - last_ms < 1500) {
+			delete job;
+			return;
+		}
+		last_key = key;
+		last_ms = now;
+	}
 	notice_show(tr("Working...", "Enviando..."));
 	queue_async_task(run_job, job);
 }
