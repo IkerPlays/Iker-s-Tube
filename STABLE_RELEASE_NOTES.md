@@ -4,6 +4,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 
 ### Changes
 - **Rounded buttons.** Buttons have rounded corners (a setting turns it off).
+- **My Wrapped.** A summary of what you watch: top channel, favorite hour, streak and more.
 
 ## Installing
 

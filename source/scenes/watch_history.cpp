@@ -28,6 +28,7 @@ std::string erase_request;
 
 int cur_sort_type = 0;
 int sort_request = -1;
+static bool wrapped_request = false; // the My Wrapped button was pressed (the summary opens after the views update)
 static bool top_channels_request = false; // the Top channels button was pressed (the menu opens after the views update)
 static long long delete_day_request = -1; // a day header was long pressed and Delete this day chosen (done after the views update)
 static bool clear_old_request = false;   // Clear what is older than 30 days (handled after the views update)
@@ -135,6 +136,13 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                                     ->set_corner_radius(6)
 		                                     ->set_on_view_released([](View &) { top_channels_request = true; }));
+		video_list_view->views.push_back((new TextView(0, 0, 320, 22))
+		                                     ->set_text(tr("My Wrapped (my numbers)", "Mi resumen (mis números)"))
+		                                     ->set_x_alignment(TextView::XAlign::CENTER)
+		                                     ->set_y_alignment(TextView::YAlign::CENTER)
+		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                                     ->set_corner_radius(6)
+		                                     ->set_on_view_released([](View &) { wrapped_request = true; }));
 	}
 	std::string needle = history_filter;
 	for (auto &c : needle) c = tolower(c);
@@ -316,6 +324,45 @@ void History_draw(void) {
 				global_intent.next_scene = SceneType::VIDEO_PLAYER;
 				global_intent.arg = clicked_url;
 				clicked_url = "";
+			}
+			if (wrapped_request) { // a summary of what you watch, made from the history
+				wrapped_request = false;
+				std::map<std::string, int> counts;
+				int hours[24] = {0};
+				std::set<long long> days;
+				int total_views = 0, this_week = 0;
+				const time_t now = time(NULL);
+				for (auto &video : watch_history) {
+					if (video.author_name != "") counts[video.author_name] += std::max(1, video.my_view_count);
+					total_views += std::max(1, video.my_view_count);
+					time_t t = video.last_watch_time;
+					struct tm *local = localtime(&t);
+					if (local) hours[local->tm_hour]++;
+					days.insert((long long)video.last_watch_time / 86400);
+					if (now - video.last_watch_time < 7 * 86400) this_week++;
+				}
+				std::string top_channel = "-";
+				int top_count = 0;
+				for (auto &c : counts) {
+					if (c.second > top_count) top_count = c.second, top_channel = c.first;
+				}
+				int busiest = 0;
+				for (int h = 1; h < 24; h++) if (hours[h] > hours[busiest]) busiest = h;
+				int streak = 0; // days in a row with something watched, counting back from today (or yesterday)
+				long long day = (long long)now / 86400;
+				if (!days.count(day)) day--;
+				while (days.count(day)) streak++, day--;
+				int play_seconds = (int)var_total_play_seconds;
+				auto row = [](const std::string &text) { return std::pair<std::string, std::function<void()>>{text, []() {}}; };
+				std::vector<std::pair<std::string, std::function<void()>>> rows = {
+				    row(tr("Videos in the history: ", "Vídeos en el historial: ") + std::to_string(watch_history.size())),
+				    row(tr("Times watched: ", "Veces vistos: ") + std::to_string(total_views)),
+				    row(tr("Time playing: ", "Tiempo reproduciendo: ") + std::to_string(play_seconds / 3600) + " h " + std::to_string(play_seconds / 60 % 60) + " min"),
+				    row(tr("Top channel: ", "Canal top: ") + truncate_first_line(top_channel, 150, 0.5)),
+				    row(tr("Favorite hour: ", "Hora favorita: ") + std::to_string(busiest) + ":00"),
+				    row(tr("This week: ", "Esta semana: ") + std::to_string(this_week)),
+				    row(tr("Days in a row: ", "Días seguidos: ") + std::to_string(streak))};
+				overlay_show_menu(tr("My Wrapped", "Mi resumen"), rows);
 			}
 			if (top_channels_request) {
 				top_channels_request = false;
