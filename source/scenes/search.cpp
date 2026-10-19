@@ -165,6 +165,7 @@ static u64 filter_search_due = 0; // the search with the new filter starts when 
 static int account_feed_kind = 0; // 1 : recommendations, 2 : notifications of the YouTube account
 static void load_account_feed(void *);
 static bool history_clear_request = false;
+static std::string related_search_request; // a related search that was tapped (started after the update)
 static std::string history_remove_request; // a search to forget (long press), done after the update
 static bool qr_scan_pending = false;
 
@@ -338,34 +339,47 @@ std::pair<bool, std::string> http_get(const std::string &url, std::map<std::stri
 static LightLock suggest_lock;
 static std::vector<std::string> suggest_words;
 static bool suggest_started = false;
+// the autocomplete suggestions of YouTube for a text (at most `max`, without the odd ones)
+static std::vector<std::string> suggestions_for(const std::string &query, int max, bool *connected = NULL) {
+	std::vector<std::string> res;
+	std::string encoded;
+	for (auto c : query) {
+		encoded.push_back('%');
+		encoded.push_back("0123456789ABCDEF"[(u8)c / 16]);
+		encoded.push_back("0123456789ABCDEF"[(u8)c % 16]);
+	}
+	auto r = youtube_parser::http_get("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=" + encoded, {});
+	if (connected) *connected = r.first;
+	if (!r.first) return res;
+	size_t open = r.second.find('[', r.second.find('[') + 1);
+	if (open == std::string::npos) return res;
+	size_t p = open + 1;
+	size_t array_end = r.second.find(']', p);
+	if (array_end == std::string::npos) return res;
+	while ((int)res.size() < max) {
+		size_t q1 = r.second.find('"', p);
+		if (q1 == std::string::npos || q1 > array_end) break;
+		size_t q2 = r.second.find('"', q1 + 1);
+		if (q2 == std::string::npos) break;
+		std::string w = r.second.substr(q1 + 1, q2 - q1 - 1);
+		p = q2 + 1;
+		if (w.find('\\') != std::string::npos || w.size() < 2 || w.size() > 38) continue;
+		res.push_back(w);
+	}
+	return res;
+}
 static void suggest_thread(void *) {
 	for (char c = 'a'; c <= 'z'; c++) {
-		auto r = youtube_parser::http_get(std::string("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=") + c, {});
-		if (!r.first) {
-			if (c == 'a') { // no connection : try again at the next start of the scene
-				suggest_started = false;
-				return;
-			}
-			continue;
+		bool connected = true;
+		auto words = suggestions_for(std::string(1, c), 3, &connected);
+		if (!connected && c == 'a') { // no connection : try again at the next start of the scene
+			suggest_started = false;
+			return;
 		}
-		size_t open = r.second.find('[', r.second.find('[') + 1);
-		if (open == std::string::npos) continue;
-		int taken = 0;
-		size_t p = open + 1;
-		size_t array_end = r.second.find(']', p);
-		if (array_end == std::string::npos) continue;
-		while (taken < 3) {
-			size_t q1 = r.second.find('"', p);
-			if (q1 == std::string::npos || q1 > array_end) break;
-			size_t q2 = r.second.find('"', q1 + 1);
-			if (q2 == std::string::npos) break;
-			std::string w = r.second.substr(q1 + 1, q2 - q1 - 1);
-			p = q2 + 1;
-			if (w.find('\\') != std::string::npos || w.size() < 2 || w.size() > 38) continue;
+		for (auto &w : words) {
 			LightLock_Lock(&suggest_lock);
 			if (std::find(suggest_words.begin(), suggest_words.end(), w) == suggest_words.end()) suggest_words.push_back(w);
 			LightLock_Unlock(&suggest_lock);
-			taken++;
 		}
 	}
 }
@@ -691,6 +705,28 @@ static void load_search_results(void *) {
 			                                            })}));
 		}
 	}
+	if (!feed && search_word.size() > 1 && search_word.compare(0, 4, "http") != 0) { // related searches : what people type after this
+		auto related = suggestions_for(search_word, 5);
+		std::vector<std::string> shown;
+		for (auto &w : related) {
+			if (w != search_word && shown.size() < 4) shown.push_back(w);
+		}
+		if (shown.size()) {
+			new_result_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+			                               ->set_text(tr("Related searches", "Búsquedas relacionadas"))
+			                               ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
+			                               ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
+			for (auto &w : shown) {
+				new_result_views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 24))
+				                               ->set_text(w)
+				                               ->set_font_size(0.55, DEFAULT_FONT_INTERVAL)
+				                               ->set_y_alignment(TextView::YAlign::CENTER)
+				                               ->set_get_text_color([]() { return COLOR_ACCENT; })
+				                               ->set_get_background_color(View::STANDARD_BACKGROUND)
+				                               ->set_on_view_released([w](View &) { related_search_request = w; var_need_refresh = true; }));
+			}
+		}
+	}
 	for (size_t i = 0; i < new_result.results.size(); i++) {
 		new_result_views.push_back(result_item_to_view(new_result.results[i]));
 	}
@@ -959,6 +995,11 @@ void Search_draw(void) {
 				if (is_async_task_running(load_search_results)) filter_search_due = osGetTime() + 300; // wait for the running search
 				else start_search(cur_search_word);
 			}
+		}
+		if (related_search_request != "") {
+			std::string word = related_search_request;
+			related_search_request = "";
+			start_search(word);
 		}
 		if (history_clear_request) {
 			history_clear_request = false;

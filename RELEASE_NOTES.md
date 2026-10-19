@@ -1,1 +1,1 @@
-Docs: the Spanish usage guide covers the new player tools, pinned channels and the new settings.
+Search: after the results a Related searches list (YouTube autocomplete of what you searched) offers four more searches.

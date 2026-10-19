@@ -170,6 +170,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Pinned on top of your channels", {"Épinglé en haut de vos chaînes", "Oben bei deinen Kanälen angeheftet", "Fissato in cima ai tuoi canali", "Fixado no topo dos seus canais", "チャンネルの上に固定しました"}},
 	    {"Forget where I stopped in the videos", {"Oublier où je me suis arrêté", "Vergessen, wo ich aufgehört habe", "Dimentica dove mi sono fermato", "Esquecer onde parei nos vídeos", "動画の再開位置を忘れる"}},
 	    {"Positions forgotten: ", {"Positions oubliées : ", "Positionen vergessen: ", "Posizioni dimenticate: ", "Posições esquecidas: ", "忘れた位置: "}},
+	    {"Related searches", {"Recherches associées", "Ähnliche Suchanfragen", "Ricerche correlate", "Pesquisas relacionadas", "関連する検索"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
