@@ -442,35 +442,51 @@ std::vector<YouTubeChannelDetail> youtube_load_channel_page_multi(std::vector<st
 	if (progress) {
 		progress(0, ids.size());
 	}
-	std::vector<HttpRequest> requests;
-	int n = ids.size();
-	int finished = 0;
-	for (int i = 0; i < n; i++) {
-		std::string post_content =
-		    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00"}}, "browseId": "%2", "params":"EgZ2aWRlb3PyBgQKAjoA"})";
-		post_content = std::regex_replace(post_content, std::regex("%0"), language_code);
-		post_content = std::regex_replace(post_content, std::regex("%1"), country_code);
-		post_content = std::regex_replace(post_content, std::regex("%2"), ids[i]);
-		requests.push_back(http_post_json_request(get_innertube_api_url("browse"), post_content)
-		                       .with_on_finish_callback([&](NetworkResult &, int cur) {
-			                       if (progress) {
-				                       progress(++finished, n);
-			                       }
-		                       }));
+	// only plain channel ids (letters, digits, - _ . @) go into the request body
+	std::vector<std::string> clean_ids;
+	for (auto &id : ids) {
+		bool good = !id.empty();
+		for (char c : id) {
+			if (!isalnum((unsigned char)c) && c != '-' && c != '_' && c != '.' && c != '@') good = false;
+		}
+		if (good) clean_ids.push_back(id);
 	}
-	debug_info("access(multi)...");
-	auto results = [&]() { ParserNetGuard net_guard; return thread_network_session_list.perform(requests); }(); // (the lock only for the request)
-	debug_info("ok");
-	for (auto result : results) {
-		result.data.push_back('\0');
-		YouTubeChannelDetail cur_res;
-		parse_json_destructive((char *)&result.data[0],
-		                       [&](Document &, RJson data) { parse_channel_data(data, cur_res); },
-		                       [&](const std::string &error) {
-			                       cur_res.error = "[ch-mul] " + error;
-			                       debug_error(cur_res.error);
-		                       });
-		res.push_back(cur_res);
+	const int n = clean_ids.size();
+	int finished = 0;
+	const int CHUNK = 20; // a few requests at a time: fewer sockets and less memory, and the other tasks do not wait for hundreds
+	for (int first = 0; first < n; first += CHUNK) {
+		std::vector<HttpRequest> requests;
+		for (int i = first; i < n && i < first + CHUNK; i++) {
+			std::string post_content =
+			    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00"}}, "browseId": "%2", "params":"EgZ2aWRlb3PyBgQKAjoA"})";
+			auto replace_first = [](std::string &text, const std::string &what, const std::string &with) {
+				size_t at = text.find(what);
+				if (at != std::string::npos) text.replace(at, what.size(), with);
+			};
+			replace_first(post_content, "%0", language_code);
+			replace_first(post_content, "%1", country_code);
+			replace_first(post_content, "%2", clean_ids[i]);
+			requests.push_back(http_post_json_request(get_innertube_api_url("browse"), post_content)
+			                       .with_on_finish_callback([&](NetworkResult &, int cur) {
+				                       if (progress) {
+					                       progress(++finished, n);
+				                       }
+			                       }));
+		}
+		debug_info("access(multi)...");
+		auto results = [&]() { ParserNetGuard net_guard; return thread_network_session_list.perform(requests); }(); // (the lock only for the requests)
+		debug_info("ok");
+		for (auto &result : results) {
+			result.data.push_back('\0');
+			YouTubeChannelDetail cur_res;
+			parse_json_destructive((char *)&result.data[0],
+			                       [&](Document &, RJson data) { parse_channel_data(data, cur_res); },
+			                       [&](const std::string &error) {
+				                       cur_res.error = "[ch-mul] " + error;
+				                       debug_error(cur_res.error);
+			                       });
+			res.push_back(cur_res);
+		}
 	}
 	return res;
 }

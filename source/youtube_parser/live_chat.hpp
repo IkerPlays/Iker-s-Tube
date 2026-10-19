@@ -9,6 +9,7 @@ struct ChatMessage {
 void live_chat_open(const std::string &video_id); // starts reading (restarts if it was another video)
 void live_chat_close();
 bool live_chat_is_open();
+std::string live_chat_video(); // the video whose chat is (or was last) open
 unsigned live_chat_version();                             // changes whenever a message arrived or the status changed
 std::vector<ChatMessage> live_chat_latest(size_t count);  // the newest `count` messages, newest first
 std::string live_chat_status();                           // "" when all is fine, otherwise why there is no chat

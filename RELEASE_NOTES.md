@@ -1,1 +1,1 @@
-The tip of the day on the Search screen has six new tips.
+Fixes from audits: the subscription feed loads in groups of 20 channels (less memory, the other tasks no longer wait for the whole feed), hidden channels are hidden in the local feed, the NEW badge works with big feeds, an empty subscription list clears the feed, the live chat closes when you leave the video, and the caption and comment loaders no longer race with the page.

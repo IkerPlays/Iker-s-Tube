@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 
 #define SEEN_PATH "sdmc:/3ds/IkersTube/feed_seen.txt"
-#define SEEN_MAX 600
+#define SEEN_MAX 4000
 
 static Mutex seen_lock;
 

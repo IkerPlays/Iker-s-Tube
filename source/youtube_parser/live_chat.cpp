@@ -217,7 +217,7 @@ static void chat_thread(void *arg) {
 
 void live_chat_open(const std::string &video_id) {
 	LightLock_Lock(&chat_lock);
-	bool same = chat_video == video_id && !chat_stop;
+	bool same = chat_video == video_id && !chat_stop && chat_thread_running; // (a chat whose thread ended by itself can be opened again)
 	LightLock_Unlock(&chat_lock);
 	if (same) return;
 	live_chat_close();
@@ -246,6 +246,13 @@ void live_chat_close() {
 }
 
 bool live_chat_is_open() { return !chat_stop; }
+
+std::string live_chat_video() {
+	LightLock_Lock(&chat_lock);
+	std::string video = chat_video;
+	LightLock_Unlock(&chat_lock);
+	return video;
+}
 
 unsigned live_chat_version() {
 	LightLock_Lock(&chat_lock);

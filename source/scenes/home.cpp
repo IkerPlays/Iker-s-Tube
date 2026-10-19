@@ -906,6 +906,7 @@ static void load_subscription_feed(void *) {
 				continue; // more than 2 months old
 			}
 			loaded_cnt++;
+			if (video.author == "") video.author = result.name; // (the channel pages do not name the author of their videos: the hide filters need it)
 			loaded_videos[{unit, number}].push_back(video);
 		}
 		logger.info("subsc", "loaded " + result.name + " : " + std::to_string(loaded_cnt) + " video(s)");
@@ -914,12 +915,15 @@ static void load_subscription_feed(void *) {
 	std::vector<View *> new_feed_video_views;
 	std::set<std::string> new_feed_ids;
 	{ // new videos since the last time the feed tab was opened : red dot on the menu icon
-		feed_latest_ids.clear();
+		std::vector<std::string> latest_ids; // (built here and handed over under the lock: the UI thread reads feed_latest_ids)
 		for (auto &i : loaded_videos) {
-			for (auto &video : i.second) feed_latest_ids.push_back(youtube_get_video_id_by_url(video.url));
+			for (auto &video : i.second) latest_ids.push_back(youtube_get_video_id_by_url(video.url));
 		}
-		new_feed_ids = feed_seen_new_set(feed_latest_ids); // (asked before feed_seen_count_new, which records the ids on the very first run)
-		var_new_feed_videos = feed_seen_count_new(feed_latest_ids);
+		resource_lock.lock();
+		feed_latest_ids = latest_ids;
+		resource_lock.unlock();
+		new_feed_ids = feed_seen_new_set(latest_ids); // (asked before feed_seen_count_new, which records the ids on the very first run)
+		var_new_feed_videos = feed_seen_count_new(latest_ids);
 		static bool told_this_session = false; // once per session: how many new videos your channels have
 		if (var_new_feed_videos > 0 && !told_this_session) {
 			told_this_session = true;
@@ -970,7 +974,8 @@ static void load_subscription_feed(void *) {
 	}
 	update_subscribed_channels(get_valid_subscribed_channels());
 
-	if (new_feed_video_views.empty() && !local_feed_videos_list_view->views.empty()) {
+	if (channels.empty()) remove(FEED_CACHE_PATH); // no subscriptions: nothing to remember
+	if (new_feed_video_views.empty() && !local_feed_videos_list_view->views.empty() && !channels.empty()) {
 		// nothing could be loaded (offline?): keep what is on screen (the cached feed)
 	} else {
 		local_feed_videos_list_view->recursive_delete_subviews();
@@ -1395,7 +1400,8 @@ void Home_draw(void) {
 	main_tab_view->update_y_range(0, CONTENT_Y_HIGH - TOP_HEIGHT);
 
 	if (var_new_feed_videos > 0 && main_tab_view->selected_tab == 2) { // the user is looking at the new videos tab
-		feed_seen_mark(feed_latest_ids);
+		std::vector<std::string> to_mark = feed_latest_ids;
+		feed_seen_mark(to_mark);
 		var_new_feed_videos = 0;
 		var_need_refresh = true;
 	}

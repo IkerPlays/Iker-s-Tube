@@ -1592,6 +1592,7 @@ debug_info_view =
     }
     void VideoPlayer_exit(void) {
 	    logger.info(DEF_SAPP0_EXIT_STR, "Exiting...");
+	    live_chat_close(); // (its thread stops by itself)
 	    u64 time_out = 10000000000;
 	    Result_with_string result;
 
@@ -1663,6 +1664,7 @@ debug_info_view =
 	    logger.info(DEF_SAPP0_EXIT_STR, "Exited.");
     }
     void VideoPlayer_suspend(void) {
+	    live_chat_close();
 	    vid_thread_suspend = true;
 	    vid_main_run = false;
 	    mini_visible = false;
@@ -3325,16 +3327,19 @@ debug_info_view =
     static void load_more_suggestions(void *arg_) {
 	    YouTubeVideoDetail *arg = (YouTubeVideoDetail *)arg_;
 
-	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
-	    auto new_result = *arg;
+	    small_resource_lock.lock();
+	    auto new_result = *arg; // (copied under the lock: arg is cur_video_info, which the page thread replaces)
+	    const size_t old_suggestion_count = arg->suggestions.size();
+	    small_resource_lock.unlock();
 	    const std::string loading_url = new_result.url;
+	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	    new_result.load_more_suggestions();
 	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
 	    // wrap suggestion titles
 	    logger.info("player/load-s", "truncate/view creation start");
 	    std::vector<View *> new_suggestion_views;
-	    for (size_t i = arg->suggestions.size(); i < new_result.suggestions.size(); i++) {
+	    for (size_t i = old_suggestion_count; i < new_result.suggestions.size(); i++) {
 		    auto &item = new_result.suggestions[i];
 		    if (item.type == YouTubeSuccinctItem::VIDEO && result_video_hidden(item.video.url, item.video.author)) continue;
 		    new_suggestion_views.push_back(suggestion_to_view(new_result.suggestions[i]));
@@ -3370,16 +3375,19 @@ debug_info_view =
     static void load_more_comments(void *arg_) {
 	    YouTubeVideoDetail *arg = (YouTubeVideoDetail *)arg_;
 
-	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
-	    auto new_result = *arg;
+	    small_resource_lock.lock();
+	    auto new_result = *arg; // (copied under the lock: arg is cur_video_info, which the page thread replaces)
+	    const size_t old_comment_count = arg->comments.size();
+	    small_resource_lock.unlock();
 	    const std::string loading_url = new_result.url;
+	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	    new_result.load_more_comments();
 	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
 	    std::vector<View *> new_comment_views;
 	    // wrap comments
 	    logger.info("player/load-c", "truncate/views creation start");
-	    for (size_t i = arg->comments.size(); i < new_result.comments.size(); i++) {
+	    for (size_t i = old_comment_count; i < new_result.comments.size(); i++) {
 		    new_comment_views.push_back(comment_to_view(new_result.comments[i], i));
 	    }
 	    logger.info("player/load-c", "truncate/views creation end");
@@ -3523,11 +3531,14 @@ debug_info_view =
     }
     static void load_caption(void *arg_) {
 	    auto *arg = (std::pair<std::string *, std::string *> *)arg_;
-	    auto &base_lang_id = *arg->first;
-	    auto &translation_lang_id = *arg->second;
+	    small_resource_lock.lock(); // (a copy taken under the lock: the page thread replaces cur_video_info and the language strings)
+	    const std::string base_lang_id = *arg->first;
+	    const std::string translation_lang_id = *arg->second;
+	    auto new_result = cur_video_info;
+	    small_resource_lock.unlock();
+	    const std::string loading_url = new_result.url;
 
 	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
-	    auto new_result = cur_video_info;
 	    new_result.load_caption(base_lang_id, translation_lang_id);
 	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
@@ -3613,8 +3624,13 @@ debug_info_view =
             ->set_caption_data(new_result.caption_data[{base_lang_id, translation_lang_id}]);
 
     small_resource_lock.lock();
-    if (!vid_already_init) { // app shut down while loading
+    if (!vid_already_init || cur_video_info.url != loading_url) { // app shut down, or another video was opened, while loading
 	    small_resource_lock.unlock();
+	    delete new_caption_overlay_view;
+	    for (auto view : caption_main_views) {
+		    view->recursive_delete_subviews();
+		    delete view;
+	    }
 	    return;
     }
     caption_main_view->recursive_delete_subviews();
@@ -5108,7 +5124,7 @@ static void autoplay_countdown_tick() {
 				    live_chat_open(cur_video_info.id);
 				    show_live_chat();
 			    } else if (live_chat_is_open()) {
-				    if (!account_pl_popup_view->is_visible) live_chat_close(); // the screen was left with B
+				    if (!account_pl_popup_view->is_visible || live_chat_video() != cur_video_info.id) live_chat_close(); // the screen was left with B, or another video was opened
 				    else if (live_chat_version() != chat_shown_version && account_pl_popup_view->subview == chat_popup_subview) show_live_chat();
 			    }
 			    std::vector<YouTubeChannelSuccinct> collab_list;
