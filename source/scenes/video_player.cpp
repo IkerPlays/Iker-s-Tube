@@ -2654,7 +2654,7 @@ debug_info_view =
 				                                   }),
 				                         make_tool([]() { return tr("Controls", "Controles"); }, 70,
 				                             []() {
-					                             show_text_popup(tr("Controls", "Controles"), tr("A: pause / play", "A: pausar / reproducir") + "\n" + tr("B: back", "B: atrás") + "\n" + tr("D-pad Left / Right: seek", "Cruceta izquierda / derecha: saltar") + "\n" + tr("D-pad Down / Up: next / previous video", "Cruceta abajo / arriba: siguiente / anterior vídeo") + "\n" + tr("ZL / ZR: 5 seconds back / forward", "ZL / ZR: 5 segundos atrás / adelante") + "\n" + tr("L, R, X, Y: choose what they do in Settings", "L, R, X, Y: elige qué hacen en Ajustes") + "\n" + tr("Hold X and press B: stop the video", "Mantén X y pulsa B: parar el vídeo"));
+					                             show_text_popup(tr("Controls", "Controles"), tr("A: pause / play", "A: pausar / reproducir") + "\n" + tr("B: back", "B: atrás") + "\n" + tr("D-pad Left / Right: seek", "Cruceta izquierda / derecha: saltar") + "\n" + tr("D-pad Down / Up: next / previous video", "Cruceta abajo / arriba: siguiente / anterior vídeo") + "\n" + tr("ZL / ZR: 5 seconds back / forward", "ZL / ZR: 5 segundos atrás / adelante") + "\n" + tr("L, R, X, Y: choose what they do in Settings", "L, R, X, Y: elige qué hacen en Ajustes") + "\n" + tr("SELECT + D-pad: volume (up, down), brightness (left, right)", "SELECT + cruceta: volumen (arriba, abajo), brillo (izquierda, derecha)") + "\n" + tr("Hold X and press B: stop the video", "Mantén X y pulsa B: parar el vídeo"));
 				                             }),
 				                         make_tool([]() { return tr("Dislikes", "No me gusta"); }, 70,
 				                                   []() {
@@ -4632,6 +4632,7 @@ static void autoplay_countdown_tick() {
 						    }
 					    }
 				    } else if (type == NetworkMultipleDecoder::PacketType::INTERRUPTED) {
+					    usleep(1000); // (never a busy loop while a seek or a change is being prepared)
 					    continue;
 				    } else {
 					    logger.error(DEF_SAPP0_DECODE_THREAD_STR, "unknown type of packet");
@@ -5307,6 +5308,10 @@ static void autoplay_countdown_tick() {
 					    vid_pausing = true;
 				    }
 			    }
+		    } else if (key.h_select && (key.p_d_up || key.p_d_down)) { // SELECT + Up / Down : volume
+			    run_button_action(key.p_d_up ? 7 : 8);
+		    } else if (key.h_select && (key.p_d_left || key.p_d_right)) { // SELECT + Left / Right : brightness
+			    run_button_action(key.p_d_right ? 9 : 10);
 		    } else if ((key.h_x && key.p_b) || (key.h_b && key.p_x)) {
 			    vid_play_request = false;
 		    } else if (key.p_x && var_button_x) {
