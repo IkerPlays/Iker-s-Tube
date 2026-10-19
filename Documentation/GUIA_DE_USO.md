@@ -13,6 +13,8 @@ necesitan haber iniciado sesión en Ajustes; las de Studio, además, el login de
 - **Descargas:** lo guardado en la SD, con progreso, cola de descargas y botones para borrar.
 - **Más:** ajustes, historial, incógnito, acerca de y salir.
 
+- **Canales fijados:** mantén pulsado un canal suscrito (lista de canales locales) y elige "Fijar arriba"; sale primero, con una estrella.
+
 ## Mantener pulsado
 - **Un vídeo (en cualquier lista):** menú con reproducir a continuación, cola, Ver más tarde, Favorito, guardar audio o
   vídeo sin conexión, "Añadir a mi lista de YouTube", "Buscar parecidos", "Ocultar este canal en las listas", marcar
@@ -35,6 +37,13 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Comentarios:** escribir, responder, dar Me gusta y borrar los tuyos. Si algo falla, una pantalla "Por qué falló"
   enseña el motivo para poder mandarlo.
 
+## Más herramientas del reproductor
+- **Subtítulos:** CC (idiomas y traducción), CC tamaño, CC color.
+- **Velocidad:** Más lento / Más rápido (de 5 en 5 %). **Auto:** cambia entre no, lista y todo.
+- **QR en este minuto**, **#Tags** (busca los hashtags del vídeo), **Guardar lista en YouTube**, **Recargar**, **Pantallas off** (SELECT + START las vuelve a encender) y **Estado** (hora y batería).
+- La cruceta izquierda/derecha salta 5, 10, 15 o 30 s (Ajustes). Abajo/Arriba: siguiente/anterior vídeo.
+- Ajustes nuevos: tiempo restante en la barra, parar tras N vídeos seguidos, recordatorio de descanso y subtítulos automáticos.
+
 ## Descargas y almacenamiento
 - Guardar audio o vídeo desde el reproductor o desde cualquier lista; las listas tienen "Guardar audio" en bloque.
 - Ajustes: calidad de los vídeos guardados, descargar solo de noche (1:00 a 7:00), borrar tras ver y vaciar la caché de imágenes.
@@ -48,7 +57,7 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 ## Ajustes útiles
 - Reproducción: subtítulos automáticos (se abren solos con el último idioma usado), velocidad por defecto, que la reproducción automática salte lo ya visto, quitar de Ver más tarde al
   acabar, chat automático y calidad de lo guardado.
-- Datos: estadísticas de uso, informe para enviar, copia de seguridad, vaciar caché y **restablecer ajustes**.
+- Datos: exportar listas (también suscripciones en CSV y cada lista local), importar suscripciones desde `import_subscriptions.csv`, olvidar posiciones, estadísticas de uso, informe para enviar, copia de seguridad, vaciar caché y **restablecer ajustes**.
 - Incógnito: no se guarda historial, búsquedas ni posiciones.
 
 ## Si algo falla
