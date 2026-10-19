@@ -1,1 +1,1 @@
-Fixes from an audit: settings, history and subscription changes requested just before closing are saved, and the play time counters are saved on exit; threads that did not stop are not freed; the log file is rotated at 512 KB; shared_links.txt stays small; the weekly backup recovers from a wrong clock; the on-screen log cannot scroll to a negative line.
+The report hides log lines that may carry tokens, cookies, secrets or e-mail addresses.

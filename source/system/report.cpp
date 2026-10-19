@@ -1,3 +1,4 @@
+#include <string.h>
 #include "headers.hpp"
 #include "system/report.hpp"
 #include "oauth/oauth.hpp"
@@ -24,9 +25,17 @@ static void append_tail(FILE *out, const char *title, const char *path, long max
 	long size = ftell(f);
 	long start = size > max_bytes ? size - max_bytes : 0;
 	fseek(f, start, SEEK_SET);
-	char buf[1024];
-	size_t n;
-	while ((n = fread(buf, 1, sizeof buf, f)) > 0) fwrite(buf, 1, n, out);
+	// line by line: a line that may carry a login (tokens, cookies, secrets, e-mail addresses) is replaced before it is written
+	char line[1100];
+	static const char *private_words[] = {"Bearer", "access_token", "refresh_token", "client_secret", "Authorization", "SAPISID", "cookie", "Cookie", "id_token", "@gmail", "@outlook", "@hotmail", "@yahoo"};
+	while (fgets(line, sizeof line, f)) {
+		bool hide = false;
+		for (const char *word : private_words) {
+			if (strstr(line, word)) hide = true;
+		}
+		if (hide) fputs("[line hidden: it may contain private data]\n", out);
+		else fputs(line, out);
+	}
 	fclose(f);
 }
 
