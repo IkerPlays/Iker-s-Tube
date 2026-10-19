@@ -126,6 +126,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"No previous video", {"Pas de vidéo précédente", "Kein vorheriges Video", "Nessun video precedente", "Nenhum vídeo anterior", "前の動画はありません"}},
 	    {"Shorts: D-pad Down = next, Up = previous", {"Shorts : Bas = suivant, Haut = précédent", "Shorts: Runter = nächstes, Hoch = vorheriges", "Shorts: Giù = successivo, Su = precedente", "Shorts: Baixo = próximo, Cima = anterior", "Shorts: 下=次、上=前"}},
 	    {"More from this channel", {"Plus de cette chaîne", "Mehr von diesem Kanal", "Altro da questo canale", "Mais deste canal", "このチャンネルの他の動画"}},
+	    {"QR at this time", {"QR à ce moment", "QR an dieser Stelle", "QR a questo punto", "QR neste momento", "この時間のQR"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

@@ -1,1 +1,1 @@
-Stable version 1.0.5 was published. The stable release notes now start from it.
+Player: new "QR at this time" tool shows the QR code of the video link starting at the minute you are watching.

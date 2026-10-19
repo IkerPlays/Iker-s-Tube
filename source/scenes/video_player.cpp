@@ -2315,6 +2315,12 @@ debug_info_view =
 				                                   []() {
 					                                   if (cur_video_info.id != "") qr_popup_show("https://www.youtube.com/watch?v=" + cur_video_info.id);
 				                                   }),
+				                         make_tool([]() { return tr("QR at this time", "QR en este minuto"); }, 120,
+				                                   []() {
+					                                   if (cur_video_info.id != "") {
+						                                   qr_popup_show("https://www.youtube.com/watch?v=" + cur_video_info.id + "&t=" + std::to_string((int)vid_current_pos) + "s");
+					                                   }
+				                                   }),
 				                         make_tool([]() { return tr("Channel QR", "QR del canal"); }, 90,
 				                                   []() {
 					                                   if (cur_video_info.author.id != "") qr_popup_show("https://www.youtube.com/channel/" + cur_video_info.author.id);
