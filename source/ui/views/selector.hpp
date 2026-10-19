@@ -106,12 +106,15 @@ struct SelectorView : public FixedSizeView {
 			Draw("ⓘ", info_x, y0, 0.45, 0.5, 0xFFFF9030);
 		}
 
-		if (isBoolean_ && selected_button == 0) {
-			Draw_texture(var_square_image[0], DEF_DRAW_WEAK_RED, button_x_left(selected_button), button_y_pos(),
-			             button_x_size(), button_y_size());
+		float radius = var_round_buttons ? (float)std::min(7.0, button_y_size() / 2) : 0; // rounded: a soft track and a pill for the chosen button
+		if (radius > 0 && button_num > 0) {
+			Draw_round_rect((int)(button_x_left(0) - margin_x_size() * 0.4), (int)button_y_pos(), (int)(button_x_right(button_num - 1) - button_x_left(0) + margin_x_size() * 0.8), (int)button_y_size(), radius, 0x30808080);
+		}
+		u32 selected_color = isBoolean_ && selected_button == 0 ? DEF_DRAW_WEAK_RED : DEF_DRAW_WEAK_GREEN;
+		if (radius > 0) {
+			Draw_round_rect((int)button_x_left(selected_button), (int)button_y_pos(), (int)button_x_size(), (int)button_y_size(), radius, selected_color);
 		} else {
-			Draw_texture(var_square_image[0], DEF_DRAW_WEAK_GREEN, button_x_left(selected_button), button_y_pos(),
-			             button_x_size(), button_y_size());
+			Draw_texture(var_square_image[0], selected_color, button_x_left(selected_button), button_y_pos(), button_x_size(), button_y_size());
 		}
 		for (int i = 0; i < button_num; i++) {
 			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos(), 0.5, 0.5,

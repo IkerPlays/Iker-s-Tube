@@ -15,6 +15,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Greeting.** The start page of Search greets you by the time of the day.
 - **Rounded badges.** The badges on the thumbnails are rounded.
 - **Daily limit.** A setting warns when you reach 30, 60, 120 or 240 minutes of playing in a day.
+- **Rounded selectors.** The selectors have a soft track and a rounded pill.
 
 ## Installing
 
