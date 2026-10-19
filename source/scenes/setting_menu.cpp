@@ -1,6 +1,7 @@
 // clang-format off
 #include "data_io/backup.hpp"
 #include "headers.hpp"
+#include "data_io/subscription_util.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
 #include "util/result_filter.hpp"
@@ -1596,6 +1597,22 @@ void Sem_init(void) {
 							items.clear();
 							for (auto &v : get_valid_watch_history()) items.push_back({v.id, v.title});
 							write("export_history.txt", items);
+							{ // the subscriptions in the CSV format of YouTube (Google Takeout) : other apps can import it
+								auto subs = get_valid_subscribed_channels();
+								if (subs.size()) {
+									FILE *f = fopen("sdmc:/3ds/IkersTube/export_subscriptions.csv", "w");
+									if (f) {
+										fprintf(f, "Channel Id,Channel Url,Channel Title\n");
+										for (auto &c : subs) {
+											std::string title = c.name;
+											for (auto &ch : title) if (ch == ',' || ch == '"' || ch == '\n' || ch == '\r') ch = ' ';
+											fprintf(f, "%s,http://www.youtube.com/channel/%s,%s\n", c.id.c_str(), c.id.c_str(), title.c_str());
+										}
+										fclose(f);
+										files++;
+									}
+								}
+							}
 							toast_view
 								->set_text((std::function<std::string ()>) [files] () { return tr("Files written: ", "Archivos escritos: ") + std::to_string(files) + " (3ds/IkersTube/export_*.txt)"; })
 								->set_x_alignment(TextView::XAlign::CENTER)

@@ -1,1 +1,1 @@
-Library, Offline: the sort button also sorts by channel.
+Settings, Data: Export lists as text files also writes export_subscriptions.csv (YouTube Takeout format) with your local subscriptions.

@@ -18,6 +18,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Updates.** The update check uses the current repository address directly.
 - **About.** Tap the GitHub address to see its QR code.
 - **Downloads.** The sort button can also sort by channel.
+- **Export.** Export lists also writes your subscriptions as a CSV that other apps can import.
 
 ## Installing
 
