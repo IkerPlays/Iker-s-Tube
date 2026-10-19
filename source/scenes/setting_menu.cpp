@@ -1114,6 +1114,22 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Seek step
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return std::string("10 s"); },
+							(std::function<std::string ()>) []() { return std::string("5 s"); },
+							(std::function<std::string ()>) []() { return std::string("15 s"); },
+							(std::function<std::string ()>) []() { return std::string("30 s"); }
+						}, var_seek_step)
+						->set_title([](const SelectorView &) { return tr("Seek step (D-pad left / right)", "Salto (cruceta izquierda / derecha)"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_seek_step != view.selected_button) {
+								var_seek_step = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
+
 					// Subtitles
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

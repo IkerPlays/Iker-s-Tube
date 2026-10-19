@@ -4699,7 +4699,7 @@ static void autoplay_countdown_tick() {
 		    } else if (key.p_d_right || key.p_d_left) {
 			    if (network_decoder.ready) {
 				    double pos = vid_current_pos;
-				    pos += key.p_d_right ? 10 : -10;
+				    { static const int steps[] = {10, 5, 15, 30}; int step = steps[std::max(0, std::min(3, var_seek_step))]; pos += key.p_d_right ? step : -step; }
 				    pos = std::max<double>(0, pos);
 				    pos = std::min<double>(vid_duration, pos);
 				    send_seek_request(pos);
