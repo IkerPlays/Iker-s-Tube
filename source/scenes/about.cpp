@@ -5,6 +5,7 @@
 #include "scenes/about.hpp"
 #include "scenes/video_player.hpp"
 #include "ui/overlay.hpp"
+#include "ui/qr_popup.hpp"
 #include "ui/ui.hpp"
 #include "network_decoder/thumbnail_loader.hpp"
 
@@ -101,7 +102,12 @@ void About_init(void) {
 	                    (new TextView(SMALL_MARGIN, 0, 320, DEFAULT_FONT_INTERVAL))->set_text("GitHub"),
 	                    (new TextView(SMALL_MARGIN * 2, 0, 320, DEFAULT_FONT_INTERVAL))
 	                        ->set_text(GITHUB_URL)
-	                        ->set_font_size(0.44, DEFAULT_FONT_INTERVAL),
+	                        ->set_font_size(0.44, DEFAULT_FONT_INTERVAL)
+	                        ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                        ->set_on_view_released([](View &) { qr_popup_show(GITHUB_URL); }),
+	                    (new TextView(SMALL_MARGIN * 2, 0, 320, DEFAULT_FONT_INTERVAL))
+	                        ->set_text(tr("Tap the address for its QR code. Problems: open Issues there.", "Toca la dirección para ver su QR. Problemas: abre Issues ahí."))
+	                        ->set_font_size(0.4, DEFAULT_FONT_INTERVAL),
 	                    (new EmptyView(0, 0, 320, SMALL_MARGIN * 2)),
 
 	                    // Story section
@@ -180,6 +186,7 @@ void About_draw(void) {
 		Draw_screen_ready(2, DEFAULT_BACK_COLOR);
 
 		main_view->draw();
+		qr_popup_draw();
 
 		if (video_playing_bar_show) {
 			video_draw_playing_bar();
@@ -206,6 +213,8 @@ void About_draw(void) {
 		Util_err_main(key);
 	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
+	} else if (qr_popup_update(key)) {
+		// the QR popup takes the input while it is open
 	} else {
 		update_overlay_menu(&key);
 
