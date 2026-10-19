@@ -24,6 +24,7 @@
 #include "data_io/channel_prefs.hpp"
 #include "data_io/last_played.hpp"
 #include "data_io/channel_volume.hpp"
+#include "data_io/channel_skip.hpp"
 #include "data_io/watch_later.hpp"
 #include "youtube_parser/live_chat.hpp"
 #include "youtube_parser/studio_auth.hpp"
@@ -433,6 +434,10 @@ static void channel_speed_tick() {
 	if (speed <= 0) {
 		static const double defaults[6] = {1.0, 0.75, 1.25, 1.5, 1.75, 2.0};
 		speed = playing_video_info.is_livestream ? 1.0 : defaults[std::max(0, std::min(5, var_default_speed))];
+	}
+	double skip = channel_skip_get(playing_video_info.author.id); // the intro of this channel is skipped (not when resuming)
+	if (skip > 0 && !playing_video_info.is_livestream && vid_current_pos < skip && resume_get(playing_video_info.id) <= 0 && playing_video_info.url.compare(0, 8, "offline:") != 0) {
+		send_seek_request_wo_lock(skip);
 	}
 	if (speed != quick_speed) {
 		quick_speed = speed;
@@ -2594,6 +2599,19 @@ debug_info_view =
 					                                   }
 					                                   show_text_popup(cur_video_info.title, text);
 				                                   }),
+				                         make_tool([]() {
+					                             double skip = channel_skip_get(playing_video_info.author.id);
+					                             return skip > 0 ? tr("Intro: ", "Intro: ") + std::to_string((int)skip) + "s" : tr("Skip intro", "Saltar intro");
+				                             }, 80,
+				                             []() { // seconds skipped at the start of every video of this channel
+					                             static const int steps[6] = {0, 5, 10, 15, 30, 60};
+					                             if (playing_video_info.author.id == "") return;
+					                             double current = channel_skip_get(playing_video_info.author.id);
+					                             int next = 0;
+					                             for (int k = 0; k < 6; k++) if (steps[k] <= current + 0.5) next = (k + 1) % 6;
+					                             channel_skip_set(playing_video_info.author.id, steps[next]);
+					                             notice_show(steps[next] ? tr("Every video of this channel starts ", "Cada vídeo de este canal empieza ") + std::to_string(steps[next]) + tr(" s later", " s más tarde") : tr("Intro skip off", "Saltar intro desactivado"));
+				                             }),
 				                         make_tool([]() { return tr("Dislikes", "No me gusta"); }, 70,
 				                                   []() {
 					                                   if (cur_video_info.id == "" || is_async_task_running(dislikes_task)) return;

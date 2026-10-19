@@ -64,7 +64,7 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 
 ## Después de la 1.0.7
 - **Feed al instante:** la pestaña Feed del Inicio enseña el último feed guardado mientras carga el nuevo (y lo conserva si no hay conexión).
-- **Historial:** "Mi resumen" (con este mes, mejor racha, vídeo más repetido y **10 logros**) y un recuerdo de hace una semana o un mes.
+- **Historial:** "Mi resumen" (con este mes, mejor racha, vídeo más repetido y **13 logros**) y un recuerdo de hace una semana o un mes.
 - **Reproductor:** herramienta "No me gusta" (votos estimados con returnyoutubedislikeapi.com, solo se envía el id del vídeo),
   "Estado" dice a qué hora termina el vídeo, Info cuenta cuántas veces lo has visto y el modo solo audio tiene un ecualizador animado.
 - **Canal:** en la descripción verás cuántos vídeos de ese canal has visto.
