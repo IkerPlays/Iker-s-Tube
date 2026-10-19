@@ -25,6 +25,8 @@
 #include "util/misc_tasks.hpp"
 #include "data_io/subscription_util.hpp"
 
+static std::string streams_tab_error, shorts_tab_error; // why the Streams / Shorts tab has nothing (instead of "Loading..." forever)
+
 #define VIDEOS_MARGIN 6
 #define VIDEOS_VERTICAL_INTERVAL (VIDEO_LIST_THUMBNAIL_HEIGHT + VIDEOS_MARGIN)
 #define LOAD_MORE_MARGIN 30
@@ -166,7 +168,7 @@ void Channel_init(void) {
 
     stream_load_more_view = new TextView(0, 0, 320, 0);
     stream_load_more_view->set_text((std::function<std::string()>)[]() {
-	    return channel_info.error != "" ? channel_info.error : loading_text();
+	    return channel_info.error != "" ? channel_info.error : streams_tab_error != "" ? streams_tab_error : loading_text();
     });
     stream_load_more_view->set_x_alignment(TextView::XAlign::CENTER);
     stream_load_more_view->set_on_drawn([](const View &) {
@@ -188,7 +190,7 @@ void Channel_init(void) {
 
     shorts_load_more_view = new TextView(0, 0, 320, 0);
     shorts_load_more_view->set_text((std::function<std::string()>)[]() {
-	    return channel_info.error != "" ? channel_info.error : loading_text();
+	    return channel_info.error != "" ? channel_info.error : shorts_tab_error != "" ? shorts_tab_error : loading_text();
     });
     shorts_load_more_view->set_x_alignment(TextView::XAlign::CENTER);
     shorts_load_more_view->set_on_drawn([](const View &) {
@@ -582,6 +584,7 @@ void Channel_init(void) {
 		    return;
 	    }
 	    channel_info = result;
+	    streams_tab_error = shorts_tab_error = "";
 	    if (result.error == "") channel_info_cache[url] = result; // (a failed load is not remembered: opening the channel again retries)
 	    if (result.error == "" && result.name != "") recent_channel_add(result.name, result.url_original != "" ? result.url_original : url); // (for the Recent channels of Search)
 
@@ -884,6 +887,7 @@ void Channel_init(void) {
 	    channel_info.streams = streams_result.streams;
 	    channel_info.streams_continue_token = streams_result.streams_continue_token;
 	    channel_info.streams_loaded = true;
+	    streams_tab_error = streams_result.error;
 	    // Update sort tokens
 	    channel_info.streams_sort_token_newest = streams_result.streams_sort_token_newest;
 	    channel_info.streams_sort_token_popular = streams_result.streams_sort_token_popular;
@@ -902,7 +906,7 @@ void Channel_init(void) {
 		    stream_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    stream_load_more_view->set_is_visible(true);
 		    stream_load_more_view->set_text((std::function<std::string()>)[]() {
-			    return channel_info.error != "" ? channel_info.error : loading_text();
+			    return channel_info.error != "" ? channel_info.error : streams_tab_error != "" ? streams_tab_error : loading_text();
 		    });
 	    } else {
 		    stream_load_more_view->update_y_range(0, 0);
@@ -986,6 +990,7 @@ void Channel_init(void) {
 	    channel_info.shorts = shorts_result.shorts;
 	    channel_info.shorts_continue_token = shorts_result.shorts_continue_token;
 	    channel_info.shorts_loaded = true;
+	    shorts_tab_error = shorts_result.error;
 	    channel_info.shorts_sort_token_newest = shorts_result.shorts_sort_token_newest;
 	    channel_info.shorts_sort_token_popular = shorts_result.shorts_sort_token_popular;
 	    channel_info.shorts_sort_token_oldest = shorts_result.shorts_sort_token_oldest;
@@ -1004,7 +1009,7 @@ void Channel_init(void) {
 		    shorts_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    shorts_load_more_view->set_is_visible(true);
 		    shorts_load_more_view->set_text((std::function<std::string()>)[]() {
-			    return channel_info.error != "" ? channel_info.error : loading_text();
+			    return channel_info.error != "" ? channel_info.error : shorts_tab_error != "" ? shorts_tab_error : loading_text();
 		    });
 	    } else {
 		    shorts_load_more_view->update_y_range(0, 0);

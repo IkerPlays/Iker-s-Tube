@@ -1,1 +1,1 @@
-Fixes from an audit: a channel or video page that failed to load is not remembered (opening it again retries); search words with quotes or backslashes work; an unknown kind of result no longer stops the whole search; a channel with one metadata row no longer reads out of range.
+Channel Streams and Shorts tabs show an error text when they cannot load instead of Loading forever.
