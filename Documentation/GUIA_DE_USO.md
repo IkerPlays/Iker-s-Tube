@@ -55,6 +55,13 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Menús largos:** las opciones van en páginas ("Más opciones...", "Opciones anteriores...").
 - En Buscar sale un **consejo del día**.
 
+## Novedades de la 1.0.7
+- **Buscar:** saludo según la hora, consejo del día, **Radio** (mezclas por estado de ánimo que siguen sonando solas: Tranquila, Concentración, Ejercicio, Dormir, Fiesta, Clásica, Música de juegos y Jazz) y "Sorpréndeme".
+- **Historial:** "Mi resumen" (vídeos, tiempo, canal top, hora favorita, días seguidos y lo reproducido hoy).
+- **Reproductor:** "Siguiente cap." (busca el título con el número de capítulo + 1), "Ahorro" (ahorro de datos), marcadores con QR del momento y el temporizador baja el volumen en los últimos 30 s.
+- **Ajustes:** límite diario de reproducción, botones redondeados (se pueden quitar).
+- **Modo seguro:** si la app se cierra al arrancar, el siguiente inicio renombra los ajustes a `*.crashed` y arranca sin extras. Si la app no abre: borra o renombra `3ds/IkersTube/settings.txt`.
+
 ## Descargas y almacenamiento
 - Guardar audio o vídeo desde el reproductor o desde cualquier lista; las listas tienen "Guardar audio" en bloque.
 - Ajustes: calidad de los vídeos guardados, descargar solo de noche (1:00 a 7:00), borrar tras ver y vaciar la caché de imágenes.

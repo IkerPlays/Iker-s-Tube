@@ -1,1 +1,1 @@
-Fix: the network lock of the channel loader only covers the request itself.
+Docs: the usage guide describes the new features and the safe mode.
