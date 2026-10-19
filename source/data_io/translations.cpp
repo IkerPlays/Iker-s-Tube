@@ -227,6 +227,7 @@ static const TrEntry kTrEntries[] = {
 	{"Only for your liked videos", {"Seulement pour vos vidéos aimées", "Nur für deine gelikten Videos", "Solo per i tuoi video piaciuti", "Só para os vídeos que você curtiu", "高評価した動画のみ"}},
 	{"Delete list", {"Supprimer la liste", "Liste löschen", "Elimina lista", "Excluir lista", "リストを削除"}},
 	{"Yes, delete this list", {"Oui, supprimer cette liste", "Ja, diese Liste löschen", "Sì, elimina questa lista", "Sim, excluir esta lista", "はい、このリストを削除"}},
+	{"Tap to try again", {"Touchez pour réessayer", "Tippen zum Wiederholen", "Tocca per riprovare", "Toque para tentar de novo", "タップで再試行"}},
 	{"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	{"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	{"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},

@@ -697,13 +697,16 @@ static void set_loading_bottom_view() {
 	                         ->set_x_alignment(TextView::XAlign::CENTER);
 	result_view->views[1] = result_bottom_view;
 }
+static bool retry_search_request = false; // the error row was tapped (handled after the view update)
 static void update_result_bottom_view() {
 	delete result_bottom_view;
 	if (search_result.error != "" || search_result.has_more_results()) {
 		TextView *cur_view =
 		    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 2))->set_x_alignment(TextView::XAlign::CENTER);
 		if (search_result.error != "") {
-			cur_view->set_text(search_result.error);
+			cur_view->set_text_lines(std::vector<std::string>{truncate_first_line(search_result.error, 300, 0.5), tr("Tap to try again", "Toca para reintentar")});
+			cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
+			cur_view->set_on_view_released([](View &) { retry_search_request = true; var_need_refresh = true; });
 		} else {
 			cur_view->set_text((std::function<std::string()>)[]() { return loading_text(); });
 		}
@@ -1200,6 +1203,15 @@ void Search_draw(void) {
 			if (cur_search_word != "") {
 				if (is_async_task_running(load_search_results)) filter_search_due = osGetTime() + 300; // wait for the running search
 				else start_search(cur_search_word);
+			}
+		}
+		if (retry_search_request) {
+			retry_search_request = false;
+			if (search_result.results.empty()) { // the first load failed: search again
+				start_search(cur_search_word, shorts_feed, radio_feed);
+			} else { // a later page failed: the error is cleared and the page is asked again
+				search_result.error = "";
+				update_result_bottom_view();
 			}
 		}
 		if (related_search_request != "") {

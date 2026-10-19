@@ -1,1 +1,1 @@
-Fixes: the NEW feed ids are read under the lock; the replies spinner of a comment is cleared if the load is dropped.
+Search errors show Tap to try again: a failed search or a failed page of results can be retried.
