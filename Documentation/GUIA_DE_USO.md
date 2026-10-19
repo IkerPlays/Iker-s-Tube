@@ -67,6 +67,10 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Historial:** "Mi resumen" (con este mes, mejor racha, vídeo más repetido y **13 logros**) y un recuerdo de hace una semana o un mes.
 - **Reproductor:** herramienta "No me gusta" (votos estimados con returnyoutubedislikeapi.com, solo se envía el id del vídeo),
   "Estado" dice a qué hora termina el vídeo, Info cuenta cuántas veces lo has visto y el modo solo audio tiene un ecualizador animado.
+- **Más herramientas:** "Saltar intro" (cada vídeo de un canal empieza 5 a 60 s más tarde, se recuerda por canal), "Controles" (qué hace cada botón)
+  y la barra de progreso marca los capítulos y, en verde, lo que salta SponsorBlock.
+- **Feed:** los vídeos que no te habían avisado llevan la etiqueta NEW. Al desbloquear un logro sale un aviso, y "Mi resumen" puede enseñar tus números en un QR.
+- **Sin conexión:** si abres la app sin Wi-Fi te recuerda dónde están tus vídeos guardados. Si es muy de noche, te sugiere el temporizador de apagado.
 - **Canal:** en la descripción verás cuántos vídeos de ese canal has visto.
 - **Idioma:** el español y el portugués ya no se pierden al reiniciar.
 - **Acerca de:** QR para descargar la última versión estable.
