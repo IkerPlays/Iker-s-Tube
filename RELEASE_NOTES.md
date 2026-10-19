@@ -1,1 +1,1 @@
-Library: the Queue tab has a Remove duplicates button.
+Library: the long press menu of a saved video has a QR code option for its YouTube link.

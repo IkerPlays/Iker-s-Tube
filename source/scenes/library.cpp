@@ -852,6 +852,7 @@ static void build_offline(VerticalListView *list) {
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, title](View &) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
+			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Delete from the SD card", "Borrar de la SD"), [id]() { offline_remove(id); rebuild_request = true; })});
 		    });
 		list->views.push_back(view);
