@@ -31,7 +31,12 @@ static void save_locked() {
 		fprintf(f, "%s\t%s\t%s\t%s\t%s\n", clean_field(v.id).c_str(), clean_field(v.title).c_str(),
 		        clean_field(v.author).c_str(), clean_field(v.length_text).c_str(), clean_field(v.tag).c_str());
 	}
-	fclose(f);
+	bool good = !ferror(f);
+	if (fclose(f) != 0) good = false;
+	if (!good) { // e.g. the SD card is full: the old file stays
+		remove(FAVORITES_TMP_PATH);
+		return;
+	}
 	remove(FAVORITES_PATH);
 	rename(FAVORITES_TMP_PATH, FAVORITES_PATH);
 }

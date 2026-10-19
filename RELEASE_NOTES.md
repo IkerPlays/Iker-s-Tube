@@ -1,1 +1,1 @@
-Feed tab: a Surprise me button opens a random video of your feed.
+Fixes from an audit: saved playlists no longer cut video titles to 40 characters; the queue tab acts on the right video even when the queue changed; a typed search leaves Radio or Shorts mode; clearing or removing recent searches rebuilds the list; a full SD card cannot damage favorites, playlists or the queue; Studio uploads use 64-bit offsets and give up when the server makes no progress; deleting a list asks first.

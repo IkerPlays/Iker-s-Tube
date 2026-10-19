@@ -1072,6 +1072,8 @@ bool Search_show_search_keyboard() {
 
 		if (button_pressed == SWKBD_BUTTON_RIGHT) {
 			cur_search_word = search_word;
+			shorts_feed = false; // (a typed search is a normal search, not the Shorts or Radio feed that was open before)
+			radio_feed = false;
 			search_history_add(search_word);
 			// Truncate text to fit in search box and display
 			double search_box_width = 320 - SEARCH_BOX_MARGIN * 3 - URL_BUTTON_WIDTH;
@@ -1209,12 +1211,14 @@ void Search_draw(void) {
 			history_clear_request = false;
 			search_history_clear();
 			result_list_view->recursive_delete_subviews();
+			show_search_history(); // (the shortcuts and the rest of the list come back)
 			var_need_refresh = true;
 		}
 		if (history_remove_request != "") {
 			search_history_remove(history_remove_request);
 			history_remove_request = "";
-			result_list_view->recursive_delete_subviews(); // rebuilt without it
+			result_list_view->recursive_delete_subviews();
+			show_search_history(); // rebuilt without it
 			var_need_refresh = true;
 		}
 		if (clicked_url != "") {

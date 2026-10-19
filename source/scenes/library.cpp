@@ -331,6 +331,15 @@ void Library_resume(std::string arg) {
 	rebuild_views();
 }
 
+
+// the current position of a video in the queue, -1 if it is not queued any more
+static int queue_index_of(const std::string &url) {
+	std::string other_url, other_title;
+	for (int k = 0; play_queue_get(k, other_url, other_title); k++) {
+		if (other_url == url) return k;
+	}
+	return -1;
+}
 static void build_queue(VerticalListView *list) {
 	int n = play_queue_size();
 	for (int i = 0; i < n; i++) {
@@ -341,20 +350,21 @@ static void build_queue(VerticalListView *list) {
 		std::string id = youtube_get_video_id_by_url(url);
 		SuccinctVideoView *view = make_item(id, title, "#" + std::to_string(i + 1), "");
 		view->set_get_background_color(button_background)
-		    ->set_on_view_released([i, url](View &) {
-			    play_queue_remove_at(i); // it is playing now : it leaves the queue
+		    ->set_on_view_released([url](View &) {
+			    int now_at = queue_index_of(url); // (the queue shrinks by itself as the videos end: the position is looked up again)
+			    if (now_at >= 0) play_queue_remove_at(now_at); // it is playing now : it leaves the queue
 			    clicked_url = url;
 			    rebuild_request = true;
 		    })
-		    ->add_on_long_hold(35, [i, url, title](View &) {
+		    ->add_on_long_hold(35, [url, title](View &) {
 			    show_dialog({make_option(tr("QR code", "Código QR"), [url]() { qr_popup_show(share_url(url)); }),
 			                 make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
 			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [url, title]() { offline_save_by_id_async(youtube_get_video_id_by_url(url), title, "", true); }),
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [url, title]() { offline_save_by_id_async(youtube_get_video_id_by_url(url), title, "", false); }),
-			                 make_option(tr("Move up", "Subir"), [i]() { play_queue_move(i, -1); }),
-			                 make_option(tr("Move down", "Bajar"), [i]() { play_queue_move(i, 1); }),
+			                 make_option(tr("Move up", "Subir"), [url]() { int at = queue_index_of(url); if (at >= 0) play_queue_move(at, -1); }),
+			                 make_option(tr("Move down", "Bajar"), [url]() { int at = queue_index_of(url); if (at >= 0) play_queue_move(at, 1); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [url, title]() { pending_action = [url, title]() { add_to_playlist_dialog(video_from_url(url, title)); }; }),
-			                 make_option(tr("Remove from queue", "Quitar de la cola"), [i]() { play_queue_remove_at(i); })});
+			                 make_option(tr("Remove from queue", "Quitar de la cola"), [url]() { int at = queue_index_of(url); if (at >= 0) play_queue_remove_at(at); })});
 		    });
 		list->views.push_back(view);
 	}
@@ -655,6 +665,10 @@ static void build_liked(VerticalListView *list) {
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
 			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Remove my like", "Quitar mi Me gusta"), [id]() {
+				             if (liked_source != 0) { // (this list is not the liked videos: nothing to unlike)
+					             notice_show(tr("Only for your liked videos", "Solo para tus vídeos con Me gusta"));
+					             return;
+				             }
 				             account_like_async(id, 0);
 				             resource_lock_lib.lock();
 				             liked_videos.erase(std::remove_if(liked_videos.begin(), liked_videos.end(), [&](const FavoriteVideo &x) { return x.id == id; }), liked_videos.end());
@@ -942,7 +956,12 @@ static void build_playlists(VerticalListView *list) {
 						                             rebuild_request = true;
 					                             };
 				                             }),
-				                             make_option("Eliminar lista", [i]() { playlist_delete(i); })});
+				                             make_option(tr("Delete list", "Eliminar lista"), [i]() {
+					                             pending_action = [i]() { // asks again (the list is gone for good)
+						                             show_dialog({make_option(tr("Yes, delete this list", "Sí, eliminar esta lista"), [i]() { playlist_delete(i); rebuild_request = true; }),
+						                                          make_option(LOCALIZED(CANCEL), []() {})});
+					                             };
+				                             })});
 			                });
 			list->views.push_back(row);
 		}

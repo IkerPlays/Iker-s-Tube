@@ -14,7 +14,7 @@ static Mutex playlists_lock;
 static std::vector<UserPlaylist> playlists;
 static bool loaded = false;
 
-static std::string clean(std::string s) {
+static std::string clean(std::string s, size_t limit = 40) { // (40 bytes is for names; the video titles and authors get more room)
 	for (auto &c : s) {
 		if (c == '\t' || c == '\n' || c == '\r') {
 			c = ' ';
@@ -26,8 +26,8 @@ static std::string clean(std::string s) {
 	while (s.size() && s.back() == ' ') {
 		s.pop_back();
 	}
-	if (s.size() > 40) { // keep the cut on a UTF-8 character boundary
-		size_t n = 40;
+	if (s.size() > limit) { // keep the cut on a UTF-8 character boundary
+		size_t n = limit;
 		while (n && ((unsigned char)s[n] & 0xC0) == 0x80) {
 			n--;
 		}
@@ -97,10 +97,15 @@ static void save_locked() {
 	for (auto &p : playlists) {
 		fprintf(f, "#%s\n", clean(p.name).c_str());
 		for (auto &v : p.videos) {
-			fprintf(f, "%s\t%s\t%s\t%s\n", clean(v.id).c_str(), clean(v.title).c_str(), clean(v.author).c_str(), clean(v.length_text).c_str());
+			fprintf(f, "%s\t%s\t%s\t%s\n", clean(v.id).c_str(), clean(v.title, 200).c_str(), clean(v.author, 80).c_str(), clean(v.length_text).c_str());
 		}
 	}
-	fclose(f);
+	bool good = !ferror(f);
+	if (fclose(f) != 0) good = false;
+	if (!good) { // e.g. the SD card is full: the old file stays
+		remove(PLAYLISTS_TMP_PATH);
+		return;
+	}
 	remove(PLAYLISTS_PATH);
 	rename(PLAYLISTS_TMP_PATH, PLAYLISTS_PATH);
 }

@@ -548,7 +548,11 @@ static std::vector<View *> build_pick() {
 			}
 			form_path = path;
 			form_title = name.substr(0, name.find_last_of('.'));
-			if (form_title.size() > 95) form_title.resize(95);
+			if (form_title.size() > 95) {
+				size_t cut = 95; // (not in the middle of a UTF-8 character)
+				while (cut && ((unsigned char)form_title[cut] & 0xC0) == 0x80) cut--;
+				form_title.resize(cut);
+			}
 			form_desc = read_template("sdmc:/3ds/IkersTube/upload_description.txt", 4000); // (optional files : the text every upload starts with)
 			form_privacy = var_studio_privacy; // (Settings : the visibility that new uploads start with)
 			form_category = var_studio_category < category_count ? var_studio_category : 0; // the one of the last upload

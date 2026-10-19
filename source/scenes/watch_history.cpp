@@ -201,7 +201,9 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 			else {
 				char buf[40];
 				time_t t = i.last_watch_time;
-				strftime(buf, sizeof buf, "%Y/%m/%d", gmtime(&t));
+				struct tm *date_tm = gmtime(&t);
+				if (date_tm) strftime(buf, sizeof buf, "%Y/%m/%d", date_tm);
+				else buf[0] = 0;
 				title = buf;
 			}
 			video_list_view->views.push_back((new TextView(0, 0, 320, 18))
@@ -237,7 +239,9 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		std::string last_watch_time_str;
 		{
 			char tmp[100];
-			strftime(tmp, 100, "%Y/%m/%d %H:%M", gmtime(&i.last_watch_time));
+			struct tm *seen_tm = gmtime(&i.last_watch_time);
+			if (seen_tm) strftime(tmp, 100, "%Y/%m/%d %H:%M", seen_tm);
+			else tmp[0] = 0;
 			last_watch_time_str = tmp;
 		}
 

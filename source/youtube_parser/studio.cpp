@@ -350,9 +350,14 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 	u64 offset = resume_offset;
 	std::vector<char> buf(CHUNK);
 	int failures = 0;
+	int no_progress = 0; // answers in a row that did not move the offset forward
 	while (offset < total) {
 		u64 len = std::min<u64>(CHUNK, total - offset);
-		fseek(file, (long)offset, SEEK_SET);
+		if (fseeko(file, (off_t)offset, SEEK_SET) != 0) { // (64-bit offsets: a file can be up to 4 GB)
+			error = "cannot seek in the file";
+			fclose(file);
+			return false;
+		}
 		size_t got = fread(buf.data(), 1, len, file);
 		if (got != len) {
 			error = "cannot read the file";
@@ -387,7 +392,17 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 			std::string range = r.get_header("range"); // "bytes=0-1234" : what the server really has
 			size_t dash = range.find('-');
 			u64 have = dash != std::string::npos ? strtoull(range.c_str() + dash + 1, NULL, 10) + 1 : 0; // no Range : nothing stored
+			u64 previous_offset = offset;
 			offset = have <= total ? have : offset + len;
+			if (offset <= previous_offset) { // the server stores nothing more: it must not go on forever
+				if (++no_progress >= 5) {
+					error = "the upload makes no progress";
+					fclose(file);
+					return false;
+				}
+			} else {
+				no_progress = 0;
+			}
 			failures = 0;
 			if (progress) progress(offset, total);
 			continue;

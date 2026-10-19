@@ -28,7 +28,12 @@ static void save_queue() {
 		}
 		fprintf(f, "%s\t%s\n", i.first.c_str(), title.c_str());
 	}
-	fclose(f);
+	bool good = !ferror(f);
+	if (fclose(f) != 0) good = false;
+	if (!good) { // e.g. the SD card is full: the old file stays
+		remove(QUEUE_TMP_PATH);
+		return;
+	}
 	remove(QUEUE_PATH);
 	rename(QUEUE_TMP_PATH, QUEUE_PATH);
 }
