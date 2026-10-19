@@ -1,1 +1,1 @@
-Library: Favorites and Later have a Clear button that asks before removing everything.
+Library: the Clear Watch later confirmation says that, when you are signed in, it also clears the list on YouTube.

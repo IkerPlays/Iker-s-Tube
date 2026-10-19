@@ -213,6 +213,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Clear all favorites", {"Vider les favoris", "Alle Favoriten löschen", "Svuota i preferiti", "Limpar todos os favoritos", "お気に入りをすべて削除"}},
 	    {"Clear Watch later", {"Vider À regarder plus tard", "Später ansehen leeren", "Svuota Guarda più tardi", "Limpar Assistir mais tarde", "後で見るを空にする"}},
 	    {"Yes, remove all of them", {"Oui, tout retirer", "Ja, alle entfernen", "Sì, rimuovili tutti", "Sim, remover todos", "はい、すべて削除"}},
+	    {"Yes, remove all (also on YouTube)", {"Oui, tout retirer (aussi sur YouTube)", "Ja, alle entfernen (auch auf YouTube)", "Sì, rimuovi tutti (anche su YouTube)", "Sim, remover todos (também no YouTube)", "はい、すべて削除（YouTubeも）"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},
