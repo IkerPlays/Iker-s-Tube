@@ -163,6 +163,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Status", {"État", "Status", "Stato", "Estado", "状態"}},
 	    {"Battery ", {"Batterie ", "Akku ", "Batteria ", "Bateria ", "電池 "}},
 	    {" (charging)", {" (en charge)", " (lädt)", " (in carica)", " (carregando)", " (充電中)"}},
+	    {"Screens off: SELECT + START brings them back", {"Écrans éteints : SELECT + START les rallume", "Bildschirme aus: SELECT + START schaltet sie wieder ein", "Schermi spenti: SELECT + START li riaccende", "Telas apagadas: SELECT + START as liga de novo", "画面オフ: SELECT + STARTで戻します"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

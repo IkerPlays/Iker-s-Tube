@@ -1,1 +1,1 @@
-Player: new Screens off tool (turns the screens chosen in the settings off and on) and Status tool (clock and battery).
+Player: the Screens off tool says that SELECT + START brings the screens back.

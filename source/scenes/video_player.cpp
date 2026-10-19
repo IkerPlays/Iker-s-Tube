@@ -2206,6 +2206,7 @@ debug_info_view =
 				                 make_tool([]() { return tr("Screens off", "Pantallas off"); }, 90,
 				                           []() {
 					                           SceneSwitcher::manual_screen_off = !SceneSwitcher::manual_screen_off; // the screens of the setting (Settings, Screen and battery) go dark or come back
+					                           if (SceneSwitcher::manual_screen_off) notice_show(tr("Screens off: SELECT + START brings them back", "Pantallas apagadas: SELECT + START las enciende"));
 					                           var_need_refresh = true;
 				                           }),
 				                 make_tool([]() { return tr("Status", "Estado"); }, 60,
