@@ -1,64 +1,46 @@
 # Iker's Tube
 
-Cliente de YouTube homebrew para Nintendo 3DS / 2DS (probado como objetivo: New 2DS XL con CFW).
-Basado en [FourthTube](https://github.com/erievs/FourthTube) (que viene de ThirdTube), bajo licencia **GPLv3**.
+A YouTube client for the Nintendo 3DS / 2DS family (homebrew, needs custom firmware).
+Based on [FourthTube](https://github.com/erievs/FourthTube) / ThirdTube, licensed under **GPLv3**.
 
-## Novedades respecto a FourthTube
-- **Respaldo automático de clientes de reproducción**: si el cliente elegido (Android VR / visionOS / Android)
-  no devuelve un vídeo reproducible, la app prueba los otros antes de dar error.
-- **Tema oscuro por defecto** y color de acento nuevo.
-- **Caché de miniaturas duplicada** (600): menos descargas al volver atrás en las listas.
-- Datos separados en `sdmc:/3ds/IkersTube/` (no pisa los de FourthTube) y app con su propio ID.
+## Download
 
-## Funciones propias
-Resumen; la guía completa está en [`Documentation/GUIA_DE_USO.md`](Documentation/GUIA_DE_USO.md).
-- **Cuenta:** Me gusta, listas, suscripciones, campana, comentarios, historial sincronizado y listas de YouTube en la Biblioteca.
-- **Reproductor:** chat en directo, idioma del audio, herramientas de salto y velocidad, enlaces con QR, SponsorBlock.
-- **Offline:** guardar audio o vídeo, cola de descargas, pausa, noche, calidad y limpieza.
-- **Studio:** estadísticas, subidas con lista y publicación programada, edición de subidas
-  (necesita un cliente de Google Cloud propio: [`Documentation/STUDIO_SETUP.md`](Documentation/STUDIO_SETUP.md)).
-- **Comodidad:** menú al mantener pulsado un vídeo o canal (con páginas), fijar y ocultar canales, filtros de búsqueda combinables, sugerencias y búsquedas relacionadas, incógnito, copias, e importar y exportar suscripciones.
-- **Subtítulos y Shorts:** subtítulos de YouTube con traducción y ajustes rápidos; los Shorts abren el feed y se cambia de vídeo con la cruceta Abajo y Arriba.
-
-## Descargar la última versión
 <p align="center">
   <a href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.cia">
-    <img src="images/qr-latest.png" alt="QR para descargar la última versión estable (IkersTube.cia)" width="240">
+    <img src="images/qr-latest.png" alt="QR code: latest stable IkersTube.cia" width="240">
   </a>
 </p>
 
-Escanea el QR con **FBI** (*Remote Install → Scan QR code*) o pulsa la imagen: el enlace apunta siempre al
-`IkersTube.cia` de la **última versión estable**, así que el QR no caduca ni hay que volver a generarlo cuando sale una nueva.
-Las devbuilds (pre-release) están en [Releases](../../releases).
+Scan the QR with **FBI** (*Remote Install > Scan QR code*) or click it. It always points to the
+`IkersTube.cia` of the **latest stable release**, so it never needs to be updated.
+Test builds (pre-releases) are on the [Releases](../../releases) page.
 
-## Instalar y actualizar
-- Cada build sube el **devbuild** a [Releases](../../releases) con `IkersTube.cia` y `IkersTube.3dsx`.
-  Instala el `.cia` con **FBI** (SD → el `.cia` → Install); el `.3dsx` sirve para probar desde el Homebrew Launcher.
-- **Autoactualización:** la app busca nuevas versiones al abrirse. Si hay una, aparece un **punto rojo en ☰** y la
-  entrada *Actualización disponible*, que lleva a Ajustes → **Actualizar**.
-- Si publicas tú un release normal (con `.cia` y `.3dsx`, p. ej. tag `v1.1`), la app lo ofrece cuando su versión es
-  mayor que la instalada. La versión de los builds es `VERSION` + número de build (p. ej. `1.0.14`).
+## Install
 
-## Cómo sacar un release grande (estable)
-1. Edita `STABLE_RELEASE_NOTES.md` (inglés, texto plano): son las notas del release.
-2. En GitHub: **Actions → Stable release → Run workflow**, desde la rama `main`, y escribe la versión (por ejemplo `1.0.0`).
-   Marca *draft* si quieres revisarlo antes de publicarlo.
-3. El workflow compila, crea el release `v1.0.0` (no pre-release) con `IkersTube.cia` e `IkersTube.3dsx`, y la app
-   lo instala **automáticamente** al abrirse. Falla si esa versión ya existe.
+1. Copy `IkersTube.cia` to your SD card and install it with **FBI** (or use the QR above).
+   `IkersTube.3dsx` also works from the Homebrew Launcher.
+2. For sound, the DSP firmware dump must exist at `sdmc:/3ds/dspfirm.cdc`.
+3. The app checks for updates on start; a red dot appears in the menu when one is available
+   (Settings > Update).
 
-Las devbuilds (`build.yml`) siguen saliendo solas en cada push a `main`, como pre-release, y la app solo las ofrece.
-Tras publicar un estable, las devbuilds siguientes pasan solas a la versión siguiente (`1.0.1-dev.N`).
+Your data lives in `sdmc:/3ds/IkersTube/`.
 
-## Aviso
-YouTube cambia su API a menudo y puede bloquear clientes. Si un vídeo no carga, prueba otro cliente en
-Ajustes. Esta app no ha sido probada por el autor en todas las situaciones; reporta fallos en Issues.
+## Features
 
-## Compilar
-Necesitas devkitPro + devkitARM, `3ds-zlib` y `3ds-mbedtls`. Ejecuta `make`. Los pasos exactos están en
-`.github/workflows/build.yml`.
+- Search with filters, suggestions, Shorts, live streams and chat, subtitles, SponsorBlock.
+- Sign in to use your subscriptions, likes, playlists, history and comments.
+- Offline: save videos or audio, queue, favorites, watch later.
+- Handy extras: sleep timer, data saver, bookmarks, QR codes for links, themes, backups.
 
-## Créditos
-Todo el crédito de la base va para los autores originales: WindowsServer2003 (ThirdTube), Smu1zel, NCP 3.0 (erievs),
-5GBurrito, 2b-zipper, ItsFrocat, Dragontwo14, cooolgamer, Dxni y la comunidad de FourthTube;
-decodificador de [Video player for 3DS](https://github.com/Core-2-Extreme/Video_player_for_3DS) de Core-2-Extreme.
-Dislikes: [Return YouTube Dislike](https://returnyoutubedislike.com).
+Full guide (Spanish): [`Documentation/GUIA_DE_USO.md`](Documentation/GUIA_DE_USO.md).
+
+## Problems
+
+If the app closes at start, it enters **safe mode** on the next launch and resets its settings.
+Please open an [issue](../../issues) and attach `crash.txt` / `log.txt` from `sdmc:/3ds/IkersTube/`.
+
+## Building
+
+```
+docker run --rm -v $PWD:/src -w /src devkitpro/devkitarm make -j8
+```
