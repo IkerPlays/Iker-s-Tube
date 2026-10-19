@@ -3795,8 +3795,22 @@ static void autoplay_countdown_tick() {
 	    if (bar_grabbed && vid_duration != 0) {
 		    draw_seek_preview(bar_timestamp, bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_l);
 	    }
+	    if (vid_duration != 0) { // marks on the bar: the parts SponsorBlock skips (green) and where each chapter starts
+		    sb_lock.lock();
+		    for (auto &segment : sb_segments) {
+			    float x0 = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(segment.first);
+			    float x1 = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(segment.second);
+			    Draw_texture(var_square_image[0], 0xFF40B040, x0, y_center - 2, std::max(2.0f, x1 - x0), 4);
+		    }
+		    sb_lock.unlock();
+	    }
 	    if (vid_duration != 0) {
 		    Draw_texture(var_square_image[0], 0xFF3333D0, bar_x_l, y_center - 2, (bar_x_r - bar_x_l) * vid_progress, 4);
+		    for (auto &chapter : current_chapters) { // where each chapter starts
+			    if (chapter.first < 1) continue;
+			    float x = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(chapter.first);
+			    Draw_texture(var_square_image[0], DEF_DRAW_DARK_GRAY, x - 1, y_center - 2, 2, 4);
+		    }
 		    C2D_DrawCircleSolid(bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_center, 0, bar_grabbed ? 6 : 4,
 		                        0xFF3333D0);
 	    }
