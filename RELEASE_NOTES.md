@@ -1,1 +1,1 @@
-My Wrapped shows your most replayed video (tap to play it).
+My Wrapped adds videos watched in the last 30 days and your longest streak of days.

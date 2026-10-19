@@ -156,6 +156,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Badges: ", {"Succès : ", "Erfolge: ", "Traguardi: ", "Conquistas: ", "実績: "}},
 	    {"Badges", {"Succès", "Erfolge", "Traguardi", "Conquistas", "実績"}},
 	    {"Most replayed: ", {"Le plus revu : ", "Am häufigsten wiederholt: ", "Più rivisto: ", "Mais repetido: ", "最多リピート: "}},
+	    {"This month: ", {"Ce mois-ci : ", "Diesen Monat: ", "Questo mese: ", "Este mês: ", "今月: "}},
+	    {"Longest streak: ", {"Meilleure série : ", "Längste Serie: ", "Serie più lunga: ", "Maior sequência: ", "最長連続: "}},
 	    {"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	    {"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	    {"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},

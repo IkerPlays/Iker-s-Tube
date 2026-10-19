@@ -7,6 +7,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Download QR.** The About screen has a row that shows a QR code for the latest stable IkersTube.cia.
 - **Badges.** My Wrapped lists 10 badges you unlock by watching (streaks, favorite hour, hours playing, ...).
 - **Most replayed.** My Wrapped shows the video you replayed most, and a tap plays it.
+- **More numbers.** My Wrapped also shows the last 30 days and your longest streak.
 
 ## Installing
 

@@ -353,7 +353,16 @@ void History_draw(void) {
 				long long day = (long long)now / 86400;
 				if (!days.count(day)) day--;
 				while (days.count(day)) streak++, day--;
-				int play_seconds = (int)var_total_play_seconds;
+				int this_month = 0; // videos watched in the last 30 days
+					for (auto &video : watch_history) if (now - video.last_watch_time < 30 * 86400) this_month++;
+					int best_streak = 0, run = 0; // the longest run of consecutive days with something watched
+					long long previous_day = -10;
+					for (long long d : days) { // std::set is sorted
+						run = (d == previous_day + 1) ? run + 1 : 1;
+						best_streak = std::max(best_streak, run);
+						previous_day = d;
+					}
+					int play_seconds = (int)var_total_play_seconds;
 				auto row = [](const std::string &text) { return std::pair<std::string, std::function<void()>>{text, []() {}}; };
 				std::vector<std::pair<std::string, std::function<void()>>> rows = {
 				    row(tr("Videos in the history: ", "Vídeos en el historial: ") + std::to_string(watch_history.size())),
@@ -363,6 +372,8 @@ void History_draw(void) {
 				    row(tr("Favorite hour: ", "Hora favorita: ") + std::to_string(busiest) + ":00"),
 				    row(tr("This week: ", "Esta semana: ") + std::to_string(this_week)),
 				    row(tr("Days in a row: ", "Días seguidos: ") + std::to_string(streak)),
+					    row(tr("This month: ", "Este mes: ") + std::to_string(this_month)),
+					    row(tr("Longest streak: ", "Mejor racha: ") + std::to_string(best_streak)),
 				    row(tr("Playing today: ", "Hoy reproduciendo: ") + std::to_string(var_play_day == local_day_number() ? (int)var_play_today / 60 : 0) + " min")};
 				struct Badge { bool done; std::string name; };
 				const size_t n_videos = watch_history.size();
