@@ -31,6 +31,7 @@ extern int var_button_r; // same for R (default next in queue)
 extern int var_button_y; // same for Y
 extern bool var_left_handed; // mirrors the mini player controls
 extern int var_custom_hue; // 0..359 : accent color of the "Custom" theme
+extern int var_warm_screen; // 0 off, 1 warm tint at night (21:00-6:00), 2 always
 extern int var_fun_notices; // 1 : notices for badges and the late-night hint
 extern int var_round_buttons; // 1 : tappable buttons (not the full width rows) have rounded corners
 extern bool var_high_contrast; // pure black/white texts and backgrounds

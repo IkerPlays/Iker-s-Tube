@@ -653,6 +653,21 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
+					// Warm screen at night
+					(new SelectorView(0, 0, 320, 35, true))
+						->set_texts({
+							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
+							(std::function<std::string ()>) []() { return tr("At night", "De noche"); },
+							(std::function<std::string ()>) []() { return tr("Always", "Siempre"); }
+						}, var_warm_screen)
+						->set_title([](const SelectorView &) { return tr("Warm screen (night comfort)", "Pantalla cálida (comodidad de noche)"); })
+						->set_on_change([](const SelectorView &view) {
+							if (var_warm_screen != view.selected_button) {
+								var_warm_screen = view.selected_button;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+								var_need_refresh = true;
+							}
+						}),
 					// Notices for badges and the late-night hint
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

@@ -52,6 +52,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Resume.** A video that continues where you left it starts 3 seconds earlier.
 - **Chapter name.** The audio-only screen shows the chapter that is playing.
 - **Fix.** Go to time (player tool) no longer freezes the app.
+- **Warm screen.** A setting adds a warm tint to the screens at night (or always), easier on the eyes in the dark.
 
 ## Installing
 

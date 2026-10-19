@@ -788,7 +788,17 @@ void Draw_exit(void) {
 
 void Draw_frame_ready(void) { C3D_FrameBegin(C3D_FRAME_SYNCDRAW); }
 
+// a thin warm veil over the screens at night (Settings, Appearance): easier on the eyes in the dark
+static int current_screen_num = -1;
+static void draw_warm_veil(int screen_num) {
+	if (screen_num < 0 || var_warm_screen == 0) return;
+	if (var_warm_screen == 1 && !(var_hours >= 21 || var_hours < 6)) return;
+	C2D_DrawRectSolid(0, 0, 0, screen_num == 2 ? 320 : 400, 240, 0x30008CFF);
+}
+
 void Draw_screen_ready(int screen_num, int abgr8888) {
+	draw_warm_veil(current_screen_num); // the screen that was being drawn is finished
+	current_screen_num = screen_num;
 	if (screen_num >= 0 && screen_num <= 2) {
 		C2D_TargetClear(screen[screen_num], abgr8888);
 		C2D_SceneBegin(screen[screen_num]);
@@ -812,6 +822,8 @@ void Draw_apply_draw(void) {
 			var_need_refresh = true;
 		}
 	}
+	draw_warm_veil(current_screen_num);
+	current_screen_num = -1;
 	C3D_FrameEnd(0);
 	osTickCounterUpdate(&draw_frame_time_timer);
 	draw_frametime[19] = osTickCounterRead(&draw_frame_time_timer);

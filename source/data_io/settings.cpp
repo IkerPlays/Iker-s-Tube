@@ -140,6 +140,7 @@ void load_settings() {
 	var_high_contrast = load_int("high_contrast", 0);
 	var_round_buttons = std::max(0, std::min(1, load_int("round_buttons", 1)));
 	var_fun_notices = std::max(0, std::min(1, load_int("fun_notices", 1)));
+	var_warm_screen = std::max(0, std::min(2, load_int("warm_screen", 0)));
 	var_welcome_done = load_int("welcome_done", 0);
 	var_mark_watched = load_int("mark_watched", 1);
 	var_offline_autodelete = load_int("offline_autodelete", 0);
@@ -258,6 +259,7 @@ void save_settings() {
 	add_int("high_contrast", var_high_contrast);
 	add_int("round_buttons", var_round_buttons);
 	add_int("fun_notices", var_fun_notices);
+	add_int("warm_screen", var_warm_screen);
 	add_int("button_x", var_button_x);
 	add_int("button_y", var_button_y);
 	add_int("left_handed", var_left_handed);

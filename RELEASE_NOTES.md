@@ -1,1 +1,1 @@
-Go to time seeks through the locking request again; it runs after the view update, where the lock is not held.
+New setting (Appearance): a warm tint over the screens at night or always, easier on the eyes in the dark.
