@@ -3468,18 +3468,30 @@ debug_info_view =
 
     static void load_more_replies(void *arg_) {
 	    int comment_index = (int)arg_;
+	    small_resource_lock.lock(); // (everything is checked and copied under the lock: the page can change while the replies load)
+	    if (!vid_already_init || !comments_main_view || comment_index < 0 || comment_index >= (int)comments_main_view->views.size() ||
+	        comment_index >= (int)cur_video_info.comments.size()) {
+		    small_resource_lock.unlock();
+		    return;
+	    }
 	    PostView *comment_view = dynamic_cast<PostView *>(comments_main_view->views[comment_index]);
-	    YouTubeVideoDetail::Comment &comment = cur_video_info.comments[comment_index];
+	    if (!comment_view) {
+		    small_resource_lock.unlock();
+		    return;
+	    }
+	    const std::string loading_url = cur_video_info.url;
+	    YouTubeVideoDetail::Comment new_comment = cur_video_info.comments[comment_index];
+	    const size_t old_reply_count = new_comment.replies.size();
+	    small_resource_lock.unlock();
 
 	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
-	    auto new_comment = comment;
 	    new_comment.load_more_replies();
 	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
 	    std::vector<PostView *> new_reply_views;
 	    // wrap comments
 	    logger.info("player/load-r", "truncate start");
-	    for (size_t i = comment.replies.size(); i < new_comment.replies.size(); i++) {
+	    for (size_t i = old_reply_count; i < new_comment.replies.size(); i++) {
 		    auto &cur_reply = new_comment.replies[i];
 		    auto &cur_content = cur_reply.content;
 		    std::vector<std::string> cur_lines;
@@ -3518,11 +3530,16 @@ debug_info_view =
 	    logger.info("player/load-r", "truncate end");
 
 	    small_resource_lock.lock();
-	    if (!vid_already_init) { // app shut down while loading
-		    small_resource_lock.unlock();
+	    if (!vid_already_init || cur_video_info.url != loading_url || comment_index >= (int)comments_main_view->views.size() ||
+	        comments_main_view->views[comment_index] != comment_view || comment_index >= (int)cur_video_info.comments.size()) {
+		    small_resource_lock.unlock(); // the page changed while the replies loaded: they are dropped
+		    for (auto view : new_reply_views) {
+			    view->recursive_delete_subviews();
+			    delete view;
+		    }
 		    return;
 	    }
-	    comment = new_comment; // do not apply to the cache because it's a mess to also save the folding status
+	    cur_video_info.comments[comment_index] = new_comment; // do not apply to the cache because it's a mess to also save the folding status
 	    comment_view->replies.insert(comment_view->replies.end(), new_reply_views.begin(), new_reply_views.end());
 	    comment_view->replies_shown = comment_view->replies.size();
 	    comment_view->is_loading_replies = false;
