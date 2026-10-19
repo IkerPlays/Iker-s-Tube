@@ -1,1 +1,1 @@
-Changing screens fades the bottom screen in for a moment (part of the rounded style, off with Rounded buttons).
+With CC on, the audio-only screen also shows the subtitles, handy for lyrics.

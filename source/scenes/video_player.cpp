@@ -4124,6 +4124,12 @@ static void autoplay_countdown_tick() {
 					    Draw_texture(var_square_image[0], COLOR_ACCENT, 40 + b * 10, 234 - h, 7, h);
 				    }
 			    }
+			    small_resource_lock.lock(); // lyrics: the subtitles (CC) also show in the audio-only screen
+			    if (caption_overlay_view) {
+				    caption_overlay_view->cur_timestamp = vid_current_pos;
+				    caption_overlay_view->draw();
+			    }
+			    small_resource_lock.unlock();
 	    } else {
 		    logo_draw(200, 120);
 	    }
