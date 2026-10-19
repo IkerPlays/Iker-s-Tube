@@ -1,1 +1,1 @@
-Player: long pressing a bookmark opens a menu with the QR of that moment or Delete (it used to delete at once).
+Player: new Data saver tool turns the data saver on or off from the player.

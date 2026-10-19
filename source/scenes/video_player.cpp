@@ -2243,6 +2243,13 @@ debug_info_view =
 					                           misc_tasks_request(TASK_SAVE_HISTORY);
 					                           var_need_refresh = true;
 				                           }),
+				                 make_tool([]() { return var_data_saver ? tr("Data saver: on", "Ahorro: sí") : tr("Data saver: off", "Ahorro: no"); }, 100,
+				                           []() {
+					                           var_data_saver = !var_data_saver; // 240p and no thumbnails, from the next video on
+					                           misc_tasks_request(TASK_SAVE_SETTINGS);
+					                           notice_show(var_data_saver ? tr("Data saver on (the next videos)", "Ahorro de datos activado (próximos vídeos)") : tr("Data saver off", "Ahorro de datos desactivado"));
+					                           var_need_refresh = true;
+				                           }),
 				                 make_tool([]() { return tr("Next episode", "Siguiente cap."); }, 100,
 				                           []() { // searches the title with the number plus one (series, courses, podcasts)
 					                           std::string query = next_episode_query(cur_video_info.title);
