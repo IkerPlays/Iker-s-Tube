@@ -3321,6 +3321,7 @@ debug_info_view =
 
 	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	    auto new_result = *arg;
+	    const std::string loading_url = new_result.url;
 	    new_result.load_more_suggestions();
 	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
@@ -3336,6 +3337,14 @@ debug_info_view =
 
 	    small_resource_lock.lock();
 	    if (!vid_already_init) { // app shut down while loading
+		    small_resource_lock.unlock();
+		    return;
+	    }
+	    if (cur_video_info.url != loading_url) {
+		    for (auto view : new_suggestion_views) { // another video was opened while this loaded: the new page must not get the old one's items
+			    view->recursive_delete_subviews();
+			    delete view;
+		    }
 		    small_resource_lock.unlock();
 		    return;
 	    }
@@ -3357,6 +3366,7 @@ debug_info_view =
 
 	    add_cpu_limit(ADDITIONAL_CPU_LIMIT);
 	    auto new_result = *arg;
+	    const std::string loading_url = new_result.url;
 	    new_result.load_more_comments();
 	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
 
@@ -3370,6 +3380,14 @@ debug_info_view =
 
 	    small_resource_lock.lock();
 	    if (!vid_already_init) { // app shut down while loading
+		    small_resource_lock.unlock();
+		    return;
+	    }
+	    if (cur_video_info.url != loading_url) {
+		    for (auto view : new_comment_views) { // another video was opened while this loaded: the new page must not get the old one's items
+			    view->recursive_delete_subviews();
+			    delete view;
+		    }
 		    small_resource_lock.unlock();
 		    return;
 	    }
@@ -3389,6 +3407,7 @@ debug_info_view =
 	    if (comment_reload_same) target = cur_video_info.comment_sort_type; // Reload : the same sort again
 	    comment_reload_same = false;
 	    auto new_result = cur_video_info;
+	    const std::string loading_url = new_result.url;
 	    small_resource_lock.unlock();
 	    if (new_result.comment_sort_tokens[target] == "") {
 		    return;
@@ -3408,6 +3427,14 @@ debug_info_view =
 
 	    small_resource_lock.lock();
 	    if (!vid_already_init) {
+		    small_resource_lock.unlock();
+		    return;
+	    }
+	    if (cur_video_info.url != loading_url) {
+		    for (auto view : new_comment_views) { // another video was opened while this loaded: the new page must not get the old one's items
+			    view->recursive_delete_subviews();
+			    delete view;
+		    }
 		    small_resource_lock.unlock();
 		    return;
 	    }

@@ -1,1 +1,1 @@
-Channel Streams and Shorts tabs show an error text when they cannot load instead of Loading forever.
+Fix: comments or suggestions that finish loading after you opened another video are dropped instead of overwriting the new page.

@@ -39,6 +39,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Fewer renewals.** The login token is renewed only when it is about to expire, and an expired one is renewed automatically.
 - **Downloads fixes.** More reliable cancelling, a full SD card cannot damage the downloads list, no duplicate downloads, and Delete all downloads is faster.
 - **Loader fixes.** Failed channel and video pages are retried when you open them again, searches with quotes work, and one unknown result no longer stops a search.
+- **Fix.** Comments or suggestions that finish loading after switching videos no longer replace the new video's page.
 
 ## Installing
 
