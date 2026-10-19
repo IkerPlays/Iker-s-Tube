@@ -79,10 +79,14 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 	}
 	if (client < 0 || client >= CLIENT_COUNT) client = 0;
 	std::string body = std::string(R"({"context": {"client": {"hl": "%0","gl": "%1",)") + CLIENTS[client] + R"(}}, %2})";
-	body = std::regex_replace(body, std::regex("%0"), language_code);
-	body = std::regex_replace(body, std::regex("%1"), country_code);
-	size_t pos = body.find("%2");
-	body.replace(pos, 2, fields);
+	// (plain string replacement: std::regex is recursive and heavy for the small stacks of the worker threads)
+	auto replace_first = [](std::string &text, const std::string &what, const std::string &with) {
+		size_t at = text.find(what);
+		if (at != std::string::npos) text.replace(at, what.size(), with);
+	};
+	replace_first(body, "%0", language_code);
+	replace_first(body, "%1", country_code);
+	replace_first(body, "%2", fields);
 	std::map<std::string, std::string> headers;
 	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
 	auto response = http_post_json(get_innertube_api_url(endpoint), body, headers);

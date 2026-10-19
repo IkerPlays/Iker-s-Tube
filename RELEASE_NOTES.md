@@ -1,1 +1,1 @@
-The What's new dialog lists the current highlights.
+Hardening of the account code: a failed sign-in can be retried without restarting, the device-code timeout is reported, a network hiccup no longer signs you out when the login is renewed, tokens are read under a lock, concurrent browse requests no longer share a JSON document, and the request body is built without std::regex.

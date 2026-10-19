@@ -478,6 +478,7 @@ static void oauth_worker_thread_func(void *) {
 				resource_lock.unlock();
 				var_need_refresh = true;
 			} else if (OAuth::oauth_state == OAuth::OAuthState::ERROR || oauth_timeout_counter >= OAUTH_TIMEOUT_SECONDS) {
+				const bool timed_out = oauth_timeout_counter >= OAUTH_TIMEOUT_SECONDS; // (read before the counter is reset)
 				oauth_check_timer_active = false;
 				oauth_timeout_counter = 0;
 				
@@ -485,16 +486,17 @@ static void oauth_worker_thread_func(void *) {
 				snprintf(log_msg, sizeof(log_msg), "OAuth error detected: %s", OAuth::oauth_error_message.c_str());
 				logger.info("oauth_worker", log_msg);
 				
-				if (oauth_timeout_counter >= OAUTH_TIMEOUT_SECONDS) {
+				if (timed_out) {
 					OAuth::device_code = "";
 					OAuth::user_code = "";
 					OAuth::verification_url = "";
+					OAuth::oauth_state = OAuth::OAuthState::NOT_AUTHENTICATED; // the button can start a new sign-in
 				}
 				
 				resource_lock.lock();
 				if (popup_view->is_visible) {
 					std::string error_msg;
-					if (oauth_timeout_counter >= OAUTH_TIMEOUT_SECONDS) {
+					if (timed_out) {
 						error_msg = LOCALIZED(OAUTH_TIMEOUT);
 					} else {
 						error_msg = LOCALIZED(OAUTH_ERROR);
@@ -2185,7 +2187,10 @@ void Sem_init(void) {
 									oauth_user_view->set_height(0);
 								}
 							} else if (OAuth::oauth_state == OAuth::OAuthState::ERROR) {
-								OAuth::refresh_access_token();
+								OAuth::refresh_access_token(); // with a saved login this renews it
+								if (OAuth::oauth_state == OAuth::OAuthState::ERROR) {
+									OAuth::oauth_state = OAuth::OAuthState::NOT_AUTHENTICATED; // no way back: the next tap starts a new sign-in
+								}
 							} else if (OAuth::oauth_state == OAuth::OAuthState::NOT_AUTHENTICATED) {
 								OAuth::start_device_flow();
 								if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATING) {

@@ -25,6 +25,10 @@ std::string user_code = "";
 std::string verification_url = "";
 int expires_in = 0;
 int interval = 5;
+static LightLock token_lock; // the tokens are read by the worker threads while a refresh replaces them
+static struct TokenLockInit {
+	TokenLockInit() { LightLock_Init(&token_lock); }
+} token_lock_init;
 std::string access_token = "";
 std::string refresh_token = "";
 
@@ -130,6 +134,10 @@ void start_device_flow() {
 	verification_url = response_json["verification_url"].string_value();
 	expires_in = response_json["expires_in"].int_value();
 	interval = response_json["interval"].int_value();
+	if (device_code.empty() || user_code.empty()) { // an answer without the codes: nothing to wait for
+		oauth_error_message = "The sign-in answer has no code";
+		oauth_state = OAuthState::ERROR;
+	}
 }
 
 void check_device_flow() {
@@ -203,8 +211,10 @@ void check_device_flow() {
 		}
 	}
 
+	LightLock_Lock(&token_lock);
 	access_token = response_json["access_token"].string_value();
 	refresh_token = response_json["refresh_token"].string_value();
+	LightLock_Unlock(&token_lock);
 
 	device_code = "";
 	user_code = "";
@@ -216,6 +226,7 @@ void check_device_flow() {
 }
 
 void refresh_access_token() {
+	const OAuthState previous_state = oauth_state;
 	if (refresh_token.empty()) {
 		oauth_error_message = "No refresh token";
 		oauth_state = OAuthState::ERROR;
@@ -232,9 +243,10 @@ void refresh_access_token() {
 	                       {"Content-Type", "application/x-www-form-urlencoded"}},
 	                      post_data));
 
-	if (result.fail) {
-		oauth_error_message = "Network error: " + result.error;
-		oauth_state = OAuthState::ERROR;
+	// a connection problem or a server hiccup must not sign the user out: the old token stays and the next try renews it
+	if (result.fail || result.status_code >= 500 || result.status_code == 429) {
+		oauth_error_message = result.fail ? "Network error: " + result.error : "HTTP error: " + std::to_string(result.status_code);
+		if (previous_state != OAuthState::AUTHENTICATED) oauth_state = OAuthState::ERROR;
 		return;
 	}
 
@@ -251,7 +263,7 @@ void refresh_access_token() {
 
 	if (!error.empty()) {
 		oauth_error_message = "JSON error: " + error;
-		oauth_state = OAuthState::ERROR;
+		if (previous_state != OAuthState::AUTHENTICATED) oauth_state = OAuthState::ERROR;
 		return;
 	}
 
@@ -261,14 +273,27 @@ void refresh_access_token() {
 		return;
 	}
 
+	LightLock_Lock(&token_lock);
 	access_token = response_json["access_token"].string_value();
 	if (response_json.has_key("refresh_token")) {
 		refresh_token = response_json["refresh_token"].string_value();
 	}
+	LightLock_Unlock(&token_lock);
 
 	oauth_state = OAuthState::AUTHENTICATED;
 	save_tokens();
 	fetch_library_data();
+}
+
+// The RJson that is returned points into its Document, and two threads can ask for browse data at the same time: every call
+// gets the next Document of a small ring (a Document is only reused after 8 more calls).
+static rapidjson::Document &next_browse_document() {
+	static rapidjson::Document ring[8];
+	static int next = 0;
+	LightLock_Lock(&token_lock);
+	int index = next++ % 8;
+	LightLock_Unlock(&token_lock);
+	return ring[index];
 }
 
 RJson fetch_browse_data(const std::string &browse_id) {
@@ -280,7 +305,7 @@ RJson fetch_browse_data(const std::string &browse_id) {
 
 	auto response = get_session().perform(HttpRequest::POST(
 	    "https://www.youtube.com/youtubei/v1/browse",
-	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + access_token}}, post_data));
+	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, post_data));
 
 	if (response.fail || response.status_code != 200) {
 		logger.error("OAuth", "Failed to fetch browse data for " + browse_id);
@@ -288,7 +313,7 @@ RJson fetch_browse_data(const std::string &browse_id) {
 	}
 
 	response.data.push_back('\0');
-	static rapidjson::Document json_root;
+	rapidjson::Document &json_root = next_browse_document();
 	std::string error;
 	RJson data = RJson::parse(json_root, (char *)response.data.data(), error);
 
@@ -309,7 +334,7 @@ RJson fetch_browse_data_with_continuation(const std::string &browse_id, const st
 
 	auto response = get_session().perform(HttpRequest::POST(
 	    "https://www.youtube.com/youtubei/v1/browse",
-	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + access_token}}, post_data));
+	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, post_data));
 
 	if (response.fail || response.status_code != 200) {
 		logger.error("OAuth", "Failed to fetch browse data with continuation for " + browse_id);
@@ -317,7 +342,7 @@ RJson fetch_browse_data_with_continuation(const std::string &browse_id, const st
 	}
 
 	response.data.push_back('\0');
-	static rapidjson::Document json_root_continuation;
+	rapidjson::Document &json_root_continuation = next_browse_document();
 	std::string error;
 	RJson data = RJson::parse(json_root_continuation, (char *)response.data.data(), error);
 
@@ -330,8 +355,9 @@ RJson fetch_browse_data_with_continuation(const std::string &browse_id, const st
 }
 
 void revoke_tokens() {
-	if (!access_token.empty()) {
-		std::string post_data = "token=" + access_token;
+	std::string token_to_revoke = get_access_token();
+	if (!token_to_revoke.empty()) {
+		std::string post_data = "token=" + token_to_revoke;
 
 		get_session().perform(
 		    HttpRequest::POST(REVOKE_URL,
@@ -341,8 +367,10 @@ void revoke_tokens() {
 		                      post_data));
 	}
 
+	LightLock_Lock(&token_lock);
 	access_token = "";
 	refresh_token = "";
+	LightLock_Unlock(&token_lock);
 	device_code = "";
 	user_code = "";
 	verification_url = "";
@@ -357,9 +385,14 @@ void revoke_tokens() {
 	save_tokens();
 }
 
-bool is_authenticated() { return oauth_state == OAuthState::AUTHENTICATED && !access_token.empty(); }
+bool is_authenticated() { return oauth_state == OAuthState::AUTHENTICATED && !get_access_token().empty(); }
 
-std::string get_access_token() { return access_token; }
+std::string get_access_token() {
+	LightLock_Lock(&token_lock);
+	std::string copy = access_token;
+	LightLock_Unlock(&token_lock);
+	return copy;
+}
 
 std::string get_user_account_name() { return user_account_name; }
 
@@ -383,7 +416,10 @@ static void encrypt_decrypt_data(std::vector<u8> &data) {
 }
 
 void save_tokens() {
-	std::string data = "<access_token>" + access_token + "</access_token>\n" + "<refresh_token>" + refresh_token +
+	LightLock_Lock(&token_lock);
+	const std::string access_copy = access_token, refresh_copy = refresh_token;
+	LightLock_Unlock(&token_lock);
+	std::string data = "<access_token>" + access_copy + "</access_token>\n" + "<refresh_token>" + refresh_copy +
 	                   "</refresh_token>\n" + "<user_name>" + user_account_name + "</user_name>\n" + "<photo_url>" +
 	                   user_photo_url + "</photo_url>\n" + "<handle>" + user_handle + "</handle>\n" +
 	                   "<subscriber_count>" + user_subscriber_count + "</subscriber_count>\n";
@@ -426,32 +462,42 @@ void load_tokens() {
 	size_t subscriber_start = data_str.find("<subscriber_count>");
 	size_t subscriber_end = data_str.find("</subscriber_count>");
 
-	if (access_start != std::string::npos && access_end != std::string::npos) {
+	if (access_start != std::string::npos && access_end != std::string::npos &&
+	    access_end >= access_start + 14) {
 		access_start += 14;
+		LightLock_Lock(&token_lock);
 		access_token = data_str.substr(access_start, access_end - access_start);
+		LightLock_Unlock(&token_lock);
 	}
 
-	if (refresh_start != std::string::npos && refresh_end != std::string::npos) {
+	if (refresh_start != std::string::npos && refresh_end != std::string::npos &&
+	    refresh_end >= refresh_start + 15) {
 		refresh_start += 15;
+		LightLock_Lock(&token_lock);
 		refresh_token = data_str.substr(refresh_start, refresh_end - refresh_start);
+		LightLock_Unlock(&token_lock);
 	}
 
-	if (name_start != std::string::npos && name_end != std::string::npos) {
+	if (name_start != std::string::npos && name_end != std::string::npos &&
+	    name_end >= name_start + 11) {
 		name_start += 11;
 		user_account_name = data_str.substr(name_start, name_end - name_start);
 	}
 
-	if (photo_start != std::string::npos && photo_end != std::string::npos) {
+	if (photo_start != std::string::npos && photo_end != std::string::npos &&
+	    photo_end >= photo_start + 11) {
 		photo_start += 11;
 		user_photo_url = data_str.substr(photo_start, photo_end - photo_start);
 	}
 
-	if (handle_start != std::string::npos && handle_end != std::string::npos) {
+	if (handle_start != std::string::npos && handle_end != std::string::npos &&
+	    handle_end >= handle_start + 8) {
 		handle_start += 8;
 		user_handle = data_str.substr(handle_start, handle_end - handle_start);
 	}
 
-	if (subscriber_start != std::string::npos && subscriber_end != std::string::npos) {
+	if (subscriber_start != std::string::npos && subscriber_end != std::string::npos &&
+	    subscriber_end >= subscriber_start + 18) {
 		subscriber_start += 18;
 		user_subscriber_count = data_str.substr(subscriber_start, subscriber_end - subscriber_start);
 	}
@@ -466,7 +512,7 @@ void fetch_library_data() {
 
 	auto result = get_session().perform(HttpRequest::POST(
 	    "https://www.youtube.com/youtubei/v1/browse",
-	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + access_token}}, post_data));
+	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, post_data));
 
 	if (result.fail || result.status_code != 200) {
 		return;
@@ -497,7 +543,7 @@ void fetch_library_data() {
 		std::string channel_post_data = create_browse_request(user_channel_id);
 		auto channel_result = get_session().perform(HttpRequest::POST(
 		    "https://www.youtube.com/youtubei/v1/browse",
-		    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + access_token}}, channel_post_data));
+		    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, channel_post_data));
 
 		if (!channel_result.fail && channel_result.status_code == 200) {
 			channel_result.data.push_back('\0');
