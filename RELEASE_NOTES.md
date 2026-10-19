@@ -1,1 +1,1 @@
-Report: the report also lists the free space of the SD card, the data used in the session and the main playback settings.
+Settings, Data: the exported subscriptions CSV also includes the channels of your YouTube account when they have been loaded.

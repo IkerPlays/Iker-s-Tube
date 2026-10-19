@@ -1630,6 +1630,11 @@ void Sem_init(void) {
 							}
 							{ // the subscriptions in the CSV format of YouTube (Google Takeout) : other apps can import it
 								auto subs = get_valid_subscribed_channels();
+								for (auto &c : get_oauth_subscribed_channels()) { // the channels of your YouTube account too (when they were loaded)
+									bool known = false;
+									for (auto &s : subs) known = known || s.id == c.id;
+									if (!known && c.id != "") subs.push_back(c);
+								}
 								if (subs.size()) {
 									FILE *f = fopen("sdmc:/3ds/IkersTube/export_subscriptions.csv", "w");
 									if (f) {
