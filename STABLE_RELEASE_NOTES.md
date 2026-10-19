@@ -4,7 +4,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 
 ### Player
 - **Subtitle tools.** CC size and CC color change the subtitles on the spot. The Info tool also lists the subtitle languages and chapters.
-- **More tools.** Video QR is joined by QR at this time, Autoplay (off, list, all), Slower and Faster (5% steps), Hashtags (searches the tags of a video), +List (adds the video to a local playlist), Shuffle queue, Save list to YouTube, Screens off (listen with the screens dark; SELECT + START brings them back) and Status (clock and battery).
+- **More tools.** Video QR is joined by QR at this time, Autoplay (off, list, all), Slower and Faster (5% steps), Hashtags (searches the tags of a video), +List (adds the video to a local playlist), Shuffle queue, Mark watched, Save list to YouTube, Screens off (listen with the screens dark; SELECT + START brings them back) and Status (clock and battery).
 - **Chapters.** The chapter tools show the name of the chapter they jump to, and the chapter list highlights the one that is playing.
 - **Seek step.** A setting chooses how many seconds the D-pad left and right jump (5, 10, 15 or 30).
 - **Time left.** A setting makes the player bar show the time left instead of the length.
