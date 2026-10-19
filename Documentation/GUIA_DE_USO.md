@@ -69,6 +69,9 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
   "Estado" dice a qué hora termina el vídeo, Info cuenta cuántas veces lo has visto y el modo solo audio tiene un ecualizador animado.
 - **Más herramientas:** "Saltar intro" (cada vídeo de un canal empieza 5 a 60 s más tarde, se recuerda por canal), "Controles" (qué hace cada botón)
   y la barra de progreso marca los capítulos y, en verde, lo que salta SponsorBlock.
+- **Herramientas del reproductor:** las filas largas ahora se reparten en varias filas (antes los botones que no cabían en la pantalla no se podían tocar) y las menos usadas
+  están plegadas tras "Más herramientas". Nuevas: "Ir al minuto" (escribes m:ss) y "Repetir capítulo".
+- **Pantalla de solo audio:** ecualizador animado y, con los subtítulos (CC) activados, la letra de la canción.
 - **Feed:** los vídeos que no te habían avisado llevan la etiqueta NEW. Al desbloquear un logro sale un aviso, y "Mi resumen" puede enseñar tus números en un QR.
 - **Sin conexión:** si abres la app sin Wi-Fi te recuerda dónde están tus vídeos guardados. Si es muy de noche, te sugiere el temporizador de apagado.
 - **Canal:** en la descripción verás cuántos vídeos de ese canal has visto.
