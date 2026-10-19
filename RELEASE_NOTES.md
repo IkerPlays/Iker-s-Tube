@@ -1,1 +1,1 @@
-The login is renewed only when the token is about to expire (not on every Home load); an expired token is renewed and the request sent again once.
+Downloads: a cancel no longer leaks into the next download, a full SD card cannot wipe the list, the same video is not queued twice, an answer without a size is not saved as a whole file, leftover .part files are cleaned, and Delete all downloads is instant and cancels running downloads.

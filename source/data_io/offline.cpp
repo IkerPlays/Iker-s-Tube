@@ -34,7 +34,7 @@ static std::vector<OfflineItem> read_index() {
 	std::vector<OfflineItem> items;
 	FILE *f = fopen_or_recover(OFFLINE_INDEX, OFFLINE_INDEX_TMP, "r");
 	if (!f) return items;
-	char line[1024];
+	char line[2048];
 	while (fgets(line, sizeof line, f)) {
 		std::string s = line;
 		while (s.size() && (s.back() == '\n' || s.back() == '\r')) s.pop_back();
@@ -59,19 +59,27 @@ static std::vector<OfflineItem> read_index() {
 	return items;
 }
 
-static void write_index(const std::vector<OfflineItem> &items) {
+static bool write_index(const std::vector<OfflineItem> &items) {
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
 	mkdir(OFFLINE_DIR, 0777);
 	FILE *f = fopen(OFFLINE_INDEX_TMP, "w");
-	if (!f) return;
-	for (auto &i : items)
-		fprintf(f, "%s\t%s\t%s\t%d\t%d\n", clean(i.id).c_str(), clean(i.title).c_str(), clean(i.author).c_str(), i.quality,
-		        i.combined ? 1 : 0);
-	fclose(f);
+	if (!f) return false;
+	bool good = true;
+	for (auto &i : items) {
+		if (fprintf(f, "%s\t%s\t%s\t%d\t%d\n", clean(i.id).c_str(), clean(i.title).c_str(), clean(i.author).c_str(), i.quality,
+		            i.combined ? 1 : 0) < 0) good = false;
+	}
+	if (ferror(f)) good = false;
+	if (fclose(f) != 0) good = false;
+	if (!good) { // e.g. the SD card is full: the old index stays as it was
+		remove(OFFLINE_INDEX_TMP);
+		return false;
+	}
 	remove(OFFLINE_INDEX);
 	rename(OFFLINE_INDEX_TMP, OFFLINE_INDEX);
 	saved_ids_valid = false;
+	return true;
 }
 
 std::vector<OfflineItem> offline_list() {
@@ -95,7 +103,7 @@ bool offline_get(const std::string &id, OfflineItem &out) {
 	return found;
 }
 
-void offline_add(const OfflineItem &item) {
+bool offline_add(const OfflineItem &item) {
 	offline_lock.lock();
 	auto items = read_index();
 	for (size_t k = 0; k < items.size(); k++) {
@@ -105,7 +113,22 @@ void offline_add(const OfflineItem &item) {
 		}
 	}
 	items.insert(items.begin(), item);
-	write_index(items);
+	bool written = write_index(items);
+	offline_lock.unlock();
+	return written;
+}
+
+void offline_remove_all() {
+	offline_lock.lock();
+	std::vector<OfflineItem> kept; // the entries whose files could not be deleted stay
+	for (auto &item : read_index()) {
+		bool removed = true;
+		for (const std::string &path : {offline_file_path(item.id), offline_video_path(item.id)}) {
+			if (remove(path.c_str()) != 0 && errno != ENOENT) removed = false;
+		}
+		if (!removed) kept.push_back(item);
+	}
+	write_index(kept);
 	offline_lock.unlock();
 }
 

@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include "headers.hpp"
 #include "scenes/offline_tasks.hpp"
 #include "data_io/offline.hpp"
@@ -41,6 +42,7 @@ int offline_download_queued() {
 }
 int offline_download_percent() { return download_percent; }
 std::string offline_download_title() { return download_title; }
+static std::string running_job_id; // the video that is downloading now (under pending_lock)
 void offline_download_cancel() { // the running download and the queued ones
 	LightLock_Lock(&pending_lock);
 	for (auto job : pending) delete job;
@@ -89,7 +91,14 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 			auto content_range = result.get_header("Content-Range");
 			size_t slash = content_range.find('/');
 			if (slash != std::string::npos) total = strtoull(content_range.c_str() + slash + 1, NULL, 10);
-			if (total == 0) total = result.data.size(); // the server sent everything at once
+			if (total == 0) {
+				if (result.status_code == 206) { // a partial answer without the full size: the end of the file is unknown
+					logger.warning("offline", "206 without Content-Range : the size is unknown");
+					ok = false;
+					break;
+				}
+				total = result.data.size(); // the server sent everything at once
+			}
 		}
 		if (fwrite(result.data.data(), 1, result.data.size(), file) != result.data.size()) {
 			ok = false;
@@ -110,7 +119,6 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 static void run_job(DownloadJob *job, NetworkSessionList &session) {
 	download_title = job->title;
 	download_percent = 0;
-	download_cancel = false;
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
 	mkdir("sdmc:/3ds/IkersTube/offline", 0777);
@@ -141,8 +149,12 @@ static void run_job(DownloadJob *job, NetworkSessionList &session) {
 		item.author = job->author;
 		item.quality = job->quality;
 		item.combined = job->combined;
-		offline_add(item);
-		notice_show(tr("Saved for offline viewing: ", "Guardado para ver sin conexión: ") + job->title.substr(0, 30));
+		if (offline_add(item)) {
+			notice_show(tr("Saved for offline viewing: ", "Guardado para ver sin conexión: ") + job->title.substr(0, 30));
+		} else { // the list could not be written (SD card full?): the files would be orphans
+			for (auto &part : job->parts) remove(part.path.c_str());
+			notice_show(tr("Could not download it", "No se pudo descargar"));
+		}
 	} else {
 		for (auto &part : job->parts) remove((part.path + ".part").c_str()); // only the unfinished files : a saved copy stays
 		notice_show(download_cancel ? tr("Download cancelled", "Descarga cancelada") : tr("Could not download it", "No se pudo descargar"));
@@ -172,14 +184,22 @@ static void download_task(void *arg) {
 				if (var_download_window != 1) break; // the setting was changed
 			}
 		}
-		run_job(job, session);
+		if (download_cancel) { // cancelled while it waited for the night
+			delete job;
+			notice_show(tr("Download cancelled", "Descarga cancelada"));
+		} else {
+			run_job(job, session);
+		}
 		LightLock_Lock(&pending_lock);
 		if (pending.size()) {
 			job = pending.front();
 			pending.erase(pending.begin());
+			running_job_id = job->id;
+			download_cancel = false; // (a job queued after a cancel is a new request)
 		} else {
 			job = NULL;
 			download_running = false;
+			running_job_id = "";
 		}
 		LightLock_Unlock(&pending_lock);
 	}
@@ -222,6 +242,14 @@ void offline_download_async(const std::string &id, const std::string &title, con
 		job->parts = {{audio_url, offline_file_path(id)}};
 	}
 	LightLock_Lock(&pending_lock);
+	bool duplicate = download_running && running_job_id == id;
+	for (auto queued_job : pending) duplicate = duplicate || queued_job->id == id;
+	if (duplicate) { // already downloading or waiting in the queue
+		LightLock_Unlock(&pending_lock);
+		delete job;
+		notice_show(tr("Already in the download queue", "Ya está en la cola de descargas"));
+		return;
+	}
 	if (download_running) { // it will be downloaded after the current one
 		pending.push_back(job);
 		int queued = pending.size();
@@ -230,10 +258,19 @@ void offline_download_async(const std::string &id, const std::string &title, con
 		return;
 	}
 	download_running = true;
+	running_job_id = id;
+	download_cancel = false; // (a cancel of the previous downloads must not stop this one)
 	download_title = title;
 	download_percent = 0;
 	LightLock_Unlock(&pending_lock);
 	notice_show(tr("Downloading: 0%", "Descargando: 0%"));
+	if (DIR *dir = opendir("sdmc:/3ds/IkersTube/offline")) { // leftovers of a download that was cut (nothing else is downloading now)
+		while (struct dirent *entry = readdir(dir)) {
+			std::string name = entry->d_name;
+			if (name.size() > 5 && name.compare(name.size() - 5, 5, ".part") == 0) remove(("sdmc:/3ds/IkersTube/offline/" + name).c_str());
+		}
+		closedir(dir);
+	}
 	// its own thread : the shared async task thread must stay free for loading pages while the file downloads
 	if (!threadCreate(download_task, job, DEF_STACKSIZE, DEF_THREAD_PRIORITY_NORMAL, -1, true)) {
 		delete job;

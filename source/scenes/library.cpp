@@ -821,7 +821,8 @@ static void build_offline(VerticalListView *list) {
 	if (items.size() > 0) { // delete everything (asks first)
 		list->views.push_back(make_button(tr("Delete all downloads", "Borrar todas las descargas"), 320, []() {
 			show_dialog({make_option(tr("Yes, delete everything", "Sí, borrar todo"), []() {
-				             for (auto &item : offline_list()) offline_remove(item.id);
+				             offline_download_cancel(); // nothing running or queued comes back after the delete
+				             offline_remove_all();
 				             rebuild_request = true;
 			             }),
 			             make_option(LOCALIZED(CANCEL), []() {})});
