@@ -25,6 +25,10 @@ namespace youtube_parser {
 std::string language_code = "en";
 std::string country_code = "US";
 
+LightLock parser_net_lock;
+static struct ParserNetLockInit {
+	ParserNetLockInit() { LightLock_Init(&parser_net_lock); }
+} parser_net_lock_init_object;
 static bool thread_network_session_list_inited = false;
 NetworkSessionList thread_network_session_list;
 static void confirm_thread_network_session_list_inited() {
@@ -43,6 +47,7 @@ HttpRequest http_get_request(const std::string &url, std::map<std::string, std::
 }
 std::pair<bool, std::string> http_get(const std::string &url, std::map<std::string, std::string> headers) {
 	debug_info("accessing...");
+	ParserNetGuard net_guard;
 	auto result = thread_network_session_list.perform(http_get_request(url, headers));
 	if (result.fail) {
 		debug_error("fail : " + result.error);
@@ -67,6 +72,7 @@ HttpRequest http_post_json_request(const std::string &url, const std::string &js
 std::pair<bool, std::string> http_post_json(const std::string &url, const std::string &json,
                                             std::map<std::string, std::string> headers) {
 	debug_info("accessing(POST)...");
+	ParserNetGuard net_guard;
 	auto result = thread_network_session_list.perform(http_post_json_request(url, json, headers));
 	if (result.fail) {
 		debug_error("fail : " + result.error);

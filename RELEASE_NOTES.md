@@ -1,1 +1,1 @@
-Stable version 1.0.7 was published. The stable release notes now start from it.
+Network: the requests of the parser (and the live chat) take a lock, so two threads never use the same network sessions together.

@@ -24,6 +24,14 @@ using namespace rapidjson;
 namespace youtube_parser {
 RJson get_error_json(const std::string &error);
 
+// The network sessions of the parser belong to one thread at a time (the async worker). Other threads that use http_get /
+// http_post_json (the live chat) take this lock, so two requests never run on the same sessions together.
+extern LightLock parser_net_lock;
+struct ParserNetGuard {
+	ParserNetGuard() { LightLock_Lock(&parser_net_lock); }
+	~ParserNetGuard() { LightLock_Unlock(&parser_net_lock); }
+};
+
 // internal state
 extern std::string language_code;
 extern std::string country_code;

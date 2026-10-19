@@ -805,7 +805,10 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 		requests.push_back(http_post_json_request(urls[0], post_content, headers));
 		requests.push_back(http_post_json_request(urls[1], video_content, headers));
 
-		results = thread_network_session_list.perform(requests);
+		{
+			ParserNetGuard net_guard;
+			results = thread_network_session_list.perform(requests);
+		}
 		for (int i = 0; i < 2; i++) {
 			if (results[i].fail) {
 				res.error = "[v-#" + std::to_string(i) + "] Network request failed";
