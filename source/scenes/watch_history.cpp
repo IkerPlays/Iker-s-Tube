@@ -28,6 +28,7 @@ std::string erase_request;
 
 int cur_sort_type = 0;
 int sort_request = -1;
+static bool top_channels_request = false; // the Top channels button was pressed (the menu opens after the views update)
 static bool clear_old_request = false;   // Clear what is older than 30 days (handled after the views update)
 static bool filter_request = false;      // the search-in-history button was pressed (the keyboard opens after the views update)
 static std::string history_filter;       // only the videos whose title or channel contain this text are listed
@@ -121,6 +122,15 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                                     ->set_corner_radius(6)
 		                                     ->set_on_view_released([](View &) { filter_request = true; }));
+	}
+	if (watch_history.size() > 5) { // the channels you watch most : tap one to search it
+		video_list_view->views.push_back((new TextView(0, 0, 320, 22))
+		                                     ->set_text(tr("Top channels", "Canales más vistos"))
+		                                     ->set_x_alignment(TextView::XAlign::CENTER)
+		                                     ->set_y_alignment(TextView::YAlign::CENTER)
+		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                                     ->set_corner_radius(6)
+		                                     ->set_on_view_released([](View &) { top_channels_request = true; }));
 	}
 	std::string needle = history_filter;
 	for (auto &c : needle) c = tolower(c);
@@ -292,6 +302,25 @@ void History_draw(void) {
 				global_intent.next_scene = SceneType::VIDEO_PLAYER;
 				global_intent.arg = clicked_url;
 				clicked_url = "";
+			}
+			if (top_channels_request) {
+				top_channels_request = false;
+				std::map<std::string, int> counts;
+				for (auto &video : watch_history) {
+					if (video.author_name != "") counts[video.author_name]++;
+				}
+				std::vector<std::pair<int, std::string>> ranking;
+				for (auto &c : counts) ranking.push_back({c.second, c.first});
+				std::sort(ranking.begin(), ranking.end(), [](const std::pair<int, std::string> &a, const std::pair<int, std::string> &b) { return a.first > b.first; });
+				std::vector<std::pair<std::string, std::function<void()>>> options;
+				for (size_t k = 0; k < ranking.size() && k < 7; k++) {
+					std::string name = ranking[k].second;
+					options.push_back({name.substr(0, 28) + " (" + std::to_string(ranking[k].first) + ")", [name]() {
+						global_intent.next_scene = SceneType::SEARCH;
+						global_intent.arg = "q:" + name;
+					}});
+				}
+				if (options.size()) overlay_show_menu(tr("Top channels", "Canales más vistos"), options);
 			}
 			if (clear_old_request) {
 				clear_old_request = false;

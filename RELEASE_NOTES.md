@@ -1,1 +1,1 @@
-Search: the Related searches list now comes after the first five results instead of before them.
+History: new Top channels button lists the channels you watched most; tap one to search it.
