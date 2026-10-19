@@ -224,6 +224,9 @@ void Menu_init(void) {
 	Menu_boot_step(0.7f);
 	Home_init(); // first running
 	global_current_scene = SceneType::HOME;
+	if (var_wifi_state != 2 && !offline_list().empty()) { // started without Wi-Fi: point to what still works
+		notice_show(tr("No connection: your saved videos are in Library, Downloads", "Sin conexión: tus vídeos guardados están en Biblioteca, Descargas"));
+	}
 	std::string last_id, last_title;
 	if (!var_welcome_done) { // first launch : show the settings so language, theme and quality can be picked
 		var_welcome_done = true;
