@@ -787,6 +787,62 @@ static void show_description_links() {
 	var_need_refresh = true;
 }
 
+// the #hashtags of the title and the description : tap one to search it
+static void show_description_hashtags() {
+	std::vector<std::string> tags;
+	std::string text = cur_video_info.title + " " + cur_video_info.description;
+	for (size_t p = 0; (p = text.find('#', p)) != std::string::npos;) {
+		size_t e = p + 1;
+		while (e < text.size() && (isalnum((unsigned char)text[e]) || text[e] == '_' || (unsigned char)text[e] >= 0x80)) e++;
+		std::string tag = text.substr(p, e - p);
+		if (tag.size() > 2 && tag.size() < 40 && std::find(tags.begin(), tags.end(), tag) == tags.end()) tags.push_back(tag);
+		p = e;
+	}
+	if (tags.empty()) {
+		notice_show(tr("No hashtags in this video", "Este vídeo no tiene hashtags"));
+		return;
+	}
+	const int width = 300;
+	VerticalListView *list = new VerticalListView(0, 0, width);
+	for (size_t i = 0; i < tags.size() && i < 30; i++) {
+		std::string tag = tags[i];
+		list->views.push_back((new TextView(0, 0, width, 24))
+		                          ->set_text(tag)
+		                          ->set_y_alignment(TextView::YAlign::CENTER)
+		                          ->set_get_background_color(View::STANDARD_BACKGROUND)
+		                          ->set_on_view_released([tag](View &) {
+			                          account_pl_popup_view->set_is_visible(false);
+			                          global_intent.next_scene = SceneType::SEARCH;
+			                          global_intent.arg = "q:" + tag;
+			                          var_need_refresh = true;
+		                          }));
+	}
+	int list_height = std::min<int>(24 * 6, (int)std::min<size_t>(tags.size(), 30) * 24);
+	account_pl_popup_view->recursive_delete_subviews();
+	account_pl_popup_view->set_subview(
+	    (new VerticalListView(0, 0, width))
+	        ->set_views({(new TextView(0, 0, width, 22))
+	                         ->set_text(tr("Hashtags (tap to search)", "Hashtags (toca para buscar)"))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_get_text_color([]() { return COLOR_ACCENT; })
+	                         ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }),
+	                     (new ScrollView(0, 0, width, list_height))
+	                         ->set_views({list})
+	                         ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }),
+	                     (new TextView(0, 0, width, 22))
+	                         ->set_text(LOCALIZED(CLOSE))
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_corner_radius(6)
+	                         ->set_get_background_color(View::STANDARD_BACKGROUND)
+	                         ->set_on_view_released([](View &) {
+		                         account_pl_popup_view->set_is_visible(false);
+		                         var_need_refresh = true;
+	                         })})
+	        ->set_draw_order({1, 0, 2}));
+	account_pl_popup_view->set_is_visible(true);
+	var_need_refresh = true;
+}
+
 static int collab_page = 0; // 3 channels per page : no scrolling, so nothing can be drawn outside the screen
 static void show_collab_channels(const std::vector<YouTubeChannelSuccinct> &channels) {
 	collab_shown = channels;
@@ -2409,7 +2465,9 @@ debug_info_view =
 				                         make_tool([]() { return std::string("-5 min"); }, 60, [jump]() { jump(-300); }),
 				                         make_tool([]() { return std::string("+5 min"); }, 60, [jump]() { jump(300); }),
 				                         make_tool([]() { return tr("Links", "Enlaces"); }, 70,
-				                                   []() { if (cur_video_info.description != "") show_description_links(); })}));
+				                                   []() { if (cur_video_info.description != "") show_description_links(); }),
+				                         make_tool([]() { return tr("#Tags", "#Tags"); }, 60,
+				                                   []() { if (cur_video_info.id != "") show_description_hashtags(); })}));
 				    // fourth row : actions on your YouTube account (OAuth login needed)
 				    main_tab_views.push_back(
 				        (new HorizontalListView(0, 0, 20))

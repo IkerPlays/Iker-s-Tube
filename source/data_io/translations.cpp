@@ -157,6 +157,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Remind me to take a break", {"Me rappeler de faire une pause", "Mich an eine Pause erinnern", "Ricordami di fare una pausa", "Lembrar-me de fazer uma pausa", "休憩を知らせる"}},
 	    {"A notice appears after this much time playing.", {"Un avis apparaît après ce temps de lecture.", "Nach so langer Wiedergabe erscheint ein Hinweis.", "Compare un avviso dopo questo tempo di riproduzione.", "Aparece um aviso após esse tempo de reprodução.", "この時間再生すると通知が出ます。"}},
 	    {"You have been playing for a while: time for a break?", {"Vous jouez depuis un moment : une pause ?", "Du spielst schon eine Weile: Zeit für eine Pause?", "Riproduci da un po': una pausa?", "Você está reproduzindo há um tempo: uma pausa?", "しばらく再生しています。休憩しませんか？"}},
+	    {"No hashtags in this video", {"Pas de hashtags dans cette vidéo", "Keine Hashtags in diesem Video", "Nessun hashtag in questo video", "Nenhuma hashtag neste vídeo", "この動画にハッシュタグはありません"}},
+	    {"Hashtags (tap to search)", {"Hashtags (toucher pour chercher)", "Hashtags (zum Suchen tippen)", "Hashtag (tocca per cercare)", "Hashtags (toque para buscar)", "ハッシュタグ（タップで検索）"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

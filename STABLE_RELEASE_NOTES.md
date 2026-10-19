@@ -24,6 +24,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Subtitle tools.** CC size and CC color tools change the subtitles on the spot.
 - **Player tools.** Autoplay switch (off, list, all) and fine speed tools (Slower and Faster, 5% steps).
 - **Break reminder.** A setting shows a notice after 30, 60 or 120 minutes of playing.
+- **Hashtags.** New player tool lists the hashtags of a video and searches them.
 
 ## Installing
 
