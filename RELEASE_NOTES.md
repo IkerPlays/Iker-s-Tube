@@ -1,1 +1,1 @@
-About: tap the GitHub address to see its QR code.
+Library, Offline: the sort button also sorts by channel.

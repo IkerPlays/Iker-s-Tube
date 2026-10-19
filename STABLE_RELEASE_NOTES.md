@@ -17,6 +17,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Videos in a row.** A setting stops the queue and autoplay after 3, 5 or 10 videos (good to fall asleep).
 - **Updates.** The update check uses the current repository address directly.
 - **About.** Tap the GitHub address to see its QR code.
+- **Downloads.** The sort button can also sort by channel.
 
 ## Installing
 

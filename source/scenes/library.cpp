@@ -759,12 +759,19 @@ static void build_offline(VerticalListView *list) {
 			       file_size(offline_file_path(b.id)) + file_size(offline_video_path(b.id));
 		});
 	}
+	if (offline_sort == 3) { // by channel, then by title
+		std::sort(items.begin(), items.end(), [](const OfflineItem &a, const OfflineItem &b) {
+			if (a.author != b.author) return a.author < b.author;
+			return a.title < b.title;
+		});
+	}
 	if (items.size() > 1) {
 		list->views.push_back(make_button(offline_sort == 0   ? tr("Sort: newest first", "Orden: más recientes")
 		                                  : offline_sort == 1 ? tr("Sort: title A-Z", "Orden: título A-Z")
-		                                                      : tr("Sort: biggest first", "Orden: más grandes"),
+		                                  : offline_sort == 2 ? tr("Sort: biggest first", "Orden: más grandes")
+		                                                      : tr("Sort: by channel", "Orden: por canal"),
 		                                  320, []() {
-			                                  offline_sort = (offline_sort + 1) % 3;
+			                                  offline_sort = (offline_sort + 1) % 4;
 			                                  rebuild_request = true;
 		                                  }));
 	}
