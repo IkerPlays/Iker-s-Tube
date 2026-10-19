@@ -272,7 +272,7 @@ void Menu_init(void) {
 
 	queue_async_task(auto_backup_task, NULL); // a backup of the user data once a week
 
-	Menu_loading_screen(3000);
+	Menu_loading_screen(1800); // (the feed of the last time is shown at once, so the wait is short)
 
 	{ // (after the loading screen, so the notice is still on when the first screen shows) the last run ended with an unexpected abort : say so once and keep the report as crash_last.txt
 		FILE *crash = fopen("sdmc:/3ds/IkersTube/crash.txt", "r");

@@ -1,1 +1,1 @@
-New setting (Appearance): a warm tint over the screens at night or always, easier on the eyes in the dark.
+The loading screen at start lasts 1.8 seconds instead of 3.
