@@ -1,1 +1,1 @@
-Audio-only playback shows a little animated equalizer on the top screen (decoration).
+Video lists show a soft pulsing placeholder while a thumbnail loads (part of the rounded style).

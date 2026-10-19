@@ -10,6 +10,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **More numbers.** My Wrapped also shows the last 30 days and your longest streak.
 - **Info shows your history.** The Info tool tells how many times you watched a video and how many videos of its channel you have watched.
 - **Equalizer.** The audio-only screen has a small animated equalizer.
+- **Loading placeholders.** Thumbnails pulse softly while they load.
 
 ## Installing
 

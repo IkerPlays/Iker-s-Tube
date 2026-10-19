@@ -35,6 +35,7 @@ struct SuccinctVideoView : public FixedSizeView {
 
 	bool is_playlist = false;
 	std::string queue_url; // set for videos that can be added to the play queue
+	mutable u64 loading_since = 0; // when the placeholder started pulsing
 	mutable int thumbnail_fade = 0; // frames since the thumbnail appeared (fade-in animation)
 
 	SuccinctVideoView(double x0, double y0, double width, double height)
@@ -96,6 +97,15 @@ struct SuccinctVideoView : public FixedSizeView {
 				Draw_texture(var_square_image[0], (alpha << 24) | (DEFAULT_BACK_COLOR & 0x00FFFFFF), x0, y0,
 				             get_thumbnail_width(), get_thumbnail_height());
 				thumbnail_fade++;
+				var_need_refresh = true;
+			}
+		} else if (thumbnail_handle >= 0 && var_round_buttons) {
+			// still loading : a soft pulsing placeholder (it gives up after 8 seconds so a failed thumbnail does not keep redrawing)
+			u64 now = osGetTime();
+			if (!loading_since) loading_since = now;
+			if (now - loading_since < 8000) {
+				u32 shade = 0x18 + (u32)(10 * (1 + sinf(now / 220.0f)));
+				Draw_round_rect((int)x0, (int)y0, (int)get_thumbnail_width(), (int)get_thumbnail_height(), 4, 0xFF000000 | (shade << 16) | (shade << 8) | shade);
 				var_need_refresh = true;
 			}
 		}
