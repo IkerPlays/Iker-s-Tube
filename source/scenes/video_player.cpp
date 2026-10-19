@@ -860,7 +860,7 @@ static void show_description_links() {
 
 // "Next ep" : the title with its episode number plus one ("Show Ep 5" -> "Show Ep 6"), searched. "" if the title has no number.
 static std::string next_episode_query(const std::string &title) {
-	int best_start = -1, best_len = 0;
+	int best_start = -1, best_len = 0, best_priority = 0;
 	for (size_t i = 0; i < title.size();) {
 		if (isdigit((unsigned char)title[i])) {
 			size_t j = i;
@@ -868,7 +868,20 @@ static std::string next_episode_query(const std::string &title) {
 			int value = atoi(title.substr(i, j - i).c_str());
 			char after = j < title.size() ? title[j] : ' ';
 			bool resolution = after == 'p' || after == 'P' || after == 'k' || after == 'K' || (value >= 144 && value <= 2160 && (value == 144 || value == 240 || value == 360 || value == 480 || value == 720 || value == 1080));
-			if (j - i <= 3 && value >= 1 && value < 999 && !resolution) best_start = (int)i, best_len = (int)(j - i); // (the last small number that is not a quality : the episode)
+			// a number right after a word like "Ep", "Part" or "#" is the episode; otherwise the last small number that is not a quality
+			int priority = 1;
+			{
+				size_t k = i;
+				while (k > 0 && (title[k - 1] == ' ' || title[k - 1] == '.' || title[k - 1] == '#' || title[k - 1] == ':')) k--;
+				size_t word_end = k;
+				while (k > 0 && isalpha((unsigned char)title[k - 1])) k--;
+				std::string word = title.substr(k, word_end - k);
+				for (auto &c : word) c = tolower((unsigned char)c);
+				bool marked_by_hash = i > 0 && title[i - 1] == '#';
+				if (marked_by_hash || word == "ep" || word == "episode" || word == "episodio" || word == "part" || word == "parte" || word == "pt" || word == "chapter" ||
+				    word == "capitulo" || word == "cap" || word == "vol" || word == "volume" || word == "day" || word == "dia" || word == "e") priority = 2;
+			}
+			if (j - i <= 3 && value >= 1 && value < 999 && !resolution && priority >= best_priority) best_start = (int)i, best_len = (int)(j - i), best_priority = priority;
 			i = j;
 		} else {
 			i++;

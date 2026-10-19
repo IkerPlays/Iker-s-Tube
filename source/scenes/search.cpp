@@ -533,11 +533,34 @@ static std::vector<std::string> parse_suggestions(const std::string &body, int m
 	while ((int)res.size() < max) {
 		size_t q1 = body.find('"', p);
 		if (q1 == std::string::npos || q1 > array_end) break;
-		size_t q2 = body.find('"', q1 + 1);
-		if (q2 == std::string::npos) break;
-		std::string w = body.substr(q1 + 1, q2 - q1 - 1);
+		// the JSON string is read up to the closing quote, with its escapes (\" \\ \/ \uXXXX) decoded
+		std::string w;
+		bool usable = true;
+		size_t q2 = q1 + 1;
+		for (; q2 < body.size() && body[q2] != '"'; q2++) {
+			char c = body[q2];
+			if (c != '\\') {
+				w += c;
+				continue;
+			}
+			if (q2 + 1 >= body.size()) break;
+			char e = body[++q2];
+			if (e == '"' || e == '\\' || e == '/') w += e;
+			else if (e == 'n' || e == 't') w += ' ';
+			else if (e == 'u' && q2 + 4 < body.size()) {
+				unsigned cp = (unsigned)strtoul(body.substr(q2 + 1, 4).c_str(), NULL, 16);
+				q2 += 4;
+				if (cp >= 0xD800 && cp <= 0xDFFF) usable = false; // (a surrogate pair: the word is skipped)
+				else if (cp < 0x80) w += (char)cp;
+				else if (cp < 0x800) w += (char)(0xC0 | (cp >> 6)), w += (char)(0x80 | (cp & 0x3F));
+				else w += (char)(0xE0 | (cp >> 12)), w += (char)(0x80 | ((cp >> 6) & 0x3F)), w += (char)(0x80 | (cp & 0x3F));
+			} else {
+				usable = false;
+			}
+		}
+		if (q2 >= body.size()) break; // no closing quote
 		p = q2 + 1;
-		if (w.find('\\') != std::string::npos || w.size() < 2 || w.size() > 38) continue;
+		if (!usable || w.size() < 2 || w.size() > 38) continue;
 		res.push_back(w);
 	}
 	return res;
