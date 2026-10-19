@@ -1,1 +1,1 @@
-Player: new CC size and CC color tools change the subtitles on the spot (they are saved).
+Player: new tools Autoplay (off, list, all), Slower and Faster (5% steps).

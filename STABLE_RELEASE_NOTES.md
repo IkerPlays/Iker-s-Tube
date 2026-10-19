@@ -22,6 +22,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Import.** Import subscriptions from a Google Takeout style CSV file.
 - **Export.** Every local playlist is exported to its own text file.
 - **Subtitle tools.** CC size and CC color tools change the subtitles on the spot.
+- **Player tools.** Autoplay switch (off, list, all) and fine speed tools (Slower and Faster, 5% steps).
 
 ## Installing
 

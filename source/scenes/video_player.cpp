@@ -2122,6 +2122,28 @@ debug_info_view =
 					                                 cur_video_info.caption_base_languages[cc_index].name);
 					                     queue_async_task(load_caption, &cc_arg);
 				                     }),
+				                 make_tool([]() { return var_autoplay_level == 0 ? tr("Autoplay: off", "Auto: no") : var_autoplay_level == 1 ? tr("Autoplay: list", "Auto: lista") : tr("Autoplay: all", "Auto: todo"); }, 100,
+				                           []() {
+					                           var_autoplay_level = (var_autoplay_level + 1) % 3; // off -> playlist -> suggestions
+					                           misc_tasks_request(TASK_SAVE_SETTINGS);
+					                           var_need_refresh = true;
+				                           }),
+				                 make_tool([]() { return tr("Slower", "Más lento"); }, 70,
+				                           []() {
+					                           quick_speed = std::max(0.25, std::round((quick_speed - 0.05) * 100) / 100);
+					                           network_decoder.set_tempo(quick_speed);
+					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+					                           notice_show(std::to_string((int)std::round(quick_speed * 100)) + "%");
+					                           var_need_refresh = true;
+				                           }),
+				                 make_tool([]() { return tr("Faster", "Más rápido"); }, 70,
+				                           []() {
+					                           quick_speed = std::min(2.0, std::round((quick_speed + 0.05) * 100) / 100);
+					                           network_decoder.set_tempo(quick_speed);
+					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+					                           notice_show(std::to_string((int)std::round(quick_speed * 100)) + "%");
+					                           var_need_refresh = true;
+				                           }),
 				                 make_tool([]() { return tr("CC size", "CC tamaño"); }, 70,
 				                           []() {
 					                           var_caption_size = (var_caption_size + 1) % 3;
