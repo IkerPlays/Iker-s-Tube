@@ -246,6 +246,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Favorite hour: ", {"Heure préférée : ", "Lieblingsstunde: ", "Ora preferita: ", "Hora favorita: ", "好きな時間: "}},
 	    {"This week: ", {"Cette semaine : ", "Diese Woche: ", "Questa settimana: ", "Esta semana: ", "今週: "}},
 	    {"Days in a row: ", {"Jours d'affilée : ", "Tage in Folge: ", "Giorni di fila: ", "Dias seguidos: ", "連続日数: "}},
+	    {"Next episode", {"Épisode suivant", "Nächste Folge", "Episodio successivo", "Próximo episódio", "次のエピソード"}},
+	    {"This title has no episode number", {"Ce titre n'a pas de numéro d'épisode", "Dieser Titel hat keine Folgennummer", "Questo titolo non ha un numero di episodio", "Este título não tem número de episódio", "このタイトルに話数はありません"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

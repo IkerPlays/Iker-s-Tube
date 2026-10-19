@@ -801,6 +801,25 @@ static void show_description_links() {
 	var_need_refresh = true;
 }
 
+// "Next ep" : the title with its episode number plus one ("Show Ep 5" -> "Show Ep 6"), searched. "" if the title has no number.
+static std::string next_episode_query(const std::string &title) {
+	int best_start = -1, best_len = 0;
+	for (size_t i = 0; i < title.size();) {
+		if (isdigit((unsigned char)title[i])) {
+			size_t j = i;
+			while (j < title.size() && isdigit((unsigned char)title[j])) j++;
+			int value = atoi(title.substr(i, j - i).c_str());
+			if (j - i <= 3 && value >= 1 && value < 999 && !(value >= 100 && value <= 999 && title.compare(i, 3, "720") == 0)) best_start = (int)i, best_len = (int)(j - i); // (the last small number : the episode)
+			i = j;
+		} else {
+			i++;
+		}
+	}
+	if (best_start < 0) return "";
+	int value = atoi(title.substr(best_start, best_len).c_str());
+	return title.substr(0, best_start) + std::to_string(value + 1) + title.substr(best_start + best_len);
+}
+
 // the #hashtags of the title and the description : tap one to search it
 static void show_description_hashtags() {
 	std::vector<std::string> tags;
@@ -2219,6 +2238,16 @@ debug_info_view =
 					                           }
 					                           misc_tasks_request(TASK_SAVE_HISTORY);
 					                           var_need_refresh = true;
+				                           }),
+				                 make_tool([]() { return tr("Next episode", "Siguiente cap."); }, 100,
+				                           []() { // searches the title with the number plus one (series, courses, podcasts)
+					                           std::string query = next_episode_query(cur_video_info.title);
+					                           if (query == "") {
+						                           notice_show(tr("This title has no episode number", "Este título no tiene número de capítulo"));
+						                           return;
+					                           }
+					                           global_intent.next_scene = SceneType::SEARCH;
+					                           global_intent.arg = "q:" + query;
 				                           }),
 				                 make_tool([]() { return tr("Shuffle queue", "Mezclar cola"); }, 100,
 				                           []() {

@@ -1,1 +1,1 @@
-Player: the sleep timer lowers the volume during its last 30 seconds before pausing, and the volume comes back afterwards.
+Player: new Next episode tool searches the title of the video with its episode number plus one (series, courses, podcasts).
