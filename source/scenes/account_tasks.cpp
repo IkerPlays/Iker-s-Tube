@@ -29,7 +29,7 @@ bool account_ready() {
 	return false;
 }
 
-enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL, LIVE_CHAT, POST_LIKE, RUN_ENDPOINT };
+enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL, LIVE_CHAT, POST_LIKE, RUN_ENDPOINT, SAVE_PLAYLIST };
 
 static void run_job(void *arg) {
 	AccountJob *job = (AccountJob *)arg;
@@ -96,6 +96,11 @@ static void run_job(void *arg) {
 		ok = youtube_account_not_interested(job->a, job->flag);
 		done = job->flag ? tr("You will not be recommended this channel", "No se te recomendará este canal") : tr("Noted: not interested", "Anotado: no me interesa");
 		failed = tr("Could not send it", "No se pudo enviar");
+		break;
+	case SAVE_PLAYLIST:
+		ok = youtube_account_save_playlist(job->a);
+		done = tr("Playlist saved to your library", "Lista guardada en tu biblioteca de YouTube");
+		failed = tr("Could not save the playlist", "No se pudo guardar la lista");
 		break;
 	case POST_LIKE:
 		ok = youtube_account_post_like(job->a);
@@ -195,6 +200,10 @@ void account_bell_async(const std::string &channel_id, int level) {
 	AccountJob *j = new AccountJob{BELL, channel_id, "", ""};
 	j->number = level;
 	queue_job(j);
+}
+void account_save_playlist_async(const std::string &playlist_id) {
+	if (!account_ready()) return;
+	queue_job(new AccountJob{SAVE_PLAYLIST, playlist_id, "", ""});
 }
 void account_post_like_async(const std::string &post_id) {
 	if (!account_ready()) return;

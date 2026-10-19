@@ -1,1 +1,1 @@
-Player: a notice appears when the battery drops to 15% and to 5% while you watch (not while charging).
+Player: new "Save list to YouTube" tool saves the playlist of the video you are watching to your YouTube library (needs the YouTube login).

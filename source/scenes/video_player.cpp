@@ -2260,6 +2260,14 @@ debug_info_view =
 					                             notice_show(next ? tr("Sleep timer: ", "Temporizador: ") + std::to_string(next) + " min" : tr("Sleep timer off", "Temporizador apagado"));
 					                             var_need_refresh = true;
 				                             }),
+				                         make_tool([]() { return tr("Save list to YouTube", "Guardar lista en YouTube"); }, 150,
+				                                   []() {
+					                                   if (cur_video_info.playlist.id == "") {
+						                                   notice_show(tr("This video is not in a playlist", "Este vídeo no está en una lista"));
+						                                   return;
+					                                   }
+					                                   account_save_playlist_async(cur_video_info.playlist.id);
+				                                   }),
 				                         make_tool([]() { return tr("Save playlist audio", "Guardar audio de la lista"); }, 140,
 				                                   []() {
 					                                   auto &videos = cur_video_info.playlist.videos;

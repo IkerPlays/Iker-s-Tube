@@ -146,6 +146,12 @@ bool youtube_account_like(const std::string &video_id, int rating) {
 	return false;
 }
 
+bool youtube_account_save_playlist(const std::string &playlist_id) {
+	if (playlist_id == "") return false;
+	std::string fields = "\"target\": {\"playlistId\": \"" + json_escape(playlist_id) + "\"}";
+	return account_post("like/like", fields, 1).first || account_post("like/like", fields, 2).first;
+}
+
 bool youtube_account_post_like(const std::string &post_id) {
 	if (post_id == "") return false;
 	std::string fields = "\"target\": {\"postId\": \"" + json_escape(post_id) + "\"}";

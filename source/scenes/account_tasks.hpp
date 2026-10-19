@@ -7,6 +7,7 @@
 bool account_ready(); // false (and a notice is shown) when there is no OAuth login
 void account_not_interested_async(const std::string &video_id, bool whole_channel);
 void account_bell_async(const std::string &channel_id, int level);
+void account_save_playlist_async(const std::string &playlist_id); // YouTube's Save on a playlist
 void account_post_like_async(const std::string &post_id);
 void account_run_endpoint_async(const std::string &endpoint_json); // a service endpoint copied from a page (poll vote)
 void account_like_async(const std::string &video_id, int rating);
