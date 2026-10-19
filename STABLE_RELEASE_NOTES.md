@@ -17,6 +17,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Portuguese.** The interface language can be set to Portuguese.
 - **Channel history.** The channel page tells how many of its videos you have watched.
 - **Ends at.** The Status tool of the player says when the video will be over.
+- **Dislikes.** A new player tool shows the estimated likes and dislikes of a video, using the public Return YouTube Dislike API (only the video id is sent).
 
 ## Installing
 

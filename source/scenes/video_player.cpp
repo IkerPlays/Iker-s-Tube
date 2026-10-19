@@ -36,6 +36,7 @@
 #include "network_decoder/network_decoder_multiple.hpp"
 #include "network_decoder/thumbnail_loader.hpp"
 #include "util/async_task.hpp"
+#include "youtube_parser/internal_common.hpp"
 #include "util/misc_tasks.hpp"
 #include "util/util.hpp"
 #include "data_io/subscription_util.hpp"
@@ -459,6 +460,30 @@ static void sb_load_task(void *arg) {
 	sb_lock.unlock();
 	if (ok && segments.size()) logger.info("player", "SponsorBlock : " + std::to_string(segments.size()) + " segment(s)");
 	delete video_id;
+}
+
+// "Dislikes" tool: the public Return YouTube Dislike API estimates the votes (only the video id is sent to returnyoutubedislikeapi.com)
+static void dislikes_task(void *arg) {
+	std::string *video_id = (std::string *)arg;
+	auto response = youtube_parser::http_get("https://returnyoutubedislikeapi.com/votes?videoId=" + *video_id, {});
+	delete video_id;
+	if (!response.first) {
+		notice_show(tr("Could not get the votes (no connection?)", "No se pudieron obtener los votos (¿sin conexión?)"));
+		return;
+	}
+	auto number_after = [&](const std::string &key) -> double {
+		size_t at = response.second.find("\"" + key + "\":");
+		if (at == std::string::npos) return -1;
+		return atof(response.second.c_str() + at + key.size() + 3);
+	};
+	double likes = number_after("likes"), dislikes = number_after("dislikes"), rating = number_after("rating");
+	if (likes < 0 || dislikes < 0) {
+		notice_show(tr("No vote data for this video", "No hay datos de votos de este vídeo"));
+		return;
+	}
+	char rating_text[16] = "";
+	if (rating >= 0) snprintf(rating_text, sizeof rating_text, " - %.1f/5", rating);
+	notice_show(tr("Likes ", "Me gusta ") + std::to_string((long long)likes) + " - " + tr("Dislikes ", "No me gusta ") + std::to_string((long long)dislikes) + rating_text);
 }
 
 static void sponsorblock_tick(const std::string &id) {
@@ -2566,6 +2591,12 @@ debug_info_view =
 						                                   if (channel_videos) text += "\n" + tr("Videos of this channel in your history: ", "Vídeos de este canal en tu historial: ") + std::to_string(channel_videos);
 					                                   }
 					                                   show_text_popup(cur_video_info.title, text);
+				                                   }),
+				                         make_tool([]() { return tr("Dislikes", "No me gusta"); }, 70,
+				                                   []() {
+					                                   if (cur_video_info.id == "" || is_async_task_running(dislikes_task)) return;
+					                                   notice_show(tr("Asking for the votes...", "Pidiendo los votos..."));
+					                                   queue_async_task(dislikes_task, new std::string(cur_video_info.id));
 				                                   }),
 				                         make_tool([]() { return tr("Video QR", "QR del vídeo"); }, 84,
 				                                   []() {
