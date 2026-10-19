@@ -1,1 +1,1 @@
-Channels: long press a subscribed channel and choose Pin on top to keep it first (marked with a star) in your local channels list.
+Backup: the pinned channels and the recent channels are part of the backup too.
