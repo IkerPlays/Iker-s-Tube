@@ -195,11 +195,12 @@ static void show_search_history() {
 	                                      ->set_text(tr("Explore", "Explorar"))
 	                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 	                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
-	const std::string explore_labels[] = {tr("Music", "Música"), tr("Trending", "Tendencias"), tr("Gaming", "Videojuegos"), tr("Live", "Directos"), tr("Movie trailers", "Tráilers de películas"), tr("News", "Noticias"), tr("Shorts", "Shorts"), tr("Learn something", "Aprende algo"), tr("Funny", "Humor"), tr("Sports", "Deportes"), tr("Science", "Ciencia"), tr("Cooking", "Cocina"), tr("Technology", "Tecnología"), tr("Travel", "Viajes"), tr("Podcasts", "Podcasts"), tr("Kids", "Infantil"), tr("Live music", "Música en directo")};
+	const std::string explore_labels[] = {tr("Music", "Música"), tr("Trending", "Tendencias"), tr("Gaming", "Videojuegos"), tr("Live", "Directos"), tr("Movie trailers", "Tráilers de películas"), tr("News", "Noticias"), tr("Shorts", "Shorts"), tr("Learn something", "Aprende algo"), tr("Funny", "Humor"), tr("Sports", "Deportes"), tr("Science", "Ciencia"), tr("Cooking", "Cocina"), tr("Technology", "Tecnología"), tr("Travel", "Viajes"), tr("Podcasts", "Podcasts"), tr("Kids", "Infantil"), tr("Live music", "Música en directo"), tr("Nintendo", "Nintendo"), tr("Retro games", "Juegos retro"), tr("Anime", "Anime"), tr("Lo-fi to relax", "Lo-fi para relajarse"), tr("Piano", "Piano"), tr("Minecraft", "Minecraft"), tr("Pokemon", "Pokémon")};
 	static const char *explore_queries[] = {"music 2026 official video", "trending today", "gaming highlights",
 	                                        "live now", "new movie trailers", "world news today", "#shorts", "how it works explained", "funny moments",
-	                                        "sports highlights", "science explained", "easy recipes", "tech reviews", "travel vlog", "podcast full episode", "kids songs and cartoons", "live concert full"};
-	for (int i = 0; i < (var_hide_explore ? 0 : 17); i++) { // (a setting hides the shortcuts)
+	                                        "sports highlights", "science explained", "easy recipes", "tech reviews", "travel vlog", "podcast full episode", "kids songs and cartoons", "live concert full",
+	                                        "nintendo news and trailers", "retro games longplay", "anime openings", "lofi hip hop radio", "relaxing piano music", "minecraft let's play", "pokemon news and gameplay"};
+	for (int i = 0; i < (var_hide_explore ? 0 : 24); i++) { // (a setting hides the shortcuts)
 		std::string query = explore_queries[i];
 		bool feed = i == 6; // Shorts
 		result_list_view->views.push_back((new TextView(SMALL_MARGIN * 2, 0, 320 - SMALL_MARGIN * 2, 26))
