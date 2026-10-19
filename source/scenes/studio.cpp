@@ -163,6 +163,20 @@ static bool is_video_file(const std::string &name) {
 	       ext == "flv" || ext == "wmv" || ext == "mpg" || ext == "mpeg";
 }
 
+// the content of a small text file (an upload template), "" when it does not exist
+static std::string read_template(const char *path, size_t max) {
+	std::string res;
+	FILE *f = fopen(path, "r");
+	if (!f) return res;
+	char buf[512];
+	size_t n;
+	while (res.size() < max && (n = fread(buf, 1, sizeof buf, f)) > 0) res.append(buf, n);
+	fclose(f);
+	if (res.size() > max) res.resize(max);
+	while (res.size() && (res.back() == '\n' || res.back() == '\r' || res.back() == ' ')) res.pop_back();
+	return res;
+}
+
 static std::string parent_dir(const std::string &dir) {
 	std::string d = dir;
 	while (d.size() > 6 && d.back() == '/') d.pop_back();
@@ -529,12 +543,12 @@ static std::vector<View *> build_pick() {
 			form_path = path;
 			form_title = name.substr(0, name.find_last_of('.'));
 			if (form_title.size() > 95) form_title.resize(95);
-			form_desc = "";
+			form_desc = read_template("sdmc:/3ds/IkersTube/upload_description.txt", 4000); // (optional files : the text every upload starts with)
 			form_privacy = var_studio_privacy; // (Settings : the visibility that new uploads start with)
 			form_category = var_studio_category < category_count ? var_studio_category : 0; // the one of the last upload
 			form_publish = 0;
 			form_playlist = -1;
-			form_tags = "";
+			form_tags = read_template("sdmc:/3ds/IkersTube/upload_tags.txt", 400);
 			form_thumb = "";
 			form_short = pick_short;
 			go(MODE_FORM);

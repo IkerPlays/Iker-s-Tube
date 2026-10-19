@@ -1,1 +1,1 @@
-Studio: the video picker has a shortcut to the DCIM folder of the 3DS camera (and to Movies when it exists).
+Studio: if 3ds/IkersTube/upload_description.txt or upload_tags.txt exist, every new upload starts with that description and those tags.
