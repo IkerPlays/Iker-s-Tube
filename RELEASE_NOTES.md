@@ -1,1 +1,1 @@
-Library: the long press menu of a saved video has a QR code option for its YouTube link.
+Player: the Info tool also shows how many subtitle languages and chapters the video has.

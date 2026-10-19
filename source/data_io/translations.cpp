@@ -129,6 +129,7 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"QR at this time", {"QR à ce moment", "QR an dieser Stelle", "QR a questo punto", "QR neste momento", "この時間のQR"}},
 	    {"Seek step (D-pad left / right)", {"Saut (croix gauche / droite)", "Sprung (Steuerkreuz links / rechts)", "Salto (croce sinistra / destra)", "Salto (direcional esquerda / direita)", "シーク幅（十字キー左右）"}},
 	    {"Remove duplicates", {"Retirer les doublons", "Doppelte entfernen", "Rimuovi duplicati", "Remover repetidos", "重複を削除"}},
+	    {"Chapters: ", {"Chapitres : ", "Kapitel: ", "Capitoli: ", "Capítulos: ", "チャプター: "}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

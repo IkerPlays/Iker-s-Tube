@@ -2311,7 +2311,8 @@ debug_info_view =
 					                                                      tr("Qualities: ", "Calidades: ");
 					                                   for (auto &q : cur_video_info.video_stream_urls) text += std::to_string(q.first) + "p ";
 					                                   text += "\n" + tr("Audio tracks: ", "Pistas de audio: ") + std::to_string(std::max<size_t>(1, cur_video_info.audio_tracks.size())) +
-					                                           "\nID: " + cur_video_info.id;
+					                                           "\n" + tr("Subtitles: ", "Subtítulos: ") + std::to_string(cur_video_info.caption_base_languages.size()) +
+					                                           "\n" + tr("Chapters: ", "Capítulos: ") + std::to_string(current_chapters.size()) + "\nID: " + cur_video_info.id;
 					                                   show_text_popup(cur_video_info.title, text);
 				                                   }),
 				                         make_tool([]() { return tr("Video QR", "QR del vídeo"); }, 84,

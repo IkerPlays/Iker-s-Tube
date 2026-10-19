@@ -8,6 +8,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Chapter names.** The chapter tools show the name of the chapter they jump to.
 - **Queue.** New button removes the repeated videos.
 - **Downloads.** The long press menu of a saved video can show its QR code.
+- **Info.** The Info tool also lists the subtitle languages and chapters.
 
 ## Installing
 
