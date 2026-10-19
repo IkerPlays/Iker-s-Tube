@@ -36,6 +36,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Hidden channels.** A list shows them again one by one or all at once.
 - **Explore.** Seven more shortcuts: Nintendo, Retro games, Anime, Lo-fi, Piano, Minecraft and Pokemon.
 - **Suggestions.** The Suggestions tab respects hidden channels and the hide settings.
+- **Studio.** The upload picker has a shortcut to the 3DS camera videos (DCIM).
 
 ## Installing
 

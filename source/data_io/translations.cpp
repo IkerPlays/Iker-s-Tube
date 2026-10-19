@@ -187,6 +187,8 @@ const std::map<std::string, TrRow> &tr_table() {
 	    {"Pokemon", {"Pokémon", "Pokémon", "Pokémon", "Pokémon", "ポケモン"}},
 	    {"Not available on the 2DS", {"Non disponible sur la 2DS", "Auf der 2DS nicht verfügbar", "Non disponibile sul 2DS", "Indisponível no 2DS", "2DSでは使えません"}},
 	    {"Previous options...", {"Options précédentes...", "Vorherige Optionen...", "Opzioni precedenti...", "Opções anteriores...", "前のオプション..."}},
+	    {"Shortcut: 3DS camera (DCIM)", {"Raccourci : appareil photo 3DS (DCIM)", "Abkürzung: 3DS-Kamera (DCIM)", "Scorciatoia: fotocamera 3DS (DCIM)", "Atalho: câmera do 3DS (DCIM)", "ショートカット: 3DSカメラ (DCIM)"}},
+	    {"Shortcut: Movies", {"Raccourci : Movies", "Abkürzung: Movies", "Scorciatoia: Movies", "Atalho: Movies", "ショートカット: Movies"}},
 	    {"<< Chap", {"<< Chap", "<< Kap", "<< Cap", "<< Cap", "<< 前章"}},
 	    {"Later", {"Plus tard", "Später", "Dopo", "Depois", "後で"}},
 	    {"Later: yes", {"Plus tard : oui", "Später: ja", "Dopo: sì", "Depois: sim", "後で：済"}},

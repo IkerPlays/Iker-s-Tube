@@ -474,6 +474,21 @@ static std::vector<View *> build_pick() {
 			go(MODE_PICK);
 		}));
 	}
+	if (pick_dir == "sdmc:/" && !pick_image) { // shortcuts to where the videos usually are
+		struct stat st;
+		if (stat("sdmc:/DCIM", &st) == 0) {
+			v.push_back(button([]() { return tr("Shortcut: 3DS camera (DCIM)", "Atajo: cámara de la 3DS (DCIM)"); }, []() {
+				pick_dir = "sdmc:/DCIM/";
+				go(MODE_PICK);
+			}));
+		}
+		if (stat("sdmc:/Movies", &st) == 0) {
+			v.push_back(button([]() { return tr("Shortcut: Movies", "Atajo: Movies"); }, []() {
+				pick_dir = "sdmc:/Movies/";
+				go(MODE_PICK);
+			}));
+		}
+	}
 	std::vector<std::string> dirs, files;
 	std::vector<u64> sizes;
 	DIR *dir = opendir(pick_dir.c_str());

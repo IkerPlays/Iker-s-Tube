@@ -1,1 +1,1 @@
-Player: the Suggestions tab also leaves out the hidden channels and what the settings hide (Shorts, watched videos).
+Studio: the video picker has a shortcut to the DCIM folder of the 3DS camera (and to Movies when it exists).
