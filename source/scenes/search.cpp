@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "oauth/oauth.hpp"
 #include <vector>
 #include <string>
 #include <set>
@@ -283,6 +284,17 @@ static void show_search_history() {
 		return;
 	}
 	auto words = search_history_get();
+	{ // a greeting by the time of the day (with your name when you are signed in)
+		time_t now = time(NULL);
+		struct tm *local = localtime(&now);
+		int hour = local ? local->tm_hour : 12;
+		std::string greeting = hour < 6 ? tr("Good night", "Buenas noches") : hour < 13 ? tr("Good morning", "Buenos días") : hour < 20 ? tr("Good afternoon", "Buenas tardes") : tr("Good evening", "Buenas noches");
+		if (OAuth::is_authenticated() && OAuth::get_user_account_name() != "") greeting += ", " + OAuth::get_user_account_name();
+		result_list_view->views.push_back((new TextView(SMALL_MARGIN, 0, 320 - SMALL_MARGIN * 2, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
+		                                      ->set_text(truncate_first_line(greeting, 300, 0.6))
+		                                      ->set_font_size(0.6, DEFAULT_FONT_INTERVAL)
+		                                      ->set_get_text_color([]() { return (u32)COLOR_ACCENT; }));
+	}
 	{ // a tip of the day : the features that hide behind a long press or a tool
 		static const char *tips[][2] = {
 		    {"Tip: long press a video for its full menu.", "Consejo: mantén pulsado un vídeo para ver su menú."},

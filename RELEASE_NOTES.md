@@ -1,1 +1,1 @@
-Player: new Data saver tool turns the data saver on or off from the player.
+Search: the start page greets you by the time of the day and by your name when you are signed in.
