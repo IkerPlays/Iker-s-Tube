@@ -21,6 +21,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Late-night hint.** After 25 minutes of playing late at night without a sleep timer, a notice suggests the Sleep timer tool.
 - **NEW badge.** Feed videos you had not been told about carry a NEW badge.
 - **Badge notices.** You get a notice when you unlock a badge.
+- **More badges.** 13 badges now, including collector, offline fan and subscriber.
 
 ## Installing
 

@@ -1,6 +1,9 @@
 #include "headers.hpp"
 #include "util/badges.hpp"
 #include "data_io/history.hpp"
+#include "data_io/favorites.hpp"
+#include "data_io/offline.hpp"
+#include "data_io/subscription_util.hpp"
 #include "ui/notice.hpp"
 #include "variables.hpp"
 #include <algorithm>
@@ -34,6 +37,7 @@ std::vector<Badge> badges_compute() {
 	while (days.count(day)) streak++, day--;
 	const size_t n = history.size();
 	const int play_seconds = (int)var_total_play_seconds;
+	const size_t favorites = favorites_get().size(), saved = offline_list().size(), channels = get_valid_subscribed_channels().size();
 	return {
 	    {0, n >= 1, tr("First steps (1 video)", "Primeros pasos (1 vídeo)")},
 	    {1, n >= 50, tr("Regular (50 videos)", "Habitual (50 vídeos)")},
@@ -44,7 +48,10 @@ std::vector<Badge> badges_compute() {
 	    {6, n > 0 && busiest <= 4, tr("Night owl (favorite hour 0-4)", "Búho nocturno (hora favorita 0-4)")},
 	    {7, n > 0 && busiest >= 5 && busiest <= 8, tr("Early bird (favorite hour 5-8)", "Madrugador (hora favorita 5-8)")},
 	    {8, play_seconds >= 10 * 3600, tr("10 hours playing", "10 horas reproduciendo")},
-	    {9, play_seconds >= 100 * 3600, tr("100 hours playing", "100 horas reproduciendo")}};
+	    {9, play_seconds >= 100 * 3600, tr("100 hours playing", "100 horas reproduciendo")},
+	    {10, favorites >= 10, tr("Collector (10 favorites)", "Coleccionista (10 favoritos)")},
+	    {11, saved >= 5, tr("Offline fan (5 saved)", "Sin conexión (5 guardados)")},
+	    {12, channels >= 10, tr("Subscriber (10 channels)", "Suscriptor (10 canales)")}};
 }
 
 void badges_check_new() {
