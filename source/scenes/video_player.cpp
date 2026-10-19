@@ -606,6 +606,16 @@ static YouTubeVideoDetail offline_video_info(const std::string &id) {
 	return info;
 }
 
+// a list of rows that can be folded away (the extra tools of the player are folded until "More tools" is tapped)
+struct CollapsibleList : public VerticalListView {
+	bool collapsed = true;
+	CollapsibleList() : View(0, 0), VerticalListView(0, 0, 320) {}
+	float get_height() const override { return collapsed ? 0 : VerticalListView::get_height(); }
+	void draw_() const override { if (!collapsed) VerticalListView::draw_(); }
+	void update_(Hid_info key) override { if (!collapsed) VerticalListView::update_(key); }
+};
+static bool tools_expanded = false; // remembered while the app runs
+
 // popup with a long text in a scroll view (used for translations)
 static void show_text_popup(const std::string &title, const std::string &text) {
 	const int width = 290;
@@ -2734,6 +2744,8 @@ debug_info_view =
 				    // would be out of reach)
 				    {
 					    std::vector<View *> reflowed;
+					    std::vector<View *> *target = &reflowed; // the rows go here (the extra tools go to the folded list)
+					    int tool_row_index = 0;
 					    for (View *row : main_tab_views) {
 						    HorizontalListView *h = dynamic_cast<HorizontalListView *>(row);
 						    bool tool_row = h && h->views.size() > 1 && h->get_height() == 20; // (the rows of buttons are 20 pixels high)
@@ -2747,11 +2759,14 @@ debug_info_view =
 							    continue;
 						    }
 						    std::vector<View *> current;
+						    std::vector<View *> folded;
+						    const bool fold_this = tool_row_index++ == 3; // the long row (live chat, info, QR, jumps...)
+						    target = fold_this ? &folded : &reflowed;
 						    float used = 0;
 						    auto flush = [&]() {
 							    if (current.empty()) return;
-							    reflowed.push_back((new HorizontalListView(0, 0, 20))->set_views(current));
-							    reflowed.push_back(new EmptyView(0, 0, 320, 3));
+							    target->push_back((new HorizontalListView(0, 0, 20))->set_views(current));
+							    target->push_back(new EmptyView(0, 0, 320, 3));
 							    current.clear();
 							    used = 0;
 						    };
@@ -2774,6 +2789,24 @@ debug_info_view =
 						    flush();
 						    h->views.clear(); // the buttons moved to the new rows
 						    delete h;
+						    if (fold_this && folded.size()) {
+							    CollapsibleList *more = new CollapsibleList();
+							    more->views = folded;
+							    more->collapsed = !tools_expanded;
+							    reflowed.push_back((new TextView(0, 0, 320, 22))
+							                           ->set_text((std::function<std::string()>)[more]() { return more->collapsed ? tr("More tools (tap to show)", "Más herramientas (toca para ver)") : tr("Fewer tools (tap to hide)", "Menos herramientas (toca para ocultar)"); })
+							                           ->set_x_alignment(TextView::XAlign::CENTER)
+							                           ->set_y_alignment(TextView::YAlign::CENTER)
+							                           ->set_get_background_color(View::STANDARD_BACKGROUND)
+							                           ->set_corner_radius(6)
+							                           ->set_on_view_released([more](View &) {
+								                           more->collapsed = !more->collapsed;
+								                           tools_expanded = !more->collapsed;
+								                           var_need_refresh = true;
+							                           }));
+							    reflowed.push_back(new EmptyView(0, 0, 320, 3));
+							    reflowed.push_back(more);
+						    }
 					    }
 					    main_tab_views = reflowed;
 				    }

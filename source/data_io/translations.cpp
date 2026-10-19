@@ -206,6 +206,8 @@ static const TrEntry kTrEntries[] = {
 	{"Time to jump to (m:ss or h:mm:ss)", {"Temps cible (m:ss ou h:mm:ss)", "Zeit zum Springen (m:ss oder h:mm:ss)", "Tempo a cui andare (m:ss o h:mm:ss)", "Tempo para ir (m:ss ou h:mm:ss)", "移動する時間 (m:ss または h:mm:ss)"}},
 	{"That is not a valid time", {"Ce temps n'est pas valide", "Das ist keine gültige Zeit", "Tempo non valido", "Esse tempo não é válido", "無効な時間です"}},
 	{"Play the new videos (", {"Lire les nouvelles vidéos (", "Neue Videos abspielen (", "Guarda i nuovi video (", "Ver os vídeos novos (", "新しい動画を再生 ("}},
+	{"More tools (tap to show)", {"Plus d'outils (toucher pour voir)", "Mehr Werkzeuge (tippen zum Anzeigen)", "Altri strumenti (tocca per vedere)", "Mais ferramentas (toque para ver)", "その他のツール（タップで表示）"}},
+	{"Fewer tools (tap to hide)", {"Moins d'outils (toucher pour masquer)", "Weniger Werkzeuge (tippen zum Ausblenden)", "Meno strumenti (tocca per nascondere)", "Menos ferramentas (toque para ocultar)", "ツールを隠す（タップ）"}},
 	{"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	{"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	{"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},
