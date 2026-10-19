@@ -459,8 +459,7 @@ std::vector<YouTubeChannelDetail> youtube_load_channel_page_multi(std::vector<st
 		                       }));
 	}
 	debug_info("access(multi)...");
-	ParserNetGuard net_guard;
-	auto results = thread_network_session_list.perform(requests);
+	auto results = [&]() { ParserNetGuard net_guard; return thread_network_session_list.perform(requests); }(); // (the lock only for the request)
 	debug_info("ok");
 	for (auto result : results) {
 		result.data.push_back('\0');
