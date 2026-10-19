@@ -50,6 +50,14 @@ bool report_create() {
 	        studio_auth_signed_in() ? "signed in" : "no");
 	fprintf(f, "last account error: %s\n", youtube_account_last_error().c_str());
 	fprintf(f, "audio probe: %s\n", youtube_audio_probe_info_get().c_str());
+	{
+		FS_ArchiveResource resource;
+		unsigned long free_mb = 0;
+		if (R_SUCCEEDED(FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_SD))) free_mb = (unsigned long)(((u64)resource.freeClusters * resource.clusterSize) / (1024 * 1024));
+		fprintf(f, "sd card free: %lu MB, downloaded this session: %lu KB\n", free_mb, (unsigned long)(var_data_session_bytes / 1024));
+	}
+	fprintf(f, "settings: autoplay=%d, auto captions=%d, caption size=%d, seek step=%d, autoplay limit=%d, break reminder=%d, library tab=%d\n", (int)var_autoplay_level,
+	        (int)var_auto_captions, (int)var_caption_size, (int)var_seek_step, (int)var_autoplay_limit, (int)var_break_reminder, (int)var_library_tab);
 	fprintf(f, "saved items: %d, queue: %d\n", (int)offline_list().size(), play_queue_size());
 	append_tail(f, "crash_last.txt", "sdmc:/3ds/IkersTube/crash_last.txt", 4000);
 	append_tail(f, "log.txt (end)", "sdmc:/3ds/IkersTube/log.txt", 24000);

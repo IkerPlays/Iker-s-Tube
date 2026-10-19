@@ -1,1 +1,1 @@
-Library: the Clear Watch later confirmation says that, when you are signed in, it also clears the list on YouTube.
+Report: the report also lists the free space of the SD card, the data used in the session and the main playback settings.
