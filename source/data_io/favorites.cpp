@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "data_io/favorites.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cstdio>
@@ -38,7 +39,7 @@ static void save_locked() {
 void favorites_load() {
 	favorites_lock.lock();
 	favorites.clear();
-	FILE *f = fopen(FAVORITES_PATH, "r");
+	FILE *f = fopen_or_recover(FAVORITES_PATH, FAVORITES_TMP_PATH, "r");
 	if (f) {
 		char line[1024];
 		while (fgets(line, sizeof line, f)) {

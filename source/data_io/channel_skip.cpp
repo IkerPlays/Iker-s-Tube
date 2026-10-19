@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "data_io/channel_skip.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cstdio>
@@ -15,7 +16,7 @@ static bool loaded = false;
 static void load_locked() {
 	if (loaded) return;
 	loaded = true;
-	FILE *f = fopen(SKIP_PATH, "r");
+	FILE *f = fopen_or_recover(SKIP_PATH, SKIP_TMP_PATH, "r");
 	if (!f) return;
 	char line[256];
 	while (fgets(line, sizeof line, f)) {

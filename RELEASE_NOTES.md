@@ -1,1 +1,1 @@
-My Wrapped has a Share my numbers (QR) row: scan it with a phone to read your stats.
+Hardening from an audit: a list file left without its final name when the app is killed while saving is recovered; damaged values (eco mode, dark theme, speed, volume, bookmarks, resume points) can no longer break the app.

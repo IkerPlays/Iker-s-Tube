@@ -105,12 +105,12 @@ void load_settings() {
 	if (var_time_to_turn_off_lcd < 10 && var_time_to_turn_off_lcd != 0) {
 		var_time_to_turn_off_lcd = 150;
 	}
-	var_eco_mode = load_int("eco_mode", 1);
+	var_eco_mode = std::max(0, std::min(1, load_int("eco_mode", 1)));
 	var_screen_off_mode = load_int("screen_off_mode", 0);
 	var_full_screen_mode = load_int("full_screen_mode", 0);
 	var_full_dislike_like_count = load_int("full_dislike_like_count", 0);
 	var_hide_pointer = load_int("hide_pointer", 0);
-	var_night_mode = load_int("dark_theme", 1);
+	var_night_mode = std::max(0, std::min(1, load_int("dark_theme", 1)));
 	var_caption_size = std::max(0, std::min(2, load_int("caption_size", 1)));
 	var_caption_color = std::max(0, std::min(3, load_int("caption_color", 0)));
 	var_auto_quality = load_int("auto_quality", 1);

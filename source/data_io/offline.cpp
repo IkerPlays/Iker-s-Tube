@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "data_io/offline.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cstdio>
@@ -31,7 +32,7 @@ std::string offline_video_path(const std::string &id) {
 
 static std::vector<OfflineItem> read_index() {
 	std::vector<OfflineItem> items;
-	FILE *f = fopen(OFFLINE_INDEX, "r");
+	FILE *f = fopen_or_recover(OFFLINE_INDEX, OFFLINE_INDEX_TMP, "r");
 	if (!f) return items;
 	char line[1024];
 	while (fgets(line, sizeof line, f)) {

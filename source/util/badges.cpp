@@ -59,9 +59,9 @@ void badges_check_new() {
 	std::set<int> earned;
 	bool existed = false;
 	if (FILE *f = fopen(BADGES_PATH, "r")) {
-		existed = true;
 		int id;
 		while (fscanf(f, "%d", &id) == 1) earned.insert(id);
+		existed = !earned.empty(); // an empty file (cut while saving) counts as no file: nothing is announced again
 		fclose(f);
 	}
 	bool changed = false;

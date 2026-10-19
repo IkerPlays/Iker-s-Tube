@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "headers.hpp"
 #include "data_io/search_history.hpp"
 #include "system/libctru_wrapper.hpp"
@@ -18,7 +19,7 @@ static void ensure_loaded_locked() {
 		return;
 	}
 	loaded = true;
-	FILE *f = fopen(SEARCH_HISTORY_PATH, "r");
+	FILE *f = fopen_or_recover(SEARCH_HISTORY_PATH, SEARCH_HISTORY_TMP_PATH, "r");
 	if (!f) {
 		return;
 	}

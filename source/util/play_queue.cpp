@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "util/play_queue.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <vector>
@@ -34,7 +35,7 @@ static void save_queue() {
 
 void play_queue_load() {
 	queue_lock.lock();
-	FILE *f = fopen(QUEUE_PATH, "r");
+	FILE *f = fopen_or_recover(QUEUE_PATH, QUEUE_TMP_PATH, "r");
 	if (f) {
 		char line[1024];
 		queue.clear();

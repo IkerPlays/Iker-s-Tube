@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "data_io/bookmarks.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <algorithm>
@@ -23,7 +24,7 @@ static void load_locked() {
 		return;
 	}
 	loaded = true;
-	FILE *f = fopen(BOOKMARKS_PATH, "r");
+	FILE *f = fopen_or_recover(BOOKMARKS_PATH, BOOKMARKS_TMP_PATH, "r");
 	if (!f) {
 		return;
 	}
@@ -38,7 +39,9 @@ static void load_locked() {
 		if (t2 == std::string::npos) {
 			continue;
 		}
-		entries.push_back({s.substr(0, t1), atof(s.substr(t1 + 1, t2 - t1 - 1).c_str()), s.substr(t2 + 1)});
+		double at = atof(s.substr(t1 + 1, t2 - t1 - 1).c_str());
+		if (!(at >= 0 && at < 1e7)) continue; // nan / inf / negative: a damaged line (nan would break the sort)
+		entries.push_back({s.substr(0, t1), at, s.substr(t2 + 1)});
 	}
 	fclose(f);
 }

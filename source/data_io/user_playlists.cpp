@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "data_io/user_playlists.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cctype>
@@ -40,7 +41,7 @@ static void ensure_loaded_locked() {
 		return;
 	}
 	loaded = true;
-	FILE *f = fopen(PLAYLISTS_PATH, "r");
+	FILE *f = fopen_or_recover(PLAYLISTS_PATH, PLAYLISTS_TMP_PATH, "r");
 	if (!f) {
 		return;
 	}

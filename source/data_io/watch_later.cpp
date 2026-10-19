@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "data_io/watch_later.hpp"
 #include "oauth/oauth.hpp"
 #include "util/async_task.hpp"
@@ -55,7 +56,7 @@ static void save_locked() {
 void watch_later_load() {
 	watch_later_lock.lock();
 	watch_later_list.clear();
-	FILE *f = fopen(WATCH_LATER_PATH, "r");
+	FILE *f = fopen_or_recover(WATCH_LATER_PATH, WATCH_LATER_TMP_PATH, "r");
 	if (f) {
 		char line[1024];
 		while (fgets(line, sizeof line, f)) {

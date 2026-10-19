@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "headers.hpp"
 #include "data_io/resume_position.hpp"
 #include "system/libctru_wrapper.hpp"
@@ -20,7 +21,7 @@ static void ensure_loaded_locked() {
 		return;
 	}
 	loaded = true;
-	FILE *f = fopen(RESUME_PATH, "r");
+	FILE *f = fopen_or_recover(RESUME_PATH, RESUME_TMP_PATH, "r");
 	if (!f) {
 		return;
 	}
@@ -30,7 +31,7 @@ static void ensure_loaded_locked() {
 		size_t tab = s.find('\t');
 		if (tab != std::string::npos && tab > 0) {
 			double sec = atof(s.c_str() + tab + 1);
-			if (sec > 0) {
+			if (sec > 0 && sec < 1e7) {
 				entries.push_back({s.substr(0, tab), sec});
 			}
 		}
