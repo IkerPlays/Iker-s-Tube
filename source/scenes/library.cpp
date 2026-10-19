@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/misc_tasks.hpp"
 #include "scenes/account_tasks.hpp"
 #include "ui/qr_popup.hpp"
 #include "data_io/watch_later.hpp"
@@ -293,6 +294,7 @@ static void add_list_actions(VerticalListView *list, const std::vector<FavoriteV
 void Library_init(void) {
 	logger.info("library/init", "Initializing...");
 	srand((unsigned)osGetTime());
+	mode = std::max(0, std::min(5, var_library_tab)); // the tab you used last
 	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
 	on_long_tap_dialog->set_is_visible(false);
 	favorites_load();
@@ -1022,6 +1024,10 @@ static void rebuild_views() {
 	                                                              mode)
 	                                                  ->set_on_change([](const SelectorView &view) {
 		                                                  mode = view.selected_button;
+		                                                  if (var_library_tab != mode) {
+			                                                  var_library_tab = mode;
+			                                                  misc_tasks_request(TASK_SAVE_SETTINGS);
+		                                                  }
 		                                                  open_playlist = -1;
 		                                                  rebuild_request = true;
 	                                                  })}),

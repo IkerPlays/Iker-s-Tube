@@ -45,6 +45,7 @@ extern int var_seek_step; // 0 : 10 s, 1 : 5 s, 2 : 15 s, 3 : 30 s (D-pad left /
 extern int var_time_remaining; // 1 : the player bar shows the time left instead of the length
 extern int var_autoplay_limit; // 0 : no limit, 1 : 3, 2 : 5, 3 : 10 videos in a row (counted while the player stays open)
 extern int var_break_reminder; // 0 : off, 1 : every 30 min of playing, 2 : 60, 3 : 120
+extern int var_library_tab; // the tab of the Library that was open last (0 queue ... 5 liked)
 extern int var_auto_chat; // 1 : the chat opens by itself when a live stream starts playing
 extern int var_default_speed; // 0..5 : 100%, 75%, 125%, 150%, 175%, 200% (for channels without a speed of their own)
 extern int var_wl_autoremove; // 1 : a video leaves Watch later when it is watched until the end

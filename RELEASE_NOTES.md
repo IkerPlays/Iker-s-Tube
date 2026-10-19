@@ -1,1 +1,1 @@
-Studio: if 3ds/IkersTube/upload_description.txt or upload_tags.txt exist, every new upload starts with that description and those tags.
+Library: the app opens the Library on the tab you used last.
