@@ -239,6 +239,12 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 	var_need_refresh = true;
 }
 void overlay_show_menu(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options) { show_menu_rows(title, options); }
+void overlay_show_menu_deferred(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options) {
+	menu_next_request = true;
+	menu_next_title = title;
+	menu_next_options = options;
+	menu_next_first = 0;
+}
 
 void overlay_show_channel_menu(const std::string &id, const std::string &name, const std::string &icon_url, const std::string &subscribers) {
 	std::vector<std::pair<std::string, std::function<void()>>> options;

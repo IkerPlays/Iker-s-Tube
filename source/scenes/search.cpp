@@ -150,7 +150,7 @@ static std::string search_filter_params() {
 	};
 	if (search_filter.date) put(0x08, search_filter.date);
 	if (search_filter.type) put(0x10, search_filter.type);
-	if (search_filter.duration) put(0x18, search_filter.duration);
+	if (search_filter.duration) { static const int values[4] = {0, 1, 3, 2}; put(0x18, values[search_filter.duration]); } // (YouTube: 1 under 4 min, 3 4-20 min, 2 over 20 min)
 	if (search_filter.features & 1) put(0x20, 1);
 	if (search_filter.features & 2) put(0x28, 1);
 	if (search_filter.features & 4) put(0x30, 1);
@@ -186,15 +186,15 @@ static std::string search_filter_params() {
 	return b64;
 }
 static std::string search_filter_text() { // "Today + Videos + 4-20 min"
-	static const char *sorts[] = {"", "Rating", "Newest", "Views"};
-	static const char *dates[] = {"", "Last hour", "Today", "This week", "This month", "This year"};
-	static const char *types[] = {"", "Videos", "Channels", "Playlists"};
+	static const char *sorts[][2] = {{"", ""}, {"Rating", "Valoración"}, {"Newest", "Recientes"}, {"Views", "Visitas"}};
+	static const char *dates[][2] = {{"", ""}, {"Last hour", "Última hora"}, {"Today", "Hoy"}, {"This week", "Esta semana"}, {"This month", "Este mes"}, {"This year", "Este año"}};
+	static const char *types[][2] = {{"", ""}, {"Videos", "Vídeos"}, {"Channels", "Canales"}, {"Playlists", "Listas"}};
 	static const char *durations[] = {"", "< 4 min", "4-20 min", "> 20 min"};
 	static const char *feature_names[] = {"HD", "CC", "Creative Commons", "Live", "4K", "360", "HDR"};
 	std::vector<std::string> parts;
-	if (search_filter.sort) parts.push_back(tr(sorts[search_filter.sort], sorts[search_filter.sort]));
-	if (search_filter.date) parts.push_back(tr(dates[search_filter.date], dates[search_filter.date]));
-	if (search_filter.type) parts.push_back(tr(types[search_filter.type], types[search_filter.type]));
+	if (search_filter.sort) parts.push_back(tr(sorts[search_filter.sort][0], sorts[search_filter.sort][1]));
+	if (search_filter.date) parts.push_back(tr(dates[search_filter.date][0], dates[search_filter.date][1]));
+	if (search_filter.type) parts.push_back(tr(types[search_filter.type][0], types[search_filter.type][1]));
 	if (search_filter.duration) parts.push_back(durations[search_filter.duration]);
 	for (int i = 0; i < 7; i++) {
 		if (search_filter.features & (1u << i)) parts.push_back(feature_names[i]);
@@ -202,7 +202,7 @@ static std::string search_filter_text() { // "Today + Videos + 4-20 min"
 	if (parts.empty()) return tr("All", "Todos");
 	std::string res;
 	for (size_t i = 0; i < parts.size(); i++) res += (i ? " + " : "") + parts[i];
-	return res;
+	return truncate_first_line(res, 290, 0.45); // (it must fit in the row)
 }
 static void search_filter_changed();
 static u64 filter_search_due = 0; // the search with the new filter starts when the button was not tapped again for a moment
@@ -210,6 +210,20 @@ static void search_filter_changed() {
 	youtube_search_filter_params = search_filter_params();
 	if (cur_search_word != "") filter_search_due = osGetTime() + 300;
 	var_need_refresh = true;
+}
+// the features (HD, CC ...) : a tap turns one on or off and the menu opens again for the next one
+static void show_search_features_menu(bool deferred) {
+	std::vector<std::pair<std::string, std::function<void()>>> options;
+	static const char *names[] = {"HD", "CC", "Creative Commons", "Live", "4K", "360", "HDR"};
+	for (int i = 0; i < 7; i++) {
+		options.push_back({std::string((search_filter.features & (1u << i)) ? "[x] " : "[ ] ") + names[i], [i]() {
+			search_filter.features ^= (1u << i);
+			search_filter_changed();
+			show_search_features_menu(true);
+		}});
+	}
+	if (deferred) overlay_show_menu_deferred(tr("Features", "Características"), options);
+	else overlay_show_menu(tr("Features", "Características"), options);
 }
 // the menus of the filter button : one for each part of the filter
 static void show_search_filter_menu() {
@@ -232,17 +246,7 @@ static void show_search_filter_menu() {
 	main_options.push_back({tr("Length", "Duración"), [choose]() {
 		choose(tr("Length", "Duración"), {tr("Any", "Cualquiera"), "< 4 min", "4-20 min", "> 20 min"}, search_filter.duration, [](int v) { search_filter.duration = v; });
 	}});
-	main_options.push_back({tr("Features", "Características"), []() {
-		std::vector<Option> options;
-		static const char *names[] = {"HD", "CC", "Creative Commons", "Live", "4K", "360", "HDR"};
-		for (int i = 0; i < 7; i++) {
-			options.push_back({std::string((search_filter.features & (1u << i)) ? "[x] " : "[ ] ") + names[i], [i]() {
-				search_filter.features ^= (1u << i); // each tap turns one on or off
-				search_filter_changed();
-			}});
-		}
-		overlay_show_menu(tr("Features", "Características"), options);
-	}});
+	main_options.push_back({tr("Features", "Características"), []() { show_search_features_menu(false); }});
 	main_options.push_back({tr("Reset the filter", "Quitar el filtro"), []() {
 		search_filter = SearchFilterState();
 		search_filter_changed();

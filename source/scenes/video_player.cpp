@@ -237,6 +237,8 @@ static void comment_sort_clicked() {
 	if (!is_async_task_running(load_video_page) && !is_async_task_running(load_more_comments) &&
 	    !is_async_task_running(change_comment_sort)) {
 		queue_async_task(change_comment_sort, NULL);
+	} else {
+		comment_reload_same = false; // (nothing was started : the flag must not stay for the next tap)
 	}
 }
 } // namespace VideoPlayer
@@ -4783,10 +4785,19 @@ static void autoplay_countdown_tick() {
 					    swkbdSetDictWord(&phrase_words[phrase_count++], w.c_str(), w.c_str());
 				    };
 				    if (FILE *pf = fopen("sdmc:/3ds/IkersTube/comment_phrases.txt", "r")) {
-					    char line[128];
+					    char line[256];
+					    bool first_line = true;
 					    while (fgets(line, sizeof line, pf)) {
 						    std::string w = line;
+						    if (first_line && w.size() >= 3 && (unsigned char)w[0] == 0xEF && (unsigned char)w[1] == 0xBB && (unsigned char)w[2] == 0xBF) w.erase(0, 3); // (BOM)
+						    first_line = false;
+						    bool complete = w.size() && w.back() == '\n';
 						    while (w.size() && (w.back() == '\n' || w.back() == '\r')) w.pop_back();
+						    if (!complete) { // a line that did not fit : the rest of it is skipped
+							    int ch;
+							    while ((ch = fgetc(pf)) != EOF && ch != '\n') {}
+							    if (w.size() > 38) continue;
+						    }
 						    add_phrase(w);
 					    }
 					    fclose(pf);

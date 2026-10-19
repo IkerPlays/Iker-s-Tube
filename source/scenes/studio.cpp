@@ -164,7 +164,7 @@ static bool is_video_file(const std::string &name) {
 }
 
 // the content of a small text file (an upload template), "" when it does not exist
-static std::string read_template(const char *path, size_t max) {
+static std::string read_template(const char *path, size_t max, bool tags = false) {
 	std::string res;
 	FILE *f = fopen(path, "r");
 	if (!f) return res;
@@ -172,8 +172,14 @@ static std::string read_template(const char *path, size_t max) {
 	size_t n;
 	while (res.size() < max && (n = fread(buf, 1, sizeof buf, f)) > 0) res.append(buf, n);
 	fclose(f);
-	if (res.size() > max) res.resize(max);
-	while (res.size() && (res.back() == '\n' || res.back() == '\r' || res.back() == ' ')) res.pop_back();
+	if (res.size() >= 3 && (unsigned char)res[0] == 0xEF && (unsigned char)res[1] == 0xBB && (unsigned char)res[2] == 0xBF) res.erase(0, 3); // (BOM of Notepad)
+	if (res.size() > max) {
+		res.resize(max);
+		while (res.size() && ((unsigned char)res.back() & 0xC0) == 0x80) res.pop_back(); // do not cut a character in half
+		if (res.size() && (unsigned char)res.back() >= 0xC0) res.pop_back();
+	}
+	if (tags) for (auto &ch : res) if (ch == '\n' || ch == '\r') ch = ','; // one tag per line works too
+	while (res.size() && (res.back() == '\n' || res.back() == '\r' || res.back() == ' ' || res.back() == ',')) res.pop_back();
 	return res;
 }
 
@@ -548,7 +554,7 @@ static std::vector<View *> build_pick() {
 			form_category = var_studio_category < category_count ? var_studio_category : 0; // the one of the last upload
 			form_publish = 0;
 			form_playlist = -1;
-			form_tags = read_template("sdmc:/3ds/IkersTube/upload_tags.txt", 400);
+			form_tags = read_template("sdmc:/3ds/IkersTube/upload_tags.txt", 400, true);
 			form_thumb = "";
 			form_short = pick_short;
 			go(MODE_FORM);

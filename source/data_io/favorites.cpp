@@ -114,6 +114,13 @@ void favorites_remove(const std::string &video_id) {
 	favorites_lock.unlock();
 }
 
+void favorites_clear() {
+	favorites_lock.lock();
+	favorites.clear();
+	save_locked();
+	favorites_lock.unlock();
+}
+
 std::vector<FavoriteVideo> favorites_get() {
 	favorites_lock.lock();
 	auto res = favorites;

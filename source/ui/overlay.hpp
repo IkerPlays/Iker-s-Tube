@@ -25,4 +25,6 @@ void overlay_show_video_menu(const std::string &url, const std::string &title, c
                              const std::string &extra_label = "", std::function<void()> extra_action = nullptr); // (an optional extra option, for example Remove from history)
 // A menu with any list of options (title + actions)
 void overlay_show_menu(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options);
+// The same, but opened after the current update : for a menu that is opened from the option of another menu
+void overlay_show_menu_deferred(const std::string &title, const std::vector<std::pair<std::string, std::function<void()>>> &options);
 void overlay_menu_on_resume();

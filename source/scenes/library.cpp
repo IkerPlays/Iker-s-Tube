@@ -294,7 +294,7 @@ static void add_list_actions(VerticalListView *list, const std::vector<FavoriteV
 void Library_init(void) {
 	logger.info("library/init", "Initializing...");
 	srand((unsigned)osGetTime());
-	mode = std::max(0, std::min(5, var_library_tab)); // the tab you used last
+	mode = var_library_tab >= 0 && var_library_tab <= 3 ? var_library_tab : 0; // the tab you used last (Queue, Favorites, Playlists, Later)
 	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
 	on_long_tap_dialog->set_is_visible(false);
 	favorites_load();
@@ -469,7 +469,7 @@ static void build_favorites(VerticalListView *list) {
 		}));
 		list->views.push_back(make_button(tr("Clear all favorites", "Vaciar favoritos"), 320, []() {
 			show_dialog({make_option(tr("Yes, remove all of them", "Sí, quitarlos todos"), []() {
-				             for (auto &v : favorites_get()) favorites_remove(v.id);
+				             favorites_clear();
 				             rebuild_request = true;
 			             }),
 			             make_option(LOCALIZED(CANCEL), []() {})});
