@@ -794,8 +794,9 @@ static void load_search_results(void *) {
 			items.push_back({item.video.url, item.video.title});
 			if (item.video.url.find("/shorts/") != std::string::npos) only_shorts.push_back({item.video.url, item.video.title});
 		}
-		if (only_shorts.size() >= 3) items = only_shorts; // (the search may also return ordinary videos)
-		if (only_shorts.size()) { // the real Shorts feed : what YouTube plays after the first Short found
+		bool radio = radio_feed;
+		if (!radio && only_shorts.size() >= 3) items = only_shorts; // (the search may also return ordinary videos)
+		if (!radio && only_shorts.size()) { // the real Shorts feed : what YouTube plays after the first Short found
 			std::string seed = youtube_get_video_id_by_url(only_shorts[0].first);
 			std::vector<std::string> more = youtube_shorts_sequence(seed);
 			if (more.size() >= 3) {
@@ -805,7 +806,7 @@ static void load_search_results(void *) {
 			}
 		}
 		// the queue is only replaced once the results are installed, and only by real Shorts (see the end of this function)
-		if (items.size() && (feed_from_sequence || only_shorts.size() >= 3)) {
+		if (items.size() && (radio || feed_from_sequence || only_shorts.size() >= 3)) {
 			feed_items = items;
 			feed_shuffle = !feed_from_sequence;
 		}
