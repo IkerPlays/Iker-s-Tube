@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "data_io/history.hpp"
 #include "data_io/user_playlists.hpp"
 #include "util/result_filter.hpp"
 #include <vector>
@@ -2543,6 +2544,19 @@ debug_info_view =
 					                                   text += "\n" + tr("Audio tracks: ", "Pistas de audio: ") + std::to_string(std::max<size_t>(1, cur_video_info.audio_tracks.size())) +
 					                                           "\n" + tr("Subtitles: ", "Subtítulos: ") + std::to_string(cur_video_info.caption_base_languages.size()) +
 					                                           "\n" + tr("Chapters: ", "Capítulos: ") + std::to_string(current_chapters.size()) + "\nID: " + cur_video_info.id;
+					                                   if (!var_incognito) { // what the history says about this video and its channel
+						                                   int channel_videos = 0;
+						                                   for (auto &h : get_valid_watch_history()) {
+							                                   if (h.id == cur_video_info.id) {
+								                                   char when[32] = "";
+								                                   struct tm *local = localtime(&h.last_watch_time);
+								                                   if (local) strftime(when, sizeof(when), "%Y-%m-%d", local);
+								                                   text += "\n\n" + tr("You watched it ", "Lo has visto ") + std::to_string(std::max(1, h.my_view_count)) + tr(" time(s), last on ", " vez/veces, la última el ") + when;
+							                                   }
+							                                   if (cur_video_info.author.name != "" && h.author_name == cur_video_info.author.name) channel_videos++;
+						                                   }
+						                                   if (channel_videos) text += "\n" + tr("Videos of this channel in your history: ", "Vídeos de este canal en tu historial: ") + std::to_string(channel_videos);
+					                                   }
 					                                   show_text_popup(cur_video_info.title, text);
 				                                   }),
 				                         make_tool([]() { return tr("Video QR", "QR del vídeo"); }, 84,
