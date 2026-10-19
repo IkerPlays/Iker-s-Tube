@@ -92,3 +92,13 @@ void resume_save() {
 	}
 	resume_lock.unlock();
 }
+
+int resume_clear_all() {
+	resume_lock.lock();
+	ensure_loaded_locked();
+	int count = (int)entries.size();
+	entries.clear();
+	remove(RESUME_PATH);
+	resume_lock.unlock();
+	return count;
+}

@@ -1,1 +1,1 @@
-Backup: the pinned channels and the recent channels are part of the backup too.
+Settings, Data: new button forgets where you stopped in every video.

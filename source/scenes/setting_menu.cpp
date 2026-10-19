@@ -2,6 +2,7 @@
 #include "data_io/backup.hpp"
 #include "headers.hpp"
 #include "data_io/subscription_util.hpp"
+#include "data_io/resume_position.hpp"
 #include "data_io/user_playlists.hpp"
 #include "data_io/watch_later.hpp"
 #include "data_io/favorites.hpp"
@@ -1715,6 +1716,24 @@ void Sem_init(void) {
 							if (flag) fclose(flag);
 							toast_view
 								->set_text((std::function<std::string ()>) [] () { return tr("Settings reset when the app restarts", "Los ajustes se restablecen al reiniciar la app"); })
+								->set_x_alignment(TextView::XAlign::CENTER)
+								->set_text_offset(0, -1)
+								->set_get_text_color([] () { return (u32) -1; })
+								->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+								->set_get_background_color([] (const View &) { return 0x50000000; })
+								->set_is_visible(true);
+							toast_frames_left = 150;
+							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Forget where I stopped in the videos", "Olvidar dónde dejé los vídeos"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							int removed = resume_clear_all();
+							toast_view
+								->set_text((std::function<std::string ()>) [removed] () { return tr("Positions forgotten: ", "Posiciones olvidadas: ") + std::to_string(removed); })
 								->set_x_alignment(TextView::XAlign::CENTER)
 								->set_text_offset(0, -1)
 								->set_get_text_color([] () { return (u32) -1; })
