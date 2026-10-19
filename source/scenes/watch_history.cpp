@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include "util/badges.hpp"
 #include <map>
 #include <numeric>
 
@@ -398,19 +399,7 @@ void History_draw(void) {
 					    row(tr("This month: ", "Este mes: ") + std::to_string(this_month)),
 					    row(tr("Longest streak: ", "Mejor racha: ") + std::to_string(best_streak)),
 				    row(tr("Playing today: ", "Hoy reproduciendo: ") + std::to_string(var_play_day == local_day_number() ? (int)var_play_today / 60 : 0) + " min")};
-				struct Badge { bool done; std::string name; };
-				const size_t n_videos = watch_history.size();
-				std::vector<Badge> badges = {
-				    {n_videos >= 1, tr("First steps (1 video)", "Primeros pasos (1 vídeo)")},
-				    {n_videos >= 50, tr("Regular (50 videos)", "Habitual (50 vídeos)")},
-				    {total_views >= 250, tr("Binge watcher (250 views)", "Maratoniano (250 vistas)")},
-				    {streak >= 3, tr("3 days in a row", "3 días seguidos")},
-				    {streak >= 7, tr("A full week in a row", "Una semana seguida")},
-				    {top_count >= 10, tr("Loyal (10 views of one channel)", "Fiel (10 vistas de un canal)")},
-				    {n_videos > 0 && busiest <= 4, tr("Night owl (favorite hour 0-4)", "Búho nocturno (hora favorita 0-4)")},
-				    {n_videos > 0 && busiest >= 5 && busiest <= 8, tr("Early bird (favorite hour 5-8)", "Madrugador (hora favorita 5-8)")},
-				    {play_seconds >= 10 * 3600, tr("10 hours playing", "10 horas reproduciendo")},
-				    {play_seconds >= 100 * 3600, tr("100 hours playing", "100 horas reproduciendo")}};
+				auto badges = badges_compute();
 				int unlocked = 0;
 				for (auto &b : badges) unlocked += b.done;
 				std::vector<std::pair<std::string, std::function<void()>>> badge_rows;

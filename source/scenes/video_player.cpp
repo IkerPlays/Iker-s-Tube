@@ -1,6 +1,7 @@
 #include "headers.hpp"
 #include "data_io/settings.hpp"
 #include "data_io/history.hpp"
+#include "util/badges.hpp"
 #include "data_io/user_playlists.hpp"
 #include "util/result_filter.hpp"
 #include <vector>
@@ -4878,6 +4879,13 @@ static void autoplay_countdown_tick() {
 				    if (var_break_reminder && var_total_play_seconds - reminder_base >= minutes[var_break_reminder] * 60) {
 					    reminder_base = var_total_play_seconds;
 					    notice_show(tr("You have been playing for a while: time for a break?", "Llevas un rato reproduciendo: ¿un descanso?"));
+				    }
+			    }
+			    {
+				    static double badge_check_at = 0; // badges are looked at once per minute of playing
+				    if (var_total_play_seconds - badge_check_at >= 60 || var_total_play_seconds < badge_check_at) {
+					    badge_check_at = var_total_play_seconds;
+					    badges_check_new();
 				    }
 			    }
 			    {

@@ -1,1 +1,1 @@
-The Feed tab marks videos you have not seen before with a NEW badge on the thumbnail.
+A notice appears when you unlock a badge (checked once per minute of playing). The badge logic moved to util/badges. Usage guide updated.

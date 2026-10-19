@@ -174,6 +174,7 @@ static const TrEntry kTrEntries[] = {
 	{"Dislikes ", {"Je n'aime pas ", "Dislikes ", "Non mi piace ", "Não gosto ", "低評価 "}},
 	{"Asking for the votes...", {"Demande des votes...", "Stimmen werden abgefragt...", "Richiesta dei voti...", "Pedindo os votos...", "評価を取得中..."}},
 	{"It is late: the Sleep timer tool can stop the video for you", {"Il est tard : l'outil Minuterie peut arrêter la vidéo pour vous", "Es ist spät: der Schlaf-Timer kann das Video für dich stoppen", "È tardi: il timer di spegnimento può fermare il video per te", "Está tarde: o timer de sono pode parar o vídeo por você", "遅い時間です：スリープタイマーで動画を止められます"}},
+	{"Badge unlocked: ", {"Succès débloqué : ", "Erfolg freigeschaltet: ", "Traguardo sbloccato: ", "Conquista desbloqueada: ", "実績解除: "}},
 	{"Tap the address for its QR code. Problems: open Issues there.", {"Touchez l'adresse pour son QR. Problèmes : ouvrez Issues là-bas.", "Tippe auf die Adresse für den QR-Code. Probleme: dort Issues öffnen.", "Tocca l'indirizzo per il QR. Problemi: apri Issues lì.", "Toque no endereço para ver o QR. Problemas: abra Issues lá.", "アドレスをタップでQR表示。問題はIssuesへ。"}},
 	{"Sort: by channel", {"Tri : par chaîne", "Sortierung: nach Kanal", "Ordine: per canale", "Ordem: por canal", "並べ替え：チャンネル順"}},
 	{"Import subscriptions (import_subscriptions.csv)", {"Importer les abonnements (import_subscriptions.csv)", "Abos importieren (import_subscriptions.csv)", "Importa iscrizioni (import_subscriptions.csv)", "Importar inscrições (import_subscriptions.csv)", "登録チャンネルをインポート (import_subscriptions.csv)"}},
