@@ -90,6 +90,15 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 	std::map<std::string, std::string> headers;
 	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
 	auto response = http_post_json(get_innertube_api_url(endpoint), body, headers);
+	if (response.first && (response.second.find("UNAUTHENTICATED") != std::string::npos || response.second.find("\"code\": 401") != std::string::npos ||
+	                       response.second.find("\"code\":401") != std::string::npos)) {
+		// the access token expired: renew it once and send the request again
+		OAuth::refresh_access_token(true);
+		if (OAuth::is_authenticated()) {
+			headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+			response = http_post_json(get_innertube_api_url(endpoint), body, headers);
+		}
+	}
 	bool ok = response.first && response.second.find("\"error\":{") == std::string::npos;
 	if (!ok) {
 		std::string msg;

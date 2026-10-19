@@ -30,7 +30,7 @@ void init();
 void exit();
 void start_device_flow();
 void check_device_flow();
-void refresh_access_token();
+void refresh_access_token(bool force = false); // does nothing while the token is still valid, unless forced
 void revoke_tokens();
 bool is_authenticated();
 std::string get_access_token();

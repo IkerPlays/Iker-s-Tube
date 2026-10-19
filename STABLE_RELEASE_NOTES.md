@@ -36,6 +36,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Player tools reachable.** Rows of tools that were wider than the screen wrap into several rows, so every tool can be tapped.
 - **Player tools folded.** The long list of extra tools in the player sits behind a More tools button; all tools are reachable now.
 - **Account fixes.** A failed or timed-out sign-in can be retried, a network hiccup no longer signs you out, and several threading problems in the account code were fixed.
+- **Fewer renewals.** The login token is renewed only when it is about to expire, and an expired one is renewed automatically.
 
 ## Installing
 

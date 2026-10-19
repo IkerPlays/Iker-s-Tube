@@ -1,1 +1,1 @@
-Account actions sent twice by a double tap are sent once; token values are hidden in the Studio login log lines.
+The login is renewed only when the token is about to expire (not on every Home load); an expired token is renewed and the request sent again once.

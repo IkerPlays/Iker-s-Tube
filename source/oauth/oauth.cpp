@@ -225,8 +225,10 @@ void check_device_flow() {
 	fetch_library_data();
 }
 
-void refresh_access_token() {
+static u64 token_valid_until_ms = 0; // when the access token expires (a bit early)
+void refresh_access_token(bool force) {
 	const OAuthState previous_state = oauth_state;
+	if (!force && previous_state == OAuthState::AUTHENTICATED && osGetTime() < token_valid_until_ms) return; // still fresh
 	if (refresh_token.empty()) {
 		oauth_error_message = "No refresh token";
 		oauth_state = OAuthState::ERROR;
@@ -273,6 +275,11 @@ void refresh_access_token() {
 		return;
 	}
 
+	{
+		int lifetime = response_json["expires_in"].int_value();
+		if (lifetime < 600 || lifetime > 86400) lifetime = 3600;
+		token_valid_until_ms = osGetTime() + (u64)(lifetime - 300) * 1000;
+	}
 	LightLock_Lock(&token_lock);
 	access_token = response_json["access_token"].string_value();
 	if (response_json.has_key("refresh_token")) {
