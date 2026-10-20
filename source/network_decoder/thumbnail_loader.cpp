@@ -287,6 +287,7 @@ static std::vector<u8> http_get(const std::string &url, int &status_code) {
 				}
 				if (erase_url != "") {
 					thumbnail_cache.erase(erase_url);
+					thumbnail_free_time.erase(erase_url); // (otherwise the url strings pile up for ever)
 				}
 			}
 			thumbnail_cache[url] = result.data;
@@ -476,6 +477,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 					}
 					if (erase_url != "") {
 						thumbnail_cache.erase(erase_url);
+					thumbnail_free_time.erase(erase_url); // (otherwise the url strings pile up for ever)
 					}
 				}
 				thumbnail_cache[info.url] = res.data;
