@@ -14,7 +14,7 @@ on:
         required: true
         default: backup
         type: choice
-        options: [backup, restructure, prune]
+        options: [backup, restructure, prune, diag]
       backup_run_id:
         description: "restructure only: run id of the finished backup run"
         required: false
@@ -209,3 +209,26 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: .github/scripts/prune-devbuilds.sh "${{ inputs.keep }}"
+
+  diag:
+    if: inputs.mode == 'diag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          old=$(git rev-parse v1.0.0 2>/dev/null || git rev-list --max-parents=0 HEAD | head -1)
+          echo "old sha: $old"; echo "head: $GITHUB_SHA"
+          for t in "diag-head $GITHUB_SHA" "diag-old $old"; do
+            set -- $t
+            echo "--- $1 -> $2"
+            gh api -i -X POST "repos/$GITHUB_REPOSITORY/releases" -f tag_name="$1" -f target_commitish="$2" -f name="$1" -F prerelease=true 2>&1 | head -30 || true
+          done
+          echo "--- repo info"
+          gh api "repos/$GITHUB_REPOSITORY" --jq '{full_name,default_branch,visibility,archived}' || true
+          gh api "repos/$GITHUB_REPOSITORY/rulesets" 2>&1 | head -30 || true
+          gh api "repos/$GITHUB_REPOSITORY/actions/permissions/workflow" 2>&1 | head || true
+          for t in diag-head diag-old; do gh release delete "$t" --cleanup-tag --yes 2>&1 || true; done
