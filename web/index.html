@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iker's Tube - YouTube for Nintendo 3DS</title>
+  <meta name="description" content="Iker's Tube is a YouTube client for the Nintendo 3DS / 2DS family. Download, install and follow the roadmap.">
+  <meta name="theme-color" content="#c4302b">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#top">Iker's Tube</a>
+    <nav>
+      <a href="#download">Download</a>
+      <a href="#features">Features</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#help">Help</a>
+      <button id="theme" type="button" aria-label="Toggle theme">&#9680;</button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <h1>YouTube on your Nintendo 3DS</h1>
+      <p>A homebrew YouTube client for the 3DS / 2DS family. Search, watch, download and keep your account, all on the console.</p>
+      <p class="cta">
+        <a class="btn" id="dl-cia" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.cia">Download .cia</a>
+        <a class="btn ghost" id="dl-3dsx" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.3dsx">Download .3dsx</a>
+      </p>
+      <p class="small" id="latest">Latest stable release: loading...</p>
+    </section>
+
+    <section id="download">
+      <h2>Download and install</h2>
+      <div class="cols">
+        <div>
+          <ol>
+            <li>Scan the QR with <strong>FBI</strong> (<em>Remote Install &gt; Scan QR code</em>), or copy <code>IkersTube.cia</code> to your SD card and install it.</li>
+            <li><code>IkersTube.3dsx</code> also runs from the Homebrew Launcher.</li>
+            <li>For sound you need the DSP firmware dump at <code>sdmc:/3ds/dspfirm.cdc</code>.</li>
+            <li>The app checks for updates on start (Settings &gt; Update).</li>
+          </ol>
+          <p class="small">Your data lives in <code>sdmc:/3ds/IkersTube/</code>. Test builds are on the <a href="https://github.com/IkerPlays/Iker-s-Tube/releases">Releases</a> page.</p>
+        </div>
+        <figure class="qr">
+          <img src="img/qr-latest.png" width="220" height="220" alt="QR code for the latest stable IkersTube.cia">
+          <figcaption>Always points to the latest stable .cia</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>Features</h2>
+      <div class="grid">
+        <article><h3>Search and watch</h3><p>Filters, suggestions, Shorts, live streams and chat, subtitles, SponsorBlock.</p></article>
+        <article><h3>Your account</h3><p>Sign in for subscriptions, likes, playlists, history and comments.</p></article>
+        <article><h3>Offline</h3><p>Save videos or audio, queue, favorites and watch later.</p></article>
+        <article><h3>Handy extras</h3><p>Sleep timer, data saver, bookmarks, QR codes for links, themes and backups.</p></article>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <h2>Roadmap</h2>
+      <p class="small">Plans can change. Items move between columns as work goes on.</p>
+      <div class="filters" id="filters" role="group" aria-label="Filter roadmap"></div>
+      <div class="board" id="board" aria-live="polite"></div>
+    </section>
+
+    <section id="help">
+      <h2>Problems?</h2>
+      <p>If the app closes at start, it enters <strong>safe mode</strong> on the next launch and resets its settings.
+      Please open an <a href="https://github.com/IkerPlays/Iker-s-Tube/issues">issue</a> and attach <code>crash.txt</code> / <code>log.txt</code> from <code>sdmc:/3ds/IkersTube/</code>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Iker's Tube is based on <a href="https://github.com/erievs/FourthTube">FourthTube</a> / ThirdTube and is licensed under GPLv3.
+    Not affiliated with YouTube, Google or Nintendo.</p>
+    <p><a href="https://github.com/IkerPlays/Iker-s-Tube">Source code on GitHub</a></p>
+  </footer>
+
+  <script src="js/roadmap.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
