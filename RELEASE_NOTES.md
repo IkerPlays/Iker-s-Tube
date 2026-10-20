@@ -1,1 +1,1 @@
-Small decoder fixes from an audit.
+Fixes from an audit: the .3dsx update is written next to the app first and put in place only when complete; a failed CIA install is cancelled so the next one works; a tiny download (an error page) is never installed; the update error shows its real text; two more settings are clamped.

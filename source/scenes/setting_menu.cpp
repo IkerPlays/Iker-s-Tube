@@ -1,4 +1,5 @@
 // clang-format off
+#include <sys/stat.h>
 #include "data_io/backup.hpp"
 #include "headers.hpp"
 #include "data_io/subscription_util.hpp"
@@ -182,6 +183,7 @@ std::string install_update(NetworkSessionList &session_list) {
 	
 	if (result.fail) return "curl deep fail : " + result.error;
 	if (result.status_code != 200) return "http returned " + std::to_string(result.status_code);
+	if (result.data.size() < 50000) return "the downloaded file is too small (" + std::to_string(result.data.size()) + " bytes)"; // (an error page, not the app)
 	
 	resource_lock.lock();
 	install_progress_str = LOCALIZED(INSTALLING);
@@ -193,8 +195,20 @@ std::string install_update(NetworkSessionList &session_list) {
 		char *slash_ptr = strrchr(path_3dsx.c_str(), '/');
 		if (!slash_ptr) return "no slash in 3dsx path : " + path_3dsx;
 		size_t slash_index = slash_ptr - path_3dsx.c_str();
-		auto tmp_res = Path(path_3dsx).write_file(result.data.data(), result.data.size());
-		if (tmp_res.code != 0) return "Failed to write to .3dsx file : " + tmp_res.string + " " + std::to_string(tmp_res.code);
+		// written next to the app first: a power loss or a full SD card in the middle leaves the old .3dsx untouched
+		const std::string new_path = path_3dsx + ".new";
+		auto tmp_res = Path(new_path).write_file(result.data.data(), result.data.size());
+		if (tmp_res.code != 0) {
+			remove(new_path.c_str());
+			return "Failed to write to .3dsx file : " + tmp_res.string + " " + std::to_string(tmp_res.code);
+		}
+		struct stat new_stat;
+		if (stat(new_path.c_str(), &new_stat) != 0 || (size_t)new_stat.st_size != result.data.size()) {
+			remove(new_path.c_str());
+			return "the new .3dsx was not written completely";
+		}
+		remove(path_3dsx.c_str());
+		if (rename(new_path.c_str(), path_3dsx.c_str()) != 0) return "could not put the new .3dsx in place (it is saved as " + new_path + ")";
 	} else {
 		Handle am_handle = 0;
 		if ((libctru_result = AM_StartCiaInstall(MEDIATYPE_SD, &am_handle))) return "AM_StartCiaInstall() returned " + std::to_string(libctru_result);
@@ -207,13 +221,19 @@ std::string install_update(NetworkSessionList &session_list) {
 			u32 size_written;
 			libctru_result = FSFILE_Write(am_handle, &size_written, i, result.data.data() + i, size, FS_WRITE_FLUSH);
 			i += size_written;
-			if (libctru_result) return "FSFILE_Write() returned " + std::to_string(libctru_result);
+			if (libctru_result) {
+				AM_CancelCIAInstall(am_handle); // (otherwise the install stays open and the next one fails)
+				return "FSFILE_Write() returned " + std::to_string(libctru_result);
+			}
 			update_progress_bar_view->set_progress((double) i / result.data.size());
 		}
 		update_progress_bar_view->set_progress(1.0);
 		
 		libctru_result = AM_FinishCiaInstall(am_handle);
-		if (libctru_result) return "AM_FinishCiaInstall() returned " + std::to_string(libctru_result);
+		if (libctru_result) {
+			AM_CancelCIAInstall(am_handle);
+			return "AM_FinishCiaInstall() returned " + std::to_string(libctru_result);
+		}
 	}
 	return "";
 }
@@ -232,7 +252,7 @@ static void update_worker_thread_func(void *) {
 			
 			bool check_success = false;
 			auto result = session_list.perform(HttpRequest::GET("https://api.github.com/repos/IkerPlays/Iker-s-Tube/releases?per_page=10", {}));
-			if (result.fail) new_error_message = "Failed accessing(deep fail) : " + result.fail;
+			if (result.fail) new_error_message = "Failed accessing(deep fail) : " + result.error;
 			else if (result.status_code == 200) {
 				result.data.push_back('\0');
 				rapidjson::Document json_root;

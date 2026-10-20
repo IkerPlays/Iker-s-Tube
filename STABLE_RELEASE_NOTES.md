@@ -59,6 +59,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Pictures.** Thumbnails with huge dimensions are skipped, cancelled thumbnails no longer leak memory, and a thumbnail that failed for lack of memory is retried.
 - **Audio and parser fixes.** Audio that is not 44.1 kHz stereo plays at the right speed, and a channel page without data no longer risks a crash.
 - **Hardening.** Very long texts, big or empty folders in the file picker and negative times no longer cause trouble.
+- **Safer updates.** The in-app update writes the new .3dsx to a temporary file first and cancels a failed CIA install cleanly.
 
 ## Installing
 
