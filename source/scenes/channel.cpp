@@ -1125,24 +1125,21 @@ void Channel_init(void) {
 	    resource_lock.unlock();
     }
     static bool send_load_request(std::string url) {
-	    if (!is_async_task_running(load_channel)) {
-		    remove_all_async_tasks_with_type(load_channel_more);
-		    remove_all_async_tasks_with_type(load_channel_stream);
-		    remove_all_async_tasks_with_type(load_channel_stream_more);
-		    remove_all_async_tasks_with_type(load_channel_shorts);
-		    remove_all_async_tasks_with_type(load_channel_shorts_more);
-		    remove_all_async_tasks_with_type(load_channel_playlists);
-		    remove_all_async_tasks_with_type(load_channel_community_posts);
+	    // (a channel that is already loading finishes first, the new one is queued behind it: the last one asked is the one that stays)
+	    remove_all_async_tasks_with_type(load_channel_more);
+	    remove_all_async_tasks_with_type(load_channel_stream);
+	    remove_all_async_tasks_with_type(load_channel_stream_more);
+	    remove_all_async_tasks_with_type(load_channel_shorts);
+	    remove_all_async_tasks_with_type(load_channel_shorts_more);
+	    remove_all_async_tasks_with_type(load_channel_playlists);
+	    remove_all_async_tasks_with_type(load_channel_community_posts);
 
-		    resource_lock.lock();
-		    cur_channel_url = url;
-		    resource_lock.unlock();
+	    resource_lock.lock();
+	    cur_channel_url = url;
+	    resource_lock.unlock();
 
-		    queue_async_task(load_channel, NULL);
-		    return true;
-	    } else {
-		    return false;
-	    }
+	    queue_async_task(load_channel, NULL);
+	    return true;
     }
 
     void Channel_draw(void) {

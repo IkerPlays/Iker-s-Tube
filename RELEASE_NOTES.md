@@ -1,1 +1,1 @@
-Fixes from an audit: the Streams and Shorts tabs of a channel reopened from the cache say Empty instead of Loading for ever; a failed refresh of the account feed keeps the list that was on screen.
+Fix: opening a second channel while the first is still loading now shows the second one.

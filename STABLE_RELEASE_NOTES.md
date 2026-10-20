@@ -62,6 +62,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Safer updates.** The in-app update writes the new .3dsx to a temporary file first and cancels a failed CIA install cleanly.
 - **Fix.** A rare crash when a video page finished loading at the exact moment the player was reading it.
 - **Fix.** The video page no longer stays on Loading after skipping to the next video quickly.
+- **Fix.** Opening another channel while one is still loading no longer shows the wrong channel.
 
 ## Installing
 
