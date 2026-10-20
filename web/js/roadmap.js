@@ -1,13 +1,14 @@
-// Roadmap data. Edit this file only: status is "done", "now" or "next"; area is a free label used by the filters.
+// Roadmap data. Edit this file only. status: "done" | "now" | "next"; area: free label (used by the filters).
 window.ROADMAP = [
-  { status: "done", area: "App", title: "Stable releases 1.0.0 - 1.0.7", text: "Search, playback, account, downloads and updater." },
-  { status: "done", area: "App", title: "Network safety and reliability", text: "Safe mode, crash guards, bounded downloads and cleaner shutdown." },
-  { status: "done", area: "App", title: "Playback tools", text: "Skip intro, go to time, loop a chapter, speed and tempo, sleep timer." },
-  { status: "done", area: "Home", title: "Smarter home feed", text: "Feed cache, NEW badges, headers and weekly chart." },
-  { status: "done", area: "Project", title: "Public QR and README", text: "A QR that always installs the latest stable build." },
-  { status: "now", area: "Project", title: "Cleaner releases", text: "Stable releases kept forever, only the newest 15 devbuilds after each one." },
-  { status: "now", area: "Web", title: "This website", text: "Download page and roadmap, deployed on Netlify." },
-  { status: "next", area: "Web", title: "More website content", text: "Screenshots, changelog and a guide in several languages." },
-  { status: "next", area: "App", title: "More improvements", text: "Planned together with the owner after this round." },
-  { status: "next", area: "App", title: "Next stable release", text: "Collect the changes since 1.0.7 into a new stable." }
+  { status: "done", area: "App", title: { en: "Stable releases 1.0.0 - 1.0.7", es: "Versiones estables 1.0.0 - 1.0.7" }, text: { en: "Search, playback, account, downloads and updater.", es: "Búsqueda, reproducción, cuenta, descargas y actualizador." } },
+  { status: "done", area: "App", title: { en: "Network safety and reliability", es: "Seguridad de red y fiabilidad" }, text: { en: "Safe mode, crash guards, bounded downloads and cleaner shutdown.", es: "Modo seguro, protecciones contra cierres, descargas limitadas y cierre más limpio." } },
+  { status: "done", area: "App", title: { en: "Playback tools", es: "Herramientas de reproducción" }, text: { en: "Skip intro, go to time, loop a chapter, speed and tempo, sleep timer.", es: "Saltar intro, ir a un minuto, repetir capítulo, velocidad y tempo, temporizador." } },
+  { status: "done", area: "App", title: { en: "Smarter home feed", es: "Inicio más listo" }, text: { en: "Feed cache, NEW badges, headers and weekly chart.", es: "Caché del feed, etiquetas NEW, cabeceras y gráfica semanal." } },
+  { status: "done", area: "Project", title: { en: "Public QR and README", es: "QR público y README" }, text: { en: "A QR that always installs the latest stable build.", es: "Un QR que siempre instala la última versión estable." } },
+  { status: "done", area: "Project", title: { en: "Cleaner releases", es: "Versiones más limpias" }, text: { en: "Stable releases kept forever, only the newest 15 devbuilds of each version.", es: "Estables para siempre y solo las 15 devbuilds más recientes de cada versión." } },
+  { status: "now", area: "Web", title: { en: "This website", es: "Esta web" }, text: { en: "Download page, live releases with QR, roadmap and FAQ, deployed on Netlify.", es: "Descarga, versiones en directo con QR, roadmap y preguntas, en Netlify." } },
+  { status: "now", area: "App", title: { en: "Storage info and small polish", es: "Información de espacio y pulido" }, text: { en: "A Settings button shows how much room the app uses on the SD card.", es: "Un botón en Ajustes muestra cuánto espacio usa la app en la SD." } },
+  { status: "next", area: "Web", title: { en: "Screenshots and changelog", es: "Capturas y changelog" }, text: { en: "Real screenshots of the app and a readable changelog on the site.", es: "Capturas reales de la app y un changelog legible en la web." } },
+  { status: "next", area: "App", title: { en: "More improvements", es: "Más mejoras" }, text: { en: "Planned together with the owner after this round.", es: "Se planean con el dueño después de esta ronda." } },
+  { status: "next", area: "App", title: { en: "Next stable release", es: "Próxima versión estable" }, text: { en: "Collect the changes since 1.0.7 into a new stable.", es: "Reunir los cambios desde la 1.0.7 en una nueva estable." } }
 ];

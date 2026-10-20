@@ -4,83 +4,127 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Iker's Tube - YouTube for Nintendo 3DS</title>
-  <meta name="description" content="Iker's Tube is a YouTube client for the Nintendo 3DS / 2DS family. Download, install and follow the roadmap.">
+  <meta name="description" content="Iker's Tube is a YouTube client for the Nintendo 3DS / 2DS family. Download every version, scan a QR to install and follow the roadmap.">
   <meta name="theme-color" content="#c4302b">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Iker's Tube - YouTube for Nintendo 3DS">
+  <meta property="og:description" content="A homebrew YouTube client for the 3DS / 2DS family. Download, scan a QR and install.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
   <header class="top">
-    <a class="brand" href="#top">Iker's Tube</a>
-    <nav>
-      <a href="#download">Download</a>
-      <a href="#features">Features</a>
-      <a href="#roadmap">Roadmap</a>
-      <a href="#help">Help</a>
-      <button id="theme" type="button" aria-label="Toggle theme">&#9680;</button>
+    <a class="brand" href="#top"><img src="favicon.svg" width="26" height="26" alt=""> Iker's Tube</a>
+    <nav aria-label="Main">
+      <a href="#download" data-i18n="nav_download">Download</a>
+      <a href="#features" data-i18n="nav_features">Features</a>
+      <a href="#releases" data-i18n="nav_releases">Releases</a>
+      <a href="#roadmap" data-i18n="nav_roadmap">Roadmap</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
+      <button id="lang" class="icon" type="button" aria-label="Language">ES</button>
+      <button id="theme" class="icon" type="button" aria-label="Theme">&#9790;</button>
     </nav>
   </header>
 
-  <main id="top">
-    <section class="hero">
-      <h1>YouTube on your Nintendo 3DS</h1>
-      <p>A homebrew YouTube client for the 3DS / 2DS family. Search, watch, download and keep your account, all on the console.</p>
+  <main id="main">
+    <section class="hero" id="top">
+      <p class="eyebrow" data-i18n="hero_eyebrow">Homebrew for Nintendo 3DS / 2DS</p>
+      <h1 data-i18n="hero_title">YouTube on your Nintendo 3DS</h1>
+      <p class="lead" data-i18n="hero_text">Search, watch, download and use your account, all on the console.</p>
       <p class="cta">
-        <a class="btn" id="dl-cia" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.cia">Download .cia</a>
-        <a class="btn ghost" id="dl-3dsx" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.3dsx">Download .3dsx</a>
+        <a class="btn" id="dl-cia" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.cia" data-i18n="dl_cia">Download .cia</a>
+        <a class="btn ghost" id="dl-3dsx" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.3dsx" data-i18n="dl_3dsx">Download .3dsx</a>
+        <a class="btn ghost" href="#releases" data-i18n="all_versions">All versions</a>
       </p>
-      <p class="small" id="latest">Latest stable release: loading...</p>
+      <p class="small" id="latest" data-i18n="latest_loading">Latest stable release: loading...</p>
     </section>
 
     <section id="download">
-      <h2>Download and install</h2>
+      <h2 data-i18n="dl_title">Download and install</h2>
       <div class="cols">
         <div>
-          <ol>
-            <li>Scan the QR with <strong>FBI</strong> (<em>Remote Install &gt; Scan QR code</em>), or copy <code>IkersTube.cia</code> to your SD card and install it.</li>
-            <li><code>IkersTube.3dsx</code> also runs from the Homebrew Launcher.</li>
-            <li>For sound you need the DSP firmware dump at <code>sdmc:/3ds/dspfirm.cdc</code>.</li>
-            <li>The app checks for updates on start (Settings &gt; Update).</li>
+          <ol class="steps">
+            <li data-i18n-html="step1">Scan the QR with <strong>FBI</strong> (<em>Remote Install &gt; Scan QR code</em>), or copy <code>IkersTube.cia</code> to your SD card and install it.</li>
+            <li data-i18n-html="step2"><code>IkersTube.3dsx</code> also runs from the Homebrew Launcher.</li>
+            <li data-i18n-html="step3">For sound you need the DSP firmware dump at <code>sdmc:/3ds/dspfirm.cdc</code>.</li>
+            <li data-i18n="step4">The app checks for updates on start (Settings &gt; Update).</li>
           </ol>
-          <p class="small">Your data lives in <code>sdmc:/3ds/IkersTube/</code>. Test builds are on the <a href="https://github.com/IkerPlays/Iker-s-Tube/releases">Releases</a> page.</p>
+          <p class="small" data-i18n-html="data_note">Your data lives in <code>sdmc:/3ds/IkersTube/</code>.</p>
         </div>
         <figure class="qr">
           <img src="img/qr-latest.png" width="220" height="220" alt="QR code for the latest stable IkersTube.cia">
-          <figcaption>Always points to the latest stable .cia</figcaption>
+          <figcaption data-i18n="qr_caption">Always points to the latest stable .cia</figcaption>
         </figure>
       </div>
     </section>
 
     <section id="features">
-      <h2>Features</h2>
+      <h2 data-i18n="feat_title">Features</h2>
       <div class="grid">
-        <article><h3>Search and watch</h3><p>Filters, suggestions, Shorts, live streams and chat, subtitles, SponsorBlock.</p></article>
-        <article><h3>Your account</h3><p>Sign in for subscriptions, likes, playlists, history and comments.</p></article>
-        <article><h3>Offline</h3><p>Save videos or audio, queue, favorites and watch later.</p></article>
-        <article><h3>Handy extras</h3><p>Sleep timer, data saver, bookmarks, QR codes for links, themes and backups.</p></article>
+        <article><h3 data-i18n="f1_t">Search and watch</h3><p data-i18n="f1_x">Filters, suggestions, Shorts, live streams and chat, subtitles, SponsorBlock.</p></article>
+        <article><h3 data-i18n="f2_t">Your account</h3><p data-i18n="f2_x">Sign in for subscriptions, likes, playlists, history and comments.</p></article>
+        <article><h3 data-i18n="f3_t">Offline</h3><p data-i18n="f3_x">Save videos or audio, queue, favorites and watch later.</p></article>
+        <article><h3 data-i18n="f4_t">Playback tools</h3><p data-i18n="f4_x">Skip intro, go to a time, loop a chapter, speed, sleep timer with fade.</p></article>
+        <article><h3 data-i18n="f5_t">Made for the 3DS</h3><p data-i18n="f5_x">Data saver, rounded themes, QR codes for links, bookmarks, backups.</p></article>
+        <article><h3 data-i18n="f6_t">Safe by design</h3><p data-i18n="f6_x">Safe mode after a crash, bounded downloads and a crash report you can share.</p></article>
       </div>
     </section>
 
+    <section id="releases">
+      <h2 data-i18n="rel_title">Releases</h2>
+      <p class="small" data-i18n="rel_intro">Every version, loaded live from GitHub. Download it or scan the QR with FBI.</p>
+      <div class="toolbar">
+        <div class="chips" id="rel-filter" role="group" aria-label="Filter releases"></div>
+        <input id="rel-search" type="search" data-i18n-ph="rel_search" placeholder="Search a version..." aria-label="Search a version">
+      </div>
+      <div id="rel-status" class="status" role="status" aria-live="polite"></div>
+      <ol id="rel-list" class="rel-list"></ol>
+      <p class="center"><button id="rel-more" class="btn ghost" type="button" hidden data-i18n="rel_more">Show more</button></p>
+      <p class="small center"><a href="https://github.com/IkerPlays/Iker-s-Tube/releases" data-i18n="rel_github">Open the Releases page on GitHub</a></p>
+    </section>
+
     <section id="roadmap">
-      <h2>Roadmap</h2>
-      <p class="small">Plans can change. Items move between columns as work goes on.</p>
-      <div class="filters" id="filters" role="group" aria-label="Filter roadmap"></div>
+      <h2 data-i18n="road_title">Roadmap</h2>
+      <p class="small" data-i18n="road_intro">Plans can change. Items move between columns as work goes on.</p>
+      <div class="chips" id="filters" role="group" aria-label="Filter roadmap"></div>
       <div class="board" id="board" aria-live="polite"></div>
     </section>
 
-    <section id="help">
-      <h2>Problems?</h2>
-      <p>If the app closes at start, it enters <strong>safe mode</strong> on the next launch and resets its settings.
-      Please open an <a href="https://github.com/IkerPlays/Iker-s-Tube/issues">issue</a> and attach <code>crash.txt</code> / <code>log.txt</code> from <code>sdmc:/3ds/IkersTube/</code>.</p>
+    <section id="faq">
+      <h2 data-i18n="faq_title">Questions</h2>
+      <details><summary data-i18n="q1">What do I need?</summary><p data-i18n="a1">A Nintendo 3DS / 2DS family console with custom firmware (homebrew), and FBI or the Homebrew Launcher.</p></details>
+      <details><summary data-i18n="q2">Stable or devbuild?</summary><p data-i18n="a2">Stable releases are installed by the in-app updater. Devbuilds are test builds that the app only offers; they may be unstable. Only the newest 15 devbuilds of each version are kept.</p></details>
+      <details><summary data-i18n="q3">There is no sound</summary><p data-i18n-html="a3">Dump the DSP firmware to <code>sdmc:/3ds/dspfirm.cdc</code> (for example with DSP1).</p></details>
+      <details><summary data-i18n="q4">The app closes at start</summary><p data-i18n-html="a4">It enters <strong>safe mode</strong> on the next launch and resets its settings. Please open an issue and attach <code>crash.txt</code> / <code>log.txt</code> from <code>sdmc:/3ds/IkersTube/</code>.</p></details>
+      <details><summary data-i18n="q5">Do I need an account?</summary><p data-i18n="a5">No. You can search and watch without one. Signing in adds your subscriptions, likes, playlists, history and comments.</p></details>
+      <details><summary data-i18n="q6">Is it official?</summary><p data-i18n="a6">No. It is a fan project, not affiliated with YouTube, Google or Nintendo.</p></details>
     </section>
   </main>
 
+  <dialog id="qr-dialog" aria-labelledby="qr-title">
+    <form method="dialog" class="qr-box">
+      <h3 id="qr-title">QR</h3>
+      <canvas id="qr-canvas" width="260" height="260" role="img" aria-label="QR code"></canvas>
+      <p class="small" id="qr-url"></p>
+      <p class="small" data-i18n="qr_hint">In FBI: Remote Install &gt; Scan QR code.</p>
+      <div class="row">
+        <button class="btn ghost" id="qr-save" type="button" data-i18n="qr_save">Save PNG</button>
+        <button class="btn" value="close" data-i18n="close">Close</button>
+      </div>
+    </form>
+  </dialog>
+
   <footer>
-    <p>Iker's Tube is based on <a href="https://github.com/erievs/FourthTube">FourthTube</a> / ThirdTube and is licensed under GPLv3.
-    Not affiliated with YouTube, Google or Nintendo.</p>
-    <p><a href="https://github.com/IkerPlays/Iker-s-Tube">Source code on GitHub</a></p>
+    <p data-i18n-html="foot1">Iker's Tube is based on <a href="https://github.com/erievs/FourthTube">FourthTube</a> / ThirdTube and is licensed under GPLv3. Not affiliated with YouTube, Google or Nintendo.</p>
+    <p><a href="https://github.com/IkerPlays/Iker-s-Tube" data-i18n="foot2">Source code on GitHub</a> &middot; <a href="https://github.com/IkerPlays/Iker-s-Tube/issues" data-i18n="foot3">Report a problem</a></p>
   </footer>
 
+  <script src="js/vendor/qrcode.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/roadmap.js"></script>
+  <script src="js/releases.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
