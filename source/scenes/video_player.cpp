@@ -2869,6 +2869,7 @@ debug_info_view =
 						    }
 					    }
 				    }
+				    std::stable_sort(chapters.begin(), chapters.end(), [](const std::pair<double, std::string> &a, const std::pair<double, std::string> &b) { return a.first < b.first; }); // (out-of-order timestamps in a description)
 				    pending_chapters = chapters.size() >= 2 ? chapters : decltype(chapters)(); // installed with the page (the UI thread reads current_chapters)
 				    // bookmarks of this video (the list is refilled whenever one is added or removed)
 				    pending_bookmarks_video_id = tmp_video_info.id;

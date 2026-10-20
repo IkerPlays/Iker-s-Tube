@@ -1,1 +1,1 @@
-Changing the devbuild offer while an update installs no longer resets the updater.
+Chapters taken from a description are sorted by time, so the chapter buttons and marks stay in order.
