@@ -126,9 +126,9 @@ struct YouTubeVideoDetail {
 		std::string id;
 		std::string title;
 		std::string author_name;
-		int total_videos;
+		int total_videos = 0;
 		std::vector<YouTubeVideoSuccinct> videos;
-		int selected_index;
+		int selected_index = -1;
 	};
 	Playlist playlist;
 

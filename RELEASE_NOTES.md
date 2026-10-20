@@ -1,1 +1,1 @@
-Thumbnails are downloaded in groups of 16 at most, the most important first (less memory in long lists).
+Fixes from audits: audio of 48 kHz or mono streams is converted and played with the same 44.1 kHz stereo format the filter produces (no more wrong speed or reads past the buffer); a channel page without data no longer reads a destroyed JSON object; small helper hardening.

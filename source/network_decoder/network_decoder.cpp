@@ -706,10 +706,9 @@ Result_with_string NetworkDecoder::init_decoder(int type) {
 			result.error_description = "swr_alloc() failed ";
 			goto fail;
 		}
-		if (!swr_alloc_set_opts(swr_context, av_get_default_channel_layout(decoder_context[AUDIO]->channels),
-		                        AV_SAMPLE_FMT_S16, decoder_context[AUDIO]->sample_rate,
-		                        av_get_default_channel_layout(decoder_context[AUDIO]->channels),
-		                        decoder_context[AUDIO]->sample_fmt, decoder_context[AUDIO]->sample_rate, 0, NULL)) {
+		// (the filter graph always gives 44.1 kHz stereo, whatever the stream is: the converter and the speaker use the same format)
+		if (!swr_alloc_set_opts(swr_context, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, 44100, AV_CH_LAYOUT_STEREO,
+		                        decoder_context[AUDIO]->sample_fmt, 44100, 0, NULL)) {
 			result.error_description = "swr_alloc_set_opts() failed ";
 			goto fail;
 		}
@@ -1146,9 +1145,22 @@ Result_with_string NetworkDecoder::decode_audio(int *size, u8 **data, double *cu
 				goto cleanup;
 			}
 			auto out_frame = filter.output_frame;
-			*data = (u8 *)malloc(out_frame->nb_samples * 2 * decoder_context[AUDIO]->channels);
-			*size = 2 * swr_convert(swr_context, data, out_frame->nb_samples, (const u8 **)out_frame->data,
-			                        out_frame->nb_samples);
+			*data = (u8 *)malloc(out_frame->nb_samples * 2 * 2); // (16 bit, stereo)
+			if (!*data) {
+				result.code = DEF_ERR_OUT_OF_MEMORY;
+				result.error_description = "malloc() failed";
+				goto cleanup;
+			}
+			int converted = swr_convert(swr_context, data, out_frame->nb_samples, (const u8 **)out_frame->data, out_frame->nb_samples);
+			if (converted < 0) {
+				free(*data);
+				*data = NULL;
+				*size = 0;
+				result.code = DEF_ERR_FFMPEG_RETURNED_NOT_SUCCESS;
+				result.error_description = "swr_convert() failed";
+				goto cleanup;
+			}
+			*size = 2 * converted;
 			*cur_pos += timestamp_offset;
 		} else {
 			result.error_description = "avcodec_receive_frame() failed " + std::to_string(ffmpeg_result);

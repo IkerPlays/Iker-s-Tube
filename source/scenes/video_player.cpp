@@ -4470,8 +4470,8 @@ static void autoplay_countdown_tick() {
 				    {
 					    auto tmp = network_decoder.get_audio_info();
 					    // bitrate = tmp.bitrate;
-					    vid_sample_rate = tmp.sample_rate;
-					    ch = tmp.ch;
+					    vid_sample_rate = 44100; // (the audio filter always gives 44.1 kHz stereo, whatever the stream is)
+					    ch = 2;
 					    vid_audio_format = tmp.format_name;
 					    vid_duration = tmp.duration;
 				    }

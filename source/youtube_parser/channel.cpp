@@ -10,7 +10,8 @@ static RJson get_initial_data(Document &json_root, const std::string &html) {
 	res = get_succeeding_json_regexes(
 	    json_root, html, {"window\\[['\\\"]ytInitialData['\\\"]]\\s*=\\s*['\\{]", "ytInitialData\\s*=\\s*['\\{]"});
 	if (!res.is_valid()) {
-		return get_error_json("did not match any of the ytInitialData regexes");
+		debug_error("did not match any of the ytInitialData regexes");
+		return RJson(); // (an invalid RJson reads as empty everywhere; get_error_json would point into a Document that is already gone)
 	}
 	return res;
 }

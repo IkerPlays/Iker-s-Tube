@@ -12,7 +12,9 @@ static std::string redact_tokens(std::string text) {
 	for (const char *key : {"\"access_token\"", "\"refresh_token\"", "\"id_token\""}) {
 		size_t at = 0;
 		while ((at = text.find(key, at)) != std::string::npos) {
-			size_t open = text.find('"', text.find(':', at) + 1);
+			size_t colon = text.find(':', at);
+			if (colon == std::string::npos) break; // (no value after the key)
+			size_t open = text.find('"', colon + 1);
 			size_t close = open == std::string::npos ? open : text.find('"', open + 1);
 			if (close == std::string::npos) { text = text.substr(0, at); break; }
 			text.replace(open + 1, close - open - 1, "***");

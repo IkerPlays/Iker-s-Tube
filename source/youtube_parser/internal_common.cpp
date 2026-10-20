@@ -84,7 +84,7 @@ std::pair<bool, std::string> http_post_json(const std::string &url, const std::s
 }
 
 bool starts_with(const std::string &str, const std::string &pattern, size_t offset) {
-	return str.substr(offset, pattern.size()) == pattern;
+	return offset <= str.size() && str.compare(offset, pattern.size(), pattern) == 0;
 }
 bool ends_with(const std::string &str, const std::string &pattern) {
 	return str.size() >= pattern.size() && str.substr(str.size() - pattern.size(), pattern.size()) == pattern;
