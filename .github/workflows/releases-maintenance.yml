@@ -161,7 +161,13 @@ jobs:
         run: |
           for tag in $(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq '.[].tagName'); do
             echo "deleting $tag"
-            gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
+            for try in 1 2 3 4 5; do
+              gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes && break
+              # already gone (a previous try may have worked despite the error) : fine
+              gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1 || break
+              [ "$try" = 5 ] && { echo "::error::could not delete $tag"; exit 1; }
+              sleep $((try * 5))
+            done
           done
           echo "Left: $(gh release list --repo "$GITHUB_REPOSITORY" --limit 5 --json tagName --jq length)"
       - name: Republish
