@@ -220,15 +220,18 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          old=$(git rev-parse v1.0.0 2>/dev/null || git rev-list --max-parents=0 HEAD | head -1)
-          echo "old sha: $old"; echo "head: $GITHUB_SHA"
-          for t in "diag-head $GITHUB_SHA" "diag-old $old"; do
-            set -- $t
-            echo "--- $1 -> $2"
-            gh api -i -X POST "repos/$GITHUB_REPOSITORY/releases" -f tag_name="$1" -f target_commitish="$2" -f name="$1" -F prerelease=true 2>&1 | head -30 || true
+          # Which old commits can the workflow token tag? Tries the release API, the refs API and a git push.
+          for row in $(jq -r '[.[]|select(.prerelease|not)][] | "\(.tag)=\(.sha)"' releases-archive/manifest.json); do
+            tag=${row%%=*}; sha=${row##*=}
+            echo "=== $tag $sha  (commit exists locally: $(git cat-file -e "$sha^{commit}" 2>/dev/null && echo yes || echo NO))"
+            echo -n "release api : "
+            gh api -X POST "repos/$GITHUB_REPOSITORY/releases" -f tag_name="diag-$tag-a" -f target_commitish="$sha" -f name=x -F prerelease=true --jq .html_url 2>&1 | head -c 200; echo
+            echo -n "refs api    : "
+            gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/diag-$tag-b" -f sha="$sha" --jq .ref 2>&1 | head -c 200; echo
+            echo -n "git push    : "
+            git push origin "$sha:refs/tags/diag-$tag-c" 2>&1 | tail -2 | tr '\n' ' '; echo
           done
-          echo "--- repo info"
-          gh api "repos/$GITHUB_REPOSITORY" --jq '{full_name,default_branch,visibility,archived}' || true
-          gh api "repos/$GITHUB_REPOSITORY/rulesets" 2>&1 | head -30 || true
-          gh api "repos/$GITHUB_REPOSITORY/actions/permissions/workflow" 2>&1 | head || true
-          for t in diag-head diag-old; do gh release delete "$t" --cleanup-tag --yes 2>&1 || true; done
+          for t in $(git ls-remote --tags origin 'diag-*' | sed 's#.*refs/tags/##'); do
+            gh release delete "$t" --cleanup-tag --yes >/dev/null 2>&1 || git push origin ":refs/tags/$t" >/dev/null 2>&1 || true
+          done
+          git ls-remote --tags origin 'diag-*'
