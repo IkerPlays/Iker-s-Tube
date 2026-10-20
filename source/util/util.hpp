@@ -25,3 +25,8 @@ inline std::string truncate_first_line(const std::string &text, int max_width, d
 	auto lines = truncate_str(text, max_width, 1, size, size);
 	return lines.empty() ? std::string() : lines[0];
 }
+
+// Total size in bytes of the files under `path` (sub-folders up to `depth` levels deep); 0 when it does not exist.
+long long dir_size_bytes(const std::string &path, int depth = 2);
+// "1.4 MB", "820 KB"...
+std::string format_size(long long bytes);

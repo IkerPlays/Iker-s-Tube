@@ -67,6 +67,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Safer reset.** Reset the settings needs a second tap to confirm.
 - **Smoother login.** Sign-in, sign-out and renew in Settings no longer freeze the screen.
 - **Reliability round 2.** Sign-in, sign-out and renew no longer freeze the screen, Reset the settings needs a second tap, channel sort changes and fast channel/video switching are safer, a failed audio filter rebuild is retried, chapters are sorted by time and the thumbnail cache cleans after itself.
+- **Storage used.** A Settings button shows how much room the downloads, the pictures and the whole app folder take on the SD card.
 
 ## Installing
 

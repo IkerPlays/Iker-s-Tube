@@ -22,6 +22,8 @@
 #include "scenes/home.hpp"
 #include "scenes/video_player.hpp"
 #include "ui/overlay.hpp"
+#include "ui/notice.hpp"
+#include "util/util.hpp"
 #include "ui/ui.hpp"
 #include "ui/views/specialized/succinct_channel.hpp"
 #include "youtube_parser/parser.hpp"
@@ -1939,6 +1941,18 @@ void Sem_init(void) {
 								->set_is_visible(true);
 							toast_frames_left = 150;
 							var_need_refresh = true;
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Storage used by the app", "Espacio que usa la app"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							long long offline = dir_size_bytes("sdmc:/3ds/IkersTube/offline");
+							long long pictures = dir_size_bytes("sdmc:/3ds/IkersTube/thumbs");
+							long long all = dir_size_bytes("sdmc:/3ds/IkersTube", 3);
+							notice_show(tr("Downloads ", "Descargas ") + format_size(offline) + tr(", pictures ", ", imágenes ") + format_size(pictures) +
+							            tr(", total ", ", total ") + format_size(all));
 						}),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Export backup to the SD card", "Exportar copia a la SD"); })

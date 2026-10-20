@@ -1,1 +1,1 @@
-The thumbnail memory cache forgets the bookkeeping of the pictures it evicts.
+Settings has a new button, Storage used by the app, that shows how much room the downloads, the picture cache and the whole app folder take on the SD card.

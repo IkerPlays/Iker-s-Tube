@@ -248,3 +248,34 @@ std::vector<std::string> truncate_str(std::string input_str, int max_width, int 
 	}
 	return res;
 }
+
+
+#include <dirent.h>
+#include <sys/stat.h>
+
+long long dir_size_bytes(const std::string &path, int depth) {
+	DIR *dir = opendir(path.c_str());
+	if (!dir) return 0;
+	long long total = 0;
+	while (struct dirent *entry = readdir(dir)) {
+		if (entry->d_name[0] == '.') continue;
+		std::string full = path + "/" + entry->d_name;
+		struct stat st;
+		if (stat(full.c_str(), &st) != 0) continue;
+		if (S_ISDIR(st.st_mode)) {
+			if (depth > 0) total += dir_size_bytes(full, depth - 1);
+		} else {
+			total += st.st_size;
+		}
+	}
+	closedir(dir);
+	return total;
+}
+
+std::string format_size(long long bytes) {
+	char buf[32];
+	if (bytes >= 1024LL * 1024 * 1024) snprintf(buf, sizeof(buf), "%.2f GB", bytes / (1024.0 * 1024 * 1024));
+	else if (bytes >= 1024LL * 1024) snprintf(buf, sizeof(buf), "%.1f MB", bytes / (1024.0 * 1024));
+	else snprintf(buf, sizeof(buf), "%lld KB", bytes / 1024);
+	return buf;
+}
