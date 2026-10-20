@@ -592,7 +592,7 @@ static void oauth_worker_thread_func(void *) {
 				resource_lock.unlock();
 				var_need_refresh = true;
 				
-				usleep(5000000);
+				for (int waited = 0; waited < 50 && !exiting; waited++) usleep(100000); // (not a pause that delays closing the app)
 				resource_lock.lock();
 				popup_view->set_is_visible(false);
 				resource_lock.unlock();
@@ -602,7 +602,7 @@ static void oauth_worker_thread_func(void *) {
 		
 		int sleep_seconds = (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATING && oauth_check_timer_active) ?
 			std::max(OAuth::interval, 8) : 2;
-		usleep(sleep_seconds * 1000000);
+		for (int waited = 0; waited < sleep_seconds * 10 && !exiting && !oauth_action_request; waited++) usleep(100000); // (a tap on the login button or the exit does not wait for the whole pause)
 	}
 	
 	logger.info("oauth_worker", "Thread exit.");
