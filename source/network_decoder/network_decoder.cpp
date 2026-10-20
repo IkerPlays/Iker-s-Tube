@@ -593,7 +593,7 @@ Result_with_string NetworkDecoder::init_output_buffer(bool is_mvd) {
 	}
 	const size_t MAX_RAW_BUFFER_SIZE = var_is_new3ds ? NEW_MAX_RAW_BUFFER_SIZE : OLD_MAX_RAW_BUFFER_SIZE;
 	if (is_mvd) {
-		int buffer_size = MAX_RAW_BUFFER_SIZE / (width * height * 2);
+		int buffer_size = std::max(2, (int)(MAX_RAW_BUFFER_SIZE / (width * height * 2))); // (never zero frames: the decoder would wait for ever)
 		if (buffer_size <= 10) {
 			logger.warning("decoder", "mvd buffer size too low:" + std::to_string(buffer_size));
 		}
@@ -614,7 +614,7 @@ Result_with_string NetworkDecoder::init_output_buffer(bool is_mvd) {
 			goto fail;
 		}
 	} else {
-		int buffer_size = MAX_RAW_BUFFER_SIZE / (width * height * 1.5);
+		int buffer_size = std::max(2, (int)(MAX_RAW_BUFFER_SIZE / (width * height * 1.5)));
 		if (buffer_size <= 10) {
 			logger.warning("decoder", "buffer size too low:" + std::to_string(buffer_size));
 		}
@@ -829,6 +829,10 @@ Result_with_string NetworkDecoder::read_packet(int type) {
 		return result;
 	}
 
+	if (!io->format_context[type]) { // (a failed re-initialisation of the stream left no context)
+		result.error_description = "no format context";
+		goto ffmpeg_fail;
+	}
 	ffmpeg_result = av_read_frame(io->format_context[type], tmp_packet);
 	if (ffmpeg_result != 0) {
 		result.error_description = "av_read_frame() failed";
