@@ -76,6 +76,7 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Feed:** botón "Ver los vídeos nuevos" (los reproduce seguidos) y "Sorpréndeme con mi feed". Los canales ocultos ya se ocultan también en el feed.
 - **Más fiable:** los cambios hechos justo antes de cerrar la app se guardan, una importación de copia de seguridad se aplica al arrancar de nuevo, una SD llena ya no estropea
   favoritos/listas/cola, las listas guardadas conservan los títulos completos, y las búsquedas o páginas que fallan se reintentan tocando el aviso.
+- **Pantalla cálida:** en Ajustes, Apariencia, un tinte cálido de noche (o siempre) para cansar menos la vista. El Feed agrupa los vídeos por Hoy / Ayer / Esta semana / Este mes / Antes.
 - **Idioma:** la primera vez, la app usa el idioma de la consola si lo conoce.
 - **Feed:** los vídeos que no te habían avisado llevan la etiqueta NEW. Al desbloquear un logro sale un aviso, y "Mi resumen" puede enseñar tus números en un QR.
 - **Sin conexión:** si abres la app sin Wi-Fi te recuerda dónde están tus vídeos guardados. Si es muy de noche, te sugiere el temporizador de apagado.
