@@ -1940,6 +1940,15 @@ debug_info_view =
 		    small_resource_lock.lock();
 		    bool stale = tmp_video_info.error == "cancelled" || (is_to_play && cur_playing_url != url) ||
 		                 (is_to_display && cur_displaying_url != url);
+		    // the page that is displayed was cancelled only because the player changed video (D-pad, autoplay): it is loaded again once
+		    static std::string requeued_for;
+		    bool load_display_again = stale && is_to_display && cur_displaying_url == url && requeued_for != url;
+		    if (load_display_again) {
+			    requeued_for = url;
+			    queue_async_task(load_video_page, &cur_displaying_url);
+		    } else if (!stale) {
+			    requeued_for = "";
+		    }
 		    small_resource_lock.unlock();
 		    if (stale) {
 			    logger.info("player/load-v", "stale/cancelled load dropped : " + url);

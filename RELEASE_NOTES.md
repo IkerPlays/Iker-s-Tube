@@ -1,1 +1,1 @@
-Fix from an audit: the player no longer reads the video information without the lock while a page is being loaded (a rare crash on video changes).
+Fix: when the video changes by D-pad or autoplay while the page of the previous one was still loading, the page no longer stays on Loading.
