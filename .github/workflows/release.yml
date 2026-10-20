@@ -3,7 +3,7 @@ name: Stable release
 # Builds Iker's Tube and publishes a normal (non pre-release) GitHub release : the app installs it automatically.
 # Run it by hand : Actions > "Stable release" > Run workflow, and type the version (for example 1.0.0).
 # The notes come from STABLE_RELEASE_NOTES.md : edit that file (English, plain text) BEFORE running it.
-# Devbuilds are NOT affected : build.yml keeps publishing them automatically on every push to main.
+# Devbuilds are NOT affected : they are published by hand with build.yml (Run workflow), not on every push.
 on:
   workflow_dispatch:
     inputs:

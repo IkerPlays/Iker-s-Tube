@@ -1,7 +1,8 @@
 name: Build 3DSX + CIA
 
+# Devbuilds are NOT published automatically : run this workflow by hand (Actions > Build 3DSX + CIA > Run workflow
+# on main) when enough commits have piled up. Pull requests are only built (nothing is published).
 on:
-  push:
   pull_request:
   workflow_dispatch:
 
@@ -80,13 +81,13 @@ jobs:
           name: IkersTube
           path: dist/
 
-  # Devbuilds are published from main only. Every devbuild is its own, permanent pre-release (tag v<version>);
-# nothing is deleted or overwritten.
+  # Devbuilds are published from main only, and only when this workflow is run by hand. Every devbuild is its own
+  # pre-release (tag v<version>); only the newest 15 of each version line are kept (older ones are pruned).
   # To ship a stable version, publish a normal (non pre-release) release yourself with IkersTube.cia and
   # IkersTube.3dsx attached: the app installs it automatically, while devbuilds are only offered.
   release:
     needs: [version, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -107,10 +108,15 @@ jobs:
             cat RELEASE_NOTES.md
             echo
             echo "---"
-            echo "Automatic development build ${VERSION} from commit \`${GITHUB_SHA::7}\`."
+            echo "Development build ${VERSION} from commit \`${GITHUB_SHA::7}\`."
             echo "Development builds are for testing and may be unstable."
           } > notes.md
           gh release create "v${VERSION}" dist/IkersTube.cia dist/IkersTube.3dsx \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "Iker's Tube ${VERSION} (devbuild)" \
             --notes-file notes.md
+
+      - name: Keep only the newest 15 devbuilds per version line
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/prune-devbuilds.sh 15

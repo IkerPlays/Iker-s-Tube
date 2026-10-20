@@ -1,0 +1,205 @@
+name: Releases maintenance
+
+# Manual tool. Two modes :
+#   backup      : downloads EVERY release (notes, IkersTube.cia, IkersTube.3dsx), checks sizes, saves them as
+#                 workflow artifacts (90 days) and commits the notes + checksums to releases-archive/.
+#   restructure : needs the run id of a finished backup. Deletes ALL releases and tags, republishes every stable
+#                 release (same notes, same commit, same files) and only the newest N devbuilds of each version line.
+#   prune       : only deletes devbuilds beyond the newest N of each version line.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "backup, restructure or prune"
+        required: true
+        default: backup
+        type: choice
+        options: [backup, restructure, prune]
+      backup_run_id:
+        description: "restructure only: run id of the finished backup run"
+        required: false
+        type: string
+      confirm:
+        description: "restructure only: type DELETE-ALL-RELEASES"
+        required: false
+        type: string
+      keep:
+        description: "Devbuilds kept per version line"
+        required: false
+        default: "15"
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: releases-maintenance
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: inputs.mode == 'backup'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: List releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p backup/stable backup/dev
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" | jq -s 'add' > raw.json
+          git fetch --tags --force
+          git for-each-ref --format='%(refname:strip=2) %(if)%(*objectname)%(then)%(*objectname)%(else)%(objectname)%(end)' refs/tags > tags.txt
+          jq -n --rawfile t tags.txt --slurpfile r raw.json '
+            ($t | split("\n") | map(select(length > 0) | split(" ") | {key: .[0], value: .[1]}) | from_entries) as $sha
+            | $r[0] | map({tag: .tag_name, name: .name, body: (.body // ""), prerelease: .prerelease, draft: .draft,
+                           created_at: .created_at, published_at: .published_at, sha: ($sha[.tag_name] // .target_commitish),
+                           assets: [.assets[] | {name: .name, size: .size}]})
+            | sort_by(.published_at // .created_at)' > manifest.json
+          echo "Releases: $(jq length manifest.json)  stable: $(jq '[.[]|select(.prerelease|not)]|length' manifest.json)"
+      - name: Download every asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          fail=0
+          for row in $(jq -r '.[] | @base64' manifest.json); do
+            tag=$(echo "$row" | base64 -d | jq -r .tag)
+            pre=$(echo "$row" | base64 -d | jq -r .prerelease)
+            if [ "$pre" = "true" ]; then dir=backup/dev/$tag; else dir=backup/stable/$tag; fi
+            mkdir -p "$dir"
+            echo "$row" | base64 -d | jq -r .body > "$dir/notes.md"
+            n=$(echo "$row" | base64 -d | jq '.assets | length')
+            [ "$n" -gt 0 ] || { echo "no assets: $tag"; continue; }
+            ok=0
+            for try in 1 2 3; do
+              if gh release download "$tag" --repo "$GITHUB_REPOSITORY" -D "$dir" --clobber; then ok=1; break; fi
+              sleep 5
+            done
+            [ "$ok" = 1 ] || { echo "::error::download failed: $tag"; fail=1; continue; }
+            for a in $(echo "$row" | base64 -d | jq -r '.assets[] | "\(.name):\(.size)"'); do
+              name=${a%%:*}; size=${a##*:}
+              got=$(stat -c %s "$dir/$name" 2>/dev/null || echo missing)
+              [ "$got" = "$size" ] || { echo "::error::size mismatch $tag/$name ($got != $size)"; fail=1; }
+            done
+          done
+          [ "$fail" = 0 ] || exit 1
+      - name: Checksums and archive
+        run: |
+          cp manifest.json backup/stable/manifest.json
+          cp manifest.json backup/dev/manifest.json
+          (cd backup && find stable dev -type f ! -name manifest.json | sort | xargs sha256sum) > SHA256SUMS
+          cp SHA256SUMS backup/stable/ ; cp SHA256SUMS backup/dev/
+          du -sh backup/stable backup/dev
+          # Light copy kept in git : manifest, notes and checksums (the binaries stay in the artifacts).
+          mkdir -p releases-archive
+          cp manifest.json SHA256SUMS releases-archive/
+          for d in backup/stable/* backup/dev/*; do
+            [ -f "$d/notes.md" ] && { mkdir -p "releases-archive/notes"; cp "$d/notes.md" "releases-archive/notes/$(basename "$d").md"; }
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-backup-stable
+          path: backup/stable
+          retention-days: 90
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-backup-dev
+          path: backup/dev
+          retention-days: 90
+          compression-level: 0
+      - name: Commit the archive
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add releases-archive
+          git commit -m "Archive of all releases (notes, manifest, checksums)" || exit 0
+          for i in 1 2 3 4; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
+
+  restructure:
+    if: inputs.mode == 'restructure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Safety checks
+        run: |
+          [ "${{ inputs.confirm }}" = "DELETE-ALL-RELEASES" ] || { echo "::error::confirm must be DELETE-ALL-RELEASES"; exit 1; }
+          [ -n "${{ inputs.backup_run_id }}" ] || { echo "::error::backup_run_id is required"; exit 1; }
+      - uses: actions/checkout@v4
+      - name: Fetch the backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ inputs.backup_run_id }}" --repo "$GITHUB_REPOSITORY" -n release-backup-stable -D bk/stable
+          gh run download "${{ inputs.backup_run_id }}" --repo "$GITHUB_REPOSITORY" -n release-backup-dev -D bk/dev
+          (cd bk/stable && grep -E ' (stable)/' SHA256SUMS | sha256sum -c --quiet)
+          (cd bk/dev && grep -E ' (dev)/' SHA256SUMS | sha256sum -c --quiet)
+          mkdir -p bk/all && cp -r bk/stable/stable bk/all/ && cp -r bk/dev/dev bk/all/ && cp bk/stable/manifest.json bk/all/
+          echo "Backup verified."
+      - name: Plan
+        run: |
+          keep='${{ inputs.keep }}'
+          jq --argjson keep "${keep:-15}" '
+            def core: (.tag | capture("^v(?<c>[0-9]+\\.[0-9]+\\.[0-9]+)-dev\\.(?<n>[0-9]+)$")? // null);
+            ( [ .[] | select(.draft | not) | select(.prerelease | not) ] ) as $stable
+            | ( [ .[] | select(.draft | not) | select(.prerelease) ] ) as $pre
+            | ( [ $pre[] | select(core != null) | . + {core: core.c, n: (core.n | tonumber)} ]
+                | group_by(.core) | map(sort_by(-.n) | .[:$keep][]) ) as $dev
+            | ( [ $pre[] | select(core == null) ] ) as $odd
+            | ($stable + $dev + $odd) | sort_by(.published_at // .created_at)' bk/all/manifest.json > plan.json
+          echo "Will republish $(jq length plan.json) releases ($(jq '[.[]|select(.prerelease|not)]|length' plan.json) stable):"
+          jq -r '.[] | "\(if .prerelease then "dev   " else "STABLE" end) \(.tag)"' plan.json
+          [ "$(jq '[.[]|select(.prerelease|not)]|length' plan.json)" -ge 1 ] || { echo "::error::no stable release in the plan"; exit 1; }
+      - name: Delete every release and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for tag in $(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq '.[].tagName'); do
+            echo "deleting $tag"
+            gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
+          done
+          echo "Left: $(gh release list --repo "$GITHUB_REPOSITORY" --limit 5 --json tagName --jq length)"
+      - name: Republish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          last_stable=$(jq -r '[.[]|select(.prerelease|not)] | last | .tag' plan.json)
+          for row in $(jq -r '.[] | @base64' plan.json); do
+            j() { echo "$row" | base64 -d | jq -r "$1"; }
+            tag=$(j .tag)
+            if [ "$(j .prerelease)" = "true" ]; then dir=bk/all/dev/$tag; flags="--prerelease --latest=false"
+            else dir=bk/all/stable/$tag; if [ "$tag" = "$last_stable" ]; then flags="--latest"; else flags="--latest=false"; fi; fi
+            files=$(find "$dir" -type f ! -name notes.md | sort)
+            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then echo "exists: $tag"; continue; fi
+            echo "creating $tag"
+            # shellcheck disable=SC2086
+            gh release create "$tag" $files --repo "$GITHUB_REPOSITORY" --target "$(j .sha)" \
+              --title "$(j .name)" --notes-file "$dir/notes.md" $flags
+            sleep 2
+          done
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq 'length'
+      - name: Verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for tag in $(jq -r '.[].tag' plan.json); do
+            n=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets|length')
+            want=$(jq -r --arg t "$tag" '.[]|select(.tag==$t)|.assets|length' plan.json)
+            [ "$n" = "$want" ] || { echo "::error::$tag has $n assets, expected $want"; exit 1; }
+          done
+          echo "All releases verified."
+
+  prune:
+    if: inputs.mode == 'prune'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/prune-devbuilds.sh "${{ inputs.keep }}"

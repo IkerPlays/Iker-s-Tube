@@ -1,6 +1,9 @@
 # Notes for Claude (repository workflow)
 
-- All work goes straight to `main`. Every push to `main` builds a unique devbuild release (`v<version>-dev.N`).
+- All work goes straight to `main`. Pushes do NOT build devbuilds any more: a devbuild (`v<version>-dev.N`) is created by hand
+  (Actions > Build 3DSX + CIA > Run workflow on main, or `actions_run_trigger` with workflow `build.yml`, ref `main`). Do it when
+  several commits have piled up (not once per commit), and always before finishing a work session. Each devbuild run prunes the
+  list: only the newest 15 devbuilds of each version line are kept (`.github/scripts/prune-devbuilds.sh`).
 - `RELEASE_NOTES.md` = notes of the CURRENT devbuild only (English, plain text, no emojis). Replace its content with what the push adds.
 - `STABLE_RELEASE_NOTES.md` = everything new since the LAST stable release. The base of the list is the commit that the latest stable
   tag (vX.Y.Z, not a -dev one) was built from: at the start of every session and before every push, check the latest stable release
