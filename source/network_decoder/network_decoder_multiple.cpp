@@ -177,7 +177,12 @@ void NetworkMultipleDecoder::check_filter_update() {
 	if (filter_update_request) {
 		filter_update_request = false;
 		decoder.deinit_filter();
-		decoder.init_filter();
+		auto filter_result = decoder.init_filter();
+		if (filter_result.code != 0) { // a half built filter graph must not stay: it is cleaned and built once more
+			logger.error("decoder", "init_filter() failed, trying again : " + filter_result.error_description);
+			decoder.deinit_filter();
+			decoder.init_filter();
+		}
 	}
 }
 

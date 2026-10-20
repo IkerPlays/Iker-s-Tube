@@ -1,1 +1,1 @@
-Reset the settings asks for a second tap within 4 seconds.
+A failed rebuild of the audio filter (speed change) is cleaned and tried once more.
