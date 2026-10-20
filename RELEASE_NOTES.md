@@ -1,1 +1,1 @@
-Fixes from audits: audio of 48 kHz or mono streams is converted and played with the same 44.1 kHz stereo format the filter produces (no more wrong speed or reads past the buffer); a channel page without data no longer reads a destroyed JSON object; small helper hardening.
+Fixes from an audit: drawing a text of 1024+ characters no longer writes past a buffer; the file picker handles folders with 256+ entries and empty folders; negative times print as 0:00.

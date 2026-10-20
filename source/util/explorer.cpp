@@ -7,12 +7,12 @@ bool expl_thread_run = false;
 bool expl_read_dir_request = false;
 bool expl_show_flag = false;
 int expl_num_of_file = 0;
-int expl_size[256];
+int expl_size[264];
 double expl_view_offset_y = 0.0;
 double expl_selected_file_num = 0.0;
 std::string expl_current_patch = "/";
-std::string expl_files[256];
-std::string expl_type[256];
+std::string expl_files[264];
+std::string expl_type[264];
 Thread expl_read_dir_thread;
 
 std::string Util_expl_query_current_patch(void) { return expl_current_patch; }
@@ -197,6 +197,7 @@ void Util_expl_main(Hid_info key) {
 		} else if (expl_selected_file_num >= expl_num_of_file) {
 			expl_selected_file_num = expl_num_of_file - 1;
 		}
+		if (expl_selected_file_num < 0) expl_selected_file_num = 0; // (an empty folder)
 		if (expl_view_offset_y <= -1) {
 			expl_view_offset_y = 0;
 		} else if (expl_view_offset_y + expl_selected_file_num >= expl_num_of_file) {

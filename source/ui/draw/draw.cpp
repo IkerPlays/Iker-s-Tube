@@ -261,7 +261,7 @@ void Draw(std::string text, float x, float y, float text_size_x, float text_size
 		c2d_buf = C2D_TextBufNew(4096);
 	}
 
-	int characters = Extfont_parse_utf8_str_to_u32(text.c_str(), draw_part_text, 1024);
+	int characters = Extfont_parse_utf8_str_to_u32(text.c_str(), draw_part_text, 1023); // (one place is kept for the end mark written after the loop)
 	Extfont_sort_rtl(draw_part_text, characters);
 
 	for (int i = 0; i < characters; i++) {

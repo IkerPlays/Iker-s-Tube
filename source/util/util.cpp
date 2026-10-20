@@ -42,6 +42,8 @@ std::string Util_convert_seconds_to_time(double input_seconds) {
 		input_seconds = 0;
 	}
 
+	if (!(input_seconds > 0)) input_seconds = 0; // (a negative time would print garbage)
+	if (input_seconds > 3e9) input_seconds = 3e9;
 	count = (long)input_seconds;
 	seconds = count % 60;
 	minutes = count / 60 % 60;
