@@ -5,6 +5,8 @@ name: Releases maintenance
 #                 workflow artifacts (90 days) and commits the notes + checksums to releases-archive/.
 #   restructure : needs the run id of a finished backup. Deletes ALL releases and tags, republishes every stable
 #                 release (same notes, same commit, same files) and only the newest N devbuilds of each version line.
+#   republish   : like restructure but deletes nothing: only creates the releases that are missing.
+#                 Creating tags on old commits needs a personal token with the workflows permission (secret RELEASES_PAT).
 #   prune       : only deletes devbuilds beyond the newest N of each version line.
 on:
   workflow_dispatch:
@@ -14,7 +16,7 @@ on:
         required: true
         default: backup
         type: choice
-        options: [backup, restructure, prune, diag]
+        options: [backup, restructure, republish, prune, diag]
       backup_run_id:
         description: "restructure only: run id of the finished backup run"
         required: false
@@ -122,13 +124,14 @@ jobs:
           for i in 1 2 3 4; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
 
   restructure:
-    if: inputs.mode == 'restructure'
+    if: inputs.mode == 'restructure' || inputs.mode == 'republish'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
       - name: Safety checks
         run: |
-          [ "${{ inputs.confirm }}" = "DELETE-ALL-RELEASES" ] || { echo "::error::confirm must be DELETE-ALL-RELEASES"; exit 1; }
+          [ "${{ inputs.mode }}" = "republish" ] || [ "${{ inputs.confirm }}" = "DELETE-ALL-RELEASES" ] || { echo "::error::confirm must be DELETE-ALL-RELEASES"; exit 1; }
+          [ -n "${{ secrets.RELEASES_PAT }}" ] || { echo "::error::Secret RELEASES_PAT is missing (token with contents + workflows write). Nothing was changed."; exit 1; }
           [ -n "${{ inputs.backup_run_id }}" ] || { echo "::error::backup_run_id is required"; exit 1; }
       - uses: actions/checkout@v4
       - name: Fetch the backup
@@ -156,6 +159,7 @@ jobs:
           jq -r '.[] | "\(if .prerelease then "dev   " else "STABLE" end) \(.tag)"' plan.json
           [ "$(jq '[.[]|select(.prerelease|not)]|length' plan.json)" -ge 1 ] || { echo "::error::no stable release in the plan"; exit 1; }
       - name: Delete every release and tag
+        if: inputs.mode == 'restructure'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -172,7 +176,7 @@ jobs:
           echo "Left: $(gh release list --repo "$GITHUB_REPOSITORY" --limit 5 --json tagName --jq length)"
       - name: Republish
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
         run: |
           set -e
           last_stable=$(jq -r '[.[]|select(.prerelease|not)] | last | .tag' plan.json)
@@ -192,7 +196,7 @@ jobs:
           gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq 'length'
       - name: Verify
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RELEASES_PAT }}
         run: |
           for tag in $(jq -r '.[].tag' plan.json); do
             n=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets|length')
