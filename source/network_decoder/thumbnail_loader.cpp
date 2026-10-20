@@ -543,20 +543,25 @@ void thumbnail_downloader_thread_func(void *arg) {
 					if (requested_urls.count(info.url)) { // do not decode the same picture again and again
 						requested_urls[info.url].is_loaded = false;
 						requested_urls[info.url].error = true;
-						requested_urls[info.url].waiting_retry = false;
+						requested_urls[info.url].waiting_retry = true; // (no memory now: it is asked again in a few seconds)
+						requested_urls[info.url].next_retry = time(NULL) + 5;
 					}
 					resource_lock.unlock();
 				} else {
 					result = Draw_set_texture_data(&result_image, decoded_data, w, h, texture_w, texture_h, format);
 					if (result.code != 0) {
 						logger.error("thumb-dl", "Draw_set_texture_data() failed");
+						Draw_c2d_image_free(result_image);
 					} else {
+						bool stored = false;
 						resource_lock.lock();
 						if (requested_urls.count(info.url)) { // in case the request is cancelled while downloading
 							requested_urls[info.url].is_loaded = true;
 							requested_urls[info.url].data = {w, h, texture_w, texture_h, result_image};
+							stored = true;
 						}
 						resource_lock.unlock();
+						if (!stored) Draw_c2d_image_free(result_image); // cancelled meanwhile: nobody will free the picture
 					}
 				}
 				free(decoded_data);

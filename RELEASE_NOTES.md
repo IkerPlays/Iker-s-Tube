@@ -1,1 +1,1 @@
-Fixes from an audit: the streams of a fallback client no longer mix with those of the first one; the signed-in client falls back to the plain Android client whenever it gives nothing to play.
+Fixes from an audit: pictures larger than 2048 px are not decoded; a thumbnail cancelled while loading no longer leaks its texture; a thumbnail that failed for lack of memory is tried again; freeing a texture no longer writes into freed memory.

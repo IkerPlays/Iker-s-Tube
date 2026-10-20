@@ -236,10 +236,7 @@ void Draw_c2d_image_free(Image_data c2d_image) {
 	linearFree_concurrent(c2d_image.c2d.tex->data);
 	linearFree_concurrent(c2d_image.c2d.tex);
 	linearFree_concurrent(c2d_image.subtex);
-	c2d_image.c2d.tex->data = NULL;
-	c2d_image.c2d.tex = NULL;
-	c2d_image.c2d.subtex = NULL;
-	c2d_image.subtex = NULL;
+	// (the Image_data is a copy: nothing to reset in it, and the texture was just freed)
 }
 
 static const float text_scale_table[3] = {0.9f, 1.0f, 1.1f};

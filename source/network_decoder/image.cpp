@@ -6,6 +6,14 @@
 // returns in BGR565 format, should be freed
 u8 *Image_decode(u8 *input, size_t input_len, int *width, int *height) {
 	int image_ch = 0;
+	{ // a picture that is too big is not decoded (the pixels, the 565 copy and the texture would use tens of MB, and the loader has little stack)
+		int info_w = 0, info_h = 0, info_ch = 0;
+		if (!stbi_info_from_memory(input, input_len, &info_w, &info_h, &info_ch) || info_w <= 0 || info_h <= 0 || info_w > 2048 || info_h > 2048 ||
+		    (long)info_w * info_h > 1500000L) {
+			logger.error("image-dec", "picture too big or not valid : " + std::to_string(info_w) + "x" + std::to_string(info_h));
+			return NULL;
+		}
+	}
 	u8 *rgb_image = stbi_load_from_memory(input, input_len, width, height, &image_ch, STBI_rgb);
 	if (!rgb_image) {
 		logger.error("image-dec", "stbi load failed : " + std::string(stbi_failure_reason()));
