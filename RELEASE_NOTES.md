@@ -1,1 +1,1 @@
-The login thread answers a tap on the login button at once and no longer delays closing the app.
+Changing the devbuild offer while an update installs no longer resets the updater.

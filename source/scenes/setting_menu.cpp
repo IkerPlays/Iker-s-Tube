@@ -2170,7 +2170,7 @@ void Sem_init(void) {
 						->set_on_change([](const SelectorView &view) {
 							if (var_show_devbuilds != view.selected_button) {
 								var_show_devbuilds = view.selected_button;
-								update_state = UpdateState::CHECKING_UPDATES; // check again with the new setting
+								if (update_state != UpdateState::INSTALLING) update_state = UpdateState::CHECKING_UPDATES; // check again with the new setting (not in the middle of an install)
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
