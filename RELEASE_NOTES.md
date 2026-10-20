@@ -1,1 +1,1 @@
-A single network answer larger than 32 MB is aborted (a server that ignores the Range of a download could fill the memory).
+Thumbnails are downloaded in groups of 16 at most, the most important first (less memory in long lists).

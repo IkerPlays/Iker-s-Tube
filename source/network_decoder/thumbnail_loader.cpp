@@ -418,6 +418,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 			}
 		}
 
+		if (download_list.size() > 16) download_list.resize(16); // the most important ones now (each connection holds a 100 KB buffer and TLS state); the rest in the next rounds
 		std::vector<NetworkResult> results(download_list.size());
 		std::vector<int> uncached_index_list;
 		std::vector<int> cached_index_list;
