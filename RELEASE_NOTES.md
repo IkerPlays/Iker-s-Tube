@@ -1,1 +1,1 @@
-Fixes from an audit: pictures larger than 2048 px are not decoded; a thumbnail cancelled while loading no longer leaks its texture; a thumbnail that failed for lack of memory is tried again; freeing a texture no longer writes into freed memory.
+A single network answer larger than 32 MB is aborted (a server that ignores the Range of a download could fill the memory).

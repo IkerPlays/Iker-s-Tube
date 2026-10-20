@@ -47,6 +47,7 @@ static std::string remove_leading_whitespaces(std::string str) {
 // libcurl callback functions
 static size_t curl_receive_data_callback_func(char *in_ptr, size_t, size_t len, void *user_data) {
 	std::vector<u8> *out = (std::vector<u8> *)user_data;
+	if (out->size() + len > 32u * 1024 * 1024) return 0; // no answer of this app is that big (a server that ignores a Range request would fill the RAM): the transfer is aborted
 	out->insert(out->end(), in_ptr, in_ptr + len);
 	var_data_session_bytes += len; // data usage counter (Settings > Advanced)
 
