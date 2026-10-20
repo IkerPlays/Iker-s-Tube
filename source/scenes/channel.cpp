@@ -1302,7 +1302,9 @@ void Channel_init(void) {
 		    }
 
 		    // sorting request
-		    if (video_sort_request != -1 && tab_view && tab_view->selected_tab == 0) {
+		    // a sort change waits for a running "more" task (it would put the old data back) and edits the lists under the lock
+		    resource_lock.lock();
+		    if (video_sort_request != -1 && tab_view && tab_view->selected_tab == 0 && !is_async_task_running(load_channel_more)) {
 			    std::string sort_token;
 			    if (video_sort_request == 0) {
 				    sort_token = channel_info.video_sort_token_newest;
@@ -1328,7 +1330,7 @@ void Channel_init(void) {
 			    video_sort_request = -1;
 		    }
 
-		    if (streams_sort_request != -1 && tab_view && tab_view->selected_tab == 1) {
+		    if (streams_sort_request != -1 && tab_view && tab_view->selected_tab == 1 && !is_async_task_running(load_channel_stream_more)) {
 			    std::string sort_token;
 			    if (streams_sort_request == 0) {
 				    sort_token = channel_info.streams_sort_token_newest;
@@ -1354,7 +1356,7 @@ void Channel_init(void) {
 			    streams_sort_request = -1;
 		    }
 
-		    if (shorts_sort_request != -1 && tab_view && tab_view->selected_tab == 2) {
+		    if (shorts_sort_request != -1 && tab_view && tab_view->selected_tab == 2 && !is_async_task_running(load_channel_shorts_more)) {
 			    std::string sort_token;
 			    if (shorts_sort_request == 0) {
 				    sort_token = channel_info.shorts_sort_token_newest;
@@ -1379,6 +1381,7 @@ void Channel_init(void) {
 
 			    shorts_sort_request = -1;
 		    }
+		    resource_lock.unlock();
 
 		    if (key.p_b) {
 			    global_intent.next_scene = SceneType::BACK;

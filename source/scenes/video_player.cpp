@@ -3180,6 +3180,10 @@ debug_info_view =
 		    small_resource_lock.unlock();
 		    return;
 	    }
+	    if (cur_playing_url != url) { // another video was chosen while the page was built: this one must not start (nor go to the back stack)
+		    small_resource_lock.unlock();
+		    return;
+	    }
 	    if (tmp_video_info.duration_ms > 60 * 60 * 1000 && tmp_video_info.audio_stream_url != "" &&
 	        tmp_video_info.video_stream_urls.size()) {
 		    tmp_video_info.both_stream_url =
@@ -5168,10 +5172,12 @@ static void autoplay_countdown_tick() {
 					    std::string remembered = caption_lang_remembered();
 					    for (size_t i = 0; remembered != "" && i < snap_caption_ids.size(); i++) {
 						    if (snap_caption_ids[i] == remembered) {
+							    small_resource_lock.lock(); // (load_caption and the language buttons read these under the lock)
 							    cc_video_id = snap_id;
 							    cc_index = i;
 							    cc_base = remembered;
 							    cc_trans = "";
+							    small_resource_lock.unlock();
 							    queue_async_task(load_caption, &cc_arg);
 							    break;
 						    }
