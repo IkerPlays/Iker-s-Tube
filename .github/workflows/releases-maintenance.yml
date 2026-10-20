@@ -135,11 +135,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download "${{ inputs.backup_run_id }}" --repo "$GITHUB_REPOSITORY" -n release-backup-stable -D bk/stable
-          gh run download "${{ inputs.backup_run_id }}" --repo "$GITHUB_REPOSITORY" -n release-backup-dev -D bk/dev
-          (cd bk/stable && grep -E ' (stable)/' SHA256SUMS | sha256sum -c --quiet)
-          (cd bk/dev && grep -E ' (dev)/' SHA256SUMS | sha256sum -c --quiet)
-          mkdir -p bk/all && cp -r bk/stable/stable bk/all/ && cp -r bk/dev/dev bk/all/ && cp bk/stable/manifest.json bk/all/
+          gh run download "${{ inputs.backup_run_id }}" --repo "$GITHUB_REPOSITORY" -n release-backup-stable -D bk/all/stable
+          gh run download "${{ inputs.backup_run_id }}" --repo "$GITHUB_REPOSITORY" -n release-backup-dev -D bk/all/dev
+          cd bk/all
+          cp stable/SHA256SUMS stable/manifest.json .
+          sha256sum -c --quiet SHA256SUMS
           echo "Backup verified."
       - name: Plan
         run: |
