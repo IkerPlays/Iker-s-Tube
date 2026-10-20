@@ -5068,6 +5068,12 @@ static void autoplay_countdown_tick() {
 			    rebuild_bookmarks_list();
 		    }
 
+		    // a snapshot of what the code below reads each frame: the loader replaces cur_video_info at any moment
+		    const std::string snap_id = cur_video_info.id;
+		    const bool snap_live = cur_video_info.is_livestream;
+		    const std::string snap_comments_token = cur_video_info.comments_account_token();
+		    std::vector<std::string> snap_caption_ids;
+		    for (auto &language : cur_video_info.caption_base_languages) snap_caption_ids.push_back(language.id);
 		    small_resource_lock.unlock();
 		    if (popup_took_input) {
 			    key = Hid_info(); // nothing is pressed for the code below
@@ -5088,8 +5094,8 @@ static void autoplay_countdown_tick() {
 			    }
 			    {
 				    static std::string chat_auto_for; // the chat opens by itself once per live stream (setting)
-				    if (var_auto_chat && cur_video_info.is_livestream && cur_video_info.id != "" && chat_auto_for != cur_video_info.id) {
-					    chat_auto_for = cur_video_info.id;
+				    if (var_auto_chat && snap_live && snap_id != "" && chat_auto_for != snap_id) {
+					    chat_auto_for = snap_id;
 					    chat_request = true;
 				    }
 			    }
@@ -5148,12 +5154,12 @@ static void autoplay_countdown_tick() {
 			    }
 			    {
 				    static std::string cc_auto_for; // the subtitles of the remembered language open by themselves (setting)
-				    if (var_auto_captions && cur_video_info.id != "" && cc_auto_for != cur_video_info.id && cur_video_info.caption_base_languages.size()) {
-					    cc_auto_for = cur_video_info.id; // (once the list of subtitle tracks is there)
+				    if (var_auto_captions && snap_id != "" && cc_auto_for != snap_id && snap_caption_ids.size()) {
+					    cc_auto_for = snap_id; // (once the list of subtitle tracks is there)
 					    std::string remembered = caption_lang_remembered();
-					    for (size_t i = 0; remembered != "" && i < cur_video_info.caption_base_languages.size(); i++) {
-						    if (cur_video_info.caption_base_languages[i].id == remembered) {
-							    cc_video_id = cur_video_info.id;
+					    for (size_t i = 0; remembered != "" && i < snap_caption_ids.size(); i++) {
+						    if (snap_caption_ids[i] == remembered) {
+							    cc_video_id = snap_id;
 							    cc_index = i;
 							    cc_base = remembered;
 							    cc_trans = "";
@@ -5165,10 +5171,10 @@ static void autoplay_countdown_tick() {
 			    }
 			    if (chat_request) {
 				    chat_request = false;
-				    live_chat_open(cur_video_info.id);
+				    live_chat_open(snap_id);
 				    show_live_chat();
 			    } else if (live_chat_is_open()) {
-				    if (!account_pl_popup_view->is_visible || live_chat_video() != cur_video_info.id) live_chat_close(); // the screen was left with B, or another video was opened
+				    if (!account_pl_popup_view->is_visible || live_chat_video() != snap_id) live_chat_close(); // the screen was left with B, or another video was opened
 				    else if (live_chat_version() != chat_shown_version && account_pl_popup_view->subview == chat_popup_subview) show_live_chat();
 			    }
 			    std::vector<YouTubeChannelSuccinct> collab_list;
@@ -5230,8 +5236,8 @@ static void autoplay_countdown_tick() {
 				    out = buffer;
 				    return out != "";
 			    };
-			    std::string comments_token = cur_video_info.comments_account_token();
-			    youtube_account_set_video(cur_video_info.id); // the account requests may need the video itself
+			    std::string comments_token = snap_comments_token;
+			    youtube_account_set_video(snap_id); // the account requests may need the video itself
 			    if (comment_write_request) {
 				    comment_write_request = false;
 				    std::string text;
@@ -5252,7 +5258,7 @@ static void autoplay_countdown_tick() {
 				    chat_write_request = false;
 				    std::string text;
 				    if (account_ready() && ask_comment_text(tr("Write in the chat", "Escribe en el chat"), text)) {
-					    account_live_chat_async(cur_video_info.id, text);
+					    account_live_chat_async(snap_id, text);
 				    }
 			    }
 			    if (comment_menu_request != "") {
@@ -5260,9 +5266,12 @@ static void autoplay_countdown_tick() {
 				    comment_menu_request = "";
 				    comment_dialog->get_message_view()->set_text_lines(std::vector<std::string>{tr("Comment", "Comentario")})->update_y_range(0, 30);
 				    bool own_comment = false; // a comment of the signed-in account : Delete takes the place of Translate
+				    const std::string own_channel_id = OAuth::is_authenticated() ? OAuth::get_user_channel_id() : std::string();
+				    small_resource_lock.lock(); // (the comments are replaced by the loader)
 				    for (auto &c : cur_video_info.comments) {
-					    if (c.id == comment_target_id && OAuth::is_authenticated() && c.author.id != "" && c.author.id == OAuth::get_user_channel_id()) own_comment = true;
+					    if (c.id == comment_target_id && own_channel_id != "" && c.author.id == own_channel_id) own_comment = true;
 				    }
+				    small_resource_lock.unlock();
 				    comment_dialog->set_buttons<std::function<std::string()>>(
 				        {[]() { return tr("Like", "Me gusta"); }, []() { return tr("Reply", "Responder"); },
 				         own_comment ? (std::function<std::string()>)[]() { return tr("Delete", "Borrar"); } : (std::function<std::string()>)[]() { return tr("Translate", "Traducir"); },
