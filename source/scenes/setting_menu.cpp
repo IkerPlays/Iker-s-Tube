@@ -92,6 +92,7 @@ namespace Settings {
 	
 	// OAuth state
 	bool oauth_check_timer_active = false;
+	volatile int oauth_action_request = 0; // asked by the login button, done by the oauth thread (network calls must not run inside the view update): 1 sign out, 2 renew, 3 start a sign-in, 4 cancel a sign-in
 	int oauth_check_frames = 0;
 	int oauth_timeout_counter = 0;
 	const int OAUTH_CHECK_INTERVAL_FRAMES = 300;
@@ -453,6 +454,61 @@ static void oauth_worker_thread_func(void *) {
 	oauth_timeout_counter = 0;
 	
 	while (!exiting) {
+		if (oauth_action_request) {
+			int action = oauth_action_request;
+			oauth_action_request = 0;
+			if (action == 1) {
+				OAuth::revoke_tokens();
+				var_oauth_enabled = false;
+				misc_tasks_request(TASK_SAVE_SETTINGS);
+				resource_lock.lock();
+				if (oauth_user_view) {
+					oauth_user_view->set_name("");
+					oauth_user_view->set_auxiliary_lines({});
+					oauth_user_view->set_thumbnail_url("");
+					oauth_user_view->thumbnail_handle = -1;
+					oauth_user_view->set_height(0);
+				}
+				resource_lock.unlock();
+			} else if (action == 2) {
+				OAuth::refresh_access_token(); // with a saved login this renews it
+				if (OAuth::oauth_state == OAuth::OAuthState::ERROR) {
+					OAuth::oauth_state = OAuth::OAuthState::NOT_AUTHENTICATED; // no way back: the next tap starts a new sign-in
+				}
+			} else if (action == 3) {
+				OAuth::start_device_flow();
+				if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATING) {
+					auto cancel_auth = [] () {
+						oauth_check_timer_active = false;
+						oauth_timeout_counter = 0;
+						oauth_action_request = 4; // (the thread revokes: no network call inside the popup update)
+					};
+					std::string message = LOCALIZED(OAUTH_LOGIN_INSTRUCTION) + "\n\n" +
+						std::regex_replace(LOCALIZED(OAUTH_USER_CODE), std::regex("%0"), OAuth::user_code) + "\n" +
+						LOCALIZED(OAUTH_VERIFICATION_URL) + "\n\n" + LOCALIZED(OAUTH_WAITING);
+					resource_lock.lock();
+					popup_view->get_message_view()->set_text_lines(split_string(message, '\n'))->update_y_range(0, 120);
+					popup_view->set_buttons<std::function<std::string ()> >({
+						[] () { return LOCALIZED(CANCEL); }
+					}, [cancel_auth] (OverlayDialogView &, int) {
+						cancel_auth();
+						return true;
+					});
+					popup_view->set_on_cancel([cancel_auth](OverlayView &view) {
+						cancel_auth();
+						view.set_is_visible(false);
+						var_need_refresh = true;
+					});
+					popup_view->set_is_visible(true);
+					resource_lock.unlock();
+					oauth_check_timer_active = true;
+					oauth_timeout_counter = oauth_check_frames = 0;
+				}
+			} else if (action == 4) {
+				OAuth::revoke_tokens();
+			}
+			var_need_refresh = true;
+		}
 		if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATING && oauth_check_timer_active) {
 			int poll_interval = std::max(OAuth::interval, 8);
 			oauth_timeout_counter += poll_interval;
@@ -2238,53 +2294,10 @@ void Sem_init(void) {
 							return 0xFF000000 | blue << 16 | other << 8 | other;
 						})
 						->set_on_view_released([] (View &) {
-							if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATED) {
-								OAuth::revoke_tokens();
-								var_oauth_enabled = false;
-								misc_tasks_request(TASK_SAVE_SETTINGS);
-
-								if (oauth_user_view) {
-									oauth_user_view->set_name("");
-									oauth_user_view->set_auxiliary_lines({});
-									oauth_user_view->set_thumbnail_url("");
-									oauth_user_view->thumbnail_handle = -1;
-									oauth_user_view->set_height(0);
-								}
-							} else if (OAuth::oauth_state == OAuth::OAuthState::ERROR) {
-								OAuth::refresh_access_token(); // with a saved login this renews it
-								if (OAuth::oauth_state == OAuth::OAuthState::ERROR) {
-									OAuth::oauth_state = OAuth::OAuthState::NOT_AUTHENTICATED; // no way back: the next tap starts a new sign-in
-								}
-							} else if (OAuth::oauth_state == OAuth::OAuthState::NOT_AUTHENTICATED) {
-								OAuth::start_device_flow();
-								if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATING) {
-									auto cancel_auth = [] () {
-										oauth_check_timer_active = false;
-										oauth_timeout_counter = 0;
-										OAuth::revoke_tokens();
-									};
-									
-									std::string message = LOCALIZED(OAUTH_LOGIN_INSTRUCTION) + "\n\n" +
-										std::regex_replace(LOCALIZED(OAUTH_USER_CODE), std::regex("%0"), OAuth::user_code) + "\n" +
-										LOCALIZED(OAUTH_VERIFICATION_URL) + "\n\n" + LOCALIZED(OAUTH_WAITING);
-									
-									popup_view->get_message_view()->set_text_lines(split_string(message, '\n'))->update_y_range(0, 120);
-									popup_view->set_buttons<std::function<std::string ()> >({
-										[] () { return LOCALIZED(CANCEL); }
-									}, [cancel_auth] (OverlayDialogView &, int) {
-										cancel_auth();
-										return true;
-									});
-									popup_view->set_on_cancel([cancel_auth](OverlayView &view) {
-										cancel_auth();
-										view.set_is_visible(false);
-										var_need_refresh = true;
-									});
-									popup_view->set_is_visible(true);
-									oauth_check_timer_active = true;
-									oauth_timeout_counter = oauth_check_frames = 0;
-								}
-							}
+							// the network calls are done by the oauth thread (this runs inside the view update with the lock held)
+							if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATED) oauth_action_request = 1;
+							else if (OAuth::oauth_state == OAuth::OAuthState::ERROR) oauth_action_request = 2;
+							else if (OAuth::oauth_state == OAuth::OAuthState::NOT_AUTHENTICATED) oauth_action_request = 3;
 							var_need_refresh = true;
 						}),
 					(new EmptyView(0, 0, 320, 10)),
