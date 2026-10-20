@@ -1195,8 +1195,12 @@ static void load_oauth_subscription_feed(void *) {
 		return;
 	}
 
-	oauth_feed_videos_list_view->recursive_delete_subviews();
-	oauth_feed_videos_list_view->set_views(new_oauth_feed_video_views);
+	if (new_oauth_feed_video_views.empty() && oauth_feed_error != "" && !oauth_feed_videos_list_view->views.empty()) {
+		// the refresh failed: what is on screen stays (only the error row says so)
+	} else {
+		oauth_feed_videos_list_view->recursive_delete_subviews();
+		oauth_feed_videos_list_view->set_views(new_oauth_feed_video_views);
+	}
 	update_oauth_feed_bottom_view(false);
 
 	if (oauth_feed_videos_view && !var_disable_pull_to_refresh) {

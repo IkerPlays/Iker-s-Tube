@@ -684,8 +684,8 @@ void Channel_init(void) {
 		    stream_list_view->set_views({});
 		    stream_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    stream_load_more_view->set_is_visible(true);
-		    stream_load_more_view->set_text((std::function<std::string()>)[]() {
-			    return channel_info.error != "" ? channel_info.error : loading_text();
+		    stream_load_more_view->set_text((std::function<std::string()>)[]() { // (a channel reopened from the cache whose streams were already loaded: they are just empty)
+			    return channel_info.error != "" ? channel_info.error : channel_info.streams_loaded ? LOCALIZED(EMPTY) : loading_text();
 		    });
 	    }
 
@@ -725,8 +725,8 @@ void Channel_init(void) {
 		    shorts_list_view->set_views({});
 		    shorts_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    shorts_load_more_view->set_is_visible(true);
-		    shorts_load_more_view->set_text((std::function<std::string()>)[]() {
-			    return channel_info.error != "" ? channel_info.error : loading_text();
+		    shorts_load_more_view->set_text((std::function<std::string()>)[]() { // (a channel reopened from the cache whose shorts were already loaded: they are just empty)
+			    return channel_info.error != "" ? channel_info.error : channel_info.shorts_loaded ? LOCALIZED(EMPTY) : loading_text();
 		    });
 	    }
 

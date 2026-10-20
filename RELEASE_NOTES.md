@@ -1,1 +1,1 @@
-Fix: when the video changes by D-pad or autoplay while the page of the previous one was still loading, the page no longer stays on Loading.
+Fixes from an audit: the Streams and Shorts tabs of a channel reopened from the cache say Empty instead of Loading for ever; a failed refresh of the account feed keeps the list that was on screen.
