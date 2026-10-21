@@ -190,3 +190,15 @@ progress::-moz-progress-bar{background:var(--ok);border-radius:99px}
   :focus-visible{outline:3px solid Highlight}
   .js .reveal{opacity:1;transform:none}
 }
+
+@media (max-width:560px){
+  .tablist{flex-direction:column;gap:.3rem;border-bottom:0;margin-bottom:.4rem}
+  .tablist [role=tab]{border:1px solid var(--line);border-radius:10px;margin:0;text-align:left;background:var(--card)}
+  .tablist [role=tab][aria-selected=true]{border-color:var(--accent)}
+  .tabpanel{border-top:1px solid var(--line);border-radius:12px}
+  .stats{grid-template-columns:repeat(3,1fr);gap:.5rem}
+  .stat{padding:.5rem .6rem}.stat strong{font-size:1.15rem}
+  .toolbar .tools{justify-content:flex-start}
+  input[type=search]{max-width:none}
+}
+[hidden]{display:none!important}
