@@ -1,1 +1,1 @@
-On bright accent colors (Amber, Forest, Ocean and bright custom hues) the text and icons on accent shapes turn dark so they stay readable.
+Buttons side by side have a thin gap, full width buttons are cards, and the search box is a pill.

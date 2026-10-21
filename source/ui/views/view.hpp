@@ -85,20 +85,23 @@ struct View {
 	virtual float get_height() const = 0;
 	virtual void draw_background() const {
 		u32 color = get_background_color ? get_background_color(*this) : background_color;
-		if (color >> 24) {
-			float radius = corner_radius, inset = 0;
-			if (radius <= 0 && var_round_buttons && on_view_released && get_background_color) { // a tappable button or row : rounded, a full width one is a card a few pixels in from the sides
-			float w = get_width(), h = get_height();
-			if (h >= 16 && h <= 60 && w >= 40) {
-				if (w >= 300) radius = UI_RADIUS_CARD, inset = 3;
-				else if (w <= 280) radius = UI_RADIUS_BUTTON;
+		if (!(color >> 24)) return;
+		float radius = corner_radius, inset = 0, w = get_width(), h = get_height();
+		if (var_round_buttons && on_view_released && get_background_color && h >= 16 && h <= 60 && w >= 40) {
+			// a tappable button or row is rounded : a full width one is a card a few pixels in from the sides, a button gets a thin gap around it
+			if (w >= 300) {
+				if (radius <= 0) radius = UI_RADIUS_CARD;
+				inset = 3;
+			} else if (w <= 280 && h <= 40) {
+				if (radius <= 0) radius = UI_RADIUS_BUTTON;
+				inset = 1;
 			}
-			}
-			if (radius > 0) {
-			Draw_round_rect((int)(x0 + inset), (int)y0, (int)(get_width() - 2 * inset), (int)get_height(), radius, color);
-			} else {
-				Draw_texture(var_square_image[0], color, (int)x0, (int)y0, (int)get_width(), (int)get_height());
-			}
+		}
+		if (radius > 0) {
+			float dy = inset == 1 ? 1 : 0;
+			Draw_round_rect((int)(x0 + inset), (int)(y0 + dy), (int)(w - 2 * inset), (int)(h - 2 * dy), radius, color);
+		} else {
+			Draw_texture(var_square_image[0], color, (int)x0, (int)y0, (int)w, (int)h);
 		}
 	}
 	void draw() const {

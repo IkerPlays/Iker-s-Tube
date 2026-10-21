@@ -612,7 +612,8 @@ void Search_init(void) {
 	                                SEARCH_ROW_HEIGHT - SEARCH_BOX_MARGIN * 2 - 1));
 	search_box_view->set_text_offset(0, -1);
 	search_box_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(SEARCH_HINT); });
-	search_box_view->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; });
+	search_box_view->set_get_background_color([](const View &) { return (u32)LIGHT0_BACK_COLOR; });
+		search_box_view->set_corner_radius(12); // a pill
 	search_box_view->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; });
 	search_box_view->set_on_view_released([](View &) {
 		if (Search_show_search_keyboard()) {
