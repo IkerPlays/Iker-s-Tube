@@ -113,6 +113,7 @@ bool watch_later_toggle(const FavoriteVideo &video) {
 	}
 	if (added) {
 		watch_later_list.insert(watch_later_list.begin(), video); // newest first
+		if (watch_later_list.size() > 1000) watch_later_list.resize(1000); // (a cap keeps the saves quick; the oldest ones go)
 	}
 	save_locked();
 	watch_later_lock.unlock();

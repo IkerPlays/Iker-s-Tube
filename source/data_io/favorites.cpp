@@ -102,6 +102,7 @@ bool favorites_toggle(const FavoriteVideo &video) {
 	}
 	if (added) {
 		favorites.insert(favorites.begin(), video); // newest first
+		if (favorites.size() > 1000) favorites.resize(1000); // (the whole list is rewritten at every save : a cap keeps that quick; the oldest ones go)
 	}
 	save_locked();
 	favorites_lock.unlock();

@@ -74,6 +74,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Robustness.** Plain-language network errors, longer notices, one retry for cut requests, thumbnail retries back off, safer saving of pinned/recent/hidden channels, a calmer log, touch fixes in the bottom bar, selectors and the error dialog, high contrast in the bottom bar.
 - **More polish.** Rewind after a pause (setting), automatic pause with a nearly empty battery, Go live tool, bookmark marks on the bar, queue size, playlist tools, the full video menu from list long presses, a button to restore the settings set aside by safe mode, and even scroll inertia in both directions.
 - **Quieter in the background.** The thumbnail loader wakes up less when idle, the report has the size of the lists and the user guide covers the new features.
+- **Lists stay quick.** Favorites and Watch later keep at most 1000 videos.
 
 ## Installing
 
