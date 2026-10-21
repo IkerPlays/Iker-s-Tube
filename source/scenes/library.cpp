@@ -140,6 +140,7 @@ static FavoriteVideo video_from_url(const std::string &url, const std::string &t
 
 // sort and filter of the favorites / watch later lists (the filter matches title, channel or tag)
 static int list_sort = 0; // 0 newest first, 1 title A-Z, 2 channel
+static int offline_sort = 0; // (downloads) 0 newest first, 1 title A-Z, 2 biggest first, 3 by channel
 static std::string list_filter;
 
 static std::string lower_copy(std::string s) {
@@ -187,13 +188,15 @@ static TextView *make_button(const std::string &text, int width, std::function<v
 }
 
 // first row of the favorites / watch later lists : sort mode and text filter
-static void add_sort_filter_row(VerticalListView *list) {
+static void add_sort_filter_row(VerticalListView *list, size_t shown, size_t total) {
 	static const char *sort_en[] = {"Newest", "Title A-Z", "Channel"};
 	static const char *sort_es[] = {"Recientes", "Título A-Z", "Canal"};
 	list->views.push_back((new HorizontalListView(0, 0, 22))
 	                          ->set_views({make_button(tr("Sort: ", "Orden: ") + tr(sort_en[list_sort], sort_es[list_sort]), 160,
 	                                                   []() {
 		                                                   list_sort = (list_sort + 1) % 3;
+		                                                   var_library_sort = list_sort + 3 * offline_sort;
+		                                                   misc_tasks_request(TASK_SAVE_SETTINGS);
 		                                                   rebuild_request = true;
 	                                                   }),
 	                                       make_button(list_filter == "" ? tr("Filter: all", "Filtro: todo") : tr("Filter: ", "Filtro: ") + list_filter, 160,
@@ -211,9 +214,14 @@ static void add_sort_filter_row(VerticalListView *list) {
 			                                                   }
 		                                                   };
 	                                                   })}));
-}
+	                                                   list->views.push_back((new TextView(0, 0, 320, 16)) // how many videos the list has (and how many the filter shows)
+	                                                                             ->set_text(std::to_string(shown) + (shown != total ? "/" + std::to_string(total) : std::string()) + tr(" videos", " vídeos"))
+	                                                                             ->set_font_size(0.42, DEFAULT_FONT_INTERVAL)
+	                                                                             ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
+	                                                                             ->set_text_offset(SMALL_MARGIN, 0));
+	                                                   }
 
-// plays a playlist : the first video now, the others through the queue
+	                                                   // plays a playlist : the first video now, the others through the queue
 static void start_playlist(const UserPlaylist &playlist, bool shuffle) {
 	std::vector<std::pair<std::string, std::string>> items;
 	for (auto &v : playlist.videos) {
@@ -294,7 +302,9 @@ static void add_list_actions(VerticalListView *list, const std::vector<FavoriteV
 void Library_init(void) {
 	logger.info("library/init", "Initializing...");
 	srand((unsigned)osGetTime());
-	mode = var_library_tab >= 0 && var_library_tab <= 3 ? var_library_tab : 0; // the tab you used last (Queue, Favorites, Playlists, Later)
+	mode = var_library_tab >= 0 && var_library_tab <= 4 ? var_library_tab : 0; // the tab you used last (Queue ... Offline; Liked would start a network load)
+	list_sort = var_library_sort % 3; // the sort modes you used last
+	offline_sort = (var_library_sort / 3) % 4;
 	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
 	on_long_tap_dialog->set_is_visible(false);
 	favorites_load();
@@ -375,9 +385,12 @@ static void build_queue(VerticalListView *list) {
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	} else {
 		list->views.insert(list->views.begin(), make_button(tr("Clear queue", "Vaciar cola"), 320, []() {
-			                   play_queue_clear();
-			                   rebuild_request = true;
-		                   }));
+		show_dialog({make_option(tr("Yes, clear the queue", "Sí, vaciar la cola"), []() {
+			             play_queue_clear();
+			             rebuild_request = true;
+		             }),
+		             make_option(LOCALIZED(CANCEL), []() {})});
+		}));
 		if (n > 1) {
 			list->views.insert(list->views.begin(), make_button(tr("Remove duplicates", "Quitar repetidos"), 320, []() {
 				                   std::vector<std::string> seen;
@@ -423,10 +436,12 @@ static void build_queue(VerticalListView *list) {
 			                   };
 		                   }));
 		list->views.insert(list->views.begin(), make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
+			                   int removed = 0;
 			                   for (int i = play_queue_size() - 1; i >= 0; i--) {
-				                   std::string url, title;
-				                   if (play_queue_get(i, url, title) && history_has_id(youtube_get_video_id_by_url(url))) play_queue_remove_at(i);
+			                   std::string url, title;
+			                   if (play_queue_get(i, url, title) && history_has_id(youtube_get_video_id_by_url(url))) { play_queue_remove_at(i); removed++; }
 			                   }
+			                   notice_show(removed ? tr("Removed: ", "Quitados: ") + std::to_string(removed) : tr("Nothing watched yet", "Nada visto aún"));
 			                   rebuild_request = true;
 		                   }));
 		list->views.insert(list->views.begin(), (new HorizontalListView(0, 0, 22))
@@ -468,13 +483,15 @@ static void build_queue(VerticalListView *list) {
 
 static void build_favorites(VerticalListView *list) {
 	auto favs = filter_and_sort(favorites_get());
-	add_sort_filter_row(list);
+	add_sort_filter_row(list, favs.size(), favorites_get().size());
 	add_list_actions(list, favs, "Favorites");
 	if (favs.size()) {
 		list->views.push_back(make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
+			int removed = 0;
 			for (auto &v : favorites_get()) {
-				if (history_has_id(v.id)) favorites_remove(v.id);
+			if (history_has_id(v.id)) { favorites_remove(v.id); removed++; }
 			}
+			notice_show(removed ? tr("Removed: ", "Quitados: ") + std::to_string(removed) : tr("Nothing watched yet", "Nada visto aún"));
 			rebuild_request = true;
 		}));
 		list->views.push_back(make_button(tr("Clear all favorites", "Vaciar favoritos"), 320, []() {
@@ -651,7 +668,7 @@ static void build_liked(VerticalListView *list) {
 			}));
 		}
 	}
-	add_sort_filter_row(list);
+	add_sort_filter_row(list, videos.size(), videos.size());
 	add_list_actions(list, videos);
 	for (auto &v : videos) {
 		SuccinctVideoView *view = make_item(v.id, v.title, v.author, v.length_text);
@@ -693,13 +710,15 @@ static void build_watch_later(VerticalListView *list) {
 		queue_async_task(pull_watch_later_task, NULL);
 	}
 	auto favs = filter_and_sort(watch_later_get());
-	add_sort_filter_row(list);
+	add_sort_filter_row(list, favs.size(), watch_later_get().size());
 	add_list_actions(list, favs);
 	if (favs.size()) {
 		list->views.push_back(make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
+			int removed = 0;
 			for (auto &v : watch_later_get()) {
-				if (history_has_id(v.id)) watch_later_remove(v.id);
+			if (history_has_id(v.id)) { watch_later_remove(v.id); removed++; }
 			}
+			notice_show(removed ? tr("Removed: ", "Quitados: ") + std::to_string(removed) : tr("Nothing watched yet", "Nada visto aún"));
 			rebuild_request = true;
 		}));
 		list->views.push_back(make_button(tr("Clear Watch later", "Vaciar Ver más tarde"), 320, []() {
@@ -747,7 +766,7 @@ static std::string size_text(u64 bytes) {
 }
 
 static std::string offline_filter; // only the saved items whose title or author has this text
-static int offline_sort = 0; // 0 newest first, 1 title A-Z, 2 biggest first
+
 
 static void play_offline(bool shuffle) {
 	std::vector<std::pair<std::string, std::string>> items;
@@ -810,6 +829,8 @@ static void build_offline(VerticalListView *list) {
 		                                                      : tr("Sort: by channel", "Orden: por canal"),
 		                                  320, []() {
 			                                  offline_sort = (offline_sort + 1) % 4;
+			                                  var_library_sort = list_sort + 3 * offline_sort;
+			                                  misc_tasks_request(TASK_SAVE_SETTINGS);
 			                                  rebuild_request = true;
 		                                  }));
 	}
@@ -821,15 +842,26 @@ static void build_offline(VerticalListView *list) {
 	}
 	if (items.size() > 0) { // free room : the saved videos that are already in the watch history
 		list->views.push_back(make_button(tr("Delete the ones already watched", "Borrar las ya vistas"), 320, []() {
-			int removed = 0;
-			for (auto &item : offline_list()) {
-				if (history_has_id(item.id)) {
-					offline_remove(item.id);
-					removed++;
-				}
-			}
-			notice_show(tr("Deleted: ", "Borradas: ") + std::to_string(removed));
-			rebuild_request = true;
+		int watched = 0;
+		for (auto &item : offline_list()) {
+		if (history_has_id(item.id)) watched++;
+		}
+		if (watched == 0) {
+		notice_show(tr("Nothing watched yet", "Nada visto aún"));
+		return;
+		}
+		show_dialog({make_option(tr("Yes, delete ", "Sí, borrar ") + std::to_string(watched), []() {
+			             int removed = 0;
+			             for (auto &item : offline_list()) {
+				             if (history_has_id(item.id)) {
+					             offline_remove(item.id);
+					             removed++;
+				             }
+			             }
+			             notice_show(tr("Deleted: ", "Borradas: ") + std::to_string(removed));
+			             rebuild_request = true;
+		             }),
+		             make_option(LOCALIZED(CANCEL), []() {})});
 		}));
 	}
 	if (items.size() > 0) { // delete everything (asks first)
@@ -893,12 +925,18 @@ static void build_offline(VerticalListView *list) {
 	}
 	for (auto &item : items) {
 		SuccinctVideoView *view = make_item(item.id, item.title, item.author, item.quality > 0 ? std::to_string(item.quality) + "p" : tr("audio", "audio"));
-		std::string id = item.id, url = "offline:" + item.id, title = item.title;
+		std::string id = item.id, url = "offline:" + item.id, title = item.title, author = item.author;
 		view->set_get_background_color(button_background)
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
-		    ->add_on_long_hold(35, [id, url, title](View &) {
-			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
-			                 make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
+		    ->add_on_long_hold(35, [id, url, title, author](View &) {
+		    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
+		    make_option(tr("Add to queue", "Añadir a la cola"), [url, title]() { play_queue_toggle(url, title); }),
+		    make_option(tr("More from this channel", "Más de este canal"), [author]() {
+		    	if (author == "") return;
+		    	global_intent.next_scene = SceneType::SEARCH;
+		    	global_intent.arg = "q:" + author;
+		    }),
+		    make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
 			                 make_option(tr("Delete from the SD card", "Borrar de la SD"), [id]() { offline_remove(id); rebuild_request = true; })});
 		    });
 		list->views.push_back(view);
@@ -1151,8 +1189,15 @@ void Library_draw(void) {
 			rebuild_request = false;
 			rebuild_views();
 		}
+		if ((key.p_l || key.p_r) && !on_long_tap_dialog->is_visible) { // L / R : the next / previous tab (like Home and Channel)
+		mode = (mode + (key.p_r ? 1 : 5)) % 6;
+		var_library_tab = mode;
+		misc_tasks_request(TASK_SAVE_SETTINGS);
+		open_playlist = -1;
+		rebuild_views();
+		}
 		if (key.p_b) {
-			if (mode == 2 && open_playlist >= 0) {
+		if (mode == 2 && open_playlist >= 0) {
 				open_playlist = -1; // back to the list of playlists
 				rebuild_views();
 			} else {

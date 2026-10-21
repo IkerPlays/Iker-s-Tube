@@ -150,8 +150,9 @@ void Channel_init(void) {
     video_load_more_view
         ->set_text((std::function<std::string()>)[]() {
 	        return channel_info.error != ""         ? channel_info.error
-	               : channel_info.has_more_videos() ? loading_text()
-	                                                : "";
+	        : channel_info.has_more_videos() ? loading_text()
+	        : channel_info.videos.empty()    ? LOCALIZED(EMPTY)
+	                                         : std::string();
         })
         ->set_x_alignment(TextView::XAlign::CENTER)
         ->set_on_drawn([](const View &) {
@@ -620,7 +621,16 @@ void Channel_init(void) {
 	        ->set_on_subscribe_button_released([](const ChannelView &view) {
 		        bool cur_subscribed = subscription_is_subscribed(channel_info.id);
 		        if (cur_subscribed) {
-			        subscription_unsubscribe(channel_info.id);
+		        static std::string armed_id; // the first tap only asks : the second one (same channel, within 5 seconds) unsubscribes
+		        static u64 armed_at = 0;
+		        if (armed_id != channel_info.id || osGetTime() - armed_at > 5000) {
+		        	armed_id = channel_info.id;
+		        	armed_at = osGetTime();
+		        	notice_show(tr("Tap again to unsubscribe", "Toca otra vez para anular la suscripción"));
+		        	return;
+		        }
+		        armed_id = "";
+		        subscription_unsubscribe(channel_info.id);
 		        } else {
 			        SubscriptionChannel new_channel;
 			        new_channel.id = channel_info.id;
@@ -630,6 +640,7 @@ void Channel_init(void) {
 			        new_channel.subscriber_count_str = channel_info.subscriber_count_str;
 			        subscription_subscribe(new_channel);
 		        }
+		        notice_show(cur_subscribed ? tr("Unsubscribed", "Suscripción anulada") : tr("Subscribed", "Suscrito"));
 		        if (OAuth::is_authenticated()) account_subscribe_async(channel_info.id, !cur_subscribed); // also on your YouTube account
 		        misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 		        Home_update_local_channels();
@@ -640,8 +651,8 @@ void Channel_init(void) {
 	    // video list
 	    video_list_view->recursive_delete_subviews();
 	    video_list_view->set_views(video_views);
-	    if (result.error != "" || result.has_more_videos()) {
-		    video_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
+	    if (result.error != "" || result.has_more_videos() || result.videos.empty()) {
+	    video_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    video_load_more_view->set_is_visible(true);
 	    } else {
 		    video_load_more_view->update_y_range(0, 0);

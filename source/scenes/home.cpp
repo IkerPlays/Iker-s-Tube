@@ -639,13 +639,21 @@ static void update_home_bottom_view(bool force_show_loading) {
 	if (home_info.has_more_results() || force_show_loading) {
 		home_videos_bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 		                              ->set_text([]() {
-			                              if (home_info.error != "") {
-				                              return home_info.error;
-			                              } else {
-				                              return loading_text();
-			                              }
+		                              if (home_info.error != "") {
+		                              return tr("Tap to try again: ", "Toca para reintentar: ") + truncate_first_line(home_info.error, 170, 0.5);
+		                              } else {
+		                              return loading_text();
+		                              }
 		                              })
 		                              ->set_x_alignment(TextView::XAlign::CENTER)
+		                              ->set_get_background_color([](const View &view) -> u32 { return home_info.error != "" ? View::STANDARD_BACKGROUND(view) : 0; })
+		                              ->set_on_view_released([](View &) {
+		                              	if (home_info.error != "" && !is_async_task_running(load_home_page) && !is_async_task_running(load_home_page_more)) { // the loading is over : nothing else touches the error
+		                              		home_info.error = "";
+		                              		queue_async_task(load_home_page_more, NULL);
+		                              		var_need_refresh = true;
+		                              	}
+		                              })
 		                              ->set_on_drawn([](View &) {
 			                              if (!is_async_task_running(load_home_page) &&
 			                                  !is_async_task_running(load_home_page_more) && home_info.error == "") {
@@ -1368,6 +1376,19 @@ static void update_subscribed_channels(const std::vector<SubscriptionChannel> &n
 		new_views.push_back(cur_view);
 	}
 
+	int pinned_count = 0;
+	for (auto &c : sorted_channels) pinned_count += pinned_channel_is(c.id) ? 1 : 0;
+	new_views.insert(new_views.begin(), (new TextView(0, 0, 320, 18))
+	                                         ->set_text(std::to_string(sorted_channels.size()) + tr(" channels", " canales") + (pinned_count ? " (" + std::to_string(pinned_count) + tr(" pinned)", " fijados)") : std::string()))
+	                                         ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+	                                         ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
+	                                         ->set_text_offset(SMALL_MARGIN, 0));
+	if (new_views.size() == 1) { // no subscriptions yet : say what to do
+		new_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 3))
+		                        ->set_text_lines(std::vector<std::string>{tr("No channels yet.", "Aún no tienes canales."), tr("Open a channel and tap Subscribe.", "Abre un canal y toca Suscribirse."), ""})
+		                        ->set_x_alignment(TextView::XAlign::CENTER)
+		                        ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
+	}
 	local_channels_list_view->recursive_delete_subviews();
 	local_channels_list_view->set_views(new_views);
 }
@@ -1393,6 +1414,19 @@ static void update_oauth_subscribed_channels(const std::vector<SubscriptionChann
 			clicked_is_video = false;
 		});
 		new_views.push_back(cur_view);
+	}
+	int pinned_count = 0;
+	for (auto &c : ordered_channels) pinned_count += pinned_channel_is(c.id) ? 1 : 0;
+	new_views.insert(new_views.begin(), (new TextView(0, 0, 320, 18))
+	                                         ->set_text(std::to_string(ordered_channels.size()) + tr(" channels", " canales") + (pinned_count ? " (" + std::to_string(pinned_count) + tr(" pinned)", " fijados)") : std::string()))
+	                                         ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+	                                         ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
+	                                         ->set_text_offset(SMALL_MARGIN, 0));
+	if (new_views.size() == 1) { // no subscriptions yet : say what to do
+		new_views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 3))
+		                        ->set_text_lines(std::vector<std::string>{tr("No channels yet.", "Aún no tienes canales."), tr("Open a channel and tap Subscribe.", "Abre un canal y toca Suscribirse."), ""})
+		                        ->set_x_alignment(TextView::XAlign::CENTER)
+		                        ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
 	oauth_channels_list_view->swap_views(new_views);
 }

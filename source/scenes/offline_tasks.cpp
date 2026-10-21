@@ -306,6 +306,13 @@ static void save_by_id_task(void *arg) {
 
 void offline_save_by_id_async(const std::string &id, const std::string &title, const std::string &author, bool want_video) {
 	if (id == "") return;
+	{ // already on the SD card (a saved audio can still be upgraded to the video)
+		OfflineItem saved;
+		if (offline_get(id, saved) && (!want_video || saved.quality > 0)) {
+			notice_show(tr("Already saved", "Ya está guardado"));
+			return;
+		}
+	}
 	notice_show(tr("Loading the video...", "Cargando el vídeo..."));
 	queue_async_task(save_by_id_task, new SaveByIdJob{id, title, author, want_video});
 }

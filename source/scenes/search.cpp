@@ -488,7 +488,7 @@ static void show_search_history() {
 		return;
 	}
 	result_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))
-	                                      ->set_text(tr("Recent searches", "Búsquedas recientes"))
+	                                      ->set_text(tr("Recent searches (long press: forget one)", "Búsquedas recientes (mantén pulsado: olvidar una)"))
 	                                      ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
 	                                      ->set_get_text_color([]() { return LIGHT1_TEXT_COLOR; }));
 	for (auto &word : words) {
@@ -509,8 +509,10 @@ static void show_search_history() {
 	                                      ->set_y_alignment(TextView::YAlign::CENTER)
 	                                      ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                                      ->set_on_view_released([](View &) {
-		                                      history_clear_request = true; // done after the update : the views can't be deleted while they are being updated
-		                                      var_need_refresh = true;
+	                                      overlay_show_menu(tr("Sure?", "¿Seguro?"), {{tr("Yes, clear the history", "Sí, borrar el historial"), []() {
+	                                      	history_clear_request = true; // done after the update : the views can't be deleted while they are being updated
+	                                      	var_need_refresh = true;
+	                                      }}});
 	                                      }));
 }
 
@@ -734,8 +736,13 @@ static void update_result_bottom_view() {
 			cur_view->set_text((std::function<std::string()>)[]() { return loading_text(); });
 		}
 		result_bottom_view = cur_view;
+	} else if (search_done && result_list_view && result_list_view->views.empty()) { // a search that found nothing (or everything was hidden by the filters)
+	result_bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 3))
+	                         ->set_text_lines(std::vector<std::string>{tr("No results.", "Sin resultados."), tr("Try other words or check the Hide", "Prueba otras palabras o revisa los filtros"), tr("settings (Shorts, watched).", "de ocultar (Shorts, vistos).")})
+	                         ->set_x_alignment(TextView::XAlign::CENTER)
+	                         ->set_font_size(0.5, DEFAULT_FONT_INTERVAL);
 	} else {
-		result_bottom_view = new EmptyView(0, 0, 320, 0);
+	result_bottom_view = new EmptyView(0, 0, 320, 0);
 	}
 	result_view->views[1] = result_bottom_view;
 	result_view->set_on_child_drawn(1, [](const ScrollView &, int) {
@@ -1062,6 +1069,7 @@ bool Search_show_search_keyboard() {
 		swkbdInit(&keyboard, SWKBD_TYPE_NORMAL, 2, 256);
 		swkbdSetFeatures(&keyboard, SWKBD_DEFAULT_QWERTY | SWKBD_PREDICTIVE_INPUT);
 		swkbdSetValidation(&keyboard, SWKBD_NOTEMPTY_NOTBLANK, 0, 0);
+		swkbdSetHintText(&keyboard, tr("Search YouTube", "Buscar en YouTube").c_str());
 		swkbdSetButton(&keyboard, SWKBD_BUTTON_LEFT, LOCALIZED(CANCEL).c_str(), false);
 		swkbdSetButton(&keyboard, SWKBD_BUTTON_RIGHT, LOCALIZED(OK).c_str(), true);
 		swkbdSetInitialText(&keyboard, cur_search_word.c_str());
@@ -1097,7 +1105,14 @@ bool Search_show_search_keyboard() {
 		remove_cpu_limit(40);
 
 		if (button_pressed == SWKBD_BUTTON_RIGHT) {
-			cur_search_word = search_word;
+		{ // "cats " and "cats" are the same search : the spaces at both ends go away
+			std::string trimmed = search_word;
+			size_t first = trimmed.find_first_not_of(' '), last = trimmed.find_last_not_of(' ');
+			trimmed = first == std::string::npos ? std::string() : trimmed.substr(first, last - first + 1);
+			strncpy(search_word, trimmed.c_str(), 256);
+			search_word[256] = 0;
+		}
+		cur_search_word = search_word;
 			shorts_feed = false; // (a typed search is a normal search, not the Shorts or Radio feed that was open before)
 			radio_feed = false;
 			search_history_add(search_word);

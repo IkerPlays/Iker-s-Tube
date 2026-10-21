@@ -33,6 +33,7 @@ int var_time_remaining = 0;
 int var_autoplay_limit = 0;
 int var_break_reminder = 0;
 int var_library_tab = 0;
+int var_library_sort = 0;
 int var_warm_screen = 0;
 int var_fun_notices = 1;
 int var_round_buttons = 1;

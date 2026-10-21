@@ -160,6 +160,7 @@ void load_settings() {
 	var_download_quality = std::max(0, std::min(3, load_int("download_quality", 0)));
 	var_auto_chat = std::max(0, std::min(1, load_int("auto_chat", 0)));
 	var_library_tab = std::max(0, std::min(5, load_int("library_tab", 0)));
+	var_library_sort = std::max(0, std::min(11, load_int("library_sort", 0)));
 	var_break_reminder = std::max(0, std::min(3, load_int("break_reminder", 0)));
 	var_autoplay_limit = std::max(0, std::min(3, load_int("autoplay_limit", 0)));
 	var_time_remaining = std::max(0, std::min(1, load_int("time_remaining", 0)));
@@ -243,6 +244,7 @@ void save_settings() {
 	add_int("default_speed", var_default_speed);
 	add_int("auto_chat", var_auto_chat);
 	add_int("library_tab", var_library_tab);
+	add_int("library_sort", var_library_sort);
 	add_int("break_reminder", var_break_reminder);
 	add_int("autoplay_limit", var_autoplay_limit);
 	add_int("time_remaining", var_time_remaining);

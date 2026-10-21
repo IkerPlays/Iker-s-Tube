@@ -49,6 +49,7 @@ extern int var_time_remaining; // 1 : the player bar shows the time left instead
 extern int var_autoplay_limit; // 0 : no limit, 1 : 3, 2 : 5, 3 : 10 videos in a row (counted while the player stays open)
 extern int var_break_reminder; // 0 : off, 1 : every 30 min of playing, 2 : 60, 3 : 120
 extern int var_library_tab; // the tab of the Library that was open last (0 queue ... 5 liked)
+extern int var_library_sort; // the sort modes of the Library lists : favorites/later (0..2) + 3 * downloads (0..3)
 extern double var_play_today;   // seconds played today
 extern int var_play_day;         // the day (days since 1970) that var_play_today belongs to
 extern int var_daily_limit;      // 0 off, 1 : 30 min, 2 : 60, 3 : 120, 4 : 240 minutes of playing per day

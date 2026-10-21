@@ -98,8 +98,15 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 	                      ->enable_thumbnail_request_update(MAX_THUMBNAIL_LOAD_REQUEST, SceneType::HISTORY);
 	if (watch_history.size() > 1) { // listen to the history like a playlist
 		std::vector<std::pair<std::string, std::string>> items;
+		std::string play_needle = history_filter; // Play all / Shuffle use what the filter shows
+		for (auto &c : play_needle) c = tolower(c);
 		for (auto &v : watch_history) {
-			if (items.size() < 40) items.push_back({youtube_get_video_url_by_id(v.id), v.title});
+		if (play_needle != "") {
+			std::string hay = v.title + " " + v.author_name;
+			for (auto &c : hay) c = tolower(c);
+			if (hay.find(play_needle) == std::string::npos) continue;
+		}
+		if (items.size() < 40) items.push_back({youtube_get_video_url_by_id(v.id), v.title});
 		}
 		auto button = [](const std::string &text, int width, std::function<void()> action) {
 			return (new TextView(0, 0, width, 22))
@@ -115,10 +122,14 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 			if (shuffle) {
 				for (size_t k = list.size(); k > 1; k--) std::swap(list[k - 1], list[rand() % k]);
 			}
+			if (list.empty()) {
+				notice_show(tr("Nothing matches the filter", "Nada coincide con el filtro"));
+				return;
+			}
 			play_queue_clear();
 			for (size_t k = 1; k < list.size(); k++) play_queue_toggle(list[k].first, list[k].second);
 			clicked_url = list[0].first;
-		};
+			};
 		video_list_view->views.push_back((new HorizontalListView(0, 0, 22))
 		                                     ->set_views({button(tr("Play all", "Reproducir todo"), 160, [play]() { play(false); }),
 		                                                  button(tr("Shuffle", "Aleatorio"), 160, [play]() { play(true); })}));
@@ -180,12 +191,15 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		                                     ->set_y_alignment(TextView::YAlign::CENTER)
 		                                     ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                                     ->set_corner_radius(6)
-		                                     ->set_on_view_released([](View &) { clear_old_request = true; }));
+		                                     ->set_on_view_released([](View &) {
+		                                     	overlay_show_menu(tr("Sure?", "¿Seguro?"), {{tr("Yes, clear what is older", "Sí, borrar lo antiguo"), []() { clear_old_request = true; }}});
+		                                     }));
 	}
 	std::map<long long, int> per_day; // how many videos each day
 	for (auto &v : watch_history) per_day[(long long)v.last_watch_time / 86400]++;
 	long long last_day = -1;
 	const long long today = (long long)time(NULL) / 86400;
+	const size_t rows_before = video_list_view->views.size();
 	for (auto i : watch_history) {
 		if (needle != "") { // the filter
 			std::string hay = i.title + " " + i.author_name;
@@ -271,6 +285,13 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		    });
 
 		video_list_view->views.push_back(cur_view);
+	}
+	if (video_list_view->views.size() == rows_before) { // nothing to list : say why
+		video_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 2))
+		                                     ->set_text(watch_history.empty() ? tr("Nothing watched yet.", "Aún no has visto nada.") : tr("No matches for ", "Sin resultados para ") + history_filter)
+		                                     ->set_x_alignment(TextView::XAlign::CENTER)
+		                                     ->set_y_alignment(TextView::YAlign::CENTER)
+		                                     ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
 	constexpr int selector_width = 180;
 	main_view = (new ScrollView(0, 0, 320, 240))
