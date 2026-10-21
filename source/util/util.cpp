@@ -294,7 +294,10 @@ int housekeeping_clear_temp() {
 	while (struct dirent *entry = readdir(dir)) {
 		std::string name = entry->d_name;
 		bool tmp = name.size() > 4 && name.compare(name.size() - 4, 4, ".tmp") == 0;
-		if (tmp || name == "log_previous.txt") doomed.push_back(name);
+		if (!tmp && name != "log_previous.txt") continue;
+		struct stat st;
+		if (stat((dir_path + "/" + name).c_str(), &st) == 0 && time(NULL) - st.st_mtime < 600) continue; // (a save may be using it right now)
+		doomed.push_back(name);
 	}
 	closedir(dir);
 	int removed = 0;

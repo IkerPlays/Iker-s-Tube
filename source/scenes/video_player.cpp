@@ -386,6 +386,7 @@ static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
 
 static double mini_volume = 1.0;
+static double before_mute_volume = 1.0; // the volume to come back to when the sound is turned on again
 static double volume_cap() { // the loudest the player may be set to (Settings)
 	static const double caps[4] = {3.0, 2.0, 1.5, 1.0};
 	return caps[std::max(0, std::min(3, var_volume_cap))];
@@ -1101,7 +1102,7 @@ static std::vector<View *> make_sound_profile_buttons() {
 			    double copy[18];
 			    for (int i = 0; i < 18; i++) copy[i] = profiles[index].gains[i];
 			    apply_eq_preset(reinterpret_cast<const double(&)[18]>(copy));
-			    mini_volume_apply(profiles[index].volume);
+			    mini_volume_apply(std::min(profiles[index].volume, volume_cap())); // (the volume cap of Settings also holds here)
 		    });
 	};
 	return {button([]() { return tr("Music", "Música"); }, 0), button([]() { return tr("Movie", "Película"); }, 1),
@@ -2735,12 +2736,11 @@ debug_info_view =
 				                                   }),
 				                         make_tool([]() { return mini_volume <= 0.001 ? tr("Unmute", "Activar sonido") : tr("Mute", "Silenciar"); }, 90,
 				                                   []() {
-					                                   static double before_mute = 1.0;
 					                                   if (mini_volume <= 0.001) {
-						                                   mini_volume_apply(before_mute > 0.001 ? before_mute : 1.0);
+					                                   mini_volume_apply(before_mute_volume > 0.001 ? before_mute_volume : 1.0);
 					                                   } else {
-						                                   before_mute = mini_volume;
-						                                   mini_volume_apply(0.0);
+					                                   before_mute_volume = mini_volume;
+					                                   mini_volume_apply(0.0);
 					                                   }
 					                                   var_need_refresh = true;
 				                                   }),
@@ -4165,7 +4165,7 @@ static void autoplay_countdown_tick() {
 
     // ***** mini player : big controls on the bottom screen to listen with the console in the pocket *****
     static void save_resume_now() {
-    if (vid_duration > 60 && vid_resume_id[0] && !playing_video_info.is_livestream && !vid_change_video_request) {
+    if (vid_duration > 60 && vid_resume_id[0] && !playing_video_info.is_livestream && !vid_change_video_request && seek_at_init_request < 0 && vid_current_pos >= 15) { // (not while the start position is still being applied)
     	resume_set(std::string(vid_resume_id), vid_current_pos, vid_duration);
     	resume_save();
     }
@@ -4233,18 +4233,21 @@ static void autoplay_countdown_tick() {
 	    	if (network_decoder.ready) send_seek_request(std::max(0.0, vid_current_pos - 10));
 	    	break;
 	    case 12: { // mute / unmute
-	    	static double before_mute = 1.0;
 	    	if (mini_volume <= 0.001) {
-	    		mini_volume_apply(before_mute > 0.001 ? before_mute : 1.0);
+	    	mini_volume_apply(before_mute_volume > 0.001 ? before_mute_volume : 1.0);
 	    	} else {
-	    		before_mute = mini_volume;
-	    		mini_volume_apply(0.0);
+	    	before_mute_volume = mini_volume;
+	    	mini_volume_apply(0.0);
 	    	}
 	    	notice_show(mini_volume <= 0.001 ? tr("Muted", "Silenciado") : tr("Sound on", "Sonido activado"));
 	    	break;
 	    }
 	    case 13: { // previous chapter
-	    	if (!network_decoder.ready) break;
+	    if (!network_decoder.ready) break;
+	    if (current_chapters.empty()) {
+	    	notice_show(tr("This video has no chapters", "Este vídeo no tiene capítulos"));
+	    	break;
+	    }
 	    	double target = 0;
 	    	std::string name;
 	    	for (auto &chapter : current_chapters) {

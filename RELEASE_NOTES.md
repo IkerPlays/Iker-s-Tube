@@ -1,1 +1,1 @@
-Favorites and Watch later keep at most 1000 videos (the oldest ones go) so saving them stays quick.
+Fixes: the equalizer profiles respect the loudest volume setting, the storage count runs in the background, Previous chapter does nothing on a video without chapters, pausing right at the start no longer erases the resume position, one shared memory for mute, the confirmation messages of Settings are wide enough, shorter chapter labels in the button lists, the backup date is not read at every frame and the temporary files cleaner leaves recent files alone.

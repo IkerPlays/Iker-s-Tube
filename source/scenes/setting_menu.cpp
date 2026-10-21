@@ -25,6 +25,7 @@
 #include "scenes/video_player.hpp"
 #include "ui/overlay.hpp"
 #include "ui/notice.hpp"
+#include "util/async_task.hpp"
 #include "util/util.hpp"
 #include "ui/ui.hpp"
 #include "ui/views/specialized/succinct_channel.hpp"
@@ -173,8 +174,22 @@ static bool confirm_tap(int button_id, const std::string &message) {
 	return false;
 }
 
+static void storage_scan_task(void *) {
+	long long offline = dir_size_bytes("sdmc:/3ds/IkersTube/offline");
+	long long pictures = dir_size_bytes("sdmc:/3ds/IkersTube/thumbs");
+	long long all = dir_size_bytes("sdmc:/3ds/IkersTube", 3);
+	notice_show(tr("Downloads ", "Descargas ") + format_size(offline) + tr(", pictures ", ", imágenes ") + format_size(pictures) +
+	            tr(", total ", ", total ") + format_size(all) + tr(", SD free ", ", SD libre ") + std::to_string(sd_free_mb()) + " MB");
+}
+
 static std::string backup_date_text() {
-	long long at = backup_time();
+	static long long cached_at = 0;
+	static u64 cached_checked = 0;
+	if (cached_checked == 0 || osGetTime() - cached_checked > 3000) { // (the SD card is asked now and then, not at every frame)
+		cached_at = backup_time();
+		cached_checked = osGetTime();
+	}
+	long long at = cached_at;
 	if (at <= 0) return tr("none", "ninguna");
 	time_t t = (time_t)at;
 	struct tm local = *localtime(&t);
@@ -673,7 +688,7 @@ void Sem_init(void) {
 	
 	popup_view = new OverlayDialogView(0, 0, 320, 240);
 	popup_view->set_is_visible(false);
-	toast_view = new TextView((320 - 150) / 2, 190, 150, DEFAULT_FONT_INTERVAL + SMALL_MARGIN);
+	toast_view = new TextView(10, 190, 300, DEFAULT_FONT_INTERVAL + SMALL_MARGIN); // (wide : the confirmation messages are long)
 	toast_view->set_is_visible(false);
 	release_notes_view = new VerticalListView(0, 10, 320);
 	release_notes_view->set_is_visible(false);
@@ -1168,8 +1183,8 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
 							(std::function<std::string ()>) []() { return std::string("-10 s"); },
 							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
-							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
-							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
+							(std::function<std::string ()>) []() { return tr("Prev. ch.", "Cap. ant."); },
+							(std::function<std::string ()>) []() { return tr("Next ch.", "Cap. sig."); }
 						}, var_button_x)
 						->set_title([](const SelectorView &) { return tr("Button X in the player", "Botón X en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1193,8 +1208,8 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
 							(std::function<std::string ()>) []() { return std::string("-10 s"); },
 							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
-							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
-							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
+							(std::function<std::string ()>) []() { return tr("Prev. ch.", "Cap. ant."); },
+							(std::function<std::string ()>) []() { return tr("Next ch.", "Cap. sig."); }
 						}, var_button_y)
 						->set_title([](const SelectorView &) { return tr("Button Y in the player", "Botón Y en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1218,8 +1233,8 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
 							(std::function<std::string ()>) []() { return std::string("-10 s"); },
 							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
-							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
-							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
+							(std::function<std::string ()>) []() { return tr("Prev. ch.", "Cap. ant."); },
+							(std::function<std::string ()>) []() { return tr("Next ch.", "Cap. sig."); }
 						}, var_button_l)
 						->set_title([](const SelectorView &) { return tr("Button L in the player", "Botón L en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1243,8 +1258,8 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
 							(std::function<std::string ()>) []() { return std::string("-10 s"); },
 							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
-							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
-							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
+							(std::function<std::string ()>) []() { return tr("Prev. ch.", "Cap. ant."); },
+							(std::function<std::string ()>) []() { return tr("Next ch.", "Cap. sig."); }
 						}, var_button_r)
 						->set_title([](const SelectorView &) { return tr("Button R in the player", "Botón R en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -2073,11 +2088,8 @@ void Sem_init(void) {
 						->set_text_offset(0, -2)
 						->set_get_background_color(View::STANDARD_BACKGROUND)
 						->set_on_view_released([] (View &) {
-							long long offline = dir_size_bytes("sdmc:/3ds/IkersTube/offline");
-							long long pictures = dir_size_bytes("sdmc:/3ds/IkersTube/thumbs");
-							long long all = dir_size_bytes("sdmc:/3ds/IkersTube", 3);
-							notice_show(tr("Downloads ", "Descargas ") + format_size(offline) + tr(", pictures ", ", imágenes ") + format_size(pictures) +
-							            tr(", total ", ", total ") + format_size(all) + tr(", SD free ", ", SD libre ") + std::to_string(sd_free_mb()) + " MB");
+						notice_show(tr("Counting...", "Contando..."));
+						queue_async_task(storage_scan_task, NULL); // (many files : counted by the worker so the screen does not freeze)
 						}),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Clear the search history", "Borrar el historial de búsquedas"); })
