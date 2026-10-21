@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "headers.hpp"
 #include "util/recent_channels.hpp"
 #include <cstdio>
@@ -15,7 +16,7 @@ static bool recent_loaded = false;
 static void load_locked() {
 	if (recent_loaded) return;
 	recent_loaded = true;
-	FILE *f = fopen(RECENT_PATH, "r");
+	FILE *f = fopen_or_recover(RECENT_PATH, RECENT_PATH ".tmp", "r");
 	if (!f) return;
 	char line[700];
 	while (fgets(line, sizeof line, f)) {
@@ -39,11 +40,9 @@ void recent_channel_add(const std::string &name, const std::string &url) {
 	}
 	recent.insert(recent.begin(), {name, url});
 	if (recent.size() > RECENT_MAX) recent.resize(RECENT_MAX);
-	FILE *f = fopen(RECENT_PATH, "w");
-	if (f) {
-		for (auto &c : recent) fprintf(f, "%s\t%s\n", c.name.c_str(), c.url.c_str());
-		fclose(f);
-	}
+	std::string content;
+	for (auto &c : recent) content += c.name + "\t" + c.url + "\n";
+	save_text_atomic(RECENT_PATH, content);
 	LightLock_Unlock(&recent_lock);
 }
 

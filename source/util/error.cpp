@@ -37,8 +37,9 @@ void Util_err_clear_error_message(void) {
 }
 
 void Util_err_save_error(void) {
-	Path(DEF_MAIN_DIR + "error/" + std::to_string(var_years) + std::to_string(var_months) + std::to_string(var_days) +
-	     std::to_string(var_minutes) + std::to_string(var_seconds) + ".txt")
+	char stamp[40]; // padded : "2026-1-12" and "2026-11-2" no longer give the same name, and the hour is part of it
+	snprintf(stamp, sizeof stamp, "%04d%02d%02d_%02d%02d%02d.txt", var_years, var_months, var_days, var_hours, var_minutes, var_seconds);
+	Path(DEF_MAIN_DIR + "error/" + stamp)
 	    .write_file(
 	        (u8 *)(err_error_summary + "\n" + err_error_description + "\n" + err_error_place + "\n" + err_error_code)
 	            .c_str(),
@@ -49,11 +50,11 @@ void Util_err_save_error(void) {
 
 void Util_err_main(Hid_info key) {
 	if (key.p_a ||
-	    (key.p_touch && key.touch_x >= 150 && key.touch_x <= 169 && key.touch_y >= 150 && key.touch_y <= 169)) {
+	    (key.p_touch && key.touch_x >= 150 && key.touch_x <= 204 && key.touch_y >= 150 && key.touch_y <= 170)) {
 		err_error_display = false;
 		var_need_refresh = true;
 	} else if (key.p_x ||
-	           (key.p_touch && key.touch_x >= 200 && key.touch_x <= 239 && key.touch_y >= 150 && key.touch_y <= 169)) {
+	           (key.p_touch && key.touch_x >= 209 && key.touch_x <= 259 && key.touch_y >= 150 && key.touch_y <= 170)) {
 		Util_err_save_error();
 		var_need_refresh = true;
 	}
@@ -67,7 +68,10 @@ void Util_err_draw(void) {
 	Draw("Summary : ", 22.5, 40.0, 0.45, 0.45, DEF_DRAW_RED);
 	Draw(err_error_summary, 22.5, 50.0, 0.45, 0.45, DEF_DRAW_BLACK);
 	Draw("Description : ", 22.5, 60.0, 0.45, 0.45, DEF_DRAW_RED);
-	Draw(err_error_description, 22.5, 70.0, 0.4, 0.4, DEF_DRAW_BLACK);
+	{ // a long description goes on a second line instead of running off the panel
+		auto lines = truncate_str(err_error_description, 270, 2, 0.4, 0.4);
+		for (size_t i = 0; i < lines.size(); i++) Draw(lines[i], 22.5, 70.0 + 9.0 * i, 0.4, 0.4, DEF_DRAW_BLACK);
+	}
 	Draw("Place : ", 22.5, 90.0, 0.45, 0.45, DEF_DRAW_RED);
 	Draw(err_error_place, 22.5, 100.0, 0.45, 0.45, DEF_DRAW_BLACK);
 	Draw("Error code : ", 22.5, 110.0, 0.45, 0.45, DEF_DRAW_RED);

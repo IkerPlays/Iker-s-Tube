@@ -35,6 +35,8 @@ struct SuccinctVideoView : public FixedSizeView {
 
 	bool is_playlist = false;
 	std::string queue_url; // set for videos that can be added to the play queue
+		std::string video_id; // the id inside queue_url (worked out once, not at every frame)
+		double overlay_seconds = 0; // the length written in the bottom right corner, in seconds (0 : unknown)
 	bool badge_new = false; // "NEW": a video of the feed that you had not been told about
 	mutable u64 loading_since = 0; // when the placeholder started pulsing
 	mutable int thumbnail_fade = 0; // frames since the thumbnail appeared (fade-in animation)
@@ -53,6 +55,14 @@ struct SuccinctVideoView : public FixedSizeView {
 	}
 	SuccinctVideoView *set_bottom_right_overlay(const std::string &bottom_right_overlay) {
 		this->bottom_right_overlay = bottom_right_overlay;
+		{ // "1:02:03" / "4:05" to seconds
+			int parts[3] = {0, 0, 0}, n = 0, value = 0;
+			for (char c : bottom_right_overlay + ":") {
+				if (c >= '0' && c <= '9') value = value * 10 + (c - '0');
+				else if (c == ':' && n < 3) parts[n++] = value, value = 0;
+			}
+			overlay_seconds = n == 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : n == 2 ? parts[0] * 60 + parts[1] : 0;
+		}
 		return this;
 	}
 	SuccinctVideoView *set_thumbnail_url(const std::string &thumbnail_url) {
@@ -63,6 +73,7 @@ struct SuccinctVideoView : public FixedSizeView {
 	// long press : add to (or remove from) the "play next" queue
 	SuccinctVideoView *set_queue_item(const std::string &url, const std::string &title, const std::string &author = "") {
 		this->queue_url = url;
+				this->video_id = youtube_get_video_id_by_url(url);
 		add_on_long_hold(35, [url, title, author](View &view) {
 			overlay_show_video_menu(url, title, author); // the actions of the video (queue, watch later, favorites, save offline...)
 			view.reset_holding_status(); // the release must not open the video
@@ -105,7 +116,7 @@ struct SuccinctVideoView : public FixedSizeView {
 			// still loading : a soft pulsing placeholder (it gives up after 8 seconds so a failed thumbnail does not keep redrawing)
 			u64 now = osGetTime();
 			if (!loading_since) loading_since = now;
-			if (now - loading_since < 8000) {
+			if (now - loading_since < 8000 && thumbnail_get_status_code(thumbnail_handle) == -2) { // (-2 : no answer yet; a failed download stops the pulsing)
 				u32 shade = 0x18 + (u32)(10 * (1 + sinf((now - loading_since) / 220.0f)));
 				Draw_round_rect((int)x0, (int)y0, (int)get_thumbnail_width(), (int)get_thumbnail_height(), 4, 0xFF000000 | (shade << 16) | (shade << 8) | shade);
 				var_need_refresh = true;
@@ -116,28 +127,23 @@ struct SuccinctVideoView : public FixedSizeView {
 			Draw_round_rect((int)x0, (int)y0, (int)tag_width, 10, 3, 0xFF000000 | (COLOR_ACCENT & 0x00FFFFFF));
 			Draw("NEW", x0 + 2, y0 - 1, 0.4, 0.4, (u32)-1);
 		}
-		if (var_mark_watched && queue_url.size() && history_has_id(youtube_get_video_id_by_url(queue_url))) {
+		if (var_mark_watched && video_id.size() && history_has_id(video_id)) {
 			// already watched : a small check mark on the thumbnail
 			float bx = x0 + get_thumbnail_width() - 14;
 			Draw_round_rect((int)bx, (int)y0, 14, 12, 3, 0xE0000000);
 			Draw("v", bx + 3, y0 - 2, 0.45, 0.45, 0xFF60E060);
 		}
-		if (queue_url.size() && offline_has_id(youtube_get_video_id_by_url(queue_url))) {
+		if (video_id.size() && offline_has_id(video_id)) {
 			// saved on the SD card : a small tag at the bottom left of the thumbnail
 			float tag_width = Draw_get_width("DL", 0.4) + 4;
 			Draw_round_rect((int)x0, (int)(y0 + get_thumbnail_height() - 10), (int)tag_width, 10, 3, 0xE0408040);
 			Draw("DL", x0 + 2, y0 + get_thumbnail_height() - 11, 0.4, 0.4, (u32)-1);
 		}
-		if (queue_url.size() && bottom_right_overlay.size()) { // how much of the video was already watched : a thin red bar
-			double seconds = resume_get(youtube_get_video_id_by_url(queue_url));
+		if (video_id.size() && overlay_seconds > 0) { // how much of the video was already watched : a thin red bar
+			double seconds = resume_get(video_id);
 			if (seconds > 0) {
-				int parts[3] = {0, 0, 0}, n = 0, value = 0;
-				for (char c : bottom_right_overlay + ":") {
-					if (c >= '0' && c <= '9') value = value * 10 + (c - '0');
-					else if (c == ':' && n < 3) parts[n++] = value, value = 0;
-				}
-				double total = n == 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : n == 2 ? parts[0] * 60 + parts[1] : 0;
-				if (total > 0) {
+				double total = overlay_seconds;
+				{
 					float width = get_thumbnail_width(), fill = width * std::min(1.0, seconds / total);
 					float by = y0 + get_thumbnail_height() - 3;
 					Draw_texture(var_square_image[0], 0x90000000, x0, by, width, 3);

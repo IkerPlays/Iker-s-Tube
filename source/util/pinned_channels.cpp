@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "headers.hpp"
 #include "util/pinned_channels.hpp"
 #include <algorithm>
@@ -16,7 +17,7 @@ static bool pinned_loaded = false;
 static void load_locked() {
 	if (pinned_loaded) return;
 	pinned_loaded = true;
-	FILE *f = fopen(PINNED_PATH, "r");
+	FILE *f = fopen_or_recover(PINNED_PATH, PINNED_PATH ".tmp", "r");
 	if (!f) return;
 	char line[200];
 	while (fgets(line, sizeof line, f)) {
@@ -42,10 +43,8 @@ void pinned_channel_set(const std::string &channel_id, bool value) {
 	auto it = std::find(pinned.begin(), pinned.end(), channel_id);
 	if (value && it == pinned.end()) pinned.push_back(channel_id);
 	if (!value && it != pinned.end()) pinned.erase(it);
-	FILE *f = fopen(PINNED_PATH, "w");
-	if (f) {
-		for (auto &id : pinned) fprintf(f, "%s\n", id.c_str());
-		fclose(f);
-	}
+	std::string content;
+	for (auto &id : pinned) content += id + "\n";
+	save_text_atomic(PINNED_PATH, content);
 	LightLock_Unlock(&pinned_lock);
 }

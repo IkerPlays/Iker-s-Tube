@@ -49,6 +49,7 @@ struct URLStatus {
 	bool error = false;
 	bool waiting_retry = false;
 	time_t next_retry;
+		int retry_count = 0; // failures in a row : the wait before the next try grows
 	int last_status_code = -2;
 	LoadedThumbnail data;
 	ThumbnailType type;
@@ -408,10 +409,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 		std::sort(download_list.begin(), download_list.end(),
 		          [](const auto &i, const auto &j) { return i.priority > j.priority; });
 
-		std::string priority_str;
-		for (auto i : download_list) {
-			priority_str += std::to_string(i.priority) + " ";
-		}
+
 		if (download_list[0].priority >=
 		    PRIORITY_ACTIVE_SCENE + PRIORITY_FOREGROUND) { // load thumbnails in the foreground first
 			while (download_list.back().priority < PRIORITY_ACTIVE_SCENE + PRIORITY_FOREGROUND) {
@@ -560,6 +558,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 						resource_lock.lock();
 						if (requested_urls.count(info.url)) { // in case the request is cancelled while downloading
 							requested_urls[info.url].is_loaded = true;
+							requested_urls[info.url].retry_count = 0;
 							requested_urls[info.url].data = {w, h, texture_w, texture_h, result_image};
 							stored = true;
 						}
@@ -577,7 +576,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 					requested_urls[info.url].error = true;
 					if (res.status_code / 100 != 4 && res.status_code / 100 != 2) {
 						requested_urls[info.url].waiting_retry = true;
-						requested_urls[info.url].next_retry = time(NULL) + 3;
+						requested_urls[info.url].next_retry = time(NULL) + std::min(60, 3 << std::min(requested_urls[info.url].retry_count++, 4)); // 3, 6, 12, 24, 48 s...
 					} else {
 						requested_urls[info.url].waiting_retry = false;
 					}

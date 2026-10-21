@@ -729,7 +729,7 @@ static void update_result_bottom_view() {
 		TextView *cur_view =
 		    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 2))->set_x_alignment(TextView::XAlign::CENTER);
 		if (search_result.error != "") {
-			cur_view->set_text_lines(std::vector<std::string>{truncate_first_line(search_result.error, 300, 0.5), tr("Tap to try again", "Toca para reintentar")});
+			cur_view->set_text_lines(std::vector<std::string>{truncate_first_line(friendly_error(search_result.error), 300, 0.5), tr("Tap to try again", "Toca para reintentar")});
 			cur_view->set_get_background_color(View::STANDARD_BACKGROUND);
 			cur_view->set_on_view_released([](View &) { retry_search_request = true; var_need_refresh = true; });
 		} else {

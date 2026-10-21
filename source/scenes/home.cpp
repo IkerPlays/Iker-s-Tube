@@ -640,7 +640,7 @@ static void update_home_bottom_view(bool force_show_loading) {
 		home_videos_bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 		                              ->set_text([]() {
 		                              if (home_info.error != "") {
-		                              return tr("Tap to try again: ", "Toca para reintentar: ") + truncate_first_line(home_info.error, 170, 0.5);
+		                              return tr("Tap to try again: ", "Toca para reintentar: ") + truncate_first_line(friendly_error(home_info.error), 170, 0.5);
 		                              } else {
 		                              return loading_text();
 		                              }

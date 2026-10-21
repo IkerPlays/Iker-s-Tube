@@ -149,7 +149,7 @@ void Channel_init(void) {
     video_load_more_view = (new TextView(0, 0, 320, 0));
     video_load_more_view
         ->set_text((std::function<std::string()>)[]() {
-	        return channel_info.error != ""         ? channel_info.error
+	        return channel_info.error != ""         ? friendly_error(channel_info.error)
 	        : channel_info.has_more_videos() ? loading_text()
 	        : channel_info.videos.empty()    ? LOCALIZED(EMPTY)
 	                                         : std::string();
@@ -169,7 +169,7 @@ void Channel_init(void) {
 
     stream_load_more_view = new TextView(0, 0, 320, 0);
     stream_load_more_view->set_text((std::function<std::string()>)[]() {
-	    return channel_info.error != "" ? channel_info.error : streams_tab_error != "" ? streams_tab_error : loading_text();
+	    return channel_info.error != "" ? friendly_error(channel_info.error) : streams_tab_error != "" ? streams_tab_error : loading_text();
     });
     stream_load_more_view->set_x_alignment(TextView::XAlign::CENTER);
     stream_load_more_view->set_on_drawn([](const View &) {
@@ -191,7 +191,7 @@ void Channel_init(void) {
 
     shorts_load_more_view = new TextView(0, 0, 320, 0);
     shorts_load_more_view->set_text((std::function<std::string()>)[]() {
-	    return channel_info.error != "" ? channel_info.error : shorts_tab_error != "" ? shorts_tab_error : loading_text();
+	    return channel_info.error != "" ? friendly_error(channel_info.error) : shorts_tab_error != "" ? shorts_tab_error : loading_text();
     });
     shorts_load_more_view->set_x_alignment(TextView::XAlign::CENTER);
     shorts_load_more_view->set_on_drawn([](const View &) {
@@ -685,7 +685,7 @@ void Channel_init(void) {
 			    stream_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 			    stream_load_more_view->set_is_visible(true);
 			    stream_load_more_view->set_text((std::function<std::string()>)[]() {
-				    return channel_info.error != "" ? channel_info.error : loading_text();
+				    return channel_info.error != "" ? friendly_error(channel_info.error) : loading_text();
 			    });
 		    } else {
 			    stream_load_more_view->update_y_range(0, 0);
@@ -696,7 +696,7 @@ void Channel_init(void) {
 		    stream_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    stream_load_more_view->set_is_visible(true);
 		    stream_load_more_view->set_text((std::function<std::string()>)[]() { // (a channel reopened from the cache whose streams were already loaded: they are just empty)
-			    return channel_info.error != "" ? channel_info.error : channel_info.streams_loaded ? LOCALIZED(EMPTY) : loading_text();
+			    return channel_info.error != "" ? friendly_error(channel_info.error) : channel_info.streams_loaded ? LOCALIZED(EMPTY) : loading_text();
 		    });
 	    }
 
@@ -726,7 +726,7 @@ void Channel_init(void) {
 			    shorts_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 			    shorts_load_more_view->set_is_visible(true);
 			    shorts_load_more_view->set_text((std::function<std::string()>)[]() {
-				    return channel_info.error != "" ? channel_info.error : loading_text();
+				    return channel_info.error != "" ? friendly_error(channel_info.error) : loading_text();
 			    });
 		    } else {
 			    shorts_load_more_view->update_y_range(0, 0);
@@ -737,7 +737,7 @@ void Channel_init(void) {
 		    shorts_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    shorts_load_more_view->set_is_visible(true);
 		    shorts_load_more_view->set_text((std::function<std::string()>)[]() { // (a channel reopened from the cache whose shorts were already loaded: they are just empty)
-			    return channel_info.error != "" ? channel_info.error : channel_info.shorts_loaded ? LOCALIZED(EMPTY) : loading_text();
+			    return channel_info.error != "" ? friendly_error(channel_info.error) : channel_info.shorts_loaded ? LOCALIZED(EMPTY) : loading_text();
 		    });
 	    }
 
@@ -761,7 +761,7 @@ void Channel_init(void) {
 	    if (result.has_playlists_to_load()) {
 		    tab_view->views[3] = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 2))
 		                             ->set_text((std::function<std::string()>)[]() {
-			                             return channel_info.error != "" ? channel_info.error : loading_text();
+			                             return channel_info.error != "" ? friendly_error(channel_info.error) : loading_text();
 		                             })
 		                             ->set_x_alignment(TextView::XAlign::CENTER)
 		                             ->set_on_drawn([](const View &) {
@@ -917,7 +917,7 @@ void Channel_init(void) {
 		    stream_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    stream_load_more_view->set_is_visible(true);
 		    stream_load_more_view->set_text((std::function<std::string()>)[]() {
-			    return channel_info.error != "" ? channel_info.error : streams_tab_error != "" ? streams_tab_error : loading_text();
+			    return channel_info.error != "" ? friendly_error(channel_info.error) : streams_tab_error != "" ? streams_tab_error : loading_text();
 		    });
 	    } else {
 		    stream_load_more_view->update_y_range(0, 0);
@@ -1020,7 +1020,7 @@ void Channel_init(void) {
 		    shorts_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
 		    shorts_load_more_view->set_is_visible(true);
 		    shorts_load_more_view->set_text((std::function<std::string()>)[]() {
-			    return channel_info.error != "" ? channel_info.error : shorts_tab_error != "" ? shorts_tab_error : loading_text();
+			    return channel_info.error != "" ? friendly_error(channel_info.error) : shorts_tab_error != "" ? shorts_tab_error : loading_text();
 		    });
 	    } else {
 		    shorts_load_more_view->update_y_range(0, 0);

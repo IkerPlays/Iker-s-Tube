@@ -368,7 +368,7 @@ static void draw_nav_bar() {
 		Draw_x_centered(tr("No connection - saved downloads still play", "Sin conexión - lo descargado se puede ver"), 0, 320, nav_top - 12, 0.4, 0.4, 0xFFFFFFFF);
 	}
 	Draw_texture(var_square_image[0], COLOR_GRAY(var_night_mode ? 0x1C : 0xEE), 0, nav_top, 320, NAV_BAR_HEIGHT);
-	Draw_texture(var_square_image[0], COLOR_GRAY(var_night_mode ? 0x38 : 0xCC), 0, nav_top, 320, 1);
+	Draw_texture(var_square_image[0], var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : COLOR_GRAY(var_night_mode ? 0x38 : 0xCC), 0, nav_top, 320, 1);
 	int selected = nav_selected();
 	if (menu_status != CLOSED) {
 		selected = NAV_MORE;
@@ -382,7 +382,7 @@ static void draw_nav_bar() {
 		} else if (pressed) {
 			Draw_round_rect(cx - 16, cy - 7, 32, 15, 7, COLOR_GRAY(var_night_mode ? 0x44 : 0xD0));
 		}
-		u32 color = sel ? 0xFFFFFFFF : COLOR_GRAY(var_night_mode ? 0xB8 : 0x55);
+		u32 color = sel ? 0xFFFFFFFF : var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : COLOR_GRAY(var_night_mode ? 0xB8 : 0x55);
 		nav_icon(i, cx, cy, color);
 		if (i == 3 && offline_download_running()) { // a download is running : green dot on Downloads
 			Draw_round_rect(cx + 8, cy - 8, 6, 6, 3, 0xFF50C878);
@@ -563,7 +563,10 @@ void update_overlay_menu(Hid_info *key) {
 		menu_next_request = false;
 		show_menu_rows(menu_next_title, menu_next_options, menu_next_first);
 	}
-	if (waiting_account_playlists && osGetTime() - waiting_account_playlists_since > 20000) waiting_account_playlists = false; // (nothing came : stop waiting)
+	if (waiting_account_playlists && osGetTime() - waiting_account_playlists_since > 20000) { // (nothing came : stop waiting, and say so)
+		waiting_account_playlists = false;
+		notice_show(tr("Could not load your playlists", "No se pudieron cargar tus listas"));
+	}
 	if (waiting_account_playlists) {
 		std::string playlists_video;
 		std::vector<AccountPlaylist> lists;
@@ -573,7 +576,7 @@ void update_overlay_menu(Hid_info *key) {
 			for (auto &pl : lists) {
 				std::string playlist_id = pl.id;
 				bool has = pl.has_video;
-				options.push_back({(has ? "[x] " : "[ ] ") + pl.title.substr(0, 30), [playlist_id, playlists_video, has]() { account_playlist_edit_async(playlist_id, playlists_video, !has); }});
+				options.push_back({(has ? "[x] " : "[ ] ") + truncate_first_line(pl.title, 200, 0.5), [playlist_id, playlists_video, has]() { account_playlist_edit_async(playlist_id, playlists_video, !has); }}); // (cut by width : a cut by bytes could split a character)
 				if (options.size() >= 6) break; // (the menu has to fit on the screen)
 			}
 			show_menu_rows(tr("Add to a playlist", "Añadir a una lista"), options);
@@ -650,8 +653,19 @@ void update_overlay_menu(Hid_info *key) {
 		key->touch_x = key->touch_y = -1;
 		key->p_touch = false;
 	} else {
-		if (holding_touch && key->touch_x == -1 && last_touch_x != -1) {
-			if (in_icon(last_touch_x, last_touch_y)) {
+	// where a touch lands : the menu icon, an item of the bar or a row of the menu (-1 : nowhere). A tap counts only when the finger
+	// comes up on the same place where it went down (dragging from Home to More no longer opens More).
+	static int press_zone = -1;
+	auto zone_at = [](int x, int y) -> int {
+		if (in_icon(x, y)) return 1000;
+		if (nav_at(x, y) != -1) return nav_at(x, y);
+		if (menu_status != CLOSED && content_at(x, y) != -1) return 100 + content_at(x, y);
+		return -1;
+	};
+	if (holding_touch && key->touch_x == -1 && last_touch_x != -1) {
+	if (zone_at(last_touch_x, last_touch_y) != press_zone) {
+		// released somewhere else : cancelled
+	} else if (in_icon(last_touch_x, last_touch_y)) {
 				if (menu_status == CLOSED) {
 					menu_status = OPEN;
 				} else {
@@ -734,11 +748,14 @@ void update_overlay_menu(Hid_info *key) {
 
 		if (key->p_touch) {
 			if (in_icon(key->touch_x, key->touch_y)) {
-				holding_touch = true;
+			holding_touch = true;
+			press_zone = zone_at(key->touch_x, key->touch_y);
 			} else if (nav_at(key->touch_x, key->touch_y) != -1) {
-				holding_touch = true;
+			holding_touch = true;
+			press_zone = zone_at(key->touch_x, key->touch_y);
 			} else if (menu_status != CLOSED && content_at(key->touch_x, key->touch_y) != -1) {
-				holding_touch = true;
+			holding_touch = true;
+			press_zone = zone_at(key->touch_x, key->touch_y);
 			} else {
 				menu_status = CLOSED;
 			}

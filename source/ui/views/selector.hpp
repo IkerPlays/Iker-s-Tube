@@ -40,11 +40,8 @@ struct SelectorView : public FixedSizeView {
 		if (id < 0 || id >= button_num) {
 			return -1;
 		}
-		double remainder = (x - x0) - id * margin_x_size() * (1 + MARGIN_BUTTON_RATIO);
-		if (remainder >= margin_x_size() && remainder <= margin_x_size() * (1 + MARGIN_BUTTON_RATIO)) {
-			return id;
-		}
-		return -1;
+		// the little gap between two buttons counts for the button before it : a thumb that lands on the gap still picks one
+		return id;
 	}
 
 	CallBackFuncType on_change_func;

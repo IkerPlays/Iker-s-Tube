@@ -107,3 +107,17 @@ const char *tr_static(const char *en, const char *es) {
 	}
 	return it->second.c_str();
 }
+
+std::string friendly_error(const std::string &raw) {
+	if (raw.empty()) return raw;
+	std::string low = raw;
+	for (auto &c : low) c = tolower((unsigned char)c);
+	auto has = [&](const char *word) { return low.find(word) != std::string::npos; };
+	if (var_wifi_state != 2) return tr("No internet connection", "Sin conexión a internet");
+	if (has("resolve")) return tr("Could not reach the server (DNS)", "No se pudo llegar al servidor (DNS)");
+	if (has("timed out") || has("timeout")) return tr("The connection timed out", "La conexión tardó demasiado");
+	if (has("ssl") || has("certificate")) return tr("Secure connection failed", "Falló la conexión segura");
+	if (has("429") || has("too many")) return tr("YouTube is busy, try again later", "YouTube está saturado, prueba más tarde");
+	if (has("network request failed") || has("http request failed") || has("empty response")) return tr("Network problem, try again", "Problema de red, inténtalo de nuevo");
+	return raw;
+}

@@ -67,7 +67,17 @@ void Logger::log(LogLevel level, const std::string &str) {
 		var_need_refresh = true;
 	}
 	if (level == LogLevel::WARNING || level == LogLevel::ERROR) {
+	// the same line again and again (a thumbnail that keeps failing) is written to the SD card only now and then
+	static std::string last_line;
+	static int repeats = 0;
+	if (str == last_line) {
+		repeats++;
+		if (repeats % 50 == 0) append_to_log_file(logs.back().str + " (x" + std::to_string(repeats) + ")");
+	} else {
+		last_line = str;
+		repeats = 0;
 		append_to_log_file(logs.back().str);
+	}
 	}
 	content_lock.unlock();
 }

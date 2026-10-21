@@ -84,7 +84,7 @@ void Util_hid_query_key_state(Hid_info *out_key_state) {
 	out_key_state->cpad_x = circle_pos.dx;
 	out_key_state->cpad_y = circle_pos.dy;
 	out_key_state->touch_x_prev = ((prev_key_down | prev_key_held) & KEY_TOUCH) ? prev_touch_pos.px : -1;
-	out_key_state->touch_y_prev = ((prev_key_down | prev_key_held) & KEY_TOUCH) ? prev_touch_pos.px : -1;
+	out_key_state->touch_y_prev = ((prev_key_down | prev_key_held) & KEY_TOUCH) ? prev_touch_pos.py : -1;
 	out_key_state->touch_x = ((key_down | key_held) & KEY_TOUCH) ? touch_pos.px : -1;
 	out_key_state->touch_y = ((key_down | key_held) & KEY_TOUCH) ? touch_pos.py : -1;
 	out_key_state->count = count;

@@ -205,7 +205,7 @@ CURLMcode NetworkSessionList::curl_perform_requests() {
 					logger.error("curl",
 					             std::string("deep fail : ") + curl_easy_strerror(each_result) + " / " + req.errbuf);
 					res.fail = true;
-					res.error = req.errbuf;
+					res.error = req.errbuf[0] ? std::string(req.errbuf) : std::string(curl_easy_strerror(each_result)); // (libcurl does not always fill errbuf)
 				}
 				if (req.on_finish) {
 					req.on_finish(res, request_index);
@@ -266,8 +266,15 @@ NetworkResult NetworkSessionList::perform(const HttpRequest &request) {
 		this->curl_add_request(request, &result);
 		this->curl_perform_requests();
 		this->curl_clear_requests();
-		if (!result.fail || exiting || result.error.find("resolve") == std::string::npos) {
-			break;
+		if (!result.fail || exiting) {
+		break;
+		}
+		bool dns = result.error.find("resolve") == std::string::npos ? false : true;
+		// a GET that was cut by the network (reset, failed receive, failed handshake) is tried once more : repeating it is harmless
+		bool cut = attempt == 0 && request.method == "GET" &&
+		           (result.error.find("Recv failure") != std::string::npos || result.error.find("reset") != std::string::npos || result.error.find("SSL connect error") != std::string::npos);
+		if (!dns && !cut) {
+		break;
 		}
 		usleep(800000);
 	}
@@ -277,7 +284,7 @@ std::vector<NetworkResult> NetworkSessionList::perform(const std::vector<HttpReq
 	std::vector<NetworkResult> results(requests.size());
 
 	if (!this->inited) {
-		for (auto result : results) {
+		for (auto &result : results) { // (by reference : a copy would leave the real results looking successful)
 			result.fail = true;
 			result.error = "invalid session list";
 		}

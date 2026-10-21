@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "headers.hpp"
 #include "util/result_filter.hpp"
 #include "data_io/history.hpp"
@@ -18,7 +19,7 @@ static void hidden_prepare() {}
 static void hidden_load_locked() {
 	if (hidden_loaded) return;
 	hidden_loaded = true;
-	FILE *f = fopen(HIDDEN_PATH, "r");
+	FILE *f = fopen_or_recover(HIDDEN_PATH, HIDDEN_PATH ".tmp", "r");
 	if (!f) return;
 	char line[600];
 	while (fgets(line, sizeof line, f)) {
@@ -29,10 +30,9 @@ static void hidden_load_locked() {
 	fclose(f);
 }
 static void hidden_save_locked() {
-	FILE *f = fopen(HIDDEN_PATH, "w");
-	if (!f) return;
-	for (auto &n : hidden_names) fprintf(f, "%s\n", n.c_str());
-	fclose(f);
+	std::string content;
+	for (auto &n : hidden_names) content += n + "\n";
+	save_text_atomic(HIDDEN_PATH, content);
 }
 
 bool hidden_channel_is(const std::string &name) {
