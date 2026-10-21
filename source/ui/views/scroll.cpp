@@ -22,7 +22,7 @@ void ScrollView::update_scroller(Hid_info key) {
 		    (var_time_to_turn_off_lcd == 0 || var_afk_time <= var_time_to_turn_off_lcd)) {
 			grabbed = true;
 		}
-	} else if (grabbed && !scrolling && key.touch_y != -1 && std::abs(key.touch_y - first_touch_y) >= 5) {
+	} else if (grabbed && !scrolling && key.touch_y != -1 && std::abs(key.touch_y - first_touch_y) >= 8) {
 		scrolling = true;
 		offset += first_touch_y - key.touch_y;
 	} else if (scrolling && key.touch_y != -1) {

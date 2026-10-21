@@ -83,6 +83,7 @@ volatile bool eof_reached = false;
 volatile bool audio_only_mode = false;
 volatile bool video_skip_drawing = false; // for performance reason, enabled when opening keyboard
 volatile int video_p_value = 360;
+static bool quality_chosen_by_hand = false; // (a quality picked on the quality selector wins over the data saver)
 volatile double seek_at_init_request = -1;
 static char vid_resume_id[16] = {0}; // id of the playing video, readable from the converter thread without a lock
 
@@ -1199,7 +1200,7 @@ void VideoPlayer_init(void) {
 		}
 	});
 	video_quality_selector_view = (new SelectorView(0, 0, 320, 35, false))
-	                                  ->set_texts({(std::function<std::string()>)[]() { return LOCALIZED(OFF);
+	                                  ->set_texts({(std::function<std::string()>)[]() { return tr("Audio","Audio");
 }
 }, 0)
 	                                  ->set_title([](const SelectorView &view) {
@@ -2549,7 +2550,12 @@ debug_info_view =
 					                                   auto &tracks = cur_video_info.audio_tracks;
 					                                   if (tracks.size() < 2) { // the video page found one : look for the others (the next load asks the ANDROID client)
 						                                   if (youtube_audio_probe_count == 0 || youtube_audio_probe_count == 1) {
-							                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio") + (youtube_audio_probe_info_get() != "" ? " (" + youtube_audio_probe_info_get().substr(0, 90) + ")" : std::string()));
+							                                   if (youtube_audio_probe_reached) {
+							                                   notice_show(tr("This video has only one audio track", "Este vídeo solo tiene una pista de audio"));
+						                                   } else {
+							                                   notice_show(tr("YouTube did not answer the audio request. Tap again to retry", "YouTube no respondió a la petición de audio. Toca otra vez para reintentar"));
+						                                   }
+						                                   logger.info("player", "audio tracks : " + youtube_audio_probe_info_get());
 							                                   youtube_audio_probe_count = -1;
 							                                   return;
 						                                   }
@@ -2559,6 +2565,8 @@ debug_info_view =
 							                                   seek_at_init_request = vid_current_pos;
 							                                   send_change_video_request_wo_lock(cur_playing_url, true, false, true);
 							                                   video_retry_left = MAX_RETRY_CNT;
+						                                   } else {
+							                                   notice_show(tr("Wait, the video is still loading", "Espera, el vídeo aún está cargando"));
 						                                   }
 						                                   return;
 					                                   }
@@ -2573,6 +2581,8 @@ debug_info_view =
 						                                   seek_at_init_request = vid_current_pos;
 						                                   send_change_video_request_wo_lock(cur_playing_url, true, false, true);
 						                                   video_retry_left = MAX_RETRY_CNT;
+					                                   } else {
+						                                   notice_show(tr("Wait, the video is still loading", "Espera, el vídeo aún está cargando"));
 					                                   }
 				                                   }),
 				                         make_tool(
@@ -3250,14 +3260,21 @@ debug_info_view =
 		    available_qualities.push_back(i.first);
 	    }
 
-	    video_quality_selector_view->button_texts = {(std::function<std::string()>)[](){return LOCALIZED(OFF);
+	    video_quality_selector_view->button_texts = {(std::function<std::string()>)[](){return tr("Audio","Audio");
     }
     }
     ;
-    for (auto i : available_qualities) {
-	    if (var_is_new3ds || i <= 240) {
-		    video_quality_selector_view->button_texts.push_back(std::to_string(i) + "p");
+    { // only the qualities this console plays are offered, and the buttons and the list stay in the same order
+	    std::vector<int> playable;
+	    for (auto i : available_qualities) {
+		    if (var_is_new3ds || i <= 240) {
+			    playable.push_back(i);
+		    }
 	    }
+	    available_qualities = playable;
+    }
+    for (auto i : available_qualities) {
+	    video_quality_selector_view->button_texts.push_back(std::to_string(i) + "p");
     }
     video_quality_selector_view->button_num = video_quality_selector_view->button_texts.size();
 
@@ -3269,7 +3286,7 @@ debug_info_view =
     if (var_auto_quality && var_auto_quality_cap > 0 && wanted_quality > var_auto_quality_cap) {
 	    wanted_quality = var_auto_quality_cap;
     }
-    if (var_data_saver && wanted_quality > 240) {
+    if (var_data_saver && wanted_quality > 240 && !quality_chosen_by_hand) {
 	    wanted_quality = 240;
     }
     const bool offline_item = tmp_video_info.url.compare(0, 8, "offline:") == 0;
@@ -3336,6 +3353,7 @@ debug_info_view =
 		    }
 		    audio_only_mode = true;
 	    } else {
+		    if (view.selected_button - 1 >= (int)available_qualities.size()) return;
 		    int new_p_value = available_qualities[view.selected_button - 1];
 		    if (audio_only_mode || video_p_value != new_p_value) {
 			    changed = true;
@@ -3351,6 +3369,9 @@ debug_info_view =
 		    }
 	    }
 	    var_video_quality = audio_only_mode ? 0 : video_p_value;
+	    quality_chosen_by_hand = true; // a quality picked here is not lowered by the data saver or the automatic quality
+	    var_auto_quality_cap = 0;
+	    if (changed) notice_show(audio_only_mode ? tr("Audio only", "Solo audio") : tr("Quality: ", "Calidad: ") + std::to_string((int)video_p_value) + "p");
 	    misc_tasks_request(TASK_SAVE_SETTINGS);
     });
     // update playlist tab

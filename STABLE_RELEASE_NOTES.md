@@ -80,6 +80,9 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
   rounded dialogs and menus with a shadow, round channel and comment pictures, a new play bar, a new start screen, and a pill Subscribe button.
   On bright accent colors the text on accent shapes turns dark so it stays readable.
 
+- - **Quality selector fixed.** The quality you pick in the player is kept: the data saver and automatic quality no longer undo it, the buttons always match the list, and a notice confirms the change. The first button is now called Audio.
+- **Audio tracks fixed.** The audio language search asks YouTube like the video page does (three clients, same visitor data) and shows a clear message instead of technical text when YouTube does not answer.
+- **Taps.** A tap that moves a few pixels is no longer taken as a scroll, so buttons respond more reliably on the touch screen.
 
 ## Installing
 

@@ -29,19 +29,24 @@ std::string youtube_audio_probe_info_get() {
 	LightLock_Unlock(&probe_info_lock);
 	return copy;
 }
+static std::string build_player_body(int client, const std::string &video_id, const std::string &playlist_id,
+                                     const std::string &visitor_data);
+static std::string last_visitor_data; // the visitor data of the last video page (the probe asks YouTube the same way)
+bool youtube_audio_probe_reached = false; // true when YouTube answered the last probe (so "only one track" is a fact)
+
 static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std::string &video_id) {
 	std::vector<YouTubeVideoDetail::AudioTrack> out;
-	static const char *clients[2] = {
-	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID","clientVersion": "19.51.37","androidSdkVersion": 34}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})",
-	    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android","osVersion": "14"}}, "videoId": "%2", "contentCheckOk": true, "racyCheckOk": true})"};
 	std::string info;
 	std::vector<YouTubeVideoDetail::AudioTrack> best;
-	for (int c = 0; c < 2 && best.size() < 2; c++) {
+	bool reached = false;
+	// the clients that are known to answer (the same requests as the video page, with the same visitor data), the first
+	// one that lists the dubbed tracks wins
+	static const int clients[3] = {1, 0, 2};
+	static const char *names[3] = {"VR", "ANDROID", "VISIONOS"};
+	for (int c = 0; c < 3 && best.size() < 2 && !youtube_load_cancel; c++) {
 		out.clear();
-		std::string body = clients[c];
-		body = std::regex_replace(body, std::regex("%0"), language_code);
-		body = std::regex_replace(body, std::regex("%1"), country_code);
-		body = std::regex_replace(body, std::regex("%2"), video_id);
+		std::string body = build_player_body(clients[c], video_id, "", last_visitor_data);
+		body.insert(body.size() - 1, R"(, "contentCheckOk": true, "racyCheckOk": true)");
 		std::map<std::string, std::string> headers;
 		if (OAuth::is_authenticated()) headers["Authorization"] = "Bearer " + OAuth::get_access_token();
 		int formats = 0, audio = 0, with_track = 0, with_url = 0;
@@ -50,6 +55,7 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 		    [&]() { return http_post_json(get_innertube_api_url("player"), body, headers); },
 		    [&](Document &, RJson data) {
 			    status = data["playabilityStatus"]["status"].string_value();
+			    if (status != "") reached = true;
 			    for (auto f : data["streamingData"]["adaptiveFormats"].array_items()) {
 				    formats++;
 				    std::string mime = f["mimeType"].string_value();
@@ -77,10 +83,10 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 		    },
 		    [&](const std::string &error) { status = "error " + error.substr(0, 40); });
 		if (out.size() > best.size()) best = out;
-		info += std::string(c ? " | VR " : "ANDROID ") + status + " formats=" + std::to_string(formats) +
-		                            " audio=" + std::to_string(audio) + " tracks=" + std::to_string(with_track) +
-		                            " urls=" + std::to_string(with_url);
+		info += std::string(info.empty() ? "" : " | ") + names[c] + " " + status + " formats=" + std::to_string(formats) +
+		        " audio=" + std::to_string(audio) + " tracks=" + std::to_string(with_track) + " urls=" + std::to_string(with_url);
 	}
+	youtube_audio_probe_reached = reached;
 	LightLock_Lock(&probe_info_lock);
 	probe_info = info;
 	LightLock_Unlock(&probe_info_lock);
@@ -737,6 +743,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 	youtube_load_cancel = false;
 	std::string video_content;
 	std::string visitor_data = extractVisitorData();
+	if (visitor_data != "") last_visitor_data = visitor_data;
 	if (youtube_load_cancel) {
 		res.error = "cancelled";
 		return res;
