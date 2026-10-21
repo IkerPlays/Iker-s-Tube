@@ -56,12 +56,18 @@ static float boot_progress = 0;
 static void Menu_draw_loading(float progress, const std::string &text) {
 	boot_progress = std::max(boot_progress, progress);
 	Draw_frame_ready();
-	Draw_screen_ready(1, 0xFF181212);
-	Draw_screen_ready(2, 0xFF181212);
-	Draw_screen_ready(0, 0xFF181212);
-	if (text != "") Draw_x_centered(text, 0, 400, 96, 0.6, 0.6, 0xFFFFFFFF);
-	Draw_texture(var_square_image[0], 0xFF3A3030, 100, 126, 200, 6);
-	Draw_texture(var_square_image[0], COLOR_ACCENT, 100, 126, 200 * std::min(1.0f, std::max(0.0f, boot_progress)), 6);
+	Draw_screen_ready(1, UI_PAGE_COLOR); // the bottom screen : the version and a hint
+	Draw_x_centered("Iker's Tube", 0, 320, 98, 0.7, 0.7, DEFAULT_TEXT_COLOR);
+	Draw_x_centered(DEF_CURRENT_APP_VER, 0, 320, 122, 0.45, 0.45, LIGHT1_TEXT_COLOR);
+	Draw_x_centered(tr("YouTube for your Nintendo 3DS", "YouTube para tu Nintendo 3DS"), 0, 320, 150, 0.45, 0.45, LIGHT0_TEXT_COLOR);
+	Draw_screen_ready(2, UI_PAGE_COLOR);
+	Draw_screen_ready(0, UI_PAGE_COLOR); // the top screen : a soft fade, the logo and the progress bar
+	ui_gradient_v(0, 0, 400, 240, UI_PAGE_COLOR, ui_mix(UI_PAGE_COLOR, COLOR_ACCENT, 0.16f), 6);
+	logo_draw(200, 92);
+	if (text != "") Draw_x_centered(text, 0, 400, 174, 0.5, 0.5, LIGHT0_TEXT_COLOR);
+	Draw_round_rect(110, 197, 180, 6, 3, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.5f));
+	float fill = 180 * std::min(1.0f, std::max(0.0f, boot_progress));
+	if (fill > 0) Draw_round_rect(110, 197, std::max(6.0f, fill), 6, 3, COLOR_ACCENT);
 	Draw_apply_draw();
 }
 static void Menu_boot_step(float progress) { // drawn twice : both buffers must have it so it does not flash

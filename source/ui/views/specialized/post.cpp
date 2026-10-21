@@ -38,11 +38,11 @@ void PostView::draw_() const {
 	if (lines_shown < content_lines.size()) {
 		cur_y += SMALL_MARGIN;
 		if (cur_y < 240 && cur_y + DEFAULT_FONT_INTERVAL > 0) {
-			Draw(LOCALIZED(SHOW_MORE), content_x_pos(), cur_y - 2, 0.5, 0.5, DEF_DRAW_GRAY);
+			Draw(LOCALIZED(SHOW_MORE), content_x_pos(), cur_y - 2, 0.5, 0.5, LIGHT1_TEXT_COLOR);
 			if (show_more_holding) {
-				Draw_line(content_x_pos(), cur_y + DEFAULT_FONT_INTERVAL, DEF_DRAW_GRAY,
+				Draw_line(content_x_pos(), cur_y + DEFAULT_FONT_INTERVAL, LIGHT1_TEXT_COLOR,
 				          content_x_pos() + Draw_get_width(LOCALIZED(SHOW_MORE), 0.5), cur_y + DEFAULT_FONT_INTERVAL,
-				          DEF_DRAW_GRAY, 1);
+				          LIGHT1_TEXT_COLOR, 1);
 			}
 		}
 		cur_y += DEFAULT_FONT_INTERVAL;

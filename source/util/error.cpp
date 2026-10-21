@@ -1,5 +1,6 @@
 ﻿#include "headers.hpp"
 #include "ui/colors.hpp"
+#include "ui/style.hpp"
 
 bool err_error_display = false;
 std::string err_error_summary = "N/A";
@@ -61,21 +62,24 @@ void Util_err_main(Hid_info key) {
 }
 
 void Util_err_draw(void) {
-	Draw_texture(var_square_image[0], DEF_DRAW_LIGHT_GRAY, 20.0, 30.0, 280.0, 150.0);
-	Draw_texture(var_square_image[0], DEF_DRAW_YELLOW, 150.0, 150.0, 55.0, 20.0);
-	Draw_texture(var_square_image[0], DEF_DRAW_YELLOW, 209.0, 150.0, 50.0, 20.0);
+	Draw_texture(var_square_image[0], 0x66000000, 0, 0, 320, 240); // the screen behind goes dim
+	ui_shadow(20, 30, 280, 150, 12);
+	Draw_round_rect(20, 30, 280, 150, 12, UI_CARD_COLOR);
+	Draw_round_rect(20, 30, 280, 4, 2, COLOR_ACCENT);
 
-	Draw("Summary : ", 22.5, 40.0, 0.45, 0.45, DEF_DRAW_RED);
-	Draw(err_error_summary, 22.5, 50.0, 0.45, 0.45, DEF_DRAW_BLACK);
-	Draw("Description : ", 22.5, 60.0, 0.45, 0.45, DEF_DRAW_RED);
+	Draw("Summary : ", 26, 40.0, 0.45, 0.45, COLOR_ACCENT);
+	Draw(err_error_summary, 26, 50.0, 0.45, 0.45, DEFAULT_TEXT_COLOR);
+	Draw("Description : ", 26, 60.0, 0.45, 0.45, COLOR_ACCENT);
 	{ // a long description goes on a second line instead of running off the panel
-		auto lines = truncate_str(err_error_description, 270, 2, 0.4, 0.4);
-		for (size_t i = 0; i < lines.size(); i++) Draw(lines[i], 22.5, 70.0 + 9.0 * i, 0.4, 0.4, DEF_DRAW_BLACK);
+		auto lines = truncate_str(err_error_description, 268, 2, 0.4, 0.4);
+		for (size_t i = 0; i < lines.size(); i++) Draw(lines[i], 26, 70.0 + 9.0 * i, 0.4, 0.4, LIGHT0_TEXT_COLOR);
 	}
-	Draw("Place : ", 22.5, 90.0, 0.45, 0.45, DEF_DRAW_RED);
-	Draw(err_error_place, 22.5, 100.0, 0.45, 0.45, DEF_DRAW_BLACK);
-	Draw("Error code : ", 22.5, 110.0, 0.45, 0.45, DEF_DRAW_RED);
-	Draw(err_error_code, 22.5, 120.0, 0.45, 0.45, DEF_DRAW_BLACK);
-	Draw("Close (A)", 152.5, 152.5, 0.375, 0.375, DEF_DRAW_BLACK);
-	Draw("Save (X)", 211.5, 152.5, 0.375, 0.375, DEF_DRAW_BLACK);
+	Draw("Place : ", 26, 90.0, 0.45, 0.45, COLOR_ACCENT);
+	Draw(err_error_place, 26, 100.0, 0.45, 0.45, DEFAULT_TEXT_COLOR);
+	Draw("Error code : ", 26, 110.0, 0.45, 0.45, COLOR_ACCENT);
+	Draw(err_error_code, 26, 120.0, 0.45, 0.45, DEFAULT_TEXT_COLOR);
+	Draw_round_rect(150.0, 150.0, 55.0, 20.0, UI_RADIUS_BUTTON, COLOR_ACCENT);
+	Draw_round_rect(209.0, 150.0, 50.0, 20.0, UI_RADIUS_BUTTON, UI_RAISED_COLOR);
+	Draw_xy_centered("Close (A)", 150.0, 205.0, 150.0, 170.0, 0.375, 0.375, 0xFFFFFFFF);
+	Draw_xy_centered("Save (X)", 209.0, 259.0, 150.0, 170.0, 0.375, 0.375, DEFAULT_TEXT_COLOR);
 }

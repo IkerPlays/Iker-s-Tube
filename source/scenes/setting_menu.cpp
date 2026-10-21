@@ -2318,7 +2318,7 @@ void Sem_init(void) {
 						}),
 					(new EmptyView(0, 0, 320, SMALL_MARGIN)),
 					(update_progress_bar_view = (new ProgressBarView(10, 0, 300, 5)))
-						->set_get_color([] () { return DEF_DRAW_BLUE; })
+						->set_get_color([] () { return (u32)COLOR_ACCENT; })
 						->set_is_visible(false),
 					(new EmptyView(0, 0, 320, SMALL_MARGIN)),
 					(new TextView(10, 0, 100, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))

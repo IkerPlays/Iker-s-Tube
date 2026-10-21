@@ -2,6 +2,7 @@
 // Iker UI : the shapes the whole interface is made of. Everything is drawn with rectangles, so it works on both screens.
 #include <math.h>
 #include <string>
+#include <algorithm>
 #include "ui/draw/draw.hpp"
 #include "ui/colors.hpp"
 #include "variables.hpp"
@@ -44,4 +45,13 @@ static inline void ui_shadow(float x, float y, float w, float h, float r) {
 static inline void ui_check(float x, float y, u32 color) {
 	static const int steps[7][2] = {{0, 3}, {1, 4}, {2, 5}, {3, 4}, {4, 3}, {5, 2}, {6, 1}};
 	for (auto &s : steps) Draw_texture(var_square_image[0], color, x + s[0], y + s[1] - 1, 1, 2);
+}
+
+// A vertical fade from color c1 (top) to color c2 (bottom), drawn as thin strips.
+static inline void ui_gradient_v(float x, float y, float w, float h, u32 c1, u32 c2, int strip = 4) {
+	int steps = std::max(1, (int)(h / strip));
+	for (int i = 0; i < steps; i++) {
+		float y0 = y + h * i / steps, y1 = y + h * (i + 1) / steps;
+		Draw_texture(var_square_image[0], ui_mix(c1, c2, (float)i / std::max(1, steps - 1)), x, y0, w, y1 - y0 + 0.5f);
+	}
 }

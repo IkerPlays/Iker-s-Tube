@@ -68,8 +68,8 @@ void qr_popup_draw() {
 		}
 	}
 	Draw_xy_centered(tr("Scan with your phone", "Escanéalo con tu móvil"), 0, 320, y0 + total + 2, y0 + total + 20, 0.5, 0.5, DEF_DRAW_BLACK);
-	Draw_xy_centered(qr_text, 0, 320, y0 + total + 18, y0 + total + 32, 0.38, 0.38, DEF_DRAW_GRAY);
-	Draw_xy_centered(tr("Tap or press B to close", "Toca o pulsa B para cerrar"), 0, 320, 215, 235, 0.45, 0.45, DEF_DRAW_GRAY);
+	Draw_xy_centered(qr_text, 0, 320, y0 + total + 18, y0 + total + 32, 0.38, 0.38, RGB_(0x66, 0x6B, 0x7A));
+	Draw_xy_centered(tr("Tap or press B to close", "Toca o pulsa B para cerrar"), 0, 320, 215, 235, 0.45, 0.45, RGB_(0x66, 0x6B, 0x7A));
 }
 
 bool qr_popup_update(Hid_info key) {

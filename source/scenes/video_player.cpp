@@ -441,7 +441,7 @@ if (marks.empty()) return;
 			                           }}});
 		        }));
 	}
-	bookmarks_list_view->views.push_back((new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+	bookmarks_list_view->views.push_back((new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; }));
 }
 
 // applies the speed remembered for the channel of the playing video once its decoder is ready
@@ -1305,7 +1305,7 @@ debug_info_view =
 	return LOCALIZED(RELOAD); })
 	                 ->set_x_alignment(TextView::XAlign::CENTER)
 	                 ->set_get_background_color([](const View &) {
-	return is_async_task_running(load_video_page) ? DEF_DRAW_LIGHT_GRAY : DEF_DRAW_WEAK_GREEN;
+	return is_async_task_running(load_video_page) ? (u32)UI_RAISED_COLOR : ui_mix(UI_CARD_COLOR, COLOR_ACCENT, 0.4f);
 	                 })
 	                 ->set_on_view_released([](View &view) {
 	if (!is_async_task_running(load_video_page)) {
@@ -1420,7 +1420,7 @@ debug_info_view =
 	                 ->set_x_alignment(TextView::XAlign::CENTER)
 	                 ->set_text_offset(0, -1)
 	                 ->set_get_background_color([](const View &) {
-	return DEF_DRAW_WEAK_YELLOW; })
+	return ui_mix(UI_CARD_COLOR, COLOR_ACCENT, 0.3f); })
 	                 ->set_on_view_released([](View &view) {
 	equalizer_popup_view->set_is_visible(true); }),
 	             (new RuleView(0, 0, 320, SMALL_MARGIN)), debug_info_view
@@ -2048,7 +2048,7 @@ debug_info_view =
 				            x += 16 + SMALL_MARGIN;
 				            Draw(cur_video_info.dislike_count_str, x, y, 0.5, 0.5, LIGHT0_TEXT_COLOR);
 			            }),
-			        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }),
+			        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; }),
 			        (new HorizontalListView(0, 0, ICON_SIZE)) // author
 			            ->set_views(
 			                {(new EmptyView(0, 0, SMALL_MARGIN, ICON_SIZE)), new_main_icon_view,
@@ -2126,7 +2126,7 @@ debug_info_view =
 					                           var_need_refresh = true;
 				                           }
 			                           })}),
-			        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; })};
+			        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; })};
 			    if (tmp_video_info.is_upcoming) {
 				    std::vector<View *> add_views = {
 				        (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
@@ -2140,7 +2140,7 @@ debug_info_view =
 					            var_need_refresh = true; // the countdown keeps changing
 					            return tr("Starts in ", "Empieza en ") + buf;
 				            }),
-				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; })};
+				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; })};
 				    main_tab_views.insert(main_tab_views.end(), add_views.begin(), add_views.end());
 			    }
 			    {
@@ -2217,7 +2217,7 @@ debug_info_view =
 				                                 ->set_views({(new EmptyView(0, 0, SMALL_MARGIN, 20)), play_button,
 				                                              reload_button, favorite_button, qr_button}));
 				    main_tab_views.push_back(
-				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; }));
 			    }
 			    {
 				    // tools : jump 10 seconds back / forward (touch is only on the bottom screen, so these replace double tap), A-B loop
@@ -2797,7 +2797,7 @@ debug_info_view =
 						                                   translate_async(cur_video_info.title, cur_video_info.title + "\n\n" + cur_video_info.description);
 				                                   })}));
 				    main_tab_views.push_back(
-				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; }));
 
 				    // modern look : the buttons of the rows are rounded and separated by a small gap. A row is not scrollable, so a row
 				    // with more buttons than the 320 pixels of the screen is split into several rows (otherwise the extra buttons
@@ -2927,7 +2927,7 @@ debug_info_view =
 						            }));
 					    }
 					    main_tab_views.push_back(
-					        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; }));
+					        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; }));
 				    }
 			    }
 			    {
@@ -2962,7 +2962,7 @@ debug_info_view =
 
 				    std::vector<View *> add_views = {
 				        description_view,
-				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return DEF_DRAW_GRAY; })};
+				        (new RuleView(0, 0, 320, SMALL_MARGIN * 2))->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; })};
 				    main_tab_views.insert(main_tab_views.end(), add_views.begin(), add_views.end());
 			    }
 		    }
@@ -3999,28 +3999,30 @@ static void autoplay_countdown_tick() {
 	    float y_l = 240 - VIDEO_PLAYING_BAR_HEIGHT;
 	    float y_center = 240 - (float)VIDEO_PLAYING_BAR_HEIGHT / 2;
 
-	    Draw_texture(var_square_image[0], DEF_DRAW_DARK_GRAY, 0, y_l, 320, VIDEO_PLAYING_BAR_HEIGHT);
+	    Draw_texture(var_square_image[0], UI_CARD_COLOR, 0, y_l, 320, VIDEO_PLAYING_BAR_HEIGHT);
+	    	    Draw_texture(var_square_image[0], UI_OUTLINE_COLOR, 0, y_l, 320, 1);
 
+	    const float button_r = std::min(9.0f, VIDEO_PLAYING_BAR_HEIGHT / 2.0f - 1); // the play / pause button : an accent disc
+	    C2D_DrawCircleSolid(14, y_center, 0, button_r, COLOR_ACCENT);
 	    if (get_network_waiting_status()) { // loading
-		    C2D_DrawCircleSolid(6, y_center, 0, 2, DEF_DRAW_WHITE);
-		    C2D_DrawCircleSolid(12, y_center, 0, 2, DEF_DRAW_WHITE);
-		    C2D_DrawCircleSolid(18, y_center, 0, 2, DEF_DRAW_WHITE);
-	    } else if (vid_pausing || vid_pausing_seek || !vid_play_request) { // pausing
-		    C2D_DrawTriangle(8, y_l + 3, DEF_DRAW_WHITE, 8, 240 - 4, DEF_DRAW_WHITE,
-		                     8 + (VIDEO_PLAYING_BAR_HEIGHT - 6) * std::sqrt(3) / 2, y_center, DEF_DRAW_WHITE, 0);
-	    } else { // playing
-		    C2D_DrawRectSolid(8, y_l + 3, 0, 4, VIDEO_PLAYING_BAR_HEIGHT - 6, DEF_DRAW_WHITE);
-		    C2D_DrawRectSolid(16, y_l + 3, 0, 4, VIDEO_PLAYING_BAR_HEIGHT - 6, DEF_DRAW_WHITE);
+	    C2D_DrawCircleSolid(9, y_center, 0, 1.5f, DEF_DRAW_WHITE);
+	    C2D_DrawCircleSolid(14, y_center, 0, 1.5f, DEF_DRAW_WHITE);
+	    C2D_DrawCircleSolid(19, y_center, 0, 1.5f, DEF_DRAW_WHITE);
+	    } else if (vid_pausing || vid_pausing_seek || !vid_play_request) { // pausing : a play triangle
+	    C2D_DrawTriangle(12, y_center - 5, DEF_DRAW_WHITE, 12, y_center + 5, DEF_DRAW_WHITE, 19, y_center, DEF_DRAW_WHITE, 0);
+	    } else { // playing : two bars
+	    C2D_DrawRectSolid(11.5f, y_center - 5, 0, 3, 10, DEF_DRAW_WHITE);
+	    C2D_DrawRectSolid(16.5f, y_center - 5, 0, 3, 10, DEF_DRAW_WHITE);
 	    }
 	    // maximize icon
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - MAXIMIZE_ICON_WIDTH + 4, y_l + 3, 8, 3);
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - MAXIMIZE_ICON_WIDTH + 4, y_l + 3, 3, 5);
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - MAXIMIZE_ICON_WIDTH + 4, 240 - 6, 8, 3);
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - MAXIMIZE_ICON_WIDTH + 4, 240 - 8, 3, 5);
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - 12, y_l + 3, 8, 3);
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - 7, y_l + 3, 3, 5);
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - 12, 240 - 6, 8, 3);
-	    Draw_texture(var_square_image[0], DEF_DRAW_WHITE, 320 - 7, 240 - 8, 3, 5);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - MAXIMIZE_ICON_WIDTH + 4, y_l + 3, 8, 3);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - MAXIMIZE_ICON_WIDTH + 4, y_l + 3, 3, 5);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - MAXIMIZE_ICON_WIDTH + 4, 240 - 6, 8, 3);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - MAXIMIZE_ICON_WIDTH + 4, 240 - 8, 3, 5);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - 12, y_l + 3, 8, 3);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - 7, y_l + 3, 3, 5);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - 12, 240 - 6, 8, 3);
+	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - 7, 240 - 8, 3, 5);
 
 	    double bar_timestamp = vid_current_pos;
 	    if (bar_grabbed) {
@@ -4040,10 +4042,10 @@ static void autoplay_countdown_tick() {
 
 	    float time_str_w = std::max(time_str0_w, time_str1_w);
 	    Draw(time_str0, bar_x_r + TIME_STR_LEFT_MARGIN + (time_str_w - time_str0_w) / 2, y_l - 1, SMALL_FONT_SIZE,
-	         SMALL_FONT_SIZE, DEF_DRAW_WHITE);
+	    SMALL_FONT_SIZE, DEFAULT_TEXT_COLOR);
 	    Draw(time_str1, bar_x_r + TIME_STR_LEFT_MARGIN + (time_str_w - time_str1_w) / 2, y_center - 2, SMALL_FONT_SIZE,
-	         SMALL_FONT_SIZE, DEF_DRAW_WHITE);
-	    Draw_texture(var_square_image[0], DEF_DRAW_LIGHT_GRAY, bar_x_l, y_center - 2, bar_x_r - bar_x_l, 4);
+	    SMALL_FONT_SIZE, LIGHT1_TEXT_COLOR);
+	    Draw_round_rect(bar_x_l, y_center - 2, bar_x_r - bar_x_l, 4, 2, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.7f)); // the track
 	    if (bar_grabbed && vid_duration != 0) {
 		    draw_seek_preview(bar_timestamp, bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_l);
 	    }
@@ -4051,7 +4053,7 @@ static void autoplay_countdown_tick() {
 	    	double buffered = network_decoder.get_forward_buffer();
 	    	if (buffered > 0.5) {
 	    		double end_progress = network_decoder.get_bar_pos_from_timestamp(std::min<double>(vid_duration, bar_timestamp + buffered));
-	    		Draw_texture(var_square_image[0], 0xFF909090, bar_x_l, y_center - 2, (bar_x_r - bar_x_l) * std::max(0.0, std::min(1.0, end_progress)), 4);
+	    		Draw_round_rect(bar_x_l, y_center - 2, std::max(4.0, (bar_x_r - bar_x_l) * std::max(0.0, std::min(1.0, end_progress))), 4, 2, ui_mix(UI_OUTLINE_COLOR, LIGHT1_TEXT_COLOR, 0.55f));
 	    	}
 	    }
 	    if (vid_duration != 0) { // marks on the bar: the parts SponsorBlock skips (green) and where each chapter starts
@@ -4064,11 +4066,11 @@ static void autoplay_countdown_tick() {
 		    sb_lock.unlock();
 	    }
 	    if (vid_duration != 0) {
-		    Draw_texture(var_square_image[0], 0xFF3333D0, bar_x_l, y_center - 2, (bar_x_r - bar_x_l) * vid_progress, 4);
+		    if (vid_progress > 0) Draw_round_rect(bar_x_l, y_center - 2, std::max(4.0, (bar_x_r - bar_x_l) * vid_progress), 4, 2, COLOR_ACCENT);
 		    for (auto &chapter : current_chapters) { // where each chapter starts
 			    if (chapter.first < 1) continue;
 			    float x = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(chapter.first);
-			    Draw_texture(var_square_image[0], DEF_DRAW_DARK_GRAY, x - 1, y_center - 2, 2, 4);
+			    Draw_texture(var_square_image[0], UI_CARD_COLOR, x - 1, y_center - 2, 2, 4);
 		    }
 		    if (bookmark_ticks_for == playing_video_info.id) { // your bookmarks : small white marks above the bar
 		    	for (double at : bookmark_ticks) {
@@ -4081,8 +4083,8 @@ static void autoplay_countdown_tick() {
 		    	float xb = ab_loop_b > ab_loop_a ? bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(ab_loop_b) : xa + 3;
 		    	Draw_texture(var_square_image[0], 0xFF00D8FF, xa, y_center + 3, std::max(3.0f, xb - xa), 2);
 		    }
-		    C2D_DrawCircleSolid(bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_center, 0, bar_grabbed ? 6 : 4,
-		    0xFF3333D0);
+		    C2D_DrawCircleSolid(bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_center, 0, bar_grabbed ? 6.5f : 5, 0xFFFFFFFF);
+		    C2D_DrawCircleSolid(bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_center, 0, bar_grabbed ? 4.5f : 3, COLOR_ACCENT);
 		    }
     }
     void video_update_playing_bar(Hid_info key) {

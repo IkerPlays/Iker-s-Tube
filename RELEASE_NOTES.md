@@ -1,1 +1,1 @@
-New look (part 1): a new color palette for every theme, video rows as rounded cards with rounded pictures and labels, yes/no settings as switches, segmented selectors, sliders with a handle, a new tab bar and bottom bar, rounded dialogs and menus with a shadow.
+New look (part 2): a new play bar in the player (accent play button, rounded track and handle), a new start screen with a soft background, logo and progress bar, a restyled error dialog and grid selector.

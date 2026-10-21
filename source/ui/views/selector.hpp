@@ -378,12 +378,12 @@ struct GridSelectorView : public FixedSizeView {
 	}
 
 	void draw_() const override {
-		Draw(title, x0 + SMALL_MARGIN, y0, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+		Draw(title, x0 + SMALL_MARGIN + 3, y0, 0.5, 0.5, LIGHT0_TEXT_COLOR);
 
 		if (has_info) {
 			double title_width = Draw_get_width(title, 0.5);
 			double info_x = x0 + SMALL_MARGIN + title_width + 5;
-			Draw("ⓘ", info_x, y0, 0.45, 0.5, 0xFFFF9030);
+			Draw("ⓘ", info_x, y0, 0.45, 0.5, COLOR_ACCENT);
 		}
 
 		auto pos = get_row_col_from_index(selected_button);
@@ -391,13 +391,7 @@ struct GridSelectorView : public FixedSizeView {
 		int c = pos.second;
 
 		if (r != -1) {
-			if (isBoolean_ && selected_button == 0) {
-				Draw_texture(var_square_image[0], DEF_DRAW_WEAK_RED, button_x_left(r, c), button_y_pos(r),
-				             button_x_size(r), button_y_size());
-			} else {
-				Draw_texture(var_square_image[0], DEF_DRAW_WEAK_GREEN, button_x_left(r, c), button_y_pos(r),
-				             button_x_size(r), button_y_size());
-			}
+			Draw_round_rect(button_x_left(r, c), button_y_pos(r), button_x_size(r), button_y_size(), var_round_buttons ? UI_RADIUS_BUTTON : 0, COLOR_ACCENT);
 		}
 
 		int global_idx = 0;
@@ -407,7 +401,7 @@ struct GridSelectorView : public FixedSizeView {
 			for (int j = 0; j < items; j++) {
 				if (global_idx < button_num) {
 					Draw_x_centered(button_texts[global_idx], button_x_left(i, j), button_x_right(i, j),
-					                button_y_pos(i), 0.5, 0.5, DEFAULT_TEXT_COLOR);
+					                button_y_pos(i), 0.5, 0.5, global_idx == selected_button ? 0xFFFFFFFF : (u32)DEFAULT_TEXT_COLOR);
 					global_idx++;
 				}
 			}
