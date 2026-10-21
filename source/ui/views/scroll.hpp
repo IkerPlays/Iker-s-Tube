@@ -8,6 +8,7 @@
 class ScrollView : public FixedSizeView {
   protected:
 	int offset = 0;
+		double offset_frac = 0; // the part of a pixel the inertia has not moved yet (a plain int lost it : scrolling down coasted shorter than up)
 
 	int last_touch_x = -1;
 	int last_touch_y = -1;

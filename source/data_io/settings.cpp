@@ -59,6 +59,15 @@ void load_settings() {
 		remove((SETTINGS_FILE_PATH + ".tmp").c_str());
 		remove((DEF_MAIN_DIR + "reset_settings.flag").c_str());
 	}
+	// "Restore the settings from before the crash" (Settings, Data) : the *.crashed copy that safe mode set aside comes back
+	if (access((DEF_MAIN_DIR + "restore_settings.flag").c_str(), F_OK) == 0) {
+		remove((DEF_MAIN_DIR + "restore_settings.flag").c_str());
+		std::string crashed = SETTINGS_FILE_PATH + ".crashed";
+		if (access(crashed.c_str(), F_OK) == 0) {
+			remove(SETTINGS_FILE_PATH.c_str());
+			rename(crashed.c_str(), SETTINGS_FILE_PATH.c_str());
+		}
+	}
 	static char buf[0x4001];
 	memset(buf, 0, sizeof buf);
 	u32 read_size;
@@ -168,6 +177,7 @@ void load_settings() {
 	var_seek_step_z = std::max(0, std::min(3, load_int("seek_step_z", 0)));
 	var_default_volume = std::max(0, std::min(4, load_int("default_volume", 0)));
 	var_volume_cap = std::max(0, std::min(3, load_int("volume_cap", 0)));
+	var_pause_rewind = std::max(0, std::min(2, load_int("pause_rewind", 0)));
 	var_auto_captions = std::max(0, std::min(1, load_int("auto_captions", 0)));
 	var_default_speed = std::max(0, std::min(5, load_int("default_speed", 0)));
 	var_wl_autoremove = std::max(0, std::min(1, load_int("wl_autoremove", 0)));
@@ -255,6 +265,7 @@ void save_settings() {
 	add_int("seek_step_z", var_seek_step_z);
 	add_int("default_volume", var_default_volume);
 	add_int("volume_cap", var_volume_cap);
+	add_int("pause_rewind", var_pause_rewind);
 	add_int("auto_captions", var_auto_captions);
 	add_int("download_quality", var_download_quality);
 	add_int("autoplay_skip_watched", var_autoplay_skip_watched);

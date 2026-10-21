@@ -28,7 +28,12 @@ void ScrollView::update_scroller(Hid_info key) {
 	} else if (scrolling && key.touch_y != -1) {
 		offset += last_touch_y - key.touch_y;
 	}
-	offset += inertia;
+	offset_frac += inertia;
+	{
+		int whole = (int)offset_frac; // (rounds toward zero for both directions)
+		offset += whole;
+		offset_frac -= whole;
+	}
 	if (inertia) {
 		var_need_refresh = true;
 	}
@@ -101,7 +106,8 @@ void ScrollView::update_scroller(Hid_info key) {
 	}
 
 	if (key.touch_x != -1) {
-		inertia = 0;
+	inertia = 0;
+	offset_frac = 0;
 	} else if (inertia > 0) {
 		inertia = std::max(0.0, inertia - 0.1);
 	} else {

@@ -1577,6 +1577,22 @@ void Sem_init(void) {
 						}
 					}),
 
+					// Rewind after a pause
+					(new SelectorView(0, 0, 320, 35, true))
+					->set_texts({
+						(std::function<std::string ()>) []() { return tr("Off", "No"); },
+						(std::function<std::string ()>) []() { return std::string("3 s"); },
+						(std::function<std::string ()>) []() { return std::string("5 s"); }
+					}, var_pause_rewind)
+					->set_title([](const SelectorView &) { return tr("Rewind after a pause", "Retroceder tras una pausa"); })
+					->set_info([](const SelectorView &) { return tr("When you resume after a pause of 30 seconds or more, the video goes back a few seconds so you do not miss anything.", "Al reanudar tras una pausa de 30 segundos o más, el vídeo retrocede unos segundos para que no te pierdas nada."); })
+					->set_on_change([](const SelectorView &view) {
+						if (var_pause_rewind != view.selected_button) {
+							var_pause_rewind = view.selected_button;
+							misc_tasks_request(TASK_SAVE_SETTINGS);
+						}
+					}),
+
 					// Watch later cleanup
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
@@ -2089,7 +2105,21 @@ void Sem_init(void) {
 							settings_toast(tr("Statistics reset", "Estadísticas reiniciadas"));
 						}),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
-						->set_text((std::function<std::string ()>) [] () { return tr("Clean leftover temporary files", "Limpiar archivos temporales sobrantes"); })
+					->set_text((std::function<std::string ()>) [] () { return tr("Restore the settings from before a crash", "Recuperar los ajustes de antes de un fallo"); })
+					->set_x_alignment(TextView::XAlign::CENTER)
+					->set_text_offset(0, -2)
+					->set_get_background_color(View::STANDARD_BACKGROUND)
+					->set_on_view_released([] (View &) {
+						if (access("sdmc:/3ds/IkersTube/settings.txt.crashed", F_OK) != 0) {
+							settings_toast(tr("There are no settings set aside by safe mode", "No hay ajustes apartados por el modo seguro"));
+							return;
+						}
+						if (!confirm_tap(6, tr("Tap again to restore them (restart the app)", "Toca otra vez para recuperarlos (reinicia la app)"))) return;
+						if (FILE *flag = fopen("sdmc:/3ds/IkersTube/restore_settings.flag", "w")) fclose(flag);
+						settings_toast(tr("They come back when the app restarts", "Vuelven al reiniciar la app"));
+					}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					->set_text((std::function<std::string ()>) [] () { return tr("Clean leftover temporary files", "Limpiar archivos temporales sobrantes"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
 						->set_get_background_color(View::STANDARD_BACKGROUND)

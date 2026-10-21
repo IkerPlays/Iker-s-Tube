@@ -221,6 +221,9 @@ OverlayView *equalizer_popup_view = (new OverlayView(0, 0, 320, 240 - VIDEO_PLAY
 }; // namespace VideoPlayer
 using namespace VideoPlayer;
 static void save_resume_now(); // writes the position of the playing video to the resume file (pause, sleep timer)
+static volatile bool battery_pause_request = false; // the battery is almost empty : pause and save the position (done where the sleep timer is)
+static void note_paused();            // remembers when the playback was paused (for the rewind after a long pause)
+static double pause_rewind_seconds(); // how many seconds to go back now that the playback resumes (0 : none)
 
 static const char *volatile network_waiting_status = NULL;
 const char *get_network_waiting_status() {
@@ -400,11 +403,16 @@ static double *eq_values_ptr = NULL; // the equalizer bar values (set up in Vide
 // A-B loop : repeat a section of the playing video (a < 0 : not set, b < 0 : only the start is set)
 static double ab_loop_a = -1, ab_loop_b = -1;
 
+static std::vector<double> bookmark_ticks;   // the bookmarks of the playing video, drawn on the bar (kept here : reading them at every frame would read the file)
+static std::string bookmark_ticks_for;       // the video they belong to
 static void rebuild_bookmarks_list() {
-	if (!bookmarks_list_view) return;
-	bookmarks_list_view->recursive_delete_subviews();
-	auto marks = bookmarks_get(bookmarks_video_id);
-	if (marks.empty()) return;
+if (!bookmarks_list_view) return;
+bookmarks_list_view->recursive_delete_subviews();
+auto marks = bookmarks_get(bookmarks_video_id);
+bookmark_ticks.clear();
+for (auto &mark : marks) bookmark_ticks.push_back(mark.time);
+bookmark_ticks_for = bookmarks_video_id;
+if (marks.empty()) return;
 	bookmarks_list_view->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
 	                                         ->set_text(tr("Bookmarks (long press: QR or delete)", "Marcadores (pulsación larga: QR o borrar)"))
 	                                         ->set_font_size(0.5, DEFAULT_FONT_INTERVAL)
@@ -2739,6 +2747,14 @@ debug_info_view =
 				                         make_tool([]() { return tr("Restart", "Reiniciar"); }, 70, [jump]() { jump(-1e9); }),
 				                         make_tool([]() { return std::string("-1 min"); }, 60, [jump]() { jump(-60); }),
 				                         make_tool([]() { return std::string("+1 min"); }, 60, [jump]() { jump(60); }),
+				                         make_tool([]() { return tr("Go live", "Ir al directo"); }, 70,
+				                                   []() {
+				                         	          if (!playing_video_info.is_livestream) {
+				                         		          notice_show(tr("This video is not a live stream", "Este vídeo no es un directo"));
+				                         		          return;
+				                         	          }
+				                         	          if (network_decoder.ready) send_seek_request_wo_lock(network_decoder.get_timestamp_from_bar_pos(1.0)); // the far right of the bar : the live edge
+				                                   }),
 				                         make_tool([]() { return tr("Reload", "Recargar"); }, 70,
 				                                   []() {
 					                                   if (cur_playing_url == "" || is_async_task_running(load_video_page)) return;
@@ -3827,6 +3843,22 @@ static void autoplay_countdown_tick() {
 			    network_decoder.set_preamp(mini_volume);
 		    }
 	    }
+	    if (battery_pause_request) { // almost no battery : pause so that the position is safe
+	    	battery_pause_request = false;
+	    	small_resource_lock.lock();
+	    	bool paused_now = false;
+	    	if (vid_play_request && !vid_pausing) {
+	    		if (!vid_pausing_seek) Util_speaker_pause(0);
+	    		vid_pausing = true;
+	    		paused_now = true;
+	    	}
+	    	small_resource_lock.unlock();
+	    	if (paused_now) {
+	    		save_resume_now();
+	    		notice_show(tr("Battery almost empty: paused", "Batería casi vacía: pausado"));
+	    	}
+	    	var_need_refresh = true;
+	    }
 	    if (var_sleep_timer_end && osGetTime() >= var_sleep_timer_end) { // sleep timer : pause the playback
 		    var_sleep_timer_end = 0;
 		    small_resource_lock.lock();
@@ -3857,6 +3889,17 @@ static void autoplay_countdown_tick() {
     }
 #define SMALL_FONT_SIZE 0.4
 
+    static u64 paused_since_ms = 0;
+    static void note_paused() { paused_since_ms = osGetTime(); }
+    static double pause_rewind_seconds() {
+    	u64 since = paused_since_ms;
+    	paused_since_ms = 0;
+    	static const int seconds[3] = {0, 3, 5};
+    	int back = seconds[std::max(0, std::min(2, var_pause_rewind))];
+    	if (!since || back == 0 || osGetTime() - since < 30000) return 0; // only after a real pause (a phone call, a break)
+    	if (playing_video_info.is_livestream || !network_decoder.ready || eof_reached) return 0;
+    	return back;
+    }
     namespace Bar {
     bool bar_grabbed = false;
     double last_grab_timestamp = 0;
@@ -4036,6 +4079,12 @@ static void autoplay_countdown_tick() {
 			    float x = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(chapter.first);
 			    Draw_texture(var_square_image[0], DEF_DRAW_DARK_GRAY, x - 1, y_center - 2, 2, 4);
 		    }
+		    if (bookmark_ticks_for == playing_video_info.id) { // your bookmarks : small white marks above the bar
+		    	for (double at : bookmark_ticks) {
+		    		float x = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(at);
+		    		Draw_texture(var_square_image[0], DEF_DRAW_WHITE, x - 1, y_center - 5, 2, 3);
+		    	}
+		    }
 		    if (ab_loop_a >= 0) { // the A-B loop : a yellow line under the bar (only a tick while B is not set)
 		    	float xa = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(ab_loop_a);
 		    	float xb = ab_loop_b > ab_loop_a ? bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(ab_loop_b) : xa + 3;
@@ -4090,14 +4139,17 @@ static void autoplay_countdown_tick() {
 	        y_l <= key.touch_y) {
 		    if (vid_play_request) {
 			    if (vid_pausing) {
-				    vid_pausing = false;
-				    if (eof_reached) {
-					    send_seek_request_wo_lock(0);
-				    }
-				    Util_speaker_resume(0);
+			    vid_pausing = false;
+			    if (eof_reached) {
+			    send_seek_request_wo_lock(0);
+			    } else if (double back = pause_rewind_seconds()) {
+			    send_seek_request_wo_lock(std::max(0.0, vid_current_pos - back));
+			    }
+			    Util_speaker_resume(0);
 			    } else {
-				    vid_pausing = true;
-				    Util_speaker_pause(0);
+			    vid_pausing = true;
+			    note_paused();
+			    Util_speaker_pause(0);
 			    }
 		    } else if (cur_video_info.is_playable()) {
 			    network_waiting_status = NULL;
@@ -4131,13 +4183,15 @@ static void autoplay_countdown_tick() {
 	    if (vid_pausing) {
 		    if (!vid_pausing_seek) Util_speaker_resume(0);
 		    if (eof_reached) send_seek_request_wo_lock(0);
+		    else if (double back = pause_rewind_seconds()) send_seek_request_wo_lock(std::max(0.0, vid_current_pos - back));
 		    vid_pausing = false;
 	    } else {
 		    if (!vid_pausing_seek) Util_speaker_pause(0);
 		    vid_pausing = true;
+		    note_paused();
 		    save_resume_now(); // a pause followed by closing the app does not lose the position
-		    }
-		    }
+	    }
+    }
     static void mini_next() {
 	    std::string queued_url;
 	    if (play_queue_pop(queued_url)) send_change_video_request_wo_lock(queued_url, true, false, false);
@@ -5259,9 +5313,12 @@ static void autoplay_countdown_tick() {
 				    static int battery_warned = 0; // low battery while playing : a notice at 15% and again at 5%
 				    int level = var_battery_level_raw;
 				    if (var_battery_charge || level <= 0) battery_warned = 0;
-				    else if (level <= 5 && battery_warned < 2) {
-					    battery_warned = 2;
-					    notice_show(tr("Battery very low: ", "Batería muy baja: ") + std::to_string(level) + "%");
+				    else if (level <= 3 && battery_warned < 3) { // about to die : pause and keep the position
+				    battery_warned = 3;
+				    battery_pause_request = true;
+				    } else if (level <= 5 && battery_warned < 2) {
+				    battery_warned = 2;
+				    notice_show(tr("Battery very low: ", "Batería muy baja: ") + std::to_string(level) + "%");
 				    } else if (level <= 15 && battery_warned < 1) {
 					    battery_warned = 1;
 					    notice_show(tr("Battery low: ", "Batería baja: ") + std::to_string(level) + "%");
@@ -5484,7 +5541,9 @@ static void autoplay_countdown_tick() {
 						    Util_speaker_resume(0);
 					    }
 					    if (eof_reached) {
-						    send_seek_request(0);
+					    send_seek_request(0);
+					    } else if (double back = pause_rewind_seconds()) {
+					    send_seek_request(std::max(0.0, vid_current_pos - back));
 					    }
 					    vid_pausing = false;
 					    } else {
@@ -5492,6 +5551,7 @@ static void autoplay_countdown_tick() {
 					    Util_speaker_pause(0);
 					    }
 					    vid_pausing = true;
+					    note_paused();
 					    save_resume_now();
 					    }
 			    }

@@ -32,6 +32,7 @@ int var_seek_step = 0;
 int var_seek_step_z = 0;
 int var_default_volume = 0;
 int var_volume_cap = 0;
+int var_pause_rewind = 0;
 int var_time_remaining = 0;
 int var_autoplay_limit = 0;
 int var_break_reminder = 0;

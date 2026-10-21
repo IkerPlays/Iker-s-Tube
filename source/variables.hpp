@@ -48,6 +48,7 @@ extern int var_seek_step; // 0 : 10 s, 1 : 5 s, 2 : 15 s, 3 : 30 s (D-pad left /
 extern int var_seek_step_z; // 0 : 5 s, 1 : 10 s, 2 : 30 s, 3 : 60 s (ZL / ZR in the player)
 extern int var_default_volume; // 0..4 : 100%, 50%, 75%, 125%, 150% (for channels without a volume of their own)
 extern int var_volume_cap;     // 0..3 : the loudest the player can be set to : 300%, 200%, 150%, 100%
+extern int var_pause_rewind;   // 0 : off, 1 : 3 s, 2 : 5 s back when the playback resumes after a pause of 30 s or more
 extern int var_time_remaining; // 1 : the player bar shows the time left instead of the length
 extern int var_autoplay_limit; // 0 : no limit, 1 : 3, 2 : 5, 3 : 10 videos in a row (counted while the player stays open)
 extern int var_break_reminder; // 0 : off, 1 : every 30 min of playing, 2 : 60, 3 : 120

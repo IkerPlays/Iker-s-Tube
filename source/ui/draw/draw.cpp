@@ -456,6 +456,7 @@ float Draw_get_width_one(u32 cur_char, float text_size_x) {
 }
 float Draw_get_width(const std::string &text, float text_size_x) {
 	float x = 0, x_max = 0;
+	if (text.empty()) return 0; // (&part_text[0] of an empty vector is undefined)
 
 	std::vector<u32> part_text(text.size());
 	int characters = Extfont_parse_utf8_str_to_u32(text.c_str(), &part_text[0], text.size());
