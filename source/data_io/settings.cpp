@@ -52,7 +52,10 @@ void load_settings() {
 	settings_mark_started();
 	// "Reset the settings" (Settings, Data) leaves a flag : the settings file is dropped at the next start, so the defaults load
 	if (access((DEF_MAIN_DIR + "reset_settings.flag").c_str(), F_OK) == 0) {
-		remove(SETTINGS_FILE_PATH.c_str());
+		if (access(SETTINGS_FILE_PATH.c_str(), F_OK) == 0) { // (the old settings are kept as settings.txt.reset)
+			remove((SETTINGS_FILE_PATH + ".reset").c_str());
+			rename(SETTINGS_FILE_PATH.c_str(), (SETTINGS_FILE_PATH + ".reset").c_str());
+		}
 		remove((SETTINGS_FILE_PATH + ".tmp").c_str());
 		remove((DEF_MAIN_DIR + "reset_settings.flag").c_str());
 	}

@@ -9,8 +9,6 @@
       dl_cia: "Download .cia", dl_3dsx: "Download .3dsx", all_versions: "All versions",
       latest_loading: "Latest stable release: loading...", latest: "Latest stable release: ", latest_fail: "See the Releases section for the latest version.",
       dl_title: "Download and install",
-      step1: "Scan the QR with <strong>FBI</strong> (<em>Remote Install &gt; Scan QR code</em>), or copy <code>IkersTube.cia</code> to your SD card and install it.",
-      step2: "<code>IkersTube.3dsx</code> also runs from the Homebrew Launcher.",
       step3: "For sound you need the DSP firmware dump at <code>sdmc:/3ds/dspfirm.cdc</code>.",
       step4: "The app checks for updates on start (Settings > Update).",
       data_note: "Your data lives in <code>sdmc:/3ds/IkersTube/</code>.",
@@ -23,7 +21,7 @@
       f5_t: "Made for the 3DS", f5_x: "Data saver, rounded themes, QR codes for links, bookmarks, backups.",
       f6_t: "Safe by design", f6_x: "Safe mode after a crash, bounded downloads and a crash report you can share.",
       rel_title: "Releases", rel_intro: "Every version, loaded live from GitHub. Download it or scan the QR with FBI.",
-      rel_search: "Search a version...", rel_all: "All", rel_stable: "Stable", rel_dev: "Devbuilds", rel_more: "Show more",
+      rel_all: "All", rel_stable: "Stable", rel_dev: "Devbuilds", rel_more: "Show more",
       rel_github: "Open the Releases page on GitHub", rel_loading: "Loading releases from GitHub...",
       rel_error: "Could not load the releases (GitHub may be limiting requests). Use the link below instead.",
       rel_none: "No release matches.", rel_latest: "Latest", rel_stable_badge: "Stable", rel_dev_badge: "Devbuild",
@@ -40,7 +38,38 @@
       q5: "Do I need an account?", a5: "No. You can search and watch without one. Signing in adds your subscriptions, likes, playlists, history and comments.",
       q6: "Is it official?", a6: "No. It is a fan project, not affiliated with YouTube, Google or Nintendo.",
       foot1: "Iker's Tube is based on <a href=\"https://github.com/erievs/FourthTube\">FourthTube</a> / ThirdTube and is licensed under GPLv3. Not affiliated with YouTube, Google or Nintendo.",
-      foot2: "Source code on GitHub", foot3: "Report a problem", lang_to: "ES"
+      foot2: "Source code on GitHub", foot3: "Report a problem", lang_to: "ES",
+      nav_support: "Support", lang_label: "Language", theme_label: "Theme", to_top: "Back to top",
+      meta_title: "Iker's Tube - YouTube for Nintendo 3DS",
+      meta_desc: "Iker's Tube is a YouTube client for the Nintendo 3DS / 2DS family. Download every version, scan a QR to install and follow the roadmap.",
+      og_desc: "A homebrew YouTube client for the 3DS / 2DS family. Download, scan a QR and install.",
+      offline_msg: "You are offline. Saved data is shown when available.",
+      hc_title: "Latest stable release", hc_notes: "Full notes", hc_nonotes: "See the full notes for the details.", hc_loading: "Loading the latest release...",
+      tabs_label: "Install method", tab_cia: "CIA with FBI", tab_3dsx: "3DSX with Homebrew Launcher", tab_qr: "By QR",
+      cia1: "Copy <code>IkersTube.cia</code> to your SD card (for example into <code>sdmc:/cias/</code>).",
+      cia2: "Open <strong>FBI</strong>, go to <em>SD &gt; cias</em>, pick the file and choose <em>Install CIA</em>.",
+      cia3: "Launch Iker's Tube from the HOME Menu.",
+      dsx1: "Copy <code>IkersTube.3dsx</code> to <code>sdmc:/3ds/</code> on your SD card.",
+      dsx2: "Open the <strong>Homebrew Launcher</strong> and pick Iker's Tube from the list.",
+      dsx3: "Nothing is installed: it runs straight from the Homebrew Launcher.",
+      qr1: "On your 3DS open <strong>FBI</strong> and go to <em>Remote Install &gt; Scan QR code</em>.",
+      qr2: "Point the console camera at the QR code on this page.",
+      qr3: "Confirm the install and wait for it to finish.",
+      qr_alt: "QR code for the latest stable IkersTube.cia", good_title: "Good to know",
+      copied: "Copied!", copy_failed: "Could not copy", rel_copy_link: "Copy download link", rel_copy_page: "Copy page link",
+      rel_copy_notes: "Copy notes", rel_sha: "Checksums (SHA-256)", rel_copy: "Copy",
+      rel_sort_new: "Newest first", rel_sort_old: "Oldest first", rel_sort_label: "Sort order",
+      rel_search_ph: "Search a version... (press /)",
+      rel_stat_total: "Total downloads", rel_stat_stable: "Stable releases", rel_stat_dev: "Devbuilds",
+      rel_retry: "Try again",
+      rel_cached: "GitHub could not be reached (you may be offline), so this is a saved list from ",
+      qr_copy: "Copy link",
+      road_progress: "Roadmap progress", road_prog: "{n} of {total} done ({p}%)", road_more: "More detail",
+      sup_title: "Support", sup_intro: "Something broke? Here is how to get it fixed quickly.",
+      sup1_t: "Report a problem", sup1_x: "Open an issue on GitHub and tell us what you were doing, your console (3DS, 2DS, New 3DS...), its firmware and the app version (stable or devbuild).",
+      sup2_t: "Safe mode", sup2_x: "After a crash the app starts in <strong>safe mode</strong> on the next launch and resets its settings so it can open again. That is expected. Report the crash before you carry on.",
+      sup3_t: "Files to attach", sup3_x: "Attach <code>crash.txt</code> and <code>log.txt</code> from <code>sdmc:/3ds/IkersTube/</code> on the SD card. Read them first: issues on GitHub are public.",
+      sup_new: "Open an issue", sup_all: "See open issues"
     },
     es: {
       skip: "Saltar al contenido", nav_download: "Descargar", nav_features: "Funciones", nav_releases: "Versiones", nav_roadmap: "Roadmap", nav_faq: "Preguntas",
@@ -49,8 +78,6 @@
       dl_cia: "Descargar .cia", dl_3dsx: "Descargar .3dsx", all_versions: "Todas las versiones",
       latest_loading: "Última versión estable: cargando...", latest: "Última versión estable: ", latest_fail: "Mira la sección de versiones para la última.",
       dl_title: "Descarga e instalación",
-      step1: "Escanea el QR con <strong>FBI</strong> (<em>Remote Install &gt; Scan QR code</em>), o copia <code>IkersTube.cia</code> a la SD e instálalo.",
-      step2: "<code>IkersTube.3dsx</code> también funciona desde el Homebrew Launcher.",
       step3: "Para el sonido hace falta el volcado del firmware DSP en <code>sdmc:/3ds/dspfirm.cdc</code>.",
       step4: "La app busca actualizaciones al arrancar (Ajustes > Actualizar).",
       data_note: "Tus datos están en <code>sdmc:/3ds/IkersTube/</code>.",
@@ -63,7 +90,7 @@
       f5_t: "Hecha para la 3DS", f5_x: "Ahorro de datos, temas redondeados, QR de enlaces, marcadores, copias.",
       f6_t: "Segura", f6_x: "Modo seguro tras un cierre, descargas limitadas e informe de fallo para compartir.",
       rel_title: "Versiones", rel_intro: "Todas las versiones, cargadas en directo desde GitHub. Descárgala o escanea el QR con FBI.",
-      rel_search: "Buscar una versión...", rel_all: "Todas", rel_stable: "Estables", rel_dev: "Devbuilds", rel_more: "Ver más",
+      rel_all: "Todas", rel_stable: "Estables", rel_dev: "Devbuilds", rel_more: "Ver más",
       rel_github: "Abrir la página de Releases en GitHub", rel_loading: "Cargando versiones desde GitHub...",
       rel_error: "No se pudieron cargar las versiones (GitHub puede estar limitando peticiones). Usa el enlace de abajo.",
       rel_none: "Ninguna versión coincide.", rel_latest: "Última", rel_stable_badge: "Estable", rel_dev_badge: "Devbuild",
@@ -80,7 +107,38 @@
       q5: "¿Necesito una cuenta?", a5: "No. Puedes buscar y ver sin ella. Al iniciar sesión se añaden tus suscripciones, me gusta, listas, historial y comentarios.",
       q6: "¿Es oficial?", a6: "No. Es un proyecto de fans, sin relación con YouTube, Google ni Nintendo.",
       foot1: "Iker's Tube está basada en <a href=\"https://github.com/erievs/FourthTube\">FourthTube</a> / ThirdTube y tiene licencia GPLv3. Sin relación con YouTube, Google ni Nintendo.",
-      foot2: "Código en GitHub", foot3: "Informar de un problema", lang_to: "EN"
+      foot2: "Código en GitHub", foot3: "Informar de un problema", lang_to: "EN",
+      nav_support: "Ayuda", lang_label: "Idioma", theme_label: "Tema", to_top: "Volver arriba",
+      meta_title: "Iker's Tube - YouTube para Nintendo 3DS",
+      meta_desc: "Iker's Tube es un cliente de YouTube para la familia Nintendo 3DS / 2DS. Descarga cualquier versión, escanea un QR para instalar y sigue el roadmap.",
+      og_desc: "Un cliente homebrew de YouTube para la familia 3DS / 2DS. Descarga, escanea un QR e instala.",
+      offline_msg: "Estás sin conexión. Se muestran los datos guardados cuando los hay.",
+      hc_title: "Última versión estable", hc_notes: "Notas completas", hc_nonotes: "Mira las notas completas para más detalles.", hc_loading: "Cargando la última versión...",
+      tabs_label: "Forma de instalar", tab_cia: "CIA con FBI", tab_3dsx: "3DSX con Homebrew Launcher", tab_qr: "Con QR",
+      cia1: "Copia <code>IkersTube.cia</code> a la SD (por ejemplo a <code>sdmc:/cias/</code>).",
+      cia2: "Abre <strong>FBI</strong>, ve a <em>SD &gt; cias</em>, elige el archivo y pulsa <em>Install CIA</em>.",
+      cia3: "Abre Iker's Tube desde el menú HOME.",
+      dsx1: "Copia <code>IkersTube.3dsx</code> a <code>sdmc:/3ds/</code> en la SD.",
+      dsx2: "Abre el <strong>Homebrew Launcher</strong> y elige Iker's Tube en la lista.",
+      dsx3: "No se instala nada: se ejecuta directamente desde el Homebrew Launcher.",
+      qr1: "En tu 3DS abre <strong>FBI</strong> y ve a <em>Remote Install &gt; Scan QR code</em>.",
+      qr2: "Apunta la cámara de la consola al código QR de esta página.",
+      qr3: "Confirma la instalación y espera a que termine.",
+      qr_alt: "Código QR del último IkersTube.cia estable", good_title: "Conviene saber",
+      copied: "¡Copiado!", copy_failed: "No se pudo copiar", rel_copy_link: "Copiar enlace de descarga", rel_copy_page: "Copiar enlace de la página",
+      rel_copy_notes: "Copiar notas", rel_sha: "Sumas de control (SHA-256)", rel_copy: "Copiar",
+      rel_sort_new: "Más nuevas primero", rel_sort_old: "Más antiguas primero", rel_sort_label: "Orden",
+      rel_search_ph: "Buscar una versión... (pulsa /)",
+      rel_stat_total: "Descargas totales", rel_stat_stable: "Versiones estables", rel_stat_dev: "Devbuilds",
+      rel_retry: "Reintentar",
+      rel_cached: "No se pudo contactar con GitHub (quizá estás sin conexión), así que esta es una lista guardada de ",
+      qr_copy: "Copiar enlace",
+      road_progress: "Progreso del roadmap", road_prog: "{n} de {total} hechas ({p}%)", road_more: "Más detalle",
+      sup_title: "Ayuda", sup_intro: "¿Algo falla? Así se arregla más rápido.",
+      sup1_t: "Informar de un problema", sup1_x: "Abre una incidencia en GitHub y cuenta qué hacías, tu consola (3DS, 2DS, New 3DS...), su firmware y la versión de la app (estable o devbuild).",
+      sup2_t: "Modo seguro", sup2_x: "Tras un cierre inesperado la app arranca en <strong>modo seguro</strong> la siguiente vez y reinicia sus ajustes para poder abrirse. Es lo esperado. Informa del fallo antes de seguir.",
+      sup3_t: "Archivos que adjuntar", sup3_x: "Adjunta <code>crash.txt</code> y <code>log.txt</code> de <code>sdmc:/3ds/IkersTube/</code> en la SD. Léelos antes: las incidencias de GitHub son públicas.",
+      sup_new: "Abrir una incidencia", sup_all: "Ver incidencias abiertas"
     }
   };
 
@@ -95,6 +153,14 @@
     document.documentElement.lang = lang;
     document.querySelectorAll("[data-i18n]").forEach(function (e) { e.textContent = t(e.getAttribute("data-i18n")); });
     document.querySelectorAll("[data-i18n-html]").forEach(function (e) { e.innerHTML = t(e.getAttribute("data-i18n-html")); });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (e) { e.setAttribute("aria-label", t(e.getAttribute("data-i18n-aria"))); });
+    document.querySelectorAll("[data-i18n-alt]").forEach(function (e) { e.setAttribute("alt", t(e.getAttribute("data-i18n-alt"))); });
+    document.title = t("meta_title");
+    [["meta[name=description]", "meta_desc"], ["meta[property='og:title']", "meta_title"], ["meta[property='og:description']", "og_desc"],
+      ["meta[name='twitter:title']", "meta_title"], ["meta[name='twitter:description']", "og_desc"]].forEach(function (m) {
+      var n = document.querySelector(m[0]);
+      if (n) n.setAttribute("content", t(m[1]));
+    });
     document.querySelectorAll("[data-i18n-ph]").forEach(function (e) { e.setAttribute("placeholder", t(e.getAttribute("data-i18n-ph"))); });
     var b = document.getElementById("lang");
     if (b) b.textContent = t("lang_to");

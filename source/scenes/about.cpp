@@ -95,6 +95,14 @@ void About_init(void) {
 	                        ->set_text("Compiled on " + std::string(DEF_BUILD_TIME))
 	                        ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
 	                        ->set_x_alignment(TextView::XAlign::CENTER),
+	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+	                        ->set_text((std::function<std::string ()>) []() { return std::string(var_is_new3ds ? "New 3DS family" : "Old 3DS family") + ", " + var_lang; })
+	                        ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
+	                        ->set_x_alignment(TextView::XAlign::CENTER),
+	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
+	                        ->set_text(tr("Data: ", "Datos: ") + "sdmc:/3ds/IkersTube")
+	                        ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
+	                        ->set_x_alignment(TextView::XAlign::CENTER),
 	                    (new EmptyView(0, 0, 320, SMALL_MARGIN)),
 	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * app_description_lines.size()))
 	                        ->set_text_lines(app_description_lines)

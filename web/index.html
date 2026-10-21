@@ -9,9 +9,36 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Iker's Tube - YouTube for Nintendo 3DS">
   <meta property="og:description" content="A homebrew YouTube client for the 3DS / 2DS family. Download, scan a QR and install.">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Iker's Tube - YouTube for Nintendo 3DS">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Iker's Tube - YouTube for Nintendo 3DS">
+  <meta name="twitter:description" content="A homebrew YouTube client for the 3DS / 2DS family. Download, scan a QR and install.">
+  <meta name="twitter:image" content="/img/og-image.png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png" sizes="180x180">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Iker's Tube",
+    "description": "A homebrew YouTube client for the Nintendo 3DS / 2DS family.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Nintendo 3DS (custom firmware)",
+    "isAccessibleForFree": true,
+    "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+    "inLanguage": ["en", "es"],
+    "url": "https://github.com/IkerPlays/Iker-s-Tube",
+    "downloadUrl": "https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.cia",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
 </head>
 <body>
   <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
@@ -22,11 +49,14 @@
       <a href="#features" data-i18n="nav_features">Features</a>
       <a href="#releases" data-i18n="nav_releases">Releases</a>
       <a href="#roadmap" data-i18n="nav_roadmap">Roadmap</a>
+      <a href="#support" data-i18n="nav_support">Support</a>
       <a href="#faq" data-i18n="nav_faq">FAQ</a>
-      <button id="lang" class="icon" type="button" aria-label="Language">ES</button>
-      <button id="theme" class="icon" type="button" aria-label="Theme">&#9790;</button>
+      <button id="lang" class="icon" type="button" data-i18n-aria="lang_label" aria-label="Language">ES</button>
+      <button id="theme" class="icon" type="button" data-i18n-aria="theme_label" aria-label="Theme">&#9790;</button>
     </nav>
+    <p id="offline" class="offline" role="status" hidden data-i18n="offline_msg">You are offline. Saved data is shown when available.</p>
   </header>
+  <div id="sr-live" class="sr" role="status" aria-live="polite"></div>
 
   <main id="main">
     <section class="hero" id="top">
@@ -38,26 +68,52 @@
         <a class="btn ghost" id="dl-3dsx" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.3dsx" data-i18n="dl_3dsx">Download .3dsx</a>
         <a class="btn ghost" href="#releases" data-i18n="all_versions">All versions</a>
       </p>
+      <div id="hero-card" class="hero-card" aria-live="polite"></div>
       <p class="small" id="latest" data-i18n="latest_loading">Latest stable release: loading...</p>
     </section>
 
     <section id="download">
       <h2 data-i18n="dl_title">Download and install</h2>
-      <div class="cols">
-        <div>
-          <ol class="steps">
-            <li data-i18n-html="step1">Scan the QR with <strong>FBI</strong> (<em>Remote Install &gt; Scan QR code</em>), or copy <code>IkersTube.cia</code> to your SD card and install it.</li>
-            <li data-i18n-html="step2"><code>IkersTube.3dsx</code> also runs from the Homebrew Launcher.</li>
-            <li data-i18n-html="step3">For sound you need the DSP firmware dump at <code>sdmc:/3ds/dspfirm.cdc</code>.</li>
-            <li data-i18n="step4">The app checks for updates on start (Settings &gt; Update).</li>
-          </ol>
-          <p class="small" data-i18n-html="data_note">Your data lives in <code>sdmc:/3ds/IkersTube/</code>.</p>
+      <div class="tabs">
+        <div class="tablist" role="tablist" aria-label="Install method" data-i18n-aria="tabs_label">
+          <button type="button" role="tab" id="tab-cia" aria-controls="panel-cia" aria-selected="true" data-i18n="tab_cia">CIA with FBI</button>
+          <button type="button" role="tab" id="tab-3dsx" aria-controls="panel-3dsx" aria-selected="false" tabindex="-1" data-i18n="tab_3dsx">3DSX with Homebrew Launcher</button>
+          <button type="button" role="tab" id="tab-qr" aria-controls="panel-qr" aria-selected="false" tabindex="-1" data-i18n="tab_qr">By QR</button>
         </div>
-        <figure class="qr">
-          <img src="img/qr-latest.png" width="220" height="220" alt="QR code for the latest stable IkersTube.cia">
-          <figcaption data-i18n="qr_caption">Always points to the latest stable .cia</figcaption>
-        </figure>
+        <div class="tabpanel" role="tabpanel" id="panel-cia" aria-labelledby="tab-cia" tabindex="0">
+          <ol class="steps">
+            <li data-i18n-html="cia1">Copy <code>IkersTube.cia</code> to your SD card (for example into <code>sdmc:/cias/</code>).</li>
+            <li data-i18n-html="cia2">Open <strong>FBI</strong>, go to <em>SD &gt; cias</em>, pick the file and choose <em>Install CIA</em>.</li>
+            <li data-i18n="cia3">Launch Iker's Tube from the HOME Menu.</li>
+          </ol>
+        </div>
+        <div class="tabpanel" role="tabpanel" id="panel-3dsx" aria-labelledby="tab-3dsx" tabindex="0">
+          <ol class="steps">
+            <li data-i18n-html="dsx1">Copy <code>IkersTube.3dsx</code> to <code>sdmc:/3ds/</code> on your SD card.</li>
+            <li data-i18n-html="dsx2">Open the <strong>Homebrew Launcher</strong> and pick Iker's Tube from the list.</li>
+            <li data-i18n="dsx3">Nothing is installed: it runs straight from the Homebrew Launcher.</li>
+          </ol>
+        </div>
+        <div class="tabpanel" role="tabpanel" id="panel-qr" aria-labelledby="tab-qr" tabindex="0">
+          <div class="cols">
+            <ol class="steps">
+              <li data-i18n-html="qr1">On your 3DS open <strong>FBI</strong> and go to <em>Remote Install &gt; Scan QR code</em>.</li>
+              <li data-i18n="qr2">Point the console camera at the QR code on this page.</li>
+              <li data-i18n="qr3">Confirm the install and wait for it to finish.</li>
+            </ol>
+            <figure class="qr">
+              <img src="img/qr-latest.png" width="220" height="220" alt="QR code for the latest stable IkersTube.cia" data-i18n-alt="qr_alt">
+              <figcaption data-i18n="qr_caption">Always points to the latest stable .cia</figcaption>
+            </figure>
+          </div>
+        </div>
       </div>
+      <h3 class="sub" data-i18n="good_title">Good to know</h3>
+      <ul class="steps">
+        <li data-i18n-html="step3">For sound you need the DSP firmware dump at <code>sdmc:/3ds/dspfirm.cdc</code>.</li>
+        <li data-i18n="step4">The app checks for updates on start (Settings > Update).</li>
+        <li data-i18n-html="data_note">Your data lives in <code>sdmc:/3ds/IkersTube/</code>.</li>
+      </ul>
     </section>
 
     <section id="features">
@@ -77,8 +133,13 @@
       <p class="small" data-i18n="rel_intro">Every version, loaded live from GitHub. Download it or scan the QR with FBI.</p>
       <div class="toolbar">
         <div class="chips" id="rel-filter" role="group" aria-label="Filter releases"></div>
-        <input id="rel-search" type="search" data-i18n-ph="rel_search" placeholder="Search a version..." aria-label="Search a version">
+        <div class="tools">
+          <button id="rel-sort" class="chip" type="button" data-i18n-aria="rel_sort_label" aria-label="Sort order">Newest first</button>
+          <input id="rel-search" type="search" data-i18n-ph="rel_search_ph" placeholder="Search a version... (press /)" aria-label="Search a version">
+        </div>
       </div>
+      <div id="rel-stats" class="stats" hidden></div>
+      <div id="rel-alert" class="alert" aria-live="polite"></div>
       <div id="rel-status" class="status" role="status" aria-live="polite"></div>
       <ol id="rel-list" class="rel-list"></ol>
       <p class="center"><button id="rel-more" class="btn ghost" type="button" hidden data-i18n="rel_more">Show more</button></p>
@@ -88,8 +149,23 @@
     <section id="roadmap">
       <h2 data-i18n="road_title">Roadmap</h2>
       <p class="small" data-i18n="road_intro">Plans can change. Items move between columns as work goes on.</p>
+      <div class="progress-wrap"><progress id="road-progress" max="100" value="0" data-i18n-aria="road_progress" aria-label="Roadmap progress"></progress><span class="small" id="road-progress-text"></span></div>
       <div class="chips" id="filters" role="group" aria-label="Filter roadmap"></div>
       <div class="board" id="board" aria-live="polite"></div>
+    </section>
+
+    <section id="support">
+      <h2 data-i18n="sup_title">Support</h2>
+      <p class="small" data-i18n="sup_intro">Something broke? Here is how to get it fixed quickly.</p>
+      <div class="grid">
+        <article><h3 data-i18n="sup1_t">Report a problem</h3><p data-i18n="sup1_x">Open an issue on GitHub and tell us what you were doing, your console (3DS, 2DS, New 3DS...), its firmware and the app version (stable or devbuild).</p></article>
+        <article><h3 data-i18n="sup2_t">Safe mode</h3><p data-i18n-html="sup2_x">After a crash the app starts in <strong>safe mode</strong> on the next launch and resets its settings so it can open again. That is expected. Report the crash before you carry on.</p></article>
+        <article><h3 data-i18n="sup3_t">Files to attach</h3><p data-i18n-html="sup3_x">Attach <code>crash.txt</code> and <code>log.txt</code> from <code>sdmc:/3ds/IkersTube/</code> on the SD card. Read them first: issues on GitHub are public.</p></article>
+      </div>
+      <p class="cta">
+        <a class="btn" href="https://github.com/IkerPlays/Iker-s-Tube/issues/new" data-i18n="sup_new">Open an issue</a>
+        <a class="btn ghost" href="https://github.com/IkerPlays/Iker-s-Tube/issues" data-i18n="sup_all">See open issues</a>
+      </p>
     </section>
 
     <section id="faq">
@@ -103,13 +179,14 @@
     </section>
   </main>
 
-  <dialog id="qr-dialog" aria-labelledby="qr-title">
+  <dialog id="qr-dialog" aria-labelledby="qr-title" aria-describedby="qr-url">
     <form method="dialog" class="qr-box">
       <h3 id="qr-title">QR</h3>
       <canvas id="qr-canvas" width="260" height="260" role="img" aria-label="QR code"></canvas>
       <p class="small" id="qr-url"></p>
       <p class="small" data-i18n="qr_hint">In FBI: Remote Install &gt; Scan QR code.</p>
       <div class="row">
+        <button class="btn ghost" id="qr-copy" type="button" data-i18n="qr_copy">Copy link</button>
         <button class="btn ghost" id="qr-save" type="button" data-i18n="qr_save">Save PNG</button>
         <button class="btn" value="close" data-i18n="close">Close</button>
       </div>
@@ -121,8 +198,11 @@
     <p><a href="https://github.com/IkerPlays/Iker-s-Tube" data-i18n="foot2">Source code on GitHub</a> &middot; <a href="https://github.com/IkerPlays/Iker-s-Tube/issues" data-i18n="foot3">Report a problem</a></p>
   </footer>
 
+  <button id="to-top" class="to-top" type="button" hidden data-i18n-aria="to_top" aria-label="Back to top">&uarr;</button>
+
   <script src="js/vendor/qrcode.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/util.js"></script>
   <script src="js/roadmap.js"></script>
   <script src="js/releases.js"></script>
   <script src="js/main.js"></script>

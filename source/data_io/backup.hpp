@@ -6,3 +6,4 @@
 int backup_export();
 int backup_import(); // the app has to be restarted afterwards: the files are restored at the next start
 void backup_apply_pending(); // restores a pending import (call at the very start, before anything is loaded)
+long long backup_time(); // when the backup in sdmc:/3ds/IkersTube/backup was made (seconds since 1970, 0 : there is none)

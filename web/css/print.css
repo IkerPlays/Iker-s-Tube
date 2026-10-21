@@ -1,0 +1,35 @@
+/* Print: plain black on white, no navigation or buttons; install guide and release list stay readable. */
+@media print{
+  :root,:root[data-theme]{--bg:#fff;--fg:#000;--muted:#333;--card:#fff;--line:#999;--accent:#000;--accent-fg:#fff;--ok:#000;--now:#000;--next:#000;--shadow:none}
+  body{background:#fff;color:#000;font-size:11pt;line-height:1.4}
+  .top,.skip,.cta,.toolbar,#rel-more,#rel-alert,#rel-stats,.to-top,.row.tools,#qr-dialog,#filters,.chips,.progress-wrap,.sr,#offline,.hc-more,.notes-bar,.hashes,.tablist,#hero-card .eyebrow,.road-more summary,#latest{display:none!important}
+  main,footer{max-width:none;padding:0}
+  section{padding:1rem 0 0;break-inside:auto}
+  h1,h2,h3{break-after:avoid}
+  .hero{background:none;padding:0 0 .5rem}
+  .hero-card{box-shadow:none;border:1px solid #999;margin:.5rem 0}
+  .reveal{opacity:1!important;transform:none!important}
+  .tabpanel,.tabpanel[hidden]{display:block!important;border:0;padding:0 0 .4rem}
+  .tabpanel::before{content:attr(aria-label)}
+  #panel-cia::before{content:"CIA (FBI)";font-weight:700}
+  #panel-3dsx::before{content:"3DSX (Homebrew Launcher)";font-weight:700}
+  #panel-qr::before{content:"QR";font-weight:700}
+  .qr img{box-shadow:none;width:120px;height:120px}
+  article,.card,.rel{box-shadow:none;border:1px solid #999;break-inside:avoid}
+  .grid,.board{display:block}
+  .grid>article,.col>.card{margin:0 0 .5rem}
+  .rel-list{display:block}
+  .rel{margin:0 0 .6rem}
+  .rel-notes,.road-more{display:block}
+  .rel-notes summary{display:none}
+  .notes{max-height:none;overflow:visible}
+  .rel a.btn,.hero a.btn,#support a.btn{border:0;padding:0;color:#000;font-weight:400;text-decoration:none;background:none}
+  .rel a.btn::after,#support a.btn::after{content:" (" attr(href) ")";font-size:9pt;word-break:break-all}
+  .rel .row{display:block}
+  .rel .row .btn{display:inline;margin-right:.6rem}
+  #faq details{border:0;padding:0;break-inside:avoid}
+  #faq details p{color:#000}
+  details>summary{list-style:none;font-weight:700}
+  a{color:#000}
+  footer{border-top:1px solid #999}
+}

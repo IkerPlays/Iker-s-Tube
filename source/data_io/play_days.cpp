@@ -55,6 +55,15 @@ void play_days_record(int day, int seconds) {
 	days_lock.unlock();
 }
 
+void play_days_clear() {
+	days_lock.lock();
+	loaded = true;
+	days.clear();
+	remove(PLAY_DAYS_PATH);
+	remove(PLAY_DAYS_TMP_PATH);
+	days_lock.unlock();
+}
+
 std::vector<std::pair<int, int>> play_days_last(int count) {
 	std::vector<std::pair<int, int>> result;
 	int today = local_day_number();

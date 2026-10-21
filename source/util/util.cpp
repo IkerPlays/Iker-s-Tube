@@ -279,3 +279,27 @@ std::string format_size(long long bytes) {
 	else snprintf(buf, sizeof(buf), "%lld KB", bytes / 1024);
 	return buf;
 }
+
+unsigned long sd_free_mb() {
+	FS_ArchiveResource resource;
+	if (R_FAILED(FSUSER_GetArchiveResource(&resource, SYSTEM_MEDIATYPE_SD))) return 0;
+	return (unsigned long)(((u64)resource.freeClusters * resource.clusterSize) / (1024 * 1024));
+}
+
+int housekeeping_clear_temp() {
+	const std::string dir_path = "sdmc:/3ds/IkersTube";
+	DIR *dir = opendir(dir_path.c_str());
+	if (!dir) return 0;
+	std::vector<std::string> doomed;
+	while (struct dirent *entry = readdir(dir)) {
+		std::string name = entry->d_name;
+		bool tmp = name.size() > 4 && name.compare(name.size() - 4, 4, ".tmp") == 0;
+		if (tmp || name == "log_previous.txt") doomed.push_back(name);
+	}
+	closedir(dir);
+	int removed = 0;
+	for (auto &name : doomed) {
+		if (remove((dir_path + "/" + name).c_str()) == 0) removed++;
+	}
+	return removed;
+}

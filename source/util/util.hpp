@@ -30,3 +30,8 @@ inline std::string truncate_first_line(const std::string &text, int max_width, d
 long long dir_size_bytes(const std::string &path, int depth = 2);
 // "1.4 MB", "820 KB"...
 std::string format_size(long long bytes);
+// Free room on the SD card in MB (0 when it cannot be read).
+unsigned long sd_free_mb();
+// Removes the leftover temporary files (*.tmp, log_previous.txt) of sdmc:/3ds/IkersTube. Pending flags and the *.crashed
+// copies are never touched. Returns how many files were removed.
+int housekeeping_clear_temp();

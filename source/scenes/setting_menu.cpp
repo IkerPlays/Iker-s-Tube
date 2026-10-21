@@ -1,6 +1,8 @@
 // clang-format off
 #include <sys/stat.h>
 #include "data_io/backup.hpp"
+#include "data_io/search_history.hpp"
+#include "data_io/play_days.hpp"
 #include "headers.hpp"
 #include "data_io/subscription_util.hpp"
 #include "data_io/resume_position.hpp"
@@ -140,6 +142,44 @@ static std::string format_data_size(double bytes) {
 	char buf[32];
 	if (bytes >= 1e9) snprintf(buf, sizeof buf, "%.2f GB", bytes / 1e9);
 	else snprintf(buf, sizeof buf, "%.1f MB", bytes / 1e6);
+	return buf;
+}
+
+// a short message over the settings list
+static void settings_toast(const std::string &message, int frames = 150) {
+	toast_view
+		->set_text((std::function<std::string ()>) [message] () { return message; })
+		->set_x_alignment(TextView::XAlign::CENTER)
+		->set_text_offset(0, -1)
+		->set_get_text_color([] () { return (u32) -1; })
+		->update_y_range(CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 20, CONTENT_Y_HIGH - main_tab_view->tab_selector_height - 5)
+		->set_get_background_color([] (const View &) { return 0x50000000; })
+		->set_is_visible(true);
+	toast_frames_left = frames;
+	var_need_refresh = true;
+}
+
+// Two taps for the buttons that cannot be undone: the first one only asks, the second one (same button, within 4 seconds) goes on.
+static bool confirm_tap(int button_id, const std::string &message) {
+	static int armed_id = 0;
+	static u64 armed_until = 0;
+	if (armed_id == button_id && osGetTime() <= armed_until) {
+		armed_id = 0;
+		return true;
+	}
+	armed_id = button_id;
+	armed_until = osGetTime() + 4000;
+	settings_toast(message);
+	return false;
+}
+
+static std::string backup_date_text() {
+	long long at = backup_time();
+	if (at <= 0) return tr("none", "ninguna");
+	time_t t = (time_t)at;
+	struct tm local = *localtime(&t);
+	char buf[32];
+	strftime(buf, sizeof buf, "%Y-%m-%d %H:%M", &local);
 	return buf;
 }
 
@@ -1901,6 +1941,7 @@ void Sem_init(void) {
 						->set_text_offset(0, -2)
 						->set_get_background_color(View::STANDARD_BACKGROUND)
 						->set_on_view_released([] (View &) {
+							if (!confirm_tap(1, tr("Tap again to forget the positions", "Toca otra vez para olvidar las posiciones"))) return;
 							int removed = resume_clear_all();
 							toast_view
 								->set_text((std::function<std::string ()>) [removed] () { return tr("Positions forgotten: ", "Posiciones olvidadas: ") + std::to_string(removed); })
@@ -1919,6 +1960,7 @@ void Sem_init(void) {
 						->set_text_offset(0, -2)
 						->set_get_background_color(View::STANDARD_BACKGROUND)
 						->set_on_view_released([] (View &) {
+							if (!confirm_tap(2, tr("Tap again to clear the pictures", "Toca otra vez para vaciar las imágenes"))) return;
 							int removed = 0;
 							DIR *dir = opendir("sdmc:/3ds/IkersTube/thumbs");
 							if (dir) {
@@ -1952,8 +1994,45 @@ void Sem_init(void) {
 							long long pictures = dir_size_bytes("sdmc:/3ds/IkersTube/thumbs");
 							long long all = dir_size_bytes("sdmc:/3ds/IkersTube", 3);
 							notice_show(tr("Downloads ", "Descargas ") + format_size(offline) + tr(", pictures ", ", imágenes ") + format_size(pictures) +
-							            tr(", total ", ", total ") + format_size(all));
+							            tr(", total ", ", total ") + format_size(all) + tr(", SD free ", ", SD libre ") + std::to_string(sd_free_mb()) + " MB");
 						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Clear the search history", "Borrar el historial de búsquedas"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							if (!confirm_tap(4, tr("Tap again to clear the searches", "Toca otra vez para borrar las búsquedas"))) return;
+							search_history_clear();
+							settings_toast(tr("Search history cleared", "Historial de búsquedas borrado"));
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Reset the play statistics", "Reiniciar las estadísticas de uso"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							if (!confirm_tap(5, tr("Tap again to reset the time and data counters", "Toca otra vez para reiniciar los contadores de tiempo y datos"))) return;
+							var_total_play_seconds = 0;
+							var_play_today = 0;
+							var_data_total_bytes = 0;
+							var_data_session_bytes = 0;
+							play_days_clear();
+							misc_tasks_request(TASK_SAVE_SETTINGS);
+							settings_toast(tr("Statistics reset", "Estadísticas reiniciadas"));
+						}),
+					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Clean leftover temporary files", "Limpiar archivos temporales sobrantes"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							settings_toast(tr("Files removed: ", "Archivos borrados: ") + std::to_string(housekeeping_clear_temp()));
+						}),
+					(new TextView(10, 0, 300, DEFAULT_FONT_INTERVAL))
+						->set_text((std::function<std::string ()>) [] () { return tr("Last backup: ", "Última copia: ") + backup_date_text(); })
+						->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
+						->set_get_text_color([] () { return LIGHT0_TEXT_COLOR; }),
 					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Export backup to the SD card", "Exportar copia a la SD"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
@@ -1979,8 +2058,9 @@ void Sem_init(void) {
 						->set_text_offset(0, -2)
 						->set_get_background_color(View::STANDARD_BACKGROUND)
 						->set_on_view_released([] (View &) {
+							if (!confirm_tap(3, tr("Tap again to replace your data with the backup of ", "Toca otra vez para reemplazar tus datos con la copia del ") + backup_date_text())) return;
 							int count = backup_import();
-							std::string message = count <= 0 ? tr("SD card error or no backup found", "Error de la SD o no hay copia") : std::to_string(count) + " " + tr("files restored - restart the app", "archivos restaurados - reinicia la app");
+							std::string message = count < 0 ? tr("No backup folder found", "No hay carpeta de copia") : count == 0 ? tr("The backup is empty", "La copia está vacía") : std::to_string(count) + " " + tr("files restored - restart the app", "archivos restaurados - reinicia la app");
 							toast_view
 								->set_text((std::function<std::string ()>) [message] () { return message; })
 								->set_x_alignment(TextView::XAlign::CENTER)
