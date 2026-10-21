@@ -1,88 +1,9 @@
 Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of FourthTube and ThirdTube (GPLv3).
 
-## What's new since 1.0.7
+## What's new since 1.2.0
 
 ### Changes
-- **Network safety.** The live chat and the loaders can no longer use the same network sessions at once.
-- **Download QR.** The About screen has a row that shows a QR code for the latest stable IkersTube.cia.
-- **Badges.** My Wrapped lists 13 badges you unlock by watching (streaks, favorite hour, hours playing, ...).
-- **Most replayed.** My Wrapped shows the video you replayed most, and a tap plays it.
-- **More numbers.** My Wrapped also shows the last 30 days and your longest streak.
-- **Info shows your history.** The Info tool tells how many times you watched a video and how many videos of its channel you have watched.
-- **Equalizer.** The audio-only screen has a small animated equalizer.
-- **Loading placeholders.** Thumbnails pulse softly while they load.
-- **Instant feed.** The Feed tab shows your last feed immediately when the app opens, then refreshes it.
-- **Memories.** The History shows a video from about a week or a month ago to watch again.
-- **Fixes.** Spanish and Portuguese interface languages are kept after restarting the app, and the translation table no longer needs a huge stack frame at startup.
-- **Portuguese.** The interface language can be set to Portuguese.
-- **Channel history.** The channel page tells how many of its videos you have watched.
-- **Ends at.** The Status tool of the player says when the video will be over.
-- **Dislikes.** A new player tool shows the estimated likes and dislikes of a video, using the public Return YouTube Dislike API (only the video id is sent).
-- **Late-night hint.** After 25 minutes of playing late at night without a sleep timer, a notice suggests the Sleep timer tool.
-- **NEW badge.** Feed videos you had not been told about carry a NEW badge.
-- **Badge notices.** You get a notice when you unlock a badge.
-- **More badges.** 13 badges now, including collector, offline fan and subscriber.
-- **Skip intro.** A player tool makes every video of a channel start 5 to 60 seconds later, remembered per channel.
-- **Richer progress bar.** Chapter starts are marked on the bar, and the parts SponsorBlock skips show in green.
-- **Controls help.** A player tool lists what each button does.
-- **Share my numbers.** My Wrapped can show your stats as a QR code.
-- **Hardening.** The app recovers list files interrupted while saving and ignores damaged values in its data files.
-- **Weekly chart.** My Wrapped shows how long you played on each of the last 7 days.
-- **Seasonal shortcut.** Search shows a Halloween, Christmas or New Year shortcut in season.
-- **Fade-in.** Changing screens fades the bottom screen in for a moment (part of the rounded style).
-- **Lyrics.** With subtitles on, the audio-only screen shows them too (handy for song lyrics).
-- **Go to time and Loop chapter.** Two new player tools: jump to a typed time, and repeat the current chapter.
-- **Play the new videos.** The Feed tab has a button that plays all the NEW videos in a row.
-- **Player tools reachable.** Rows of tools that were wider than the screen wrap into several rows, so every tool can be tapped.
-- **Player tools folded.** The long list of extra tools in the player sits behind a More tools button; all tools are reachable now.
-- **Account fixes.** A failed or timed-out sign-in can be retried, a network hiccup no longer signs you out, and several threading problems in the account code were fixed.
-- **Fewer renewals.** The login token is renewed only when it is about to expire, and an expired one is renewed automatically.
-- **Downloads fixes.** More reliable cancelling, a full SD card cannot damage the downloads list, no duplicate downloads, and Delete all downloads is faster.
-- **Loader fixes.** Failed channel and video pages are retried when you open them again, searches with quotes work, and one unknown result no longer stops a search.
-- **Fix.** Comments or suggestions that finish loading after switching videos no longer replace the new video's page.
-- **Setting.** Badge and late-night notices can be turned off.
-- **Fixes.** Safer backups (an import is applied at the next start), a crash-risk in the search filter menus removed, and several playback and thumbnail race conditions fixed.
-- **Quick volume and brightness.** In the player, SELECT + D-pad up/down changes the volume and left/right the brightness.
-- **Feed and loaders.** The feed loads in small groups (steadier with hundreds of subscriptions), hidden channels now hide in the feed, the live chat stops when you leave the video, and several race conditions in the captions and comments loaders were fixed.
-- **Saves on exit.** Changes made right before closing the app (settings, history, subscriptions, play time) are no longer lost.
-- **Surprise from the feed.** A button in the Feed tab opens a random video of your feed.
-- **Fixes.** Playlists keep full video titles, the queue tab acts on the right video, typed searches leave Radio mode, and a full SD card can no longer damage favorites, playlists or the queue.
-- **Retry.** A failed search or results page can be retried by tapping the error.
-- **Console language.** On the first start the app uses the language of the console when it is supported.
-- **Resume.** A video that continues where you left it starts 3 seconds earlier.
-- **Chapter name.** The audio-only screen shows the chapter that is playing.
-- **Fix.** Go to time (player tool) no longer freezes the app.
-- **Warm screen.** A setting adds a warm tint to the screens at night (or always), easier on the eyes in the dark.
-- **Faster start.** The loading screen at start is shorter (1.8 s instead of 3 s).
-- **Feed headers.** The Feed tab groups videos under Today, Yesterday, This week, This month and Older.
-- **Fixes.** A malformed web address in YouTube data can no longer close the app, and a failed page-data request is retried once before a video fails.
-- **Pictures.** Thumbnails with huge dimensions are skipped, cancelled thumbnails no longer leak memory, and a thumbnail that failed for lack of memory is retried.
-- **Audio and parser fixes.** Audio that is not 44.1 kHz stereo plays at the right speed, and a channel page without data no longer risks a crash.
-- **Hardening.** Very long texts, big or empty folders in the file picker and negative times no longer cause trouble.
-- **Safer updates.** The in-app update writes the new .3dsx to a temporary file first and cancels a failed CIA install cleanly.
-- **Fix.** A rare crash when a video page finished loading at the exact moment the player was reading it.
-- **Fix.** The video page no longer stays on Loading after skipping to the next video quickly.
-- **Fix.** Opening another channel while one is still loading no longer shows the wrong channel.
-- **Fixes.** Channel sort changes and fast video switching are more reliable.
-- **Safer reset.** Reset the settings needs a second tap to confirm.
-- **Smoother login.** Sign-in, sign-out and renew in Settings no longer freeze the screen.
-- **Reliability round 2.** Sign-in, sign-out and renew no longer freeze the screen, Reset the settings needs a second tap, channel sort changes and fast channel/video switching are safer, a failed audio filter rebuild is retried, chapters are sorted by time and the thumbnail cache cleans after itself.
-- **Storage used.** A Settings button shows how much room the downloads, the pictures and the whole app folder take on the SD card.
-- **Safer data tools.** Destructive buttons in Settings ask for a second tap, the backup shows its date and covers more files, there are tools to clear searches, reset statistics and clean temporary files, Reset settings keeps the old file, and the report has more diagnostics.
-- **Browsing polish.** L/R switch Library tabs, Library sort modes are remembered, counters and confirmations in the lists, empty-state texts in History, Search, Home and Channel, tap to retry the home feed, unsubscribing asks twice, and saving something already saved says so.
-- **Player upgrades.** Seek notices, buffered part and A-B loop on the bar, chapter name in the seek preview, tap the time to switch length/time left, ZL/ZR step, default and maximum volume settings, four more actions for the L/R/X/Y buttons, the position is saved when you pause, and clearer notices when resuming, retrying or when a video ends.
-- **Robustness.** Plain-language network errors, longer notices, one retry for cut requests, thumbnail retries back off, safer saving of pinned/recent/hidden channels, a calmer log, touch fixes in the bottom bar, selectors and the error dialog, high contrast in the bottom bar.
-- **More polish.** Rewind after a pause (setting), automatic pause with a nearly empty battery, Go live tool, bookmark marks on the bar, queue size, playlist tools, the full video menu from list long presses, a button to restore the settings set aside by safe mode, and even scroll inertia in both directions.
-- **Quieter in the background.** The thumbnail loader wakes up less when idle, the report has the size of the lists and the user guide covers the new features.
-- **Lists stay quick.** Favorites and Watch later keep at most 1000 videos.
-- **A new interface.** The whole look was redone: a new palette for every theme (light and dark), rounded cards for videos, channels and settings,
-  switches for yes/no settings, segmented selectors, sliders with a handle, a new bottom bar with a pill on the current item, a new tab bar,
-  rounded dialogs and menus with a shadow, round channel and comment pictures, a new play bar, a new start screen, and a pill Subscribe button.
-  On bright accent colors the text on accent shapes turns dark so it stays readable.
-
-- - **Quality selector fixed.** The quality you pick in the player is kept: the data saver and automatic quality no longer undo it, the buttons always match the list, and a notice confirms the change. The first button is now called Audio.
-- **Audio tracks fixed.** The audio language search asks YouTube like the video page does (three clients, same visitor data) and shows a clear message instead of technical text when YouTube does not answer.
-- **Taps.** A tap that moves a few pixels is no longer taken as a scroll, so buttons respond more reliably on the touch screen.
+- Nothing yet.
 
 ## Installing
 
