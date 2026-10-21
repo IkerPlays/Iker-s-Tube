@@ -202,3 +202,10 @@ progress::-moz-progress-bar{background:var(--ok);border-radius:99px}
   input[type=search]{max-width:none}
 }
 [hidden]{display:none!important}
+
+/* ---- interface gallery ---- */
+.shots{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:1rem}
+.shots figure{margin:0}
+.shots img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);display:block;background:#000}
+.shots figcaption{font-size:.85rem;color:var(--muted);text-align:center;margin-top:.3rem}
+@media print{.shots{display:none}}

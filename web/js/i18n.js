@@ -13,6 +13,9 @@
       step4: "The app checks for updates on start (Settings > Update).",
       data_note: "Your data lives in <code>sdmc:/3ds/IkersTube/</code>.",
       qr_caption: "Always points to the latest stable .cia",
+      nav_ui: "Look", ui_title: "The new look", ui_intro: "A new design for the whole app: rounded cards, switches, a new bottom bar and light and dark themes. These are renders of the real interface code with sample data, not photos of a console.",
+      ui_a1: "Home screen, dark theme", ui_a2: "Home screen, light theme", ui_a3: "Settings", ui_a4: "Video page", ui_a5: "Video menu", ui_a6: "Settings, light theme",
+      ui_c1: "Home, dark", ui_c2: "Home, light", ui_c3: "Settings", ui_c4: "Video page", ui_c5: "Long press menu", ui_c6: "Settings, light",
       feat_title: "Features",
       f1_t: "Search and watch", f1_x: "Filters, suggestions, Shorts, live streams and chat, subtitles, SponsorBlock.",
       f2_t: "Your account", f2_x: "Sign in for subscriptions, likes, playlists, history and comments.",
@@ -82,6 +85,9 @@
       step4: "La app busca actualizaciones al arrancar (Ajustes > Actualizar).",
       data_note: "Tus datos están en <code>sdmc:/3ds/IkersTube/</code>.",
       qr_caption: "Siempre apunta al último .cia estable",
+      nav_ui: "Aspecto", ui_title: "El nuevo aspecto", ui_intro: "Un diseño nuevo para toda la app: tarjetas redondeadas, interruptores, una barra inferior nueva y temas claro y oscuro. Son imágenes generadas con el código real de la interfaz y datos de ejemplo, no fotos de una consola.",
+      ui_a1: "Pantalla de inicio, tema oscuro", ui_a2: "Pantalla de inicio, tema claro", ui_a3: "Ajustes", ui_a4: "Página de un vídeo", ui_a5: "Menú de un vídeo", ui_a6: "Ajustes, tema claro",
+      ui_c1: "Inicio, oscuro", ui_c2: "Inicio, claro", ui_c3: "Ajustes", ui_c4: "Página de vídeo", ui_c5: "Menú de pulsación larga", ui_c6: "Ajustes, claro",
       feat_title: "Funciones",
       f1_t: "Buscar y ver", f1_x: "Filtros, sugerencias, Shorts, directos y chat, subtítulos, SponsorBlock.",
       f2_t: "Tu cuenta", f2_x: "Inicia sesión para suscripciones, me gusta, listas, historial y comentarios.",
@@ -161,6 +167,7 @@
       var n = document.querySelector(m[0]);
       if (n) n.setAttribute("content", t(m[1]));
     });
+    document.querySelectorAll("[data-i18n-alt]").forEach(function (e) { e.setAttribute("alt", t(e.getAttribute("data-i18n-alt"))); });
     document.querySelectorAll("[data-i18n-ph]").forEach(function (e) { e.setAttribute("placeholder", t(e.getAttribute("data-i18n-ph"))); });
     var b = document.getElementById("lang");
     if (b) b.textContent = t("lang_to");

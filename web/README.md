@@ -17,3 +17,5 @@ Static site (HTML, CSS, JS, no build step) for Netlify. English and Spanish.
 - Icons and social image in `img/` (apple-touch-icon, icon-192/512, og-image.png 1200x630) and `manifest.webmanifest`. The
   `og:image` tags use root-relative paths; switch them to absolute URLs once the final domain is known.
 - JSON-LD (`SoftwareApplication`) is an inline data block; it is not script execution and the strict CSP does not block it.
+
+- The "new look" gallery (`img/ui-*.jpg`) is rendered from the real interface code with sample data (a host-side preview tool), not from a console.
