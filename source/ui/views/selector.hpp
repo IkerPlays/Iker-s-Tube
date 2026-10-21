@@ -2,6 +2,7 @@
 #include <vector>
 #include "view.hpp"
 #include "../ui_common.hpp"
+#include "util/util.hpp"
 
 struct SelectorView : public FixedSizeView {
   private:
@@ -95,21 +96,29 @@ struct SelectorView : public FixedSizeView {
 	}
 
 	// a yes / no setting is shown as a row with a switch (the whole row is the button)
-	bool is_switch() const { return isBoolean_ && button_num == 2 && var_round_buttons; }
+	bool is_switch() const {
+			if (!(isBoolean_ && button_num == 2 && var_round_buttons)) return false;
+			for (int i = 0; i < 2; i++) { // only a real yes / no : the two texts are short (a longer choice keeps the segmented look)
+				if (Draw_get_width((std::string)button_texts[i], 0.42) > 52) return false;
+			}
+			return true;
+		}
 
 	void draw_switch() const {
 		float h = y1 - y0 - 2, top = y0 + 1;
 		Draw_round_rect(x0 + 3, top, x1 - x0 - 6, h, UI_RADIUS_CARD, ui_mix(UI_CARD_COLOR, COLOR_ACCENT, holding_button != -1 ? 0.2f : 0));
 		float ty = top + (h - 20 * 0.5f) / 2 - 1;
-		Draw(title, x0 + 10, ty, 0.5, 0.5, DEFAULT_TEXT_COLOR);
-		float title_width = Draw_get_width(title, 0.5);
+		const float sw_left = x1 - 10 - 30;
+				std::string shown_title = truncate_first_line(title, (int)(sw_left - (x0 + 10) - (has_info ? 18 : 0) - 62), 0.5); // (room for the "i" and the state)
+				Draw(shown_title, x0 + 10, ty, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+				float title_width = Draw_get_width(shown_title, 0.5);
 		if (has_info) Draw_round_info(x0 + 10 + title_width + 7, top + h / 2);
 		const float sw = 30, sh = 16, sx = x1 - 10 - sw, sy = top + (h - sh) / 2;
 		bool on = selected_button == 1;
 		std::string state = button_texts.size() > (size_t)selected_button ? (std::string)button_texts[selected_button] : "";
 		float state_width = Draw_get_width(state, 0.42);
 		if (state != "" && state_width < 80 && x0 + 10 + title_width + 24 + state_width < sx - 6) {
-			Draw(state, sx - 6 - state_width, top + (h - 20 * 0.42f) / 2 - 1, 0.42, 0.42, on ? COLOR_ACCENT : LIGHT1_TEXT_COLOR);
+			Draw(state, sx - 6 - state_width, top + (h - 20 * 0.42f) / 2 - 1, 0.42, 0.42, on ? (u32)UI_ACCENT_TEXT : (u32)LIGHT1_TEXT_COLOR);
 		}
 		Draw_round_rect(sx, sy, sw, sh, sh / 2, on ? COLOR_ACCENT : ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.5f));
 		Draw_round_rect(on ? sx + sw - sh + 2 : sx + 2, sy + 2, sh - 4, sh - 4, (sh - 4) / 2, on ? 0xFFFFFFFF : LIGHT1_TEXT_COLOR);
@@ -160,7 +169,7 @@ struct SelectorView : public FixedSizeView {
 			if (key.p_touch && key.touch_y >= y0 && key.touch_y < y1) holding_button = 0;
 			if (key.touch_y != -1 && (key.touch_y < y0 || key.touch_y >= y1)) holding_button = -1;
 			if (holding_button != -1 && key.touch_x == -1) {
-				selected_button = 1 - selected_button;
+				selected_button = selected_button == 1 ? 0 : 1; // (a stored value other than 0 / 1 is treated as off)
 				var_need_refresh = true;
 				if (on_change_func) on_change_func(*this);
 				changed_num++;

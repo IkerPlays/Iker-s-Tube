@@ -3238,7 +3238,7 @@ debug_info_view =
 	    cur_playing_video_view->thumbnail_handle = -1;
 	    cur_playing_video_view
 	        ->set_title_lines(
-	            truncate_str(tmp_video_info.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5))
+	            truncate_str(tmp_video_info.title, VIDEO_LIST_TEXT_WIDTH - 6, 2, 0.5, 0.5))
 	        ->set_thumbnail_url(tmp_video_info.succinct_thumbnail_url)
 	        ->set_auxiliary_lines({tmp_video_info.author.name});
 	    cur_playing_video_view->thumbnail_handle = thumbnail_request(

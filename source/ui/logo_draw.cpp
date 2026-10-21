@@ -60,7 +60,7 @@ void logo_draw(float cx, float cy, bool background) {
 	if (bg_loaded) {
 		Draw_texture(bg_image.c2d, 0, 0, 400, 240);
 	} else if (background) {
-		ui_gradient_v(0, 0, 400, 240, UI_PAGE_COLOR, ui_mix(UI_PAGE_COLOR, COLOR_ACCENT, 0.16f), 6);
+		ui_gradient_v(0, 0, 400, 240, UI_PAGE_COLOR, ui_mix(UI_PAGE_COLOR, COLOR_ACCENT, 0.16f), var_eco_mode ? 16 : 8);
 	}
 	if (!logo_tried) {
 		logo_tried = true;

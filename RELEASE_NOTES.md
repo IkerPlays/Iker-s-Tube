@@ -1,1 +1,1 @@
-Buttons side by side have a thin gap, full width buttons are cards, and the search box is a pill.
+Redesigned interface: rounded cards, pill buttons, switches, new play bar, restyled dialogs and loading screen, themed accents with readable text on light and dark surfaces. Review fixes: safer switch toggling, long titles and error lines truncated, collapsed channel rows no longer draw artifacts, cheaper rounded corners.

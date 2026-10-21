@@ -53,7 +53,7 @@ struct OverlayDialogView : public OverlayView {
 			                                  ->set_text(button_strs[i])
 			                                  ->set_text_offset(0, -1)
 			                                  ->set_x_alignment(TextView::XAlign::CENTER)
-			                                  ->set_get_text_color([n, i]() { return n > 1 && i + 1 == n ? (u32)COLOR_ACCENT : (u32)DEFAULT_TEXT_COLOR; })
+			                                  ->set_get_text_color([n, i]() { return n > 1 && i + 1 == n ? (u32)UI_ACCENT_TEXT : (u32)DEFAULT_TEXT_COLOR; })
 			                                  ->set_get_background_color(View::STANDARD_BACKGROUND)
 			                                  ->set_on_view_released([this, i](View &) {
 				                                  bool close = true;

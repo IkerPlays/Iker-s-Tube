@@ -58,7 +58,7 @@ struct TextView : public FixedSizeView {
 
 	void draw_() const override {
 	// a section heading (big accent colored text on the left) gets a small accent bar in front of it
-	const bool heading = var_round_buttons && font_size >= 0.59 && x_align == XAlign::LEFT && text.size() == 1 && get_text_color() == (u32)COLOR_ACCENT;
+	const bool heading = var_round_buttons && font_size >= 0.59 && x_align == XAlign::LEFT && y_align == YAlign::CENTER && text.size() == 1 && get_text_color() == (u32)COLOR_ACCENT;
 	const float shift = heading ? 8 : 0;
 	if (heading) Draw_round_rect(x0 + SMALL_MARGIN + text_x_offset, (y0 + y1) / 2 - 6 + text_y_offset, 3, 12, 1.5f, COLOR_ACCENT);
 	int y_start = y_align == YAlign::CENTER ? (int)((y0 + y1 - interval * text.size()) / 2) : y0;
@@ -68,7 +68,7 @@ struct TextView : public FixedSizeView {
 				continue;
 			}
 			if (x_align == XAlign::LEFT) {
-				Draw(text[i], x0 + SMALL_MARGIN + text_x_offset + shift, cur_y, font_size, font_size, get_text_color());
+				Draw(text[i], x0 + SMALL_MARGIN + text_x_offset + shift, cur_y, font_size, font_size, heading ? (u32)UI_ACCENT_TEXT : get_text_color());
 			} else if (x_align == XAlign::CENTER) {
 				Draw_x_centered(text[i], x0 + SMALL_MARGIN + text_x_offset, x1 - SMALL_MARGIN + text_x_offset, cur_y,
 				                font_size, font_size, get_text_color());

@@ -108,3 +108,5 @@ static inline unsigned int ui_text_on(unsigned int abgr) {
 	return luminance > 0.30f ? RGB_(0x14, 0x16, 0x1B) : 0xFFFFFFFFu;
 }
 #define UI_ON_ACCENT (ui_text_on(theme_accent()))
+// The accent color used for TEXT : on a light page a bright accent is darkened so it can be read
+#define UI_ACCENT_TEXT (var_night_mode ? (unsigned int)theme_accent() : ui_mix(theme_accent(), 0xFF000000u, 0.4f))

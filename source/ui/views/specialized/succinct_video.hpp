@@ -89,7 +89,7 @@ struct SuccinctVideoView : public FixedSizeView {
 		grid = true;
 		set_width(cell_w);
 		set_height(cell_w * 9 / 16 + (DEFAULT_FONT_INTERVAL - 1) * 2 + 3);
-		title_lines = truncate_str(title, cell_w - 4, 2, 0.45, 0.45);
+		title_lines = truncate_str(title, cell_w - 10, 2, 0.45, 0.45);
 		return this;
 	}
 	SuccinctVideoView *set_grid(bool grid) {
@@ -100,7 +100,7 @@ struct SuccinctVideoView : public FixedSizeView {
 		this->is_playlist = is_playlist;
 		return this;
 	}
-	float get_title_width() const { return x1 - x0 - (get_thumbnail_width() + 3); }
+	float get_title_width() const { return (x1 - x0) - ((grid ? 0 : 3) + get_thumbnail_width() + 6) - 6; } // the room for text inside the card
 
 	// the card : a rounded box a few pixels in from the sides of the row (a grid cell fills its whole width)
 	void draw_background() const override {
@@ -114,7 +114,8 @@ struct SuccinctVideoView : public FixedSizeView {
 		const float inset = grid ? 0 : 3;
 		const float tx = x0 + inset, tw = get_thumbnail_width() - (grid ? 0 : 0), th = get_thumbnail_height();
 		const float tw_drawn = grid ? tw : tw; // (the picture keeps its size : the card is what moved)
-		if (thumbnail_draw(thumbnail_handle, tx, y0, tw_drawn, th)) {
+		bool picture = thumbnail_draw(thumbnail_handle, tx, y0, tw_drawn, th);
+		if (picture) {
 			// fade-in : a cover with the background color that gets more transparent each frame
 			const int FADE_FRAMES = 10;
 			if (thumbnail_fade < FADE_FRAMES) {
@@ -143,7 +144,7 @@ struct SuccinctVideoView : public FixedSizeView {
 			}
 		}
 		// the picture takes the rounded corners of the card
-		ui_mask_corners(tx, y0, tw_drawn, th, UI_RADIUS_CARD, UI_PAGE_COLOR, grid ? 3 : 5);
+		if (picture) ui_mask_corners(tx, y0, tw_drawn, th, UI_RADIUS_CARD, UI_PAGE_COLOR, grid ? 3 : 5);
 		// little labels on the picture, from the top left : queue position, NEW
 		float lx = tx + 4;
 		if (queue_url.size()) {
@@ -161,7 +162,7 @@ struct SuccinctVideoView : public FixedSizeView {
 			ui_check(cx - 3.5f, cy - 3, 0xFF6BE08A);
 		}
 		if (video_id.size() && offline_has_id(video_id)) { // saved on the SD card
-			ui_chip("DL", tx + 4, y0 + th - (bottom_right_overlay.size() || true ? 17 : 14), 0xE0359C54, 0xFFFFFFFF);
+			ui_chip("DL", tx + 4, y0 + th - 17, 0xE0359C54, 0xFFFFFFFF);
 		}
 		if (bottom_right_overlay.size()) { // the length (LIVE in red), bottom right
 			bool live = bottom_right_overlay == "LIVE" || bottom_right_overlay == "SOON";
@@ -191,7 +192,7 @@ struct SuccinctVideoView : public FixedSizeView {
 		y += 1;
 		int index = 0;
 		for (auto line : auxiliary_lines) { // the channel a little stronger than the numbers
-			Draw(line, text_x, y, index == 0 ? 0.45 : 0.42, index == 0 ? 0.45 : 0.42, index == 0 ? LIGHT0_TEXT_COLOR : LIGHT1_TEXT_COLOR);
+			Draw(truncate_first_line(line, (int)get_title_width(), index == 0 ? 0.45 : 0.42), text_x, y, index == 0 ? 0.45 : 0.42, index == 0 ? 0.45 : 0.42, index == 0 ? LIGHT0_TEXT_COLOR : LIGHT1_TEXT_COLOR);
 			y += 12;
 			index++;
 		}

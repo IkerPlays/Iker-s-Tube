@@ -40,19 +40,20 @@ struct SuccinctChannelView : public FixedSizeView {
 		return this;
 	}
 
-	u32 card_color() const { return get_background_color ? get_background_color(*this) : (u32)UI_CARD_COLOR; }
+	u32 card_color() const { return get_background_color ? get_background_color(*this) : background_color; }
 	// the card : a rounded box a few pixels in from the sides of the row
 	void draw_background() const override {
 		u32 color = card_color();
-		if (!(color >> 24)) return;
+		if (!(color >> 24) || get_height() < CHANNEL_ICON_HEIGHT) return; // (a collapsed row draws nothing)
 		Draw_round_rect(x0 + 3, y0, get_width() - 6, get_height(), UI_RADIUS_CARD, color);
 	}
 
 	void draw_() const override {
-		// the picture is a circle at the left of the card, the text gets the rest of the width
+	if (get_height() < CHANNEL_ICON_HEIGHT) return; // (a collapsed row draws nothing)
+	// the picture is a circle at the left of the card, the text gets the rest of the width
 		const float icon_x = x0 + 3 + 4, icon_y = y0 + (get_height() - CHANNEL_ICON_HEIGHT) / 2, text_x = icon_x + CHANNEL_ICON_HEIGHT + 8;
-		thumbnail_draw(thumbnail_handle, icon_x, icon_y, CHANNEL_ICON_HEIGHT, CHANNEL_ICON_HEIGHT);
-		ui_mask_corners(icon_x, icon_y, CHANNEL_ICON_HEIGHT, CHANNEL_ICON_HEIGHT, CHANNEL_ICON_HEIGHT / 2, card_color());
+		if (thumbnail_draw(thumbnail_handle, icon_x, icon_y, CHANNEL_ICON_HEIGHT, CHANNEL_ICON_HEIGHT))
+			ui_mask_corners(icon_x, icon_y, CHANNEL_ICON_HEIGHT, CHANNEL_ICON_HEIGHT, CHANNEL_ICON_HEIGHT / 2, card_color());
 		const int text_width = std::max<int>(20, (int)(x1 - text_x - 9)); // nothing goes out of the card
 		float y = y0 + (get_height() - (NAME_FONT_HEIGHT + 2 + DEFAULT_FONT_INTERVAL * auxiliary_lines.size())) / 2;
 		Draw(truncate_first_line(name, text_width, NAME_FONT_SIZE), text_x, y, NAME_FONT_SIZE, NAME_FONT_SIZE, DEFAULT_TEXT_COLOR);

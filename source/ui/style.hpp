@@ -15,15 +15,28 @@
 // Used on pictures, which cannot be drawn rounded : the corners are covered with the color of what is behind them.
 // corners : bit 0 top left, 1 top right, 2 bottom left, 3 bottom right.
 static inline void ui_mask_corners(float x, float y, float w, float h, int r, u32 color, int corners = 15) {
-	for (int k = 0; k < r; k++) {
-		float dy = r - k - 0.5f;
-		float inset = r - sqrtf((float)r * r - dy * dy);
-		if (inset < 0.5f) break;
-		int width = (int)ceilf(inset);
-		if (corners & 1) Draw_texture(var_square_image[0], color, x, y + k, width, 1);
-		if (corners & 2) Draw_texture(var_square_image[0], color, x + w - width, y + k, width, 1);
-		if (corners & 4) Draw_texture(var_square_image[0], color, x, y + h - 1 - k, width, 1);
-		if (corners & 8) Draw_texture(var_square_image[0], color, x + w - width, y + h - 1 - k, width, 1);
+	if (r <= 0) return;
+	// rows that need the same width are drawn as one taller rectangle (a round picture would otherwise need ~90 draw calls)
+	int run_start = 0, run_width = -1;
+	for (int k = 0; k <= r; k++) {
+		int width = 0;
+		if (k < r) {
+			float dy = r - k - 0.5f;
+			float inset = r - sqrtf((float)r * r - dy * dy);
+			width = inset < 0.5f ? 0 : (int)ceilf(inset);
+		}
+		if (k == 0) { run_width = width; continue; }
+		if (width != run_width) {
+			if (run_width > 0) {
+				int rows = k - run_start;
+				if (corners & 1) Draw_texture(var_square_image[0], color, x, y + run_start, run_width, rows);
+				if (corners & 2) Draw_texture(var_square_image[0], color, x + w - run_width, y + run_start, run_width, rows);
+				if (corners & 4) Draw_texture(var_square_image[0], color, x, y + h - k, run_width, rows);
+				if (corners & 8) Draw_texture(var_square_image[0], color, x + w - run_width, y + h - k, run_width, rows);
+			}
+			run_start = k;
+			run_width = width;
+		}
 	}
 }
 
