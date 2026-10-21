@@ -49,13 +49,7 @@ using namespace Library;
 
 static void rebuild_views();
 
-static u32 button_background(const View &view) {
-	int darkness = std::min<int>(0xFF, 0xD0 + 0x30 * (1 - view.touch_darkness));
-	if (var_night_mode) {
-		darkness = 0xFF - darkness;
-	}
-	return COLOR_GRAY(darkness);
-}
+static u32 button_background(const View &view) { return View::STANDARD_BACKGROUND(view); }
 
 static View *make_option(const std::string &text, std::function<void()> action) {
 	return (new TextView(0, 0, 200, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
@@ -170,7 +164,7 @@ static std::vector<FavoriteVideo> filter_and_sort(std::vector<FavoriteVideo> vid
 static SuccinctVideoView *make_item(const std::string &id, const std::string &title, const std::string &line2,
                                     const std::string &length) {
 	return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
-	    ->set_title_lines(truncate_str(title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5))
+	    ->set_title_lines(truncate_str(title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5))
 	    ->set_auxiliary_lines({line2})
 	    ->set_bottom_right_overlay(length)
 	    ->set_thumbnail_url(youtube_get_video_thumbnail_url_by_id(id));

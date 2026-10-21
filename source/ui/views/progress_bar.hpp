@@ -4,7 +4,7 @@
 
 // simple horizontal line
 struct ProgressBarView : public FixedSizeView {
-	std::function<u32()> get_color = []() { return DEFAULT_TEXT_COLOR; };
+	std::function<u32()> get_color = []() { return (u32)COLOR_ACCENT; };
 	double progress = 0;
 	double progress_displayed = 0;
 	double progress_displayed_change_speed = 0.05;
@@ -24,13 +24,11 @@ struct ProgressBarView : public FixedSizeView {
 	}
 
 	void draw_() const override {
-		Draw_line(x0 + SMALL_MARGIN, y0, get_color(), x1 - SMALL_MARGIN, y0, get_color(), 1);
-		Draw_line(x0 + SMALL_MARGIN, y0, get_color(), x0 + SMALL_MARGIN, y1, get_color(), 1);
-		Draw_line(x0 + SMALL_MARGIN, y1 - 1, get_color(), x1 - SMALL_MARGIN, y1 - 1, get_color(), 1);
-		Draw_line(x1 - SMALL_MARGIN, y0, get_color(), x1 - SMALL_MARGIN, y1, get_color(), 1);
 		double bar_width = get_width() - SMALL_MARGIN * 2;
+		float h = std::min<float>(get_height(), 8.0f), y = y0 + (get_height() - h) / 2;
+		Draw_round_rect(x0 + SMALL_MARGIN, y, bar_width, h, h / 2, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.5f));
 		int width = std::min(bar_width, (bar_width + SMALL_MARGIN) * progress_displayed);
-		Draw_texture(var_square_image[0], get_color(), (int)x0 + SMALL_MARGIN, (int)y0, width, (int)get_height());
+		if (width > 0) Draw_round_rect(x0 + SMALL_MARGIN, y, std::max<float>(width, h), h, h / 2, get_color());
 	}
 	void update_(Hid_info key) override {
 		if (progress != progress_displayed) {

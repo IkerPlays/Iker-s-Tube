@@ -1732,7 +1732,7 @@ debug_info_view =
 
 #define TITLE_MAX_WIDTH (320 - SMALL_MARGIN * 2)
 #define DESC_MAX_WIDTH (320 - SMALL_MARGIN * 2)
-#define SUGGESTION_TITLE_MAX_WIDTH (320 - (VIDEO_LIST_THUMBNAIL_WIDTH + SMALL_MARGIN))
+#define SUGGESTION_TITLE_MAX_WIDTH VIDEO_LIST_TEXT_WIDTH
 #define COMMENT_MAX_WIDTH (320 - (POST_ICON_SIZE + 2 * SMALL_MARGIN))
 #define REPLY_INDENT 25
 #define REPLY_MAX_WIDTH (320 - REPLY_INDENT - (REPLY_ICON_SIZE + 2 * SMALL_MARGIN))
@@ -3005,7 +3005,7 @@ debug_info_view =
 		                             ->set_text((std::function<std::string()>)[]() { return LOCALIZED(OK); })
 		                             ->set_x_alignment(TextView::XAlign::CENTER)
 		                             ->set_text_offset(0, -2.0)
-		                             ->set_background_color(COLOR_GRAY(0x80))
+		                             ->set_background_color(UI_RAISED_COLOR)
 		                             ->set_on_view_released(
 		                                 [](View &view) {
 			                                 caption_lang_remember(*load_caption_arg.first);
@@ -3033,14 +3033,9 @@ debug_info_view =
 			            ->set_text_offset(0.0, -1.0)
 			            ->set_get_background_color([cur_lang](const View &view) {
 				            if (cur_lang.id == selected_base_lang) {
-					            return COLOR_GRAY(0x80);
+					            return ui_mix(UI_CARD_COLOR, COLOR_ACCENT, 0.55f);
 				            } else {
-					            int darkness = std::min<int>(
-					                0xFF, 0xD0 + 0x30 * (1 - std::min(1.0, 0.15 * view.view_holding_time)));
-					            if (var_night_mode) {
-						            darkness = 0xFF - darkness;
-					            }
-					            return COLOR_GRAY(darkness);
+					            return ui_mix(UI_CARD_COLOR, COLOR_ACCENT, 0.28f * (float)std::min(1.0, 0.15 * view.view_holding_time));
 				            }
 			            })
 			            ->set_on_view_released([cur_lang](View &view) { selected_base_lang = cur_lang.id; }));
@@ -3072,13 +3067,9 @@ debug_info_view =
 	        (new TextView(0, 0, 160, DEFAULT_FONT_INTERVAL))->set_text(cur_lang.name)->set_text_offset(0.0, -1.0);
 	    cur_option_view->set_get_background_color([cur_lang](const View &view) {
 		    if (cur_lang.id == selected_translation_lang) {
-			    return COLOR_GRAY(0x80);
+			    return ui_mix(UI_CARD_COLOR, COLOR_ACCENT, 0.55f);
 		    } else {
-			    int darkness = std::min<int>(0xFF, 0xD0 + 0x30 * (1 - std::min(1.0, 0.15 * view.view_holding_time)));
-			    if (var_night_mode) {
-				    darkness = 0xFF - darkness;
-			    }
-			    return COLOR_GRAY(darkness);
+			    return ui_mix(UI_CARD_COLOR, COLOR_ACCENT, 0.28f * (float)std::min(1.0, 0.15 * view.view_holding_time));
 		    }
 	    });
 	    cur_option_view->set_on_view_released([cur_lang](View &view) { selected_translation_lang = cur_lang.id; });
@@ -3247,7 +3238,7 @@ debug_info_view =
 	    cur_playing_video_view->thumbnail_handle = -1;
 	    cur_playing_video_view
 	        ->set_title_lines(
-	            truncate_str(tmp_video_info.title, 320 - VIDEO_LIST_THUMBNAIL_WIDTH - SMALL_MARGIN * 3, 2, 0.5, 0.5))
+	            truncate_str(tmp_video_info.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5))
 	        ->set_thumbnail_url(tmp_video_info.succinct_thumbnail_url)
 	        ->set_auxiliary_lines({tmp_video_info.author.name});
 	    cur_playing_video_view->thumbnail_handle = thumbnail_request(
@@ -3642,7 +3633,7 @@ debug_info_view =
 	                         ->set_on_view_released(
 	                             [](View &view) {
 	captions_tab_view->set_subview(caption_language_select_view); })
-	                         ->set_background_color(COLOR_GRAY(0x80))
+	                         ->set_background_color(UI_RAISED_COLOR)
     }));
     if (!new_result.caption_data[{base_lang_id, translation_lang_id}].size()) {
 	    caption_main_views.push_back(

@@ -29,7 +29,7 @@
 
 #define FEED_RELOAD_BUTTON_HEIGHT 18
 #define TOP_HEIGHT 25
-#define VIDEO_TITLE_MAX_WIDTH (320 - SMALL_MARGIN * 2 - VIDEO_LIST_THUMBNAIL_WIDTH)
+#define VIDEO_TITLE_MAX_WIDTH VIDEO_LIST_TEXT_WIDTH
 
 namespace Home {
 bool thread_suspend = false;
@@ -621,7 +621,7 @@ void Home_resume(std::string arg) {
 // async functions
 static SuccinctVideoView *convert_video_to_view(const YouTubeVideoSuccinct &video) {
 	SuccinctVideoView *res = new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT);
-	res->set_title_lines(truncate_str(video.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
+	res->set_title_lines(truncate_str(video.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5));
 	res->set_auxiliary_lines({video.views_str, video.publish_date});
 	res->set_bottom_right_overlay(video.duration_text);
 	res->set_queue_item(video.url, video.title, video.author);

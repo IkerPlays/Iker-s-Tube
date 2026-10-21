@@ -24,12 +24,12 @@ struct OverlayDialogView : public OverlayView {
 		                               ->set_x_alignment(TextView::XAlign::CENTER)
 		                               ->set_text_offset(0, -1),
 		                           (new RuleView(0, 0, DEFAULT_DIALOG_WIDTH, 1))
-		                               ->set_get_color([]() { return LIGHT2_BACK_COLOR; })
+		                               ->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; })
 		                               ->set_margin(0),
 		                           (new HorizontalListView(0, 0, DEFAULT_DIALOG_BUTTON_HEIGHT))})
 		              ->set_draw_order({0, 2, 1})
-		              ->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; })
-		              ->set_corner_radius(8);
+		              ->set_get_background_color([](const View &) { return (u32)UI_CARD_COLOR; })
+		              ->set_corner_radius(12);
 		set_on_cancel([](OverlayView &view) {
 			view.set_is_visible(false);
 			var_need_refresh = true;
@@ -53,6 +53,7 @@ struct OverlayDialogView : public OverlayView {
 			                                  ->set_text(button_strs[i])
 			                                  ->set_text_offset(0, -1)
 			                                  ->set_x_alignment(TextView::XAlign::CENTER)
+			                                  ->set_get_text_color([n, i]() { return n > 1 && i + 1 == n ? (u32)COLOR_ACCENT : (u32)DEFAULT_TEXT_COLOR; })
 			                                  ->set_get_background_color(View::STANDARD_BACKGROUND)
 			                                  ->set_on_view_released([this, i](View &) {
 				                                  bool close = true;
@@ -66,7 +67,7 @@ struct OverlayDialogView : public OverlayView {
 			                                  }));
 			if (i + 1 < button_strs.size()) {
 				buttons_view->views.push_back((new RuleView(0, 0, 1, DEFAULT_DIALOG_BUTTON_HEIGHT))
-				                                  ->set_get_color([]() { return LIGHT2_BACK_COLOR; })
+				                                  ->set_get_color([]() { return (u32)UI_OUTLINE_COLOR; })
 				                                  ->set_margin(0)
 				                                  ->set_is_vertical(true));
 			}

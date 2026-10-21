@@ -775,10 +775,10 @@ static View *result_item_to_view(const YouTubeSuccinctItem &item) {
 		                                   : new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT);
 		cur_view->set_grid(grid);
 		cur_view->set_title_lines(grid ? truncate_str(item.get_name(), cell_w - 4, 2, 0.45, 0.45)
-		                               : truncate_str(item.get_name(), 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5));
+		                               : truncate_str(item.get_name(), VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5));
 		if (item.type == YouTubeSuccinctItem::VIDEO) {
 			if (!grid && item.video.author != "") { // the channel first, so you know who made it
-				cur_view->set_auxiliary_lines({truncate_first_line(item.video.author, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3) - 6, 0.5),
+				cur_view->set_auxiliary_lines({truncate_first_line(item.video.author, VIDEO_LIST_TEXT_WIDTH - 6, 0.5),
 				                               item.video.views_str + (item.video.publish_date != "" ? " - " + item.video.publish_date : std::string())});
 			} else {
 				cur_view->set_auxiliary_lines({item.video.views_str, item.video.publish_date});

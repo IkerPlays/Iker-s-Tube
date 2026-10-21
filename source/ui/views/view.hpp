@@ -6,6 +6,7 @@
 #include "ui/draw/draw.hpp"
 #include "util/log.hpp"
 #include "variables.hpp"
+#include "ui/style.hpp"
 
 struct View {
   private:
@@ -85,13 +86,16 @@ struct View {
 	virtual void draw_background() const {
 		u32 color = get_background_color ? get_background_color(*this) : background_color;
 		if (color >> 24) {
-			float radius = corner_radius;
-			if (radius <= 0 && var_round_buttons && on_view_released && get_background_color) { // a tappable button (not a full width row of a list): rounded
-				float w = get_width(), h = get_height();
-				if (w >= 40 && w <= 260 && h >= 16 && h <= 34) radius = 5;
+			float radius = corner_radius, inset = 0;
+			if (radius <= 0 && var_round_buttons && on_view_released && get_background_color) { // a tappable button or row : rounded, a full width one is a card a few pixels in from the sides
+			float w = get_width(), h = get_height();
+			if (h >= 16 && h <= 60 && w >= 40) {
+				if (w >= 300) radius = UI_RADIUS_CARD, inset = 3;
+				else if (w <= 280) radius = UI_RADIUS_BUTTON;
+			}
 			}
 			if (radius > 0) {
-				Draw_round_rect((int)x0, (int)y0, (int)get_width(), (int)get_height(), radius, color);
+			Draw_round_rect((int)(x0 + inset), (int)y0, (int)(get_width() - 2 * inset), (int)get_height(), radius, color);
 			} else {
 				Draw_texture(var_square_image[0], color, (int)x0, (int)y0, (int)get_width(), (int)get_height());
 			}

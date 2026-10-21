@@ -1,4 +1,5 @@
 #include "ui/overlay.hpp"
+#include "ui/nav_draw.hpp"
 #include "variables.hpp"
 #include "headers.hpp"
 #include "ui/ui.hpp"
@@ -242,7 +243,7 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 	                   ->set_y_alignment(TextView::YAlign::CENTER)
 	                   ->set_get_background_color(View::STANDARD_BACKGROUND)
 	                   ->set_on_view_released([](View &) { video_menu_close(); }));
-	video_menu->set_subview((new VerticalListView(0, 0, width))->set_views(rows)->set_get_background_color([](const View &) { return DEFAULT_BACK_COLOR; }));
+	video_menu->set_subview((new VerticalListView(0, 0, width))->set_views(rows)->set_get_background_color([](const View &) { return (u32)UI_PAGE_COLOR; })->set_corner_radius(10));
 	video_menu->set_is_visible(true);
 	var_need_refresh = true;
 }
@@ -320,81 +321,19 @@ static int nav_selected() {
 		return -1;
 	}
 }
-static void nav_icon(int type, float cx, float cy, u32 c) {
-	const float w = 1.6f;
-	switch (type) {
-	case 0: // home : roof and body
-		Draw_line(cx - 8, cy, c, cx, cy - 7, c, w);
-		Draw_line(cx, cy - 7, c, cx + 8, cy, c, w);
-		Draw_texture(var_square_image[0], c, cx - 5, cy, 10, 6);
-		break;
-	case 1: { // search : a circle (octagon) and a handle
-		const float px[8] = {1, 0.7f, 0, -0.7f, -1, -0.7f, 0, 0.7f}, py[8] = {0, 0.7f, 1, 0.7f, 0, -0.7f, -1, -0.7f};
-		for (int i = 0; i < 8; i++) {
-			int j = (i + 1) % 8;
-			Draw_line(cx - 1 + px[i] * 5, cy - 1 + py[i] * 5, c, cx - 1 + px[j] * 5, cy - 1 + py[j] * 5, c, w);
-		}
-		Draw_line(cx + 3, cy + 3, c, cx + 8, cy + 8, c, w + 0.6f);
-		break;
-	}
-	case 2: // library : a list
-		Draw_texture(var_square_image[0], c, cx - 7, cy - 6, 14, 2);
-		Draw_texture(var_square_image[0], c, cx - 7, cy - 1, 14, 2);
-		Draw_texture(var_square_image[0], c, cx - 7, cy + 4, 9, 2);
-		break;
-	case 3: // downloads : an arrow into a tray
-		Draw_line(cx, cy - 7, c, cx, cy + 2, c, w);
-		Draw_line(cx - 5, cy - 3, c, cx, cy + 3, c, w);
-		Draw_line(cx + 5, cy - 3, c, cx, cy + 3, c, w);
-		Draw_texture(var_square_image[0], c, cx - 7, cy + 6, 14, 2);
-		break;
-	default: // more : three dots
-		Draw_texture(var_square_image[0], c, cx - 8, cy - 1, 4, 4);
-		Draw_texture(var_square_image[0], c, cx - 2, cy - 1, 4, 4);
-		Draw_texture(var_square_image[0], c, cx + 4, cy - 1, 4, 4);
-		break;
-	}
-}
 static void draw_nav_bar() {
 	const std::string labels[NAV_ITEMS] = {LOCALIZED(HOME), tr("Search", "Buscar"), tr("Library", "Biblioteca"),
 	                                       tr("Downloads", "Descargas"), tr("More", "Más")};
-	if (var_incognito) { // a reminder that nothing is being remembered
-		float w = Draw_get_width(tr("Incognito", "Incógnito"), 0.4) + 8;
-		Draw_round_rect(4, nav_top - 12, w, 11, 5, 0xE0303030);
-		Draw(tr("Incognito", "Incógnito"), 8, nav_top - 12, 0.4, 0.4, 0xFFFFFFFF);
-	}
-	if (var_wifi_state != 2) { // no internet : say it, saved downloads still work
-		Draw_texture(var_square_image[0], 0xFF2A2AB0, 0, nav_top - 13, 320, 13);
-		Draw_x_centered(tr("No connection - saved downloads still play", "Sin conexión - lo descargado se puede ver"), 0, 320, nav_top - 12, 0.4, 0.4, 0xFFFFFFFF);
-	}
-	Draw_texture(var_square_image[0], COLOR_GRAY(var_night_mode ? 0x1C : 0xEE), 0, nav_top, 320, NAV_BAR_HEIGHT);
-	Draw_texture(var_square_image[0], var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : COLOR_GRAY(var_night_mode ? 0x38 : 0xCC), 0, nav_top, 320, 1);
-	int selected = nav_selected();
-	if (menu_status != CLOSED) {
-		selected = NAV_MORE;
-	}
-	for (int i = 0; i < NAV_ITEMS; i++) {
-		float x0 = i * 320.0f / NAV_ITEMS, x1 = (i + 1) * 320.0f / NAV_ITEMS, cx = (x0 + x1) / 2, cy = nav_top + 9;
-		bool sel = i == selected;
-		bool pressed = holding_touch && nav_at(last_touch_x, last_touch_y) == i;
-		if (sel) {
-			Draw_round_rect(cx - 16, cy - 7, 32, 15, 7, COLOR_ACCENT);
-		} else if (pressed) {
-			Draw_round_rect(cx - 16, cy - 7, 32, 15, 7, COLOR_GRAY(var_night_mode ? 0x44 : 0xD0));
-		}
-		u32 color = sel ? 0xFFFFFFFF : var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : COLOR_GRAY(var_night_mode ? 0xB8 : 0x55);
-		nav_icon(i, cx, cy, color);
-		if (i == 3 && offline_download_running()) { // a download is running : green dot on Downloads
-			Draw_round_rect(cx + 8, cy - 8, 6, 6, 3, 0xFF50C878);
-		}
-		if (i == 2 && play_queue_size() > 0) { // the number of videos in the queue, on Library
-			std::string n = std::to_string(std::min(99, play_queue_size()));
-			float w = std::max(10.0f, Draw_get_width(n, 0.4) + 6);
-			Draw_round_rect(cx + 6, cy - 9, w, 10, 5, 0xFF3B3BE6);
-			Draw_x_centered(n, cx + 6, cx + 6 + w, cy - 10, 0.4, 0.4, 0xFFFFFFFF);
-		}
-		Draw_x_centered(labels[i], x0, x1, nav_top + 19, 0.4, 0.4, sel ? DEFAULT_TEXT_COLOR : color);
-	}
+	NavPaint paint;
+	paint.top = nav_top;
+	paint.height = NAV_BAR_HEIGHT;
+	paint.selected = menu_status != CLOSED ? NAV_MORE : nav_selected();
+	paint.pressed = holding_touch ? nav_at(last_touch_x, last_touch_y) : -1;
+	paint.incognito = var_incognito;
+	paint.offline = var_wifi_state != 2;
+	paint.download_running = offline_download_running();
+	paint.queue_size = play_queue_size();
+	nav_paint(paint, labels);
 }
 
 static bool in_icon(int x, int y) {

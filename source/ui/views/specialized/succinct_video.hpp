@@ -15,6 +15,7 @@
 #include "variables.hpp"
 #define VIDEO_LIST_THUMBNAIL_HEIGHT (var_large_thumbnails ? 72 : 54)
 #define VIDEO_LIST_THUMBNAIL_WIDTH (var_large_thumbnails ? 128 : 96)
+#define VIDEO_LIST_TEXT_WIDTH (320 - VIDEO_LIST_THUMBNAIL_WIDTH - 15) // the room for the title next to the picture (card margin, gap)
 
 struct SuccinctVideoView : public FixedSizeView {
   private:
@@ -101,14 +102,24 @@ struct SuccinctVideoView : public FixedSizeView {
 	}
 	float get_title_width() const { return x1 - x0 - (get_thumbnail_width() + 3); }
 
+	// the card : a rounded box a few pixels in from the sides of the row (a grid cell fills its whole width)
+	void draw_background() const override {
+		u32 color = get_background_color ? get_background_color(*this) : background_color;
+		if (!(color >> 24)) return;
+		float inset = grid ? 0 : 3;
+		Draw_round_rect(x0 + inset, y0, get_width() - 2 * inset, get_height(), UI_RADIUS_CARD, color);
+	}
+
 	void draw_() const override {
-		if (thumbnail_draw(thumbnail_handle, x0, y0, get_thumbnail_width(), get_thumbnail_height())) {
+		const float inset = grid ? 0 : 3;
+		const float tx = x0 + inset, tw = get_thumbnail_width() - (grid ? 0 : 0), th = get_thumbnail_height();
+		const float tw_drawn = grid ? tw : tw; // (the picture keeps its size : the card is what moved)
+		if (thumbnail_draw(thumbnail_handle, tx, y0, tw_drawn, th)) {
 			// fade-in : a cover with the background color that gets more transparent each frame
 			const int FADE_FRAMES = 10;
 			if (thumbnail_fade < FADE_FRAMES) {
 				u32 alpha = 0xFF * (FADE_FRAMES - thumbnail_fade) / FADE_FRAMES;
-				Draw_texture(var_square_image[0], (alpha << 24) | (DEFAULT_BACK_COLOR & 0x00FFFFFF), x0, y0,
-				             get_thumbnail_width(), get_thumbnail_height());
+				Draw_texture(var_square_image[0], (alpha << 24) | (UI_CARD_COLOR & 0x00FFFFFF), tx, y0, tw_drawn, th);
 				thumbnail_fade++;
 				var_need_refresh = true;
 			}
@@ -117,79 +128,72 @@ struct SuccinctVideoView : public FixedSizeView {
 			u64 now = osGetTime();
 			if (!loading_since) loading_since = now;
 			if (now - loading_since < 8000 && thumbnail_get_status_code(thumbnail_handle) == -2) { // (-2 : no answer yet; a failed download stops the pulsing)
-				u32 shade = 0x18 + (u32)(10 * (1 + sinf((now - loading_since) / 220.0f)));
-				Draw_round_rect((int)x0, (int)y0, (int)get_thumbnail_width(), (int)get_thumbnail_height(), 4, 0xFF000000 | (shade << 16) | (shade << 8) | shade);
+				float pulse = 0.5f + 0.5f * sinf((now - loading_since) / 220.0f);
+				Draw_round_rect((int)tx, (int)y0, (int)tw_drawn, (int)th, UI_RADIUS_CARD, ui_mix(UI_CARD_COLOR, UI_RAISED_COLOR, 0.4f + 0.6f * pulse));
 				var_need_refresh = true;
 			}
 		}
-		if (badge_new) {
-			float tag_width = Draw_get_width("NEW", 0.4) + 4;
-			Draw_round_rect((int)x0, (int)y0, (int)tag_width, 10, 3, 0xFF000000 | (COLOR_ACCENT & 0x00FFFFFF));
-			Draw("NEW", x0 + 2, y0 - 1, 0.4, 0.4, (u32)-1);
-		}
-		if (var_mark_watched && video_id.size() && history_has_id(video_id)) {
-			// already watched : a small check mark on the thumbnail
-			float bx = x0 + get_thumbnail_width() - 14;
-			Draw_round_rect((int)bx, (int)y0, 14, 12, 3, 0xE0000000);
-			Draw("v", bx + 3, y0 - 2, 0.45, 0.45, 0xFF60E060);
-		}
-		if (video_id.size() && offline_has_id(video_id)) {
-			// saved on the SD card : a small tag at the bottom left of the thumbnail
-			float tag_width = Draw_get_width("DL", 0.4) + 4;
-			Draw_round_rect((int)x0, (int)(y0 + get_thumbnail_height() - 10), (int)tag_width, 10, 3, 0xE0408040);
-			Draw("DL", x0 + 2, y0 + get_thumbnail_height() - 11, 0.4, 0.4, (u32)-1);
-		}
-		if (video_id.size() && overlay_seconds > 0) { // how much of the video was already watched : a thin red bar
+		// how much of the video was already watched : a thin accent bar along the bottom of the picture
+		if (video_id.size() && overlay_seconds > 0) {
 			double seconds = resume_get(video_id);
 			if (seconds > 0) {
-				double total = overlay_seconds;
-				{
-					float width = get_thumbnail_width(), fill = width * std::min(1.0, seconds / total);
-					float by = y0 + get_thumbnail_height() - 3;
-					Draw_texture(var_square_image[0], 0x90000000, x0, by, width, 3);
-					Draw_texture(var_square_image[0], 0xFF2020E0, x0, by, fill, 3);
-				}
+				float fill = tw_drawn * (float)std::min(1.0, seconds / overlay_seconds);
+				Draw_texture(var_square_image[0], 0x99000000, tx, y0 + th - 3, tw_drawn, 3);
+				Draw_texture(var_square_image[0], COLOR_ACCENT, tx, y0 + th - 3, fill, 3);
 			}
 		}
+		// the picture takes the rounded corners of the card
+		ui_mask_corners(tx, y0, tw_drawn, th, UI_RADIUS_CARD, UI_PAGE_COLOR, grid ? 3 : 5);
+		// little labels on the picture, from the top left : queue position, NEW
+		float lx = tx + 4;
 		if (queue_url.size()) {
 			int pos = play_queue_position(queue_url);
 			if (pos) {
 				std::string text = "#" + std::to_string(pos);
-				float w = Draw_get_width(text, 0.45) + 6;
-				Draw_round_rect((int)x0, (int)y0, (int)w, 12, 3, 0xE03B3BE6);
-				Draw(text, x0 + 3, y0 - 1, 0.45, 0.45, (u32)-1);
+				ui_chip(text, lx, y0 + 4, COLOR_ACCENT, 0xFFFFFFFF, 0.42f);
+				lx += ui_chip_width(text, 0.42f) + 3;
 			}
 		}
-		if (bottom_right_overlay.size()) {
-			float overlay_width = Draw_get_width(bottom_right_overlay, DURATION_FONT_SIZE);
-			Draw_round_rect((int)(x0 + get_thumbnail_width() - overlay_width - 3), (int)(y0 + get_thumbnail_height() - 11), (int)overlay_width + 4, 10, 3, 0xBB000000);
-			Draw(bottom_right_overlay, x0 + get_thumbnail_width() - overlay_width - 1, y0 + get_thumbnail_height() - 11,
-			     DURATION_FONT_SIZE, DURATION_FONT_SIZE, (u32)-1);
+		if (badge_new) ui_chip("NEW", lx, y0 + 4, COLOR_ACCENT, 0xFFFFFFFF);
+		if (var_mark_watched && video_id.size() && history_has_id(video_id)) { // already watched : a check in a dark disc, top right
+			float cx = tx + tw_drawn - 10, cy = y0 + 10;
+			Draw_round_rect(cx - 6, cy - 6, 12, 12, 6, 0xCC000000);
+			ui_check(cx - 3.5f, cy - 3, 0xFF6BE08A);
+		}
+		if (video_id.size() && offline_has_id(video_id)) { // saved on the SD card
+			ui_chip("DL", tx + 4, y0 + th - (bottom_right_overlay.size() || true ? 17 : 14), 0xE0359C54, 0xFFFFFFFF);
+		}
+		if (bottom_right_overlay.size()) { // the length (LIVE in red), bottom right
+			bool live = bottom_right_overlay == "LIVE" || bottom_right_overlay == "SOON";
+			float w = ui_chip_width(bottom_right_overlay, DURATION_FONT_SIZE);
+			ui_chip(bottom_right_overlay, tx + tw_drawn - w - 4, y0 + th - 17, live ? COLOR_ACCENT : 0xCC000000, 0xFFFFFFFF, DURATION_FONT_SIZE);
 		}
 		if (is_playlist) {
 			double overlay_proportion = 0.3;
-			Draw_texture(var_square_image[0], 0xA0000000, x0 + get_thumbnail_width() * (1 - overlay_proportion), y0,
-			             get_thumbnail_width() * overlay_proportion, get_thumbnail_height());
-			Draw_x_centered(LOCALIZED(PLAYLIST_SHORT), x0 + get_thumbnail_width() * (1 - overlay_proportion),
-			                x0 + get_thumbnail_width(), (y1 + y0) / 2 - 8, 0.5, 0.5, (u32)-1);
+			Draw_texture(var_square_image[0], 0xB0000000, tx + tw_drawn * (1 - overlay_proportion), y0, tw_drawn * overlay_proportion, th);
+			Draw_x_centered(LOCALIZED(PLAYLIST_SHORT), tx + tw_drawn * (1 - overlay_proportion), tx + tw_drawn, (y1 + y0) / 2 - 8, 0.5, 0.5, (u32)-1);
+			ui_mask_corners(tx + tw_drawn * (1 - overlay_proportion), y0, tw_drawn * overlay_proportion, th, UI_RADIUS_CARD, UI_PAGE_COLOR, grid ? 2 : 0);
 		}
 		if (grid) {
-			float gy = y0 + get_thumbnail_height() + 1;
+			float gy = y0 + th + 2;
 			for (auto line : title_lines) {
-				Draw(line, x0 + 2, gy, 0.45, 0.45, DEFAULT_TEXT_COLOR);
+				Draw(line, x0 + 4, gy, 0.45, 0.45, DEFAULT_TEXT_COLOR);
 				gy += DEFAULT_FONT_INTERVAL - 1;
 			}
 			return;
 		}
-		float y = y0;
+		const float text_x = tx + tw_drawn + 6;
+		float y = y0 + 2;
 		for (auto line : title_lines) {
-			Draw(line, x0 + get_thumbnail_width() + 3, y, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+			Draw(line, text_x, y, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 			y += DEFAULT_FONT_INTERVAL;
 		}
-		y += 2;
-		for (auto line : auxiliary_lines) {
-			Draw(line, x0 + get_thumbnail_width() + 3, y, 0.5, 0.5, LIGHT0_TEXT_COLOR);
-			y += DEFAULT_FONT_INTERVAL;
+		y += 1;
+		int index = 0;
+		for (auto line : auxiliary_lines) { // the channel a little stronger than the numbers
+			Draw(line, text_x, y, index == 0 ? 0.45 : 0.42, index == 0 ? 0.45 : 0.42, index == 0 ? LIGHT0_TEXT_COLOR : LIGHT1_TEXT_COLOR);
+			y += 12;
+			index++;
 		}
 	}
 	void update_(Hid_info key) override {}

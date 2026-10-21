@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include "view.hpp"
+#include "../ui_common.hpp"
 
 // for margin
 struct OverlayView : public FixedSizeView {
@@ -38,7 +39,8 @@ struct OverlayView : public FixedSizeView {
 	}
 
 	void draw_() const override {
-		Draw_texture(var_square_image[0], 0x40000000, x0, y0, x1 - x0, y1 - y0);
+		Draw_texture(var_square_image[0], 0x66000000, x0, y0, x1 - x0, y1 - y0); // the scene behind goes dim
+		ui_shadow(content_x(), content_y(), subview->get_width(), subview->get_height(), 10);
 		subview->draw(content_x(), content_y());
 	}
 	void update_(Hid_info key) override {

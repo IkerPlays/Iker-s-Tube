@@ -90,13 +90,16 @@ struct BarView : public FixedSizeView {
 	}
 
 	void draw_() const override {
+		Draw_round_rect(x0 + 3, y0 + 1, x1 - x0 - 6, y1 - y0 - 2, UI_RADIUS_CARD, ui_mix(UI_CARD_COLOR, COLOR_ACCENT, holding ? 0.15f : 0)); // a card with the title, the track and the handle
 		if ((std::string)title != "") {
-			Draw(title, x0 + SMALL_MARGIN, y0, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+			Draw(title, x0 + 10, y0 + 3, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 		}
-		Draw_texture(var_square_image[0], DEF_DRAW_LIGHT_GRAY, bar_x0(), bar_y() - 1, bar_len(), 3);
-		Draw_texture(var_square_image[0], DEF_DRAW_WEAK_GREEN, bar_x0(), bar_y() - 1,
-		             get_x_from_value(get_value()) - bar_x0(), 3);
-		C2D_DrawCircleSolid(get_x_from_value(get_value()), bar_y(), 0, holding ? 6 : 4, DEF_DRAW_GREEN);
+		float fill = (float)(get_x_from_value(get_value()) - bar_x0());
+		Draw_round_rect(bar_x0(), bar_y() - 2, bar_len(), 4, 2, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.6f));
+		if (fill > 0) Draw_round_rect(bar_x0(), bar_y() - 2, fill, 4, 2, COLOR_ACCENT);
+		float handle = holding ? 7.0f : 6.0f;
+		C2D_DrawCircleSolid(get_x_from_value(get_value()), bar_y(), 0, handle, 0xFFFFFFFF);
+		C2D_DrawCircleSolid(get_x_from_value(get_value()), bar_y(), 0, handle - 2, COLOR_ACCENT);
 	}
 	void update_(Hid_info key) override {
 		if (key.p_touch && key.touch_y >= bar_y() - 5 && key.touch_y <= bar_y() + 5 && key.touch_x >= bar_x0() - 5 &&

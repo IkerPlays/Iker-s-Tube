@@ -94,31 +94,79 @@ struct SelectorView : public FixedSizeView {
 		return this;
 	}
 
+	// a yes / no setting is shown as a row with a switch (the whole row is the button)
+	bool is_switch() const { return isBoolean_ && button_num == 2 && var_round_buttons; }
+
+	void draw_switch() const {
+		float h = y1 - y0 - 2, top = y0 + 1;
+		Draw_round_rect(x0 + 3, top, x1 - x0 - 6, h, UI_RADIUS_CARD, ui_mix(UI_CARD_COLOR, COLOR_ACCENT, holding_button != -1 ? 0.2f : 0));
+		float ty = top + (h - 20 * 0.5f) / 2 - 1;
+		Draw(title, x0 + 10, ty, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+		float title_width = Draw_get_width(title, 0.5);
+		if (has_info) Draw_round_info(x0 + 10 + title_width + 7, top + h / 2);
+		const float sw = 30, sh = 16, sx = x1 - 10 - sw, sy = top + (h - sh) / 2;
+		bool on = selected_button == 1;
+		std::string state = button_texts.size() > (size_t)selected_button ? (std::string)button_texts[selected_button] : "";
+		float state_width = Draw_get_width(state, 0.42);
+		if (state != "" && state_width < 80 && x0 + 10 + title_width + 24 + state_width < sx - 6) {
+			Draw(state, sx - 6 - state_width, top + (h - 20 * 0.42f) / 2 - 1, 0.42, 0.42, on ? COLOR_ACCENT : LIGHT1_TEXT_COLOR);
+		}
+		Draw_round_rect(sx, sy, sw, sh, sh / 2, on ? COLOR_ACCENT : ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.5f));
+		Draw_round_rect(on ? sx + sw - sh + 2 : sx + 2, sy + 2, sh - 4, sh - 4, (sh - 4) / 2, on ? 0xFFFFFFFF : LIGHT1_TEXT_COLOR);
+	}
+	// the little "i" that explains a setting
+	static void Draw_round_info(float cx, float cy) {
+		Draw_round_rect(cx - 5, cy - 5, 10, 10, 5, ui_mix(UI_CARD_COLOR, COLOR_ACCENT, 0.35f));
+		Draw_x_centered("i", cx - 5, cx + 5, cy - 5.5f, 0.38, 0.38, DEFAULT_TEXT_COLOR);
+	}
+
 	void draw_() const override {
-		Draw(title, x0 + SMALL_MARGIN, y0, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+		if (is_switch()) {
+			draw_switch();
+			return;
+		}
+		Draw(title, x0 + SMALL_MARGIN + 3, y0, 0.5, 0.5, LIGHT0_TEXT_COLOR);
 
 		if (has_info) {
 			double title_width = Draw_get_width(title, 0.5);
-			double info_x = x0 + SMALL_MARGIN + title_width + 5;
-			Draw("ⓘ", info_x, y0, 0.45, 0.5, 0xFFFF9030);
+			Draw_round_info(x0 + SMALL_MARGIN + 3 + title_width + 9, y0 + 6);
 		}
 
-		float radius = var_round_buttons ? (float)std::min(7.0, button_y_size() / 2) : 0; // rounded: a soft track and a pill for the chosen button
+		float radius = var_round_buttons ? (float)std::min((double)UI_RADIUS_BUTTON, button_y_size() / 2) : 0; // rounded: a track and a pill for the chosen button
 		if (radius > 0 && button_num > 0) {
-			Draw_round_rect((int)(button_x_left(0) - margin_x_size() * 0.4), (int)button_y_pos(), (int)(button_x_right(button_num - 1) - button_x_left(0) + margin_x_size() * 0.8), (int)button_y_size(), radius, 0x30808080);
+			Draw_round_rect((int)(button_x_left(0) - margin_x_size() * 0.4), (int)button_y_pos(), (int)(button_x_right(button_num - 1) - button_x_left(0) + margin_x_size() * 0.8), (int)button_y_size(), radius, UI_CARD_COLOR);
 		}
-		u32 selected_color = isBoolean_ && selected_button == 0 ? DEF_DRAW_WEAK_RED : DEF_DRAW_WEAK_GREEN;
+		u32 selected_color = var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : (u32)COLOR_ACCENT;
 		if (radius > 0) {
-			Draw_round_rect((int)button_x_left(selected_button), (int)button_y_pos(), (int)button_x_size(), (int)button_y_size(), radius, selected_color);
+			Draw_round_rect((int)button_x_left(selected_button), (int)button_y_pos() + 1, (int)button_x_size(), (int)button_y_size() - 2, radius - 1, selected_color);
 		} else {
 			Draw_texture(var_square_image[0], selected_color, button_x_left(selected_button), button_y_pos(), button_x_size(), button_y_size());
 		}
 		for (int i = 0; i < button_num; i++) {
-			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos(), 0.5, 0.5,
-			                DEFAULT_TEXT_COLOR);
+			bool sel = i == selected_button;
+			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos() + (button_y_size() - 20 * 0.5f) / 2 - 1, 0.5, 0.5,
+			                sel ? (var_high_contrast ? (u32)DEFAULT_BACK_COLOR : 0xFFFFFFFFu) : (u32)DEFAULT_TEXT_COLOR);
 		}
 	}
 	void update_(Hid_info key) override {
+		if (is_switch()) { // the whole row is one button (the "i" explains it)
+			if (has_info && key.p_touch && key.touch_x >= x0 + 10 + Draw_get_width(title, 0.5) + 1 && key.touch_x < x0 + 10 + Draw_get_width(title, 0.5) + 14 && key.touch_y >= y0 && key.touch_y < y1) {
+				extern void (*show_info_popup_callback)(const std::string &, int);
+				if (show_info_popup_callback) show_info_popup_callback(info_text, popup_height);
+				return;
+			}
+			if (key.p_touch && key.touch_y >= y0 && key.touch_y < y1) holding_button = 0;
+			if (key.touch_y != -1 && (key.touch_y < y0 || key.touch_y >= y1)) holding_button = -1;
+			if (holding_button != -1 && key.touch_x == -1) {
+				selected_button = 1 - selected_button;
+				var_need_refresh = true;
+				if (on_change_func) on_change_func(*this);
+				changed_num++;
+				holding_button = -1;
+			}
+			if (holding_button != -1) var_need_refresh = true;
+			return;
+		}
 		if (has_info && key.p_touch && key.touch_y >= y0 && key.touch_y < y0 + get_title_height()) {
 			double title_width = Draw_get_width(title, 0.5);
 			double info_x = x0 + SMALL_MARGIN + title_width + 5;

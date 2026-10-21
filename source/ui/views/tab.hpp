@@ -69,14 +69,15 @@ struct TabView : public FixedSizeView {
 		}
 		views[selected_tab]->draw(x0, y0);
 
-		Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, x0, y1 - tab_selector_height, x1 - x0, tab_selector_height);
+		Draw_texture(var_square_image[0], UI_CARD_COLOR, x0, y1 - tab_selector_height, x1 - x0, tab_selector_height);
+				Draw_texture(var_square_image[0], UI_OUTLINE_COLOR, x0, y1 - tab_selector_height, x1 - x0, 1);
 		// the selected tab is a rounded pill
-		Draw_round_rect(tab_pos_x(selected_tab) + 3, y1 - tab_selector_height + 2, tab_width() - 6, tab_selector_height - 4,
-		                (tab_selector_height - 4) / 2, LIGHT3_BACK_COLOR);
+		Draw_round_rect(tab_pos_x(selected_tab) + 4, y1 - tab_selector_height + 3, tab_width() - 8, tab_selector_height - 6,
+		(tab_selector_height - 6) / 2, COLOR_ACCENT);
 		for (int i = 0; i < tab_num; i++) {
 			float y = y1 - tab_selector_height + (tab_selector_height - Draw_get_height(tab_texts[i], 0.5)) / 2 - 2;
 			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, tab_font_size, tab_font_size,
-			                i == selected_tab ? 0xFFFFFFFF : DEFAULT_TEXT_COLOR);
+			                i == selected_tab ? 0xFFFFFFFF : (u32)LIGHT0_TEXT_COLOR);
 		}
 	}
 	void update_(Hid_info key) override {

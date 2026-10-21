@@ -30,17 +30,18 @@
 #include <math.h>
 extern int var_theme;
 extern int var_custom_hue;
-// Color themes: accent, dark background, dark light0, light1, light2 (the last theme is built from var_custom_hue)
+// Color themes: accent, then the dark surfaces : page, cards / rows, raised (buttons) and tint (selected) (the last theme is built from var_custom_hue)
+#define RGB_(r, g, b) (0xFF000000u | ((unsigned)(b) << 16) | ((unsigned)(g) << 8) | (unsigned)(r))
 #define THEME_COUNT 7
-static const unsigned int theme_accent_table[THEME_COUNT] = {0xFF4B4BFF, 0xFFFF9A3C, 0xFF50C850, 0xFFE0509B, 0xFF30A0FF, 0xFF4B4BFF, 0};
+static const unsigned int theme_accent_table[THEME_COUNT] = {RGB_(0xFF, 0x4B, 0x4B), RGB_(0x3C, 0x9A, 0xFF), RGB_(0x50, 0xC8, 0x50), RGB_(0xE0, 0x50, 0x9B), RGB_(0xFF, 0xA0, 0x30), RGB_(0xFF, 0x4B, 0x4B), 0};
 static const unsigned int theme_back_table[THEME_COUNT][4] = {
-    {0xFF181212, 0xFF281E1E, 0xFF403030, 0xFF2A2058}, // Ruby
-    {0xFF2A1810, 0xFF3A2418, 0xFF553A2A, 0xFF603A1E}, // Ocean
-    {0xFF121A12, 0xFF1E281E, 0xFF304030, 0xFF1E5A2A}, // Forest
-    {0xFF1E1218, 0xFF2E1E28, 0xFF483050, 0xFF58204A}, // Violet
-    {0xFF10161C, 0xFF1C2630, 0xFF2E3C4A, 0xFF1E4A66}, // Amber
-    {0xFF000000, 0xFF101010, 0xFF282828, 0xFF2A2058}, // AMOLED
-    {0, 0, 0, 0},                                      // Custom (computed)
+    {RGB_(0x0F, 0x0E, 0x12), RGB_(0x18, 0x17, 0x20), RGB_(0x24, 0x22, 0x2D), RGB_(0x5A, 0x24, 0x34)}, // Ruby
+    {RGB_(0x0C, 0x11, 0x18), RGB_(0x15, 0x1C, 0x27), RGB_(0x21, 0x2A, 0x39), RGB_(0x1F, 0x4A, 0x7A)}, // Ocean
+    {RGB_(0x0C, 0x12, 0x0E), RGB_(0x14, 0x1C, 0x17), RGB_(0x20, 0x2B, 0x24), RGB_(0x24, 0x5E, 0x35)}, // Forest
+    {RGB_(0x12, 0x0E, 0x16), RGB_(0x1B, 0x16, 0x24), RGB_(0x28, 0x21, 0x34), RGB_(0x6A, 0x2C, 0x62)}, // Violet
+    {RGB_(0x12, 0x10, 0x0B), RGB_(0x1C, 0x19, 0x13), RGB_(0x2A, 0x26, 0x1D), RGB_(0x7A, 0x5A, 0x1C)}, // Amber
+    {RGB_(0x00, 0x00, 0x00), RGB_(0x0D, 0x0D, 0x10), RGB_(0x1A, 0x1A, 0x1F), RGB_(0x5A, 0x24, 0x34)}, // AMOLED
+    {0, 0, 0, 0},                                                                                      // Custom (computed)
 };
 // HSV (h in degrees, s and v in 0..1) to an opaque ABGR color
 static inline unsigned int theme_hsv(int h, float s, float v) {
@@ -63,20 +64,35 @@ static inline unsigned int theme_accent() {
 }
 static inline unsigned int theme_back(int level) {
 	if (var_theme == 6) {
-		static const float values[4] = {0.08f, 0.14f, 0.22f, 0.32f};
-		return theme_hsv(var_custom_hue, level == 3 ? 0.75f : 0.35f, values[level]);
+		static const float values[4] = {0.07f, 0.12f, 0.19f, 0.36f};
+		return theme_hsv(var_custom_hue, level == 3 ? 0.70f : 0.28f, values[level]);
 	}
 	return theme_back_table[var_theme][level];
 }
 #define COLOR_LINK (theme_accent())
 
-#define DEFAULT_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xFF) : COLOR_GRAY(0x00))
-#define LIGHT0_TEXT_COLOR (var_high_contrast ? DEFAULT_TEXT_COLOR : (var_night_mode ? COLOR_GRAY(0xCC) : COLOR_GRAY(0x33)))
-#define LIGHT1_TEXT_COLOR (var_high_contrast ? DEFAULT_TEXT_COLOR : (var_night_mode ? COLOR_GRAY(0xA0) : COLOR_GRAY(0x77)))
+#define DEFAULT_TEXT_COLOR (var_night_mode ? RGB_(0xF4, 0xF6, 0xFA) : RGB_(0x14, 0x16, 0x1B))
+#define LIGHT0_TEXT_COLOR (var_high_contrast ? DEFAULT_TEXT_COLOR : (var_night_mode ? RGB_(0xC9, 0xCE, 0xDA) : RGB_(0x3C, 0x42, 0x52)))
+#define LIGHT1_TEXT_COLOR (var_high_contrast ? DEFAULT_TEXT_COLOR : (var_night_mode ? RGB_(0x93, 0x9A, 0xAC) : RGB_(0x69, 0x70, 0x84)))
 // Iker's Tube palette : slightly blue dark theme, red accent (colors are ABGR)
 #define COLOR_ACCENT (theme_accent())
-#define DEFAULT_BACK_COLOR (var_night_mode ? (var_high_contrast ? 0xFF000000u : theme_back(0)) : COLOR_GRAY(0xFF))
-#define LIGHT0_BACK_COLOR (var_night_mode ? theme_back(1) : COLOR_GRAY(0xEE))
-#define LIGHT1_BACK_COLOR (var_night_mode ? theme_back(2) : COLOR_GRAY(0xD0))
-#define LIGHT2_BACK_COLOR (var_night_mode ? theme_back(3) : COLOR_GRAY(0xB8))
+#define DEFAULT_BACK_COLOR (var_night_mode ? (var_high_contrast ? 0xFF000000u : theme_back(0)) : (var_high_contrast ? 0xFFFFFFFFu : RGB_(0xF2, 0xF3, 0xF6)))
+#define LIGHT0_BACK_COLOR (var_night_mode ? theme_back(1) : RGB_(0xFF, 0xFF, 0xFF))
+#define LIGHT1_BACK_COLOR (var_night_mode ? theme_back(2) : RGB_(0xE6, 0xE8, 0xEE))
+#define LIGHT2_BACK_COLOR (var_night_mode ? theme_back(3) : RGB_(0xD3, 0xD8, 0xE2))
 #define LIGHT3_BACK_COLOR COLOR_ACCENT
+
+// Surfaces of the interface : the page, the cards / rows on it, raised things (buttons) and the line between them
+#define UI_PAGE_COLOR DEFAULT_BACK_COLOR
+#define UI_CARD_COLOR LIGHT0_BACK_COLOR
+#define UI_RAISED_COLOR LIGHT1_BACK_COLOR
+#define UI_OUTLINE_COLOR (var_night_mode ? RGB_(0x2E, 0x33, 0x40) : RGB_(0xD9, 0xDC, 0xE3))
+// a color in between (t from 0 to 1), channel by channel
+static inline unsigned int ui_mix(unsigned int a, unsigned int b, float t) {
+	unsigned int out = 0xFF000000u;
+	for (int shift = 0; shift <= 16; shift += 8) {
+		float ca = (a >> shift) & 0xFF, cb = (b >> shift) & 0xFF;
+		out |= ((unsigned int)(ca + (cb - ca) * t) & 0xFF) << shift;
+	}
+	return out;
+}

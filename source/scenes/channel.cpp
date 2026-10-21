@@ -301,7 +301,7 @@ void Channel_init(void) {
 
     View *video2view(const YouTubeVideoSuccinct &video) {
 	    return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
-	        ->set_title_lines(truncate_str(video.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5))
+	        ->set_title_lines(truncate_str(video.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5))
 	        ->set_thumbnail_url(video.thumbnail_url)
 	        ->set_auxiliary_lines({video.publish_date, video.views_str})
 	        ->set_bottom_right_overlay(video.duration_text)
@@ -312,7 +312,7 @@ void Channel_init(void) {
     }
     View *stream2view(const YouTubeVideoSuccinct &stream) {
 	    return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
-	        ->set_title_lines(truncate_str(stream.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5))
+	        ->set_title_lines(truncate_str(stream.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5))
 	        ->set_thumbnail_url(stream.thumbnail_url)
 	        ->set_auxiliary_lines({stream.publish_date, stream.views_str})
 	        ->set_bottom_right_overlay(stream.duration_text)
@@ -335,7 +335,7 @@ void Channel_init(void) {
     View *shorts2view(const YouTubeVideoSuccinct &shorts,
                       const std::vector<std::pair<std::string, std::string>> &followers = {}) {
 	    return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
-	        ->set_title_lines(truncate_str(shorts.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5))
+	        ->set_title_lines(truncate_str(shorts.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5))
 	        ->set_thumbnail_url(shorts.thumbnail_url)
 	        ->set_auxiliary_lines({shorts.publish_date, shorts.views_str})
 	        ->set_bottom_right_overlay("")
@@ -350,7 +350,7 @@ void Channel_init(void) {
     }
     View *playlist2view(const YouTubePlaylistSuccinct &playlist) {
 	    return (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT))
-	        ->set_title_lines(truncate_str(playlist.title, 320 - (VIDEO_LIST_THUMBNAIL_WIDTH + 3), 2, 0.5, 0.5))
+	        ->set_title_lines(truncate_str(playlist.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5))
 	        ->set_thumbnail_url(playlist.thumbnail_url)
 	        ->set_auxiliary_lines({playlist.video_count_str})
 	        ->set_is_playlist(true)

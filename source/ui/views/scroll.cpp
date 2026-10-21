@@ -167,12 +167,14 @@ void ScrollView::draw_slider_bar() const {
 	if (content_height > displayed_height) {
 		float bar_len = displayed_height * displayed_height / content_height;
 		float bar_pos = (float)offset / content_height * displayed_height;
-		Draw_texture(var_square_image[0], DEF_DRAW_GRAY, x1 - 3, y0 + bar_pos, 3, bar_len);
+		bar_len = std::max(14.0f, bar_len); // (a thin rounded handle at the right edge)
+				bar_pos = std::min(bar_pos, displayed_height - bar_len - 2);
+				Draw_round_rect(x1 - 4, y0 + bar_pos + 1, 3, bar_len, 1.5f, ui_mix(UI_OUTLINE_COLOR, COLOR_ACCENT, 0.55f));
 	}
 
 	if (pull_to_refresh_enabled && pull_refresh_loading) {
 		u32 indicator_alpha = 200;
-		u32 final_color = (indicator_alpha << 24) | DEF_DRAW_WEAK_GREEN;
+		u32 final_color = (indicator_alpha << 24) | (COLOR_ACCENT & 0x00FFFFFF);
 
 		float center_x = x0 + (x1 - x0) / 2;
 		float center_y = y0 + 20;
@@ -189,7 +191,7 @@ void ScrollView::draw_slider_bar() const {
 			float seg_y = center_y + sin(angle) * radius;
 
 			u32 seg_alpha = (u32)((indicator_alpha * (segments - i % 4)) / segments);
-			u32 seg_color = (seg_alpha << 24) | DEF_DRAW_WEAK_GREEN;
+			u32 seg_color = (seg_alpha << 24) | (COLOR_ACCENT & 0x00FFFFFF);
 
 			Draw_texture(var_square_image[0], seg_color, seg_x - 1.5f, seg_y - 1.5f, 3, 3);
 		}

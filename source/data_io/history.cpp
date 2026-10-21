@@ -47,7 +47,7 @@ void load_watch_history() {
 			HistoryVideo cur_video;
 			cur_video.id = video["id"].string_value();
 			cur_video.title = video["title"].string_value();
-			cur_video.title_lines = truncate_str(cur_video.title, 320 - VIDEO_LIST_THUMBNAIL_WIDTH - 6, 2, 0.5, 0.5);
+			cur_video.title_lines = truncate_str(cur_video.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5);
 			cur_video.author_name = video["author_name"].string_value();
 			cur_video.length_text = video["length"].string_value();
 			cur_video.my_view_count = video["my_view_count"].int_value();
@@ -108,7 +108,7 @@ void add_watched_video(HistoryVideo video) {
 	if (var_incognito) return; // incognito : nothing is remembered
 	watched_ids_dirty = true;
 	if (var_history_enabled) {
-		video.title_lines = truncate_str(video.title, 320 - VIDEO_LIST_THUMBNAIL_WIDTH - 6, 2, 0.5, 0.5);
+		video.title_lines = truncate_str(video.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5);
 		resource_lock.lock();
 		bool found = false;
 		for (auto &i : watch_history) {

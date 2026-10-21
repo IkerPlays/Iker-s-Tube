@@ -5,6 +5,7 @@
 #include "ui/draw/draw.hpp"
 #include "data_io/string_resource.hpp"
 #include "colors.hpp"
+#include "style.hpp"
 
 #define SMALL_MARGIN 3
 #define DEFAULT_FONT_INTERVAL 13

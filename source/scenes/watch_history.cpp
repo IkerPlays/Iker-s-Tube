@@ -267,13 +267,7 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		        ->set_thumbnail_url(youtube_get_video_thumbnail_url_by_id(i.id));
 
 		cur_view
-		    ->set_get_background_color([](const View &view) {
-			    int darkness = std::min<int>(0xFF, 0xD0 + 0x30 * (1 - view.touch_darkness));
-			    if (var_night_mode) {
-				    darkness = 0xFF - darkness;
-			    }
-			    return COLOR_GRAY(darkness);
-		    })
+		    ->set_get_background_color(View::STANDARD_BACKGROUND)
 		    ->set_on_view_released([i](View &view) { clicked_url = youtube_get_video_url_by_id(i.id); })
 		    ->add_on_long_hold(40, [i](View &view) {
 			    overlay_show_video_menu(youtube_get_video_url_by_id(i.id), i.title, i.author_name, tr("Remove from history", "Quitar del historial"), [i]() {
