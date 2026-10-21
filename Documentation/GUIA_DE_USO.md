@@ -103,6 +103,8 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Ajustes, Datos:** los botones que no se pueden deshacer piden un segundo toque; "Espacio que usa la app", "Última copia", borrar el historial de búsquedas, reiniciar
   estadísticas, limpiar archivos temporales y "Recuperar los ajustes de antes de un fallo" (los que apartó el modo seguro).
 - **Errores de red** salen en lenguaje claro (sin conexión, servidor no encontrado, tiempo agotado, YouTube saturado) y tocar el error del Inicio reintenta.
+- **Nuevo aspecto:** toda la interfaz se rehízo (paleta nueva en todos los temas, tarjetas redondeadas, interruptores en los ajustes sí/no, barra inferior y pestañas nuevas,
+  menús y diálogos redondeados). Con acentos muy claros (Ámbar, Bosque, Océano) el texto sobre el acento se vuelve oscuro para que se lea bien.
 ## Ajustes útiles
 - Reproducción: subtítulos automáticos (se abren solos con el último idioma usado), velocidad por defecto, que la reproducción automática salte lo ya visto, quitar de Ver más tarde al
   acabar, chat automático y calidad de lo guardado.
