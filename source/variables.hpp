@@ -25,7 +25,7 @@ extern bool var_grid_view; // video lists as a grid of thumbnails (search result
 extern bool var_data_saver; // limits the quality to 240p and does not download thumbnails
 extern int var_data_limit_index; // 0 off, then 100 MB, 250 MB, 500 MB, 1 GB, 2 GB (session)
 extern double var_total_play_seconds; // statistics : time spent playing
-extern int var_button_x; // action of the X button in the player (0 none, 1 +30 s, 2 next in queue, 3 restart, 4 mini player, 5 bookmark, 6 stop after this video)
+extern int var_button_x; // action of the X button in the player (0 none, 1 +30 s, 2 next in queue, 3 restart, 4 mini player, 5 bookmark, 6 stop after this video, 7/8 volume, 9/10 brightness, 11 -10 s, 12 mute, 13/14 chapter)
 extern int var_button_l; // same for L (default restart)
 extern int var_button_r; // same for R (default next in queue)
 extern int var_button_y; // same for Y
@@ -45,6 +45,9 @@ extern int var_autoplay_skip_watched; // 1 : autoplay picks the first suggestion
 extern int var_download_quality; // saved videos : 0 automatic (360p on the New 3DS, 240p on the old one), 1 : 144p, 2 : 240p, 3 : 360p
 extern int var_auto_captions; // 1 : the subtitles of the last used language turn on by themselves
 extern int var_seek_step; // 0 : 10 s, 1 : 5 s, 2 : 15 s, 3 : 30 s (D-pad left / right in the player)
+extern int var_seek_step_z; // 0 : 5 s, 1 : 10 s, 2 : 30 s, 3 : 60 s (ZL / ZR in the player)
+extern int var_default_volume; // 0..4 : 100%, 50%, 75%, 125%, 150% (for channels without a volume of their own)
+extern int var_volume_cap;     // 0..3 : the loudest the player can be set to : 300%, 200%, 150%, 100%
 extern int var_time_remaining; // 1 : the player bar shows the time left instead of the length
 extern int var_autoplay_limit; // 0 : no limit, 1 : 3, 2 : 5, 3 : 10 videos in a row (counted while the player stays open)
 extern int var_break_reminder; // 0 : off, 1 : every 30 min of playing, 2 : 60, 3 : 120

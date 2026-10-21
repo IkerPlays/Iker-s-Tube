@@ -85,6 +85,7 @@ volatile bool video_skip_drawing = false; // for performance reason, enabled whe
 volatile int video_p_value = 360;
 volatile double seek_at_init_request = -1;
 static char vid_resume_id[16] = {0}; // id of the playing video, readable from the converter thread without a lock
+
 double vid_time[2][320];
 double vid_copy_time[2] = {
     0,
@@ -219,6 +220,7 @@ ScrollView *playback_tab_view = NULL;
 OverlayView *equalizer_popup_view = (new OverlayView(0, 0, 320, 240 - VIDEO_PLAYING_BAR_HEIGHT));
 }; // namespace VideoPlayer
 using namespace VideoPlayer;
+static void save_resume_now(); // writes the position of the playing video to the resume file (pause, sleep timer)
 
 static const char *volatile network_waiting_status = NULL;
 const char *get_network_waiting_status() {
@@ -381,6 +383,14 @@ static void mini_player_draw();
 static bool mini_player_update(Hid_info key);
 
 static double mini_volume = 1.0;
+static double volume_cap() { // the loudest the player may be set to (Settings)
+	static const double caps[4] = {3.0, 2.0, 1.5, 1.0};
+	return caps[std::max(0, std::min(3, var_volume_cap))];
+}
+static double default_volume() { // for channels without a volume of their own (Settings)
+	static const double values[5] = {1.0, 0.5, 0.75, 1.25, 1.5};
+	return std::min(values[std::max(0, std::min(4, var_default_volume))], volume_cap());
+}
 static void mini_volume_apply(double v) {
 	mini_volume = v;
 	network_decoder.set_preamp(v);
@@ -443,7 +453,8 @@ static void channel_speed_tick() {
 	if (!network_decoder.ready || playing_video_info.id == "" || applied_for == playing_video_info.id) return;
 	applied_for = playing_video_info.id;
 	double volume = channel_volume_get(playing_video_info.author.id);
-	if (!(volume > 0 && volume <= 4)) volume = 1.0; // (also rejects nan / inf from a damaged file)
+	if (!(volume > 0 && volume <= 4)) volume = default_volume(); // (also rejects nan / inf from a damaged file)
+	volume = std::min(volume, volume_cap());
 	mini_volume_apply(volume);
 	double speed = channel_speed_get(playing_video_info.author.id);
 	if (!(speed >= 0.25 && speed <= 4)) {
@@ -2392,7 +2403,8 @@ debug_info_view =
 						                           if (end_tm) strftime(end_clock, sizeof end_clock, "%H:%M", end_tm);
 						                           ends_text = std::string(" - ") + tr("Ends at ", "Termina a las ") + end_clock;
 					                           }
-					                           notice_show(std::string(clock_text) + " - " + tr("Battery ", "Batería ") + std::to_string(var_battery_level_raw) + "%" + (var_battery_charge ? tr(" (charging)", " (cargando)") : "") + ends_text);
+					                           notice_show(std::string(clock_text) + " - " + tr("Battery ", "Batería ") + std::to_string(var_battery_level_raw) + "%" + (var_battery_charge ? tr(" (charging)", " (cargando)") : "") + ends_text +
+					                                       " - " + tr("Today ", "Hoy ") + std::to_string((int)(var_play_today / 60)) + " min, " + std::to_string((int)(var_data_session_bytes / 1048576)) + " MB");
 				                           }),
 				                 make_tool([]() { return tr("CC size", "CC tamaño"); }, 70,
 				                           []() {
@@ -2680,7 +2692,7 @@ debug_info_view =
 				                                   }),
 				                         make_tool([]() { return tr("Controls", "Controles"); }, 70,
 				                             []() {
-					                             show_text_popup(tr("Controls", "Controles"), tr("A: pause / play", "A: pausar / reproducir") + "\n" + tr("B: back", "B: atrás") + "\n" + tr("D-pad Left / Right: seek", "Cruceta izquierda / derecha: saltar") + "\n" + tr("D-pad Down / Up: next / previous video", "Cruceta abajo / arriba: siguiente / anterior vídeo") + "\n" + tr("ZL / ZR: 5 seconds back / forward", "ZL / ZR: 5 segundos atrás / adelante") + "\n" + tr("L, R, X, Y: choose what they do in Settings", "L, R, X, Y: elige qué hacen en Ajustes") + "\n" + tr("SELECT + D-pad: volume (up, down), brightness (left, right)", "SELECT + cruceta: volumen (arriba, abajo), brillo (izquierda, derecha)") + "\n" + tr("Hold X and press B: stop the video", "Mantén X y pulsa B: parar el vídeo"));
+					                             show_text_popup(tr("Controls", "Controles"), tr("A: pause / play", "A: pausar / reproducir") + "\n" + tr("B: back", "B: atrás") + "\n" + tr("D-pad Left / Right: seek", "Cruceta izquierda / derecha: saltar") + "\n" + tr("D-pad Down / Up: next / previous video", "Cruceta abajo / arriba: siguiente / anterior vídeo") + "\n" + tr("ZL / ZR: jump back / forward (Settings)", "ZL / ZR: saltar atrás / adelante (Ajustes)") + "\n" + tr("L, R, X, Y: choose what they do in Settings", "L, R, X, Y: elige qué hacen en Ajustes") + "\n" + tr("SELECT + D-pad: volume (up, down), brightness (left, right)", "SELECT + cruceta: volumen (arriba, abajo), brillo (izquierda, derecha)") + "\n" + tr("Hold X and press B: stop the video", "Mantén X y pulsa B: parar el vídeo"));
 				                             }),
 				                         make_tool([]() { return tr("Dislikes", "No me gusta"); }, 70,
 				                                   []() {
@@ -3818,15 +3830,21 @@ static void autoplay_countdown_tick() {
 	    if (var_sleep_timer_end && osGetTime() >= var_sleep_timer_end) { // sleep timer : pause the playback
 		    var_sleep_timer_end = 0;
 		    small_resource_lock.lock();
+		    bool slept = false;
 		    if (vid_play_request && !vid_pausing) {
-			    if (!vid_pausing_seek) {
-				    Util_speaker_pause(0);
-			    }
-			    vid_pausing = true;
+		    if (!vid_pausing_seek) {
+		    Util_speaker_pause(0);
+		    }
+		    vid_pausing = true;
+		    slept = true;
 		    }
 		    small_resource_lock.unlock();
+		    if (slept) {
+		    	save_resume_now();
+		    	notice_show(tr("Sleep timer: paused", "Temporizador: pausado"));
+		    }
 		    var_need_refresh = true;
-	    }
+		    }
 	    if (!vid_play_request && vid_pausing_seek) {
 		    small_resource_lock.lock();
 		    vid_pausing_seek = false;
@@ -3931,8 +3949,16 @@ static void autoplay_countdown_tick() {
 	    float y = y_top - draw_h - 4;
 	    Draw_texture(var_square_image[0], DEF_DRAW_BLACK, x - 2, y - 2, draw_w + 4, draw_h + 4);
 	    thumbnail_draw_part(sb_handle, (within % sb_level.cols) * sb_level.w, (within / sb_level.cols) * sb_level.h,
-	                        sb_level.w, sb_level.h, x, y, draw_w, draw_h);
-    }
+	    sb_level.w, sb_level.h, x, y, draw_w, draw_h);
+	    std::string chapter_name; // the chapter this moment belongs to
+	    for (auto &chapter : current_chapters) {
+	    	if (chapter.first <= timestamp + 0.5) chapter_name = chapter.second;
+	    }
+	    if (chapter_name != "") {
+	    	Draw_texture(var_square_image[0], DEF_DRAW_BLACK, x - 2, y - 15, draw_w + 4, 13);
+	    	Draw(truncate_first_line(chapter_name, (int)draw_w, 0.4), x, y - 15, 0.4, 0.4, DEF_DRAW_WHITE);
+	    }
+	    }
 
     void video_draw_playing_bar() {
 	    // draw
@@ -3987,6 +4013,13 @@ static void autoplay_countdown_tick() {
 	    if (bar_grabbed && vid_duration != 0) {
 		    draw_seek_preview(bar_timestamp, bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_l);
 	    }
+	    if (vid_duration != 0 && !playing_video_info.is_livestream) { // how much is already downloaded ahead of the position
+	    	double buffered = network_decoder.get_forward_buffer();
+	    	if (buffered > 0.5) {
+	    		double end_progress = network_decoder.get_bar_pos_from_timestamp(std::min<double>(vid_duration, bar_timestamp + buffered));
+	    		Draw_texture(var_square_image[0], 0xFF909090, bar_x_l, y_center - 2, (bar_x_r - bar_x_l) * std::max(0.0, std::min(1.0, end_progress)), 4);
+	    	}
+	    }
 	    if (vid_duration != 0) { // marks on the bar: the parts SponsorBlock skips (green) and where each chapter starts
 		    sb_lock.lock();
 		    for (auto &segment : sb_segments) {
@@ -4003,9 +4036,14 @@ static void autoplay_countdown_tick() {
 			    float x = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(chapter.first);
 			    Draw_texture(var_square_image[0], DEF_DRAW_DARK_GRAY, x - 1, y_center - 2, 2, 4);
 		    }
+		    if (ab_loop_a >= 0) { // the A-B loop : a yellow line under the bar (only a tick while B is not set)
+		    	float xa = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(ab_loop_a);
+		    	float xb = ab_loop_b > ab_loop_a ? bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(ab_loop_b) : xa + 3;
+		    	Draw_texture(var_square_image[0], 0xFF00D8FF, xa, y_center + 3, std::max(3.0f, xb - xa), 2);
+		    }
 		    C2D_DrawCircleSolid(bar_x_l + (bar_x_r - bar_x_l) * vid_progress, y_center, 0, bar_grabbed ? 6 : 4,
-		                        0xFF3333D0);
-	    }
+		    0xFF3333D0);
+		    }
     }
     void video_update_playing_bar(Hid_info key) {
 	    float y_l = 240 - VIDEO_PLAYING_BAR_HEIGHT;
@@ -4028,6 +4066,11 @@ static void autoplay_countdown_tick() {
 		    }
 		    bar_grabbed = false;
 		    var_need_refresh = true;
+	    }
+	    if (key.p_touch && !bar_grabbed && key.touch_x >= bar_x_r + 2 && key.touch_x < 320 - MAXIMIZE_ICON_WIDTH && key.touch_y >= 240 - VIDEO_PLAYING_BAR_HEIGHT) { // tap the time : length / time left
+	    	var_time_remaining = var_time_remaining ? 0 : 1;
+	    	misc_tasks_request(TASK_SAVE_SETTINGS);
+	    	var_need_refresh = true;
 	    }
 	    if (key.p_touch && key.touch_x >= 320 - MAXIMIZE_ICON_WIDTH && key.touch_y >= 240 - VIDEO_PLAYING_BAR_HEIGHT) {
 		    global_intent.next_scene = SceneType::VIDEO_PLAYER;
@@ -4069,8 +4112,22 @@ static void autoplay_countdown_tick() {
     } // namespace Bar
 
     // ***** mini player : big controls on the bottom screen to listen with the console in the pocket *****
+    static void save_resume_now() {
+    if (vid_duration > 60 && vid_resume_id[0] && !playing_video_info.is_livestream && !vid_change_video_request) {
+    	resume_set(std::string(vid_resume_id), vid_current_pos, vid_duration);
+    	resume_save();
+    }
+    }
+    static int seek_step_seconds() { // D-pad left / right
+    static const int steps[] = {10, 5, 15, 30};
+    return steps[std::max(0, std::min(3, var_seek_step))];
+    }
+    static int steps_z_seconds() { // ZL / ZR
+    static const int steps[] = {5, 10, 30, 60};
+    return steps[std::max(0, std::min(3, var_seek_step_z))];
+    }
     static void toggle_pause() {
-	    if (!vid_play_request) return;
+    if (!vid_play_request) return;
 	    if (vid_pausing) {
 		    if (!vid_pausing_seek) Util_speaker_resume(0);
 		    if (eof_reached) send_seek_request_wo_lock(0);
@@ -4078,8 +4135,9 @@ static void autoplay_countdown_tick() {
 	    } else {
 		    if (!vid_pausing_seek) Util_speaker_pause(0);
 		    vid_pausing = true;
-	    }
-    }
+		    save_resume_now(); // a pause followed by closing the app does not lose the position
+		    }
+		    }
     static void mini_next() {
 	    std::string queued_url;
 	    if (play_queue_pop(queued_url)) send_change_video_request_wo_lock(queued_url, true, false, false);
@@ -4117,6 +4175,42 @@ static void autoplay_countdown_tick() {
 		    notice_show(tr("Volume ", "Volumen ") + std::to_string((int)(mini_volume * 100 + 0.5)) + "%");
 		    break;
 	    }
+	    case 11:
+	    	if (network_decoder.ready) send_seek_request(std::max(0.0, vid_current_pos - 10));
+	    	break;
+	    case 12: { // mute / unmute
+	    	static double before_mute = 1.0;
+	    	if (mini_volume <= 0.001) {
+	    		mini_volume_apply(before_mute > 0.001 ? before_mute : 1.0);
+	    	} else {
+	    		before_mute = mini_volume;
+	    		mini_volume_apply(0.0);
+	    	}
+	    	notice_show(mini_volume <= 0.001 ? tr("Muted", "Silenciado") : tr("Sound on", "Sonido activado"));
+	    	break;
+	    }
+	    case 13: { // previous chapter
+	    	if (!network_decoder.ready) break;
+	    	double target = 0;
+	    	std::string name;
+	    	for (auto &chapter : current_chapters) {
+	    		if (chapter.first < vid_current_pos - 3) target = chapter.first, name = chapter.second;
+	    	}
+	    	send_seek_request(target);
+	    	if (name != "") notice_show(name.substr(0, 40));
+	    	break;
+	    }
+	    case 14: { // next chapter
+	    	if (!network_decoder.ready) break;
+	    	for (auto &chapter : current_chapters) {
+	    		if (chapter.first > vid_current_pos + 1) {
+	    			send_seek_request(chapter.first);
+	    			if (chapter.second != "") notice_show(chapter.second.substr(0, 40));
+	    			break;
+	    		}
+	    	}
+	    	break;
+	    }
 	    case 9:
 	    case 10: { // brightness of the screens
 		    var_lcd_brightness = std::max(15, std::min(163, var_lcd_brightness + (action == 9 ? 14 : -14)));
@@ -4129,7 +4223,7 @@ static void autoplay_countdown_tick() {
 	    var_need_refresh = true;
     }
     static void mini_set_volume(double v) {
-	    mini_volume = std::min(3.0, std::max(0.1, v));
+	    mini_volume = std::min(volume_cap(), std::max(0.1, v));
 	    network_decoder.set_preamp(mini_volume);
 	    channel_volume_set(playing_video_info.author.id, mini_volume); // remembered for this channel
 	    var_need_refresh = true;
@@ -4469,6 +4563,7 @@ static void autoplay_countdown_tick() {
 				    if (video_retry_left > 0) {
 					    video_retry_left--;
 					    logger.caution("dec", "failed, retrying. retry cnt left:" + std::to_string(video_retry_left));
+					    notice_show(tr("Connection problem, retrying (", "Problema de conexión, reintentando (") + std::to_string(MAX_RETRY_CNT + 1 - video_retry_left) + "/" + std::to_string(MAX_RETRY_CNT + 1) + ")");
 					    send_change_video_request(cur_playing_url, true, false, true);
 				    } else {
 					    Util_err_set_error_message(result.string, result.error_description, DEF_SAPP0_DECODE_THREAD_STR,
@@ -4521,6 +4616,7 @@ static void autoplay_countdown_tick() {
 				    double resume_pos = resume_get(snap_id);
 				    if (resume_pos > 0 && vid_duration - resume_pos > 15) {
 					    seek_at_init_request = resume_pos > 8 ? resume_pos - 3 : resume_pos; // a few seconds back: the sentence is not cut in half
+					    notice_show(tr("Continuing from ", "Continuando desde ") + Util_convert_seconds_to_time(seek_at_init_request));
 				    }
 			    }
 			    intro_skip_blocked = seek_at_init_request >= 0; // a link time, a bookmark or a resume point decides the start
@@ -4589,9 +4685,11 @@ static void autoplay_countdown_tick() {
 						    small_resource_lock.lock();
 						    bool stop_here = stop_after_video; // "stop after this video" was requested
 						    stop_after_video = false;
+						    bool limit_stop = false;
 						    static const int limits[4] = {0, 3, 5, 10};
 						    if (!stop_here && limits[var_autoplay_limit] > 0 && auto_advanced + 1 >= limits[var_autoplay_limit]) { // enough videos in a row
 							    stop_here = true;
+							    limit_stop = true;
 							    auto_advanced = 0;
 							    notice_show(tr("Stopped after the videos in a row you chose", "Parado tras los vídeos seguidos que elegiste"));
 						    }
@@ -4623,8 +4721,11 @@ static void autoplay_countdown_tick() {
 								    }
 							    }
 						    } else if (var_loop_mode == true) {
-							    vid_seek_request = true;
-							    vid_seek_pos = 0;
+						    vid_seek_request = true;
+						    vid_seek_pos = 0;
+						    }
+						    if (!break_flag && autoplay_pending_url == "" && var_loop_mode == false && !limit_stop) { // nothing follows : say why it stopped
+						    	notice_show(stop_here ? tr("Stopped after this video", "Parado tras este vídeo") : tr("Video ended (A: play again)", "Vídeo terminado (A: repetir)"));
 						    }
 						    small_resource_lock.unlock();
 					    }
@@ -5386,12 +5487,13 @@ static void autoplay_countdown_tick() {
 						    send_seek_request(0);
 					    }
 					    vid_pausing = false;
-				    } else {
+					    } else {
 					    if (!vid_pausing_seek) {
-						    Util_speaker_pause(0);
+					    Util_speaker_pause(0);
 					    }
 					    vid_pausing = true;
-				    }
+					    save_resume_now();
+					    }
 			    }
 		    } else if (key.h_select && (key.p_d_up || key.p_d_down)) { // SELECT + Up / Down : volume
 			    run_button_action(key.p_d_up ? 7 : 8);
@@ -5408,12 +5510,13 @@ static void autoplay_countdown_tick() {
 		    } else if (key.p_d_right || key.p_d_left) {
 			    if (network_decoder.ready) {
 				    double pos = vid_current_pos;
-				    { static const int steps[] = {10, 5, 15, 30}; int step = steps[std::max(0, std::min(3, var_seek_step))]; pos += key.p_d_right ? step : -step; }
+				    { int step = seek_step_seconds(); pos += key.p_d_right ? step : -step; }
 				    pos = std::max<double>(0, pos);
 				    pos = std::min<double>(vid_duration, pos);
 				    send_seek_request(pos);
-			    }
-		    } else if (key.p_d_down || key.p_d_up) { // like swiping the Shorts : down = next video of the queue, up = the one before
+				    notice_show(std::string(key.p_d_right ? "+" : "-") + std::to_string(seek_step_seconds()) + " s   " + Util_convert_seconds_to_time(pos));
+				    }
+				    } else if (key.p_d_down || key.p_d_up) { // like swiping the Shorts : down = next video of the queue, up = the one before
 			    std::string cur_url = cur_playing_url, cur_title = playing_video_info.title;
 			    if (key.p_d_down) {
 				    std::string queued_url;
@@ -5438,10 +5541,11 @@ static void autoplay_countdown_tick() {
 		    } else if (key.p_zr || key.p_zl) {
 			    if (network_decoder.ready) {
 				    double pos = vid_current_pos;
-				    pos += key.p_zr ? 5 : -5;
+				    pos += key.p_zr ? steps_z_seconds() : -steps_z_seconds();
 				    pos = std::max<double>(0, pos);
 				    pos = std::min<double>(vid_duration, pos);
 				    send_seek_request(pos);
+				    notice_show(std::string(key.p_zr ? "+" : "-") + std::to_string(steps_z_seconds()) + " s   " + Util_convert_seconds_to_time(pos));
 			    }
 		    }
 	    }

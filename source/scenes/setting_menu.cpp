@@ -1165,7 +1165,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
 							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
 							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
-							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
+							(std::function<std::string ()>) []() { return std::string("-10 s"); },
+							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
+							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
+							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
 						}, var_button_x)
 						->set_title([](const SelectorView &) { return tr("Button X in the player", "Botón X en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1186,7 +1190,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
 							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
 							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
-							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
+							(std::function<std::string ()>) []() { return std::string("-10 s"); },
+							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
+							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
+							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
 						}, var_button_y)
 						->set_title([](const SelectorView &) { return tr("Button Y in the player", "Botón Y en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1207,7 +1215,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
 							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
 							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
-							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
+							(std::function<std::string ()>) []() { return std::string("-10 s"); },
+							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
+							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
+							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
 						}, var_button_l)
 						->set_title([](const SelectorView &) { return tr("Button L in the player", "Botón L en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1228,7 +1240,11 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
 							(std::function<std::string ()>) []() { return tr("Volume -", "Volumen -"); },
 							(std::function<std::string ()>) []() { return tr("Brightness +", "Brillo +"); },
-							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); }
+							(std::function<std::string ()>) []() { return tr("Brightness -", "Brillo -"); },
+							(std::function<std::string ()>) []() { return std::string("-10 s"); },
+							(std::function<std::string ()>) []() { return tr("Mute", "Silenciar"); },
+							(std::function<std::string ()>) []() { return tr("Previous chapter", "Capítulo anterior"); },
+							(std::function<std::string ()>) []() { return tr("Next chapter", "Capítulo siguiente"); }
 						}, var_button_r)
 						->set_title([](const SelectorView &) { return tr("Button R in the player", "Botón R en el reproductor"); })
 						->set_on_change([](const SelectorView &view) {
@@ -1362,10 +1378,26 @@ void Sem_init(void) {
 							}
 						}),
 
+					// Seek step of ZL / ZR
+					(new SelectorView(0, 0, 320, 35, true))
+					->set_texts({
+						(std::function<std::string ()>) []() { return std::string("5 s"); },
+						(std::function<std::string ()>) []() { return std::string("10 s"); },
+						(std::function<std::string ()>) []() { return std::string("30 s"); },
+						(std::function<std::string ()>) []() { return std::string("60 s"); }
+					}, var_seek_step_z)
+					->set_title([](const SelectorView &) { return tr("Seek step (ZL / ZR)", "Salto (ZL / ZR)"); })
+					->set_on_change([](const SelectorView &view) {
+						if (var_seek_step_z != view.selected_button) {
+							var_seek_step_z = view.selected_button;
+							misc_tasks_request(TASK_SAVE_SETTINGS);
+						}
+					}),
+
 					// Subtitles
 					(new SelectorView(0, 0, 320, 35, true))
-						->set_texts({
-							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
+					->set_texts({
+					(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
 							(std::function<std::string ()>) []() { return "Normal"; },
 							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
 						}, var_caption_size)
@@ -1509,6 +1541,41 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+
+					// Default volume
+					(new SelectorView(0, 0, 320, 35, true))
+					->set_texts({
+						(std::function<std::string ()>) []() { return std::string("100%"); },
+						(std::function<std::string ()>) []() { return std::string("50%"); },
+						(std::function<std::string ()>) []() { return std::string("75%"); },
+						(std::function<std::string ()>) []() { return std::string("125%"); },
+						(std::function<std::string ()>) []() { return std::string("150%"); }
+					}, var_default_volume)
+					->set_title([](const SelectorView &) { return tr("Default volume", "Volumen por defecto"); })
+					->set_info([](const SelectorView &) { return tr("For channels without a volume of their own (the Volume tool of a video remembers one per channel).", "Para canales sin volumen propio (la herramienta de volumen de un vídeo recuerda uno por canal)."); })
+					->set_on_change([](const SelectorView &view) {
+						if (var_default_volume != view.selected_button) {
+							var_default_volume = view.selected_button;
+							misc_tasks_request(TASK_SAVE_SETTINGS);
+						}
+					}),
+
+					// Loudest volume
+					(new SelectorView(0, 0, 320, 35, true))
+					->set_texts({
+						(std::function<std::string ()>) []() { return std::string("300%"); },
+						(std::function<std::string ()>) []() { return std::string("200%"); },
+						(std::function<std::string ()>) []() { return std::string("150%"); },
+						(std::function<std::string ()>) []() { return std::string("100%"); }
+					}, var_volume_cap)
+					->set_title([](const SelectorView &) { return tr("Loudest volume", "Volumen máximo"); })
+					->set_info([](const SelectorView &) { return tr("Protects your ears with headphones: the volume tools never go above this. Applies to the next video.", "Protege tus oídos con auriculares: las herramientas de volumen no suben de aquí. Se aplica al siguiente vídeo."); })
+					->set_on_change([](const SelectorView &view) {
+						if (var_volume_cap != view.selected_button) {
+							var_volume_cap = view.selected_button;
+							misc_tasks_request(TASK_SAVE_SETTINGS);
+						}
+					}),
 
 					// Watch later cleanup
 					(new SelectorView(0, 0, 320, 35, true))

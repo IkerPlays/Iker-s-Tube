@@ -134,10 +134,10 @@ void load_settings() {
 	var_play_today = load_double("play_today", 0.0);
 	var_play_day = load_int("play_day", 0);
 	var_daily_limit = std::max(0, std::min(4, load_int("daily_limit", 0)));
-	var_button_x = std::max(0, std::min(10, load_int("button_x", 1)));
-	var_button_y = std::max(0, std::min(10, load_int("button_y", 4)));
-	var_button_l = std::max(0, std::min(10, load_int("button_l", 3)));
-	var_button_r = std::max(0, std::min(10, load_int("button_r", 2)));
+	var_button_x = std::max(0, std::min(14, load_int("button_x", 1)));
+	var_button_y = std::max(0, std::min(14, load_int("button_y", 4)));
+	var_button_l = std::max(0, std::min(14, load_int("button_l", 3)));
+	var_button_r = std::max(0, std::min(14, load_int("button_r", 2)));
 	var_left_handed = load_int("left_handed", 0);
 	var_custom_hue = std::max(0, std::min(359, load_int("custom_hue", 200)));
 	var_high_contrast = load_int("high_contrast", 0);
@@ -165,6 +165,9 @@ void load_settings() {
 	var_autoplay_limit = std::max(0, std::min(3, load_int("autoplay_limit", 0)));
 	var_time_remaining = std::max(0, std::min(1, load_int("time_remaining", 0)));
 	var_seek_step = std::max(0, std::min(3, load_int("seek_step", 0)));
+	var_seek_step_z = std::max(0, std::min(3, load_int("seek_step_z", 0)));
+	var_default_volume = std::max(0, std::min(4, load_int("default_volume", 0)));
+	var_volume_cap = std::max(0, std::min(3, load_int("volume_cap", 0)));
 	var_auto_captions = std::max(0, std::min(1, load_int("auto_captions", 0)));
 	var_default_speed = std::max(0, std::min(5, load_int("default_speed", 0)));
 	var_wl_autoremove = std::max(0, std::min(1, load_int("wl_autoremove", 0)));
@@ -249,6 +252,9 @@ void save_settings() {
 	add_int("autoplay_limit", var_autoplay_limit);
 	add_int("time_remaining", var_time_remaining);
 	add_int("seek_step", var_seek_step);
+	add_int("seek_step_z", var_seek_step_z);
+	add_int("default_volume", var_default_volume);
+	add_int("volume_cap", var_volume_cap);
 	add_int("auto_captions", var_auto_captions);
 	add_int("download_quality", var_download_quality);
 	add_int("autoplay_skip_watched", var_autoplay_skip_watched);
