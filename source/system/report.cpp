@@ -7,6 +7,10 @@
 #include "util/play_queue.hpp"
 #include "youtube_parser/account.hpp"
 #include "util/util.hpp"
+#include "data_io/history.hpp"
+#include "data_io/user_playlists.hpp"
+#include "data_io/watch_later.hpp"
+#include "data_io/favorites.hpp"
 #include <cstdio>
 #include <sys/stat.h>
 
@@ -74,6 +78,7 @@ bool report_create() {
 	        DEF_BUILD_TIME);
 	fprintf(f, "safe mode: %s, settings.txt.crashed: %s\n", var_safe_mode ? "yes (the last start did not finish)" : "no", access("sdmc:/3ds/IkersTube/settings.txt.crashed", F_OK) == 0 ? "exists" : "no");
 	fprintf(f, "saved items: %d, queue: %d\n", (int)offline_list().size(), play_queue_size());
+	fprintf(f, "lists: favorites=%d, watch later=%d, playlists=%d, history=%d\n", (int)favorites_get().size(), (int)watch_later_get().size(), (int)playlists_get().size(), (int)get_valid_watch_history().size());
 	append_tail(f, "crash_last.txt", "sdmc:/3ds/IkersTube/crash_last.txt", 4000);
 	append_tail(f, "log.txt (end)", "sdmc:/3ds/IkersTube/log.txt", 24000);
 	append_tail(f, "log_previous.txt (end)", "sdmc:/3ds/IkersTube/log_previous.txt", 8000); // (the log of the run before this one)

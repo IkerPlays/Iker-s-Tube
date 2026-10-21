@@ -373,9 +373,10 @@ static void disk_cache_write(const std::string &url, const std::vector<u8> &data
 
 static bool should_be_running = true;
 void thumbnail_downloader_thread_func(void *arg) {
+	int idle_loops = 0; // nothing to download for a while : look less often (saves battery)
 	while (should_be_running) {
-		resource_lock.lock();
-		struct Item {
+	resource_lock.lock();
+	struct Item {
 			int priority;
 			std::string url;
 			ThumbnailType type;
@@ -401,9 +402,11 @@ void thumbnail_downloader_thread_func(void *arg) {
 		resource_lock.unlock();
 
 		if (!download_list.size()) {
-			usleep(50000);
-			continue;
+		idle_loops = std::min(idle_loops + 1, 100);
+		usleep(idle_loops > 40 ? 150000 : 50000); // (after about 2 seconds without work : 150 ms)
+		continue;
 		}
+		idle_loops = 0;
 
 		// sort in the decreasing order of the priority
 		std::sort(download_list.begin(), download_list.end(),

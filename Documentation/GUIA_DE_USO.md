@@ -94,6 +94,15 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
   **publicación programada** con la hora de internet), continuar subidas interrumpidas y crear listas.
 - Editar mis subidas: visibilidad, título, **descripción**, miniatura, borrar y estadísticas (con visitas por vídeo).
 
+- **Reproductor (novedades):** al saltar con la cruceta o ZL/ZR aparece cuánto has saltado (el paso de ZL/ZR se elige en Ajustes), la barra marca lo
+  descargado por delante, el bucle A-B (línea amarilla) y tus marcadores; al arrastrar la barra se ve el nombre del capítulo; tocar el tiempo cambia entre
+  duración y tiempo restante; "Ir al directo" en los directos; volumen por defecto y volumen máximo; "Retroceder tras una pausa"; con muy poca batería
+  pausa solo y guarda la posición; L, R, X e Y también pueden retroceder 10 s, silenciar o cambiar de capítulo.
+- **Biblioteca:** L y R cambian de pestaña, se recuerdan los órdenes y la pestaña Descargas, hay contadores, y las pulsaciones largas tienen "Más..." con el menú completo del vídeo.
+  Vaciar la cola o borrar las descargas vistas pide confirmación.
+- **Ajustes, Datos:** los botones que no se pueden deshacer piden un segundo toque; "Espacio que usa la app", "Última copia", borrar el historial de búsquedas, reiniciar
+  estadísticas, limpiar archivos temporales y "Recuperar los ajustes de antes de un fallo" (los que apartó el modo seguro).
+- **Errores de red** salen en lenguaje claro (sin conexión, servidor no encontrado, tiempo agotado, YouTube saturado) y tocar el error del Inicio reintenta.
 ## Ajustes útiles
 - Reproducción: subtítulos automáticos (se abren solos con el último idioma usado), velocidad por defecto, que la reproducción automática salte lo ya visto, quitar de Ver más tarde al
   acabar, chat automático y calidad de lo guardado.
