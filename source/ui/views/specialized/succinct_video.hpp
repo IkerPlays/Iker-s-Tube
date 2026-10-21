@@ -150,11 +150,11 @@ struct SuccinctVideoView : public FixedSizeView {
 			int pos = play_queue_position(queue_url);
 			if (pos) {
 				std::string text = "#" + std::to_string(pos);
-				ui_chip(text, lx, y0 + 4, COLOR_ACCENT, 0xFFFFFFFF, 0.42f);
+				ui_chip(text, lx, y0 + 4, COLOR_ACCENT, UI_ON_ACCENT, 0.42f);
 				lx += ui_chip_width(text, 0.42f) + 3;
 			}
 		}
-		if (badge_new) ui_chip("NEW", lx, y0 + 4, COLOR_ACCENT, 0xFFFFFFFF);
+		if (badge_new) ui_chip("NEW", lx, y0 + 4, COLOR_ACCENT, UI_ON_ACCENT);
 		if (var_mark_watched && video_id.size() && history_has_id(video_id)) { // already watched : a check in a dark disc, top right
 			float cx = tx + tw_drawn - 10, cy = y0 + 10;
 			Draw_round_rect(cx - 6, cy - 6, 12, 12, 6, 0xCC000000);
@@ -166,7 +166,7 @@ struct SuccinctVideoView : public FixedSizeView {
 		if (bottom_right_overlay.size()) { // the length (LIVE in red), bottom right
 			bool live = bottom_right_overlay == "LIVE" || bottom_right_overlay == "SOON";
 			float w = ui_chip_width(bottom_right_overlay, DURATION_FONT_SIZE);
-			ui_chip(bottom_right_overlay, tx + tw_drawn - w - 4, y0 + th - 17, live ? COLOR_ACCENT : 0xCC000000, 0xFFFFFFFF, DURATION_FONT_SIZE);
+			ui_chip(bottom_right_overlay, tx + tw_drawn - w - 4, y0 + th - 17, live ? COLOR_ACCENT : 0xCC000000, live ? (u32)UI_ON_ACCENT : 0xFFFFFFFFu, DURATION_FONT_SIZE);
 		}
 		if (is_playlist) {
 			double overlay_proportion = 0.3;

@@ -80,6 +80,6 @@ void Util_err_draw(void) {
 	Draw(err_error_code, 26, 120.0, 0.45, 0.45, DEFAULT_TEXT_COLOR);
 	Draw_round_rect(150.0, 150.0, 55.0, 20.0, UI_RADIUS_BUTTON, COLOR_ACCENT);
 	Draw_round_rect(209.0, 150.0, 50.0, 20.0, UI_RADIUS_BUTTON, UI_RAISED_COLOR);
-	Draw_xy_centered("Close (A)", 150.0, 205.0, 150.0, 170.0, 0.375, 0.375, 0xFFFFFFFF);
+	Draw_xy_centered("Close (A)", 150.0, 205.0, 150.0, 170.0, 0.375, 0.375, UI_ON_ACCENT);
 	Draw_xy_centered("Save (X)", 209.0, 259.0, 150.0, 170.0, 0.375, 0.375, DEFAULT_TEXT_COLOR);
 }

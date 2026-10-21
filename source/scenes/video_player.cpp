@@ -4005,14 +4005,14 @@ static void autoplay_countdown_tick() {
 	    const float button_r = std::min(9.0f, VIDEO_PLAYING_BAR_HEIGHT / 2.0f - 1); // the play / pause button : an accent disc
 	    C2D_DrawCircleSolid(14, y_center, 0, button_r, COLOR_ACCENT);
 	    if (get_network_waiting_status()) { // loading
-	    C2D_DrawCircleSolid(9, y_center, 0, 1.5f, DEF_DRAW_WHITE);
-	    C2D_DrawCircleSolid(14, y_center, 0, 1.5f, DEF_DRAW_WHITE);
-	    C2D_DrawCircleSolid(19, y_center, 0, 1.5f, DEF_DRAW_WHITE);
+	    C2D_DrawCircleSolid(9, y_center, 0, 1.5f, UI_ON_ACCENT);
+	    C2D_DrawCircleSolid(14, y_center, 0, 1.5f, UI_ON_ACCENT);
+	    C2D_DrawCircleSolid(19, y_center, 0, 1.5f, UI_ON_ACCENT);
 	    } else if (vid_pausing || vid_pausing_seek || !vid_play_request) { // pausing : a play triangle
-	    C2D_DrawTriangle(12, y_center - 5, DEF_DRAW_WHITE, 12, y_center + 5, DEF_DRAW_WHITE, 19, y_center, DEF_DRAW_WHITE, 0);
+	    C2D_DrawTriangle(12, y_center - 5, UI_ON_ACCENT, 12, y_center + 5, UI_ON_ACCENT, 19, y_center, UI_ON_ACCENT, 0);
 	    } else { // playing : two bars
-	    C2D_DrawRectSolid(11.5f, y_center - 5, 0, 3, 10, DEF_DRAW_WHITE);
-	    C2D_DrawRectSolid(16.5f, y_center - 5, 0, 3, 10, DEF_DRAW_WHITE);
+	    C2D_DrawRectSolid(11.5f, y_center - 5, 0, 3, 10, UI_ON_ACCENT);
+	    C2D_DrawRectSolid(16.5f, y_center - 5, 0, 3, 10, UI_ON_ACCENT);
 	    }
 	    // maximize icon
 	    Draw_texture(var_square_image[0], LIGHT0_TEXT_COLOR, 320 - MAXIMIZE_ICON_WIDTH + 4, y_l + 3, 8, 3);

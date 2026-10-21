@@ -1,1 +1,1 @@
-New look (part 3): every setting is a card, section headings have an accent bar, channel rows and the channel header have round pictures and a pill Subscribe button, comment authors have round pictures, the second kind of tab bar has an accent line.
+On bright accent colors (Amber, Forest, Ocean and bright custom hues) the text and icons on accent shapes turn dark so they stay readable.

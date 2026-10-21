@@ -65,7 +65,7 @@ void nav_paint(const NavPaint &p, const std::string labels[NAV_ITEM_COUNT]) {
 		} else if (pressed) {
 			Draw_round_rect(cx - 17, cy - 8, 34, 17, 8, UI_RAISED_COLOR);
 		}
-		u32 color = sel ? 0xFFFFFFFF : var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : (u32)LIGHT0_TEXT_COLOR;
+		u32 color = sel ? (u32)UI_ON_ACCENT : var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : (u32)LIGHT0_TEXT_COLOR;
 		nav_icon(i, cx, cy, color);
 		if (i == 3 && p.download_running) { // a download is running : a green dot on Downloads
 			Draw_round_rect(cx + 8, cy - 9, 7, 7, 3.5f, 0xFF50C878);
@@ -75,7 +75,7 @@ void nav_paint(const NavPaint &p, const std::string labels[NAV_ITEM_COUNT]) {
 			std::string n = std::to_string(std::min(99, p.queue_size));
 			float w = std::max(11.0f, Draw_get_width(n, 0.4) + 6);
 			Draw_round_rect(cx + 7, cy - 10, w, 11, 5.5f, COLOR_ACCENT);
-			Draw_x_centered(n, cx + 7, cx + 7 + w, cy - 10.5f, 0.4, 0.4, 0xFFFFFFFF);
+			Draw_x_centered(n, cx + 7, cx + 7 + w, cy - 10.5f, 0.4, 0.4, UI_ON_ACCENT);
 		}
 		Draw_x_centered(labels[i], x0, x1, top + 19.5f, 0.4, 0.4, sel ? (u32)DEFAULT_TEXT_COLOR : (u32)LIGHT1_TEXT_COLOR);
 	}

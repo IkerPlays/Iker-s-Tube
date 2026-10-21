@@ -96,3 +96,15 @@ static inline unsigned int ui_mix(unsigned int a, unsigned int b, float t) {
 	}
 	return out;
 }
+
+// The text color that reads best on top of the accent color : white, or near black when the accent is a bright one
+static inline unsigned int ui_text_on(unsigned int abgr) {
+	float c[3];
+	for (int i = 0; i < 3; i++) {
+		float v = ((abgr >> (8 * i)) & 0xFF) / 255.0f;
+		c[i] = v <= 0.03928f ? v / 12.92f : powf((v + 0.055f) / 1.055f, 2.4f);
+	}
+	float luminance = 0.2126f * c[0] + 0.7152f * c[1] + 0.0722f * c[2];
+	return luminance > 0.30f ? RGB_(0x14, 0x16, 0x1B) : 0xFFFFFFFFu;
+}
+#define UI_ON_ACCENT (ui_text_on(theme_accent()))

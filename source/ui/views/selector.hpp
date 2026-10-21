@@ -147,7 +147,7 @@ struct SelectorView : public FixedSizeView {
 		for (int i = 0; i < button_num; i++) {
 			bool sel = i == selected_button;
 			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos() + (button_y_size() - 20 * 0.5f) / 2 - 1, 0.5, 0.5,
-			                sel ? (var_high_contrast ? (u32)DEFAULT_BACK_COLOR : 0xFFFFFFFFu) : (u32)DEFAULT_TEXT_COLOR);
+			                sel ? (var_high_contrast ? (u32)DEFAULT_BACK_COLOR : (u32)UI_ON_ACCENT) : (u32)DEFAULT_TEXT_COLOR);
 		}
 	}
 	void update_(Hid_info key) override {
@@ -403,7 +403,7 @@ struct GridSelectorView : public FixedSizeView {
 			for (int j = 0; j < items; j++) {
 				if (global_idx < button_num) {
 					Draw_x_centered(button_texts[global_idx], button_x_left(i, j), button_x_right(i, j),
-					                button_y_pos(i), 0.5, 0.5, global_idx == selected_button ? 0xFFFFFFFF : (u32)DEFAULT_TEXT_COLOR);
+					                button_y_pos(i), 0.5, 0.5, global_idx == selected_button ? (u32)UI_ON_ACCENT : (u32)DEFAULT_TEXT_COLOR);
 					global_idx++;
 				}
 			}

@@ -84,7 +84,7 @@ struct ChannelView : public FixedSizeView {
 			float button_x = x1 - SMALL_MARGIN * 2 - SUBSCRIBE_BUTTON_WIDTH;
 			float button_y = y0 + SMALL_MARGIN + CHANNEL_ICON_SIZE - SUBSCRIBE_BUTTON_HEIGHT - SMALL_MARGIN;
 			Draw_round_rect(button_x, button_y, SUBSCRIBE_BUTTON_WIDTH, SUBSCRIBE_BUTTON_HEIGHT, SUBSCRIBE_BUTTON_HEIGHT / 2, subscribe_button_color); // a pill
-			Draw_x_centered(subscribe_button_str, button_x, x1 - SMALL_MARGIN * 2, button_y + 4, 0.5, 0.5, is_subscribed ? (u32)DEFAULT_TEXT_COLOR : 0xFFFFFFFFu);
+			Draw_x_centered(subscribe_button_str, button_x, x1 - SMALL_MARGIN * 2, button_y + 4, 0.5, 0.5, is_subscribed ? (u32)DEFAULT_TEXT_COLOR : (u32)UI_ON_ACCENT);
 		}
 	}
 	void update_(Hid_info key) override {

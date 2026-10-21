@@ -77,7 +77,7 @@ struct TabView : public FixedSizeView {
 		for (int i = 0; i < tab_num; i++) {
 			float y = y1 - tab_selector_height + (tab_selector_height - Draw_get_height(tab_texts[i], 0.5)) / 2 - 2;
 			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, tab_font_size, tab_font_size,
-			                i == selected_tab ? 0xFFFFFFFF : (u32)LIGHT0_TEXT_COLOR);
+			                i == selected_tab ? (u32)UI_ON_ACCENT : (u32)LIGHT0_TEXT_COLOR);
 		}
 	}
 	void update_(Hid_info key) override {
