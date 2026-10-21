@@ -19,12 +19,13 @@ void PostView::draw_() const {
 	if (!is_description_mode) {
 		if (cur_y < 240 && cur_y + DEFAULT_FONT_INTERVAL > 0) {
 			float x = content_x_pos();
-			Draw(author_name, x, cur_y - 3, 0.5, 0.5, LIGHT0_TEXT_COLOR);
+			Draw(author_name, x, cur_y - 3, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 			x += Draw_get_width(author_name + " ", 0.5);
 			Draw(time_str, x, cur_y - 2, 0.45, 0.45, LIGHT1_TEXT_COLOR);
 		}
 		if (cur_y < 240 && cur_y + get_icon_size() > 0) {
 			thumbnail_draw(author_icon_handle, x0 + SMALL_MARGIN, cur_y, get_icon_size(), get_icon_size());
+			ui_mask_corners(x0 + SMALL_MARGIN, cur_y, get_icon_size(), get_icon_size(), get_icon_size() / 2, UI_PAGE_COLOR); // the picture is a circle
 		}
 		cur_y += DEFAULT_FONT_INTERVAL;
 	}

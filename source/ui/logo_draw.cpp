@@ -2,6 +2,7 @@
 #include <cmath>
 #include "data_io/string_resource.hpp"
 #include "ui/logo_draw.hpp"
+#include "ui/style.hpp"
 #include "network_decoder/image.hpp"
 #include <cstdio>
 
@@ -54,10 +55,12 @@ static void load_background() {
 	}
 }
 
-void logo_draw(float cx, float cy) {
+void logo_draw(float cx, float cy, bool background) {
 	if (!bg_tried) load_background();
 	if (bg_loaded) {
 		Draw_texture(bg_image.c2d, 0, 0, 400, 240);
+	} else if (background) {
+		ui_gradient_v(0, 0, 400, 240, UI_PAGE_COLOR, ui_mix(UI_PAGE_COLOR, COLOR_ACCENT, 0.16f), 6);
 	}
 	if (!logo_tried) {
 		logo_tried = true;
@@ -71,5 +74,6 @@ void logo_draw(float cx, float cy) {
 		Draw_texture(logo_image, cx - size / 2, cy - size / 2 - 14, size, size);
 	}
 	Draw_xy_centered("Iker's Tube", cx - 150, cx + 150, cy + size / 2 - 6, cy + size / 2 + 20, 0.7, 0.7,
-	                 DEFAULT_TEXT_COLOR);
+	DEFAULT_TEXT_COLOR);
+	if (background) Draw_xy_centered(tr("YouTube for your Nintendo 3DS", "YouTube para tu Nintendo 3DS"), cx - 150, cx + 150, cy + size / 2 + 18, cy + size / 2 + 32, 0.42, 0.42, LIGHT1_TEXT_COLOR);
 }

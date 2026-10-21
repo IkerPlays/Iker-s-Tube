@@ -125,16 +125,18 @@ struct SelectorView : public FixedSizeView {
 			draw_switch();
 			return;
 		}
-		Draw(title, x0 + SMALL_MARGIN + 3, y0, 0.5, 0.5, LIGHT0_TEXT_COLOR);
+		if (var_round_buttons) Draw_round_rect(x0 + 3, y0 + 1, x1 - x0 - 6, y1 - y0 - 2, UI_RADIUS_CARD, UI_CARD_COLOR); // the setting is a card
+		const float title_x = x0 + (var_round_buttons ? 10 : SMALL_MARGIN + 3);
+		Draw(title, title_x, y0 + 1, 0.5, 0.5, LIGHT0_TEXT_COLOR);
 
 		if (has_info) {
-			double title_width = Draw_get_width(title, 0.5);
-			Draw_round_info(x0 + SMALL_MARGIN + 3 + title_width + 9, y0 + 6);
+		double title_width = Draw_get_width(title, 0.5);
+		Draw_round_info(title_x + title_width + 8, y0 + 7);
 		}
 
 		float radius = var_round_buttons ? (float)std::min((double)UI_RADIUS_BUTTON, button_y_size() / 2) : 0; // rounded: a track and a pill for the chosen button
 		if (radius > 0 && button_num > 0) {
-			Draw_round_rect((int)(button_x_left(0) - margin_x_size() * 0.4), (int)button_y_pos(), (int)(button_x_right(button_num - 1) - button_x_left(0) + margin_x_size() * 0.8), (int)button_y_size(), radius, UI_CARD_COLOR);
+			Draw_round_rect((int)(button_x_left(0) - margin_x_size() * 0.4), (int)button_y_pos(), (int)(button_x_right(button_num - 1) - button_x_left(0) + margin_x_size() * 0.8), (int)button_y_size(), radius, UI_RAISED_COLOR);
 		}
 		u32 selected_color = var_high_contrast ? (u32)DEFAULT_TEXT_COLOR : (u32)COLOR_ACCENT;
 		if (radius > 0) {

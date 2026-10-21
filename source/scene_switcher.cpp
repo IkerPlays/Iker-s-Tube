@@ -62,12 +62,11 @@ static void Menu_draw_loading(float progress, const std::string &text) {
 	Draw_x_centered(tr("YouTube for your Nintendo 3DS", "YouTube para tu Nintendo 3DS"), 0, 320, 150, 0.45, 0.45, LIGHT0_TEXT_COLOR);
 	Draw_screen_ready(2, UI_PAGE_COLOR);
 	Draw_screen_ready(0, UI_PAGE_COLOR); // the top screen : a soft fade, the logo and the progress bar
-	ui_gradient_v(0, 0, 400, 240, UI_PAGE_COLOR, ui_mix(UI_PAGE_COLOR, COLOR_ACCENT, 0.16f), 6);
-	logo_draw(200, 92);
-	if (text != "") Draw_x_centered(text, 0, 400, 174, 0.5, 0.5, LIGHT0_TEXT_COLOR);
-	Draw_round_rect(110, 197, 180, 6, 3, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.5f));
+	logo_draw(200, 92); // (with its soft background)
+	if (text != "") Draw_x_centered(text, 0, 400, 187, 0.45, 0.45, LIGHT0_TEXT_COLOR);
+	Draw_round_rect(110, 207, 180, 5, 2.5f, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.5f));
 	float fill = 180 * std::min(1.0f, std::max(0.0f, boot_progress));
-	if (fill > 0) Draw_round_rect(110, 197, std::max(6.0f, fill), 6, 3, COLOR_ACCENT);
+	if (fill > 0) Draw_round_rect(110, 207, std::max(5.0f, fill), 5, 2.5f, COLOR_ACCENT);
 	Draw_apply_draw();
 }
 static void Menu_boot_step(float progress) { // drawn twice : both buffers must have it so it does not flash

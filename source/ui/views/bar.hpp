@@ -92,7 +92,7 @@ struct BarView : public FixedSizeView {
 	void draw_() const override {
 		Draw_round_rect(x0 + 3, y0 + 1, x1 - x0 - 6, y1 - y0 - 2, UI_RADIUS_CARD, ui_mix(UI_CARD_COLOR, COLOR_ACCENT, holding ? 0.15f : 0)); // a card with the title, the track and the handle
 		if ((std::string)title != "") {
-			Draw(title, x0 + 10, y0 + 3, 0.5, 0.5, DEFAULT_TEXT_COLOR);
+			Draw(title, x0 + 10, y0 + 2, 0.5, 0.5, LIGHT0_TEXT_COLOR);
 		}
 		float fill = (float)(get_x_from_value(get_value()) - bar_x0());
 		Draw_round_rect(bar_x0(), bar_y() - 2, bar_len(), 4, 2, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.6f));

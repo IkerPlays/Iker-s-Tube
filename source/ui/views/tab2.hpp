@@ -68,11 +68,9 @@ struct Tab2View : public FixedWidthView {
 
 		views[selected_tab]->draw(x0, y0 + tab_selector_height);
 
-		Draw_texture(var_square_image[0], LIGHT1_BACK_COLOR, x0, y0, x1 - x0, tab_selector_height);
-		Draw_texture(var_square_image[0], LIGHT2_BACK_COLOR, tab_pos_x(selected_tab), y0, tab_width(),
-		             tab_selector_height);
-		Draw_texture(var_square_image[0], LIGHT3_BACK_COLOR, tab_pos_x(selected_tab), y0, tab_width(),
-		             tab_selector_selected_line_height);
+		Draw_texture(var_square_image[0], UI_CARD_COLOR, x0, y0, x1 - x0, tab_selector_height);
+		Draw_texture(var_square_image[0], UI_OUTLINE_COLOR, x0, y0 + tab_selector_height - 1, x1 - x0, 1);
+		Draw_round_rect(tab_pos_x(selected_tab) + 4, y0 + tab_selector_height - 4, tab_width() - 8, 3, 1.5f, COLOR_ACCENT); // the chosen tab : an accent line under it
 		for (int i = 0; i < tab_num; i++) {
 			float y = y0 + (tab_selector_height - Draw_get_height(tab_texts[i], tab_font_size)) / 2;
 			if (i == selected_tab) {
@@ -80,7 +78,7 @@ struct Tab2View : public FixedWidthView {
 			} else {
 				y -= 3;
 			}
-			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, tab_font_size, tab_font_size, DEFAULT_TEXT_COLOR);
+			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, tab_font_size, tab_font_size, i == selected_tab ? (u32)DEFAULT_TEXT_COLOR : (u32)LIGHT0_TEXT_COLOR);
 		}
 	}
 	void update_(Hid_info key) override {

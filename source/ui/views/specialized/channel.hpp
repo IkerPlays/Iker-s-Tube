@@ -60,7 +60,8 @@ struct ChannelView : public FixedSizeView {
 	void draw_() const override {
 		if (get_is_subscribed) {
 			thumbnail_draw(icon_handle, x0 + SMALL_MARGIN, y0 + SMALL_MARGIN, CHANNEL_ICON_SIZE,
-			               CHANNEL_ICON_SIZE); // icon
+			CHANNEL_ICON_SIZE); // icon : a circle
+			ui_mask_corners(x0 + SMALL_MARGIN, y0 + SMALL_MARGIN, CHANNEL_ICON_SIZE, CHANNEL_ICON_SIZE, CHANNEL_ICON_SIZE / 2, UI_PAGE_COLOR);
 			Draw(name, x0 + CHANNEL_ICON_SIZE + SMALL_MARGIN * 3, y0 + SMALL_MARGIN, MIDDLE_FONT_SIZE, MIDDLE_FONT_SIZE,
 			     DEFAULT_TEXT_COLOR); // channel name
 
@@ -78,13 +79,12 @@ struct ChannelView : public FixedSizeView {
 			}
 
 			bool is_subscribed = get_is_subscribed();
-			u32 subscribe_button_color = is_subscribed ? LIGHT1_BACK_COLOR : 0xFF4040EE;
+			u32 subscribe_button_color = is_subscribed ? (u32)UI_RAISED_COLOR : (u32)COLOR_ACCENT;
 			std::string subscribe_button_str = is_subscribed ? LOCALIZED(SUBSCRIBED) : LOCALIZED(SUBSCRIBE);
 			float button_x = x1 - SMALL_MARGIN * 2 - SUBSCRIBE_BUTTON_WIDTH;
 			float button_y = y0 + SMALL_MARGIN + CHANNEL_ICON_SIZE - SUBSCRIBE_BUTTON_HEIGHT - SMALL_MARGIN;
-			Draw_texture(var_square_image[0], subscribe_button_color, button_x, button_y, SUBSCRIBE_BUTTON_WIDTH,
-			             SUBSCRIBE_BUTTON_HEIGHT);
-			Draw_x_centered(subscribe_button_str, button_x, x1 - SMALL_MARGIN * 2, button_y + 4, 0.5, 0.5, 0xFF000000);
+			Draw_round_rect(button_x, button_y, SUBSCRIBE_BUTTON_WIDTH, SUBSCRIBE_BUTTON_HEIGHT, SUBSCRIBE_BUTTON_HEIGHT / 2, subscribe_button_color); // a pill
+			Draw_x_centered(subscribe_button_str, button_x, x1 - SMALL_MARGIN * 2, button_y + 4, 0.5, 0.5, is_subscribed ? (u32)DEFAULT_TEXT_COLOR : 0xFFFFFFFFu);
 		}
 	}
 	void update_(Hid_info key) override {

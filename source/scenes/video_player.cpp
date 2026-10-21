@@ -4409,7 +4409,7 @@ static void autoplay_countdown_tick() {
 			    return lo + (hi - lo) * tri;
 		    };
 		    double t = osGetTime() / 1000.0;
-		    logo_draw(wave(t, 23, 90, 310), wave(t, 17, 80, 170));
+		    logo_draw(wave(t, 23, 90, 310), wave(t, 17, 80, 170), false);
 		    var_need_refresh = true;
 		    return;
 	    }
