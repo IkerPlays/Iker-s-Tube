@@ -37,6 +37,9 @@ struct SelectorView : public FixedSizeView {
 	inline double button_y_pos() const { return y0 + get_title_height() + (y1 - y0 - get_title_height()) * 0.1; }
 	inline double button_y_size() const { return (y1 - y0 - get_title_height()) * 0.8; }
 	inline double get_button_id_from_x(double x) const {
+		if (x < x0 || x >= x1) { // (no touch is x = -1 : it must not count as the first button)
+			return -1;
+		}
 		int id = (x - x0) / margin_x_size() / (1 + MARGIN_BUTTON_RATIO);
 		if (id < 0 || id >= button_num) {
 			return -1;
