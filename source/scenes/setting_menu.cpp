@@ -1295,6 +1295,27 @@ void Sem_init(void) {
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
+					// Video quality (the same value as the quality selector of the player)
+					(new SelectorView(0, 0, 320, 35, false))
+						->set_texts({
+							(std::function<std::string ()>) []() { return tr("Audio", "Audio"); },
+							(std::function<std::string ()>) []() { return std::string("144p"); },
+							(std::function<std::string ()>) []() { return std::string("240p"); },
+							(std::function<std::string ()>) []() { return std::string("360p"); },
+							(std::function<std::string ()>) []() { return std::string("480p"); }
+						}, var_video_quality <= 0 ? 0 : var_video_quality <= 144 ? 1 : var_video_quality <= 240 ? 2 : var_video_quality <= 360 ? 3 : 4)
+						->set_title([](const SelectorView &) { return tr("Video quality", "Calidad de vídeo"); })
+						->set_info([](const SelectorView &) { return tr("The quality new videos start with. The old 3DS family plays the low ones best. You can also change it while a video plays.", "La calidad con la que empiezan los vídeos. La familia 3DS antigua va mejor con las bajas. También se cambia mientras suena un vídeo."); })
+						->set_popup_height(70)
+						->set_on_change([](const SelectorView &view) {
+							static const int values[5] = {0, 144, 240, 360, 480};
+							int value = values[std::max(0, std::min(4, view.selected_button))];
+							if (var_video_quality != value) {
+								var_video_quality = value;
+								var_auto_quality_cap = 0;
+								misc_tasks_request(TASK_SAVE_SETTINGS);
+							}
+						}),
 					// Automatic quality
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({

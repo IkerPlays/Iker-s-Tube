@@ -964,6 +964,8 @@ static const TrEntry kTrEntries[] = {
 	{"YouTube is busy, try again later", {"YouTube est occupé, réessayez plus tard", "YouTube ist ausgelastet, versuche es später erneut", "YouTube è occupato, riprova più tardi", "O YouTube está ocupado, tente mais tarde", "YouTubeが混み合っています。後でもう一度お試しください"}},
 	{"ZL / ZR: jump back / forward (Settings)", {"ZL / ZR : sauter en arrière / avant (Réglages)", "ZL / ZR: zurück / vor springen (Einstellungen)", "ZL / ZR: salta indietro / avanti (Impostazioni)", "ZL / ZR: pular para trás / frente (Ajustes)", "ZL / ZR：戻る／進む（設定）"}},
 	{"settings (Shorts, watched).", {"de masquage (Shorts, vus).", "Ausblenden-Einstellungen (Shorts, angesehen).", "impostazioni Nascondi (Shorts, guardati).", "ajustes de ocultar (Shorts, assistidos).", "設定（ショート、視聴済み）をご確認ください。"}},
+	{"Video quality", {"Qualité vidéo", "Videoqualität", "Qualità video", "Qualidade do vídeo", "動画の画質"}},
+	{"The quality new videos start with. The old 3DS family plays the low ones best. You can also change it while a video plays.", {"La qualité de départ des nouvelles vidéos. L'ancienne famille 3DS gère mieux les basses. Vous pouvez aussi la changer pendant la lecture.", "Die Qualität, mit der neue Videos starten. Die alte 3DS-Familie spielt niedrige am besten. Du kannst sie auch während der Wiedergabe ändern.", "La qualità con cui partono i nuovi video. La vecchia famiglia 3DS va meglio con quelle basse. Puoi cambiarla anche durante la riproduzione.", "A qualidade com que os novos vídeos começam. A família 3DS antiga roda melhor as baixas. Você também pode mudar durante a reprodução.", "新しい動画の開始画質です。旧3DSシリーズは低画質が最適です。再生中にも変更できます。"}},
 };
 
 const std::map<std::string, TrRow> &tr_table() {
