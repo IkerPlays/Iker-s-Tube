@@ -58,7 +58,7 @@ struct SuccinctChannelView : public FixedSizeView {
 		float y = y0 + (get_height() - (NAME_FONT_HEIGHT + 2 + DEFAULT_FONT_INTERVAL * auxiliary_lines.size())) / 2;
 		Draw(truncate_first_line(name, text_width, NAME_FONT_SIZE), text_x, y, NAME_FONT_SIZE, NAME_FONT_SIZE, DEFAULT_TEXT_COLOR);
 		y += NAME_FONT_HEIGHT + 2;
-		for (auto line : auxiliary_lines) {
+		for (const auto &line : auxiliary_lines) {
 			Draw(truncate_first_line(line, text_width, 0.5), text_x, y, 0.5, 0.5, LIGHT1_TEXT_COLOR);
 			y += DEFAULT_FONT_INTERVAL;
 		}

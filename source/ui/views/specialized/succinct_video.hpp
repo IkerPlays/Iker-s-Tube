@@ -177,7 +177,7 @@ struct SuccinctVideoView : public FixedSizeView {
 		}
 		if (grid) {
 			float gy = y0 + th + 2;
-			for (auto line : title_lines) {
+			for (const auto &line : title_lines) {
 				Draw(line, x0 + 4, gy, 0.45, 0.45, DEFAULT_TEXT_COLOR);
 				gy += DEFAULT_FONT_INTERVAL - 1;
 			}
@@ -185,13 +185,13 @@ struct SuccinctVideoView : public FixedSizeView {
 		}
 		const float text_x = tx + tw_drawn + 6;
 		float y = y0 + 2;
-		for (auto line : title_lines) {
+		for (const auto &line : title_lines) {
 			Draw(line, text_x, y, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 			y += DEFAULT_FONT_INTERVAL;
 		}
 		y += 1;
 		int index = 0;
-		for (auto line : auxiliary_lines) { // the channel a little stronger than the numbers
+		for (const auto &line : auxiliary_lines) { // the channel a little stronger than the numbers
 			Draw(truncate_first_line(line, (int)get_title_width(), index == 0 ? 0.45 : 0.42), text_x, y, index == 0 ? 0.45 : 0.42, index == 0 ? 0.45 : 0.42, index == 0 ? LIGHT0_TEXT_COLOR : LIGHT1_TEXT_COLOR);
 			y += 12;
 			index++;

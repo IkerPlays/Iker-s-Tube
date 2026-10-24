@@ -458,9 +458,16 @@ float Draw_get_width(const std::string &text, float text_size_x) {
 	float x = 0, x_max = 0;
 	if (text.empty()) return 0; // (&part_text[0] of an empty vector is undefined)
 
-	std::vector<u32> part_text(text.size());
-	int characters = Extfont_parse_utf8_str_to_u32(text.c_str(), &part_text[0], text.size());
-	Extfont_sort_rtl(&part_text[0], characters);
+	// (a small stack buffer : this runs many times per frame, a heap vector each time is slow on the 3DS)
+	u32 stack_text[256];
+	std::vector<u32> heap_text;
+	u32 *part_text = stack_text;
+	if (text.size() > 256) {
+		heap_text.resize(text.size());
+		part_text = heap_text.data();
+	}
+	int characters = Extfont_parse_utf8_str_to_u32(text.c_str(), part_text, text.size());
+	Extfont_sort_rtl(part_text, characters);
 
 	for (int i = 0; i < characters; i++) {
 		u32 cur_char = part_text[i];
