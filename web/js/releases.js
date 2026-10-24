@@ -31,7 +31,7 @@
       var m;
       if (/^---+$/.test(line) || !line) { ul = null; return; }
       if ((m = /^#{1,2}\s+(.*)$/.exec(line))) { ul = null; return; } // the title repeats the release name
-      if ((m = /^#{3,6}\s+(.*)$/.exec(line))) { ul = null; box.appendChild(el("h5", "", m[1])); return; }
+      if ((m = /^#{3,6}\s+(.*)$/.exec(line))) { ul = null; box.appendChild(el("h4", "", m[1])); return; }
       if ((m = /^[-*]\s+(.*)$/.exec(line))) {
         if (!ul) { ul = el("ul"); box.appendChild(ul); }
         var li = el("li"); inline(li, m[1]); ul.appendChild(li); return;
@@ -227,12 +227,14 @@
   }
 
   function render() {
-    elFilter.textContent = "";
-    [["all", "rel_all"], ["stable", "rel_stable"], ["dev", "rel_dev"]].forEach(function (f) {
-      var b = el("button", "chip", t(f[1])); b.type = "button";
-      b.setAttribute("aria-pressed", String(filter === f[0]));
-      b.addEventListener("click", function () { filter = f[0]; shown = PAGE; render(); });
-      elFilter.appendChild(b);
+    App.keepFocus(elFilter, function () {
+      elFilter.textContent = "";
+      [["all", "rel_all"], ["stable", "rel_stable"], ["dev", "rel_dev"]].forEach(function (f) {
+        var b = el("button", "chip", t(f[1])); b.type = "button";
+        b.setAttribute("aria-pressed", String(filter === f[0]));
+        b.addEventListener("click", function () { filter = f[0]; shown = PAGE; render(); });
+        elFilter.appendChild(b);
+      });
     });
     elSort.textContent = (newestFirst ? "↓ " : "↑ ") + t(newestFirst ? "rel_sort_new" : "rel_sort_old");
     elList.textContent = "";
@@ -270,6 +272,7 @@
     }
     return true;
   }
+  var deepLinked = false;
   function fromHash() {
     var h = location.hash.slice(1);
     if (!h || !loaded) return;
@@ -337,7 +340,8 @@
     latestRel = stable.length ? stable[0] : null;
     latestTag = latestRel ? latestRel.tag : "";
     loaded = true; failed = false; cachedAt = at || 0;
-    render(); setLatest(); fromHash();
+    render(); setLatest();
+    if (!deepLinked) { deepLinked = true; fromHash(); } // (a reconnect or a retry must not scroll the page back to the linked release)
   }
   function fetchPage(p, acc) {
     return fetch(API + p, { headers: { Accept: "application/vnd.github+json" } }).then(function (res) {

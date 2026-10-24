@@ -10,12 +10,14 @@
 
   function renderRoadmap() {
     var areas = ["All"].concat(items.map(function (i) { return i.area; }).filter(function (a, i, arr) { return arr.indexOf(a) === i; }));
-    filters.textContent = "";
-    areas.forEach(function (a) {
-      var b = el("button", "chip", a === "All" ? App.t("all") : a); b.type = "button";
-      b.setAttribute("aria-pressed", String(a === current));
-      b.addEventListener("click", function () { current = a; renderRoadmap(); });
-      filters.appendChild(b);
+    App.keepFocus(filters, function () {
+      filters.textContent = "";
+      areas.forEach(function (a) {
+        var b = el("button", "chip", a === "All" ? App.t("all") : a); b.type = "button";
+        b.setAttribute("aria-pressed", String(a === current));
+        b.addEventListener("click", function () { current = a; renderRoadmap(); });
+        filters.appendChild(b);
+      });
     });
 
     var done = items.filter(function (i) { return i.status === "done"; }).length;
@@ -91,7 +93,7 @@
 
   // Nav: highlight the section in view
   var navLinks = {}, inView = {};
-  var ids = ["download", "features", "releases", "roadmap", "support", "faq"];
+  var ids = ["download", "features", "interface", "releases", "roadmap", "support", "faq"];
   document.querySelectorAll("header nav a").forEach(function (a) { navLinks[a.getAttribute("href").slice(1)] = a; });
   function markNav() {
     var active = "";
@@ -134,13 +136,13 @@
   net();
 
   // Printing: open the FAQ answers
-  window.addEventListener("beforeprint", function () { document.querySelectorAll("#faq details").forEach(function (d) { d.open = true; }); });
+  window.addEventListener("beforeprint", function () { document.querySelectorAll("#faq details, #board details").forEach(function (d) { d.open = true; }); });
 
   // FAQ search : hides the questions that do not contain the typed text
   var faqBox = document.getElementById("faq-search");
   if (faqBox) {
     var faqNone = document.createElement("p");
-    faqNone.className = "small"; faqNone.hidden = true;
+    faqNone.className = "small"; faqNone.hidden = true; faqNone.setAttribute("role", "status");
     faqBox.parentNode.appendChild(faqNone);
     faqBox.addEventListener("input", function () {
       var q = faqBox.value.trim().toLowerCase(), shown = 0;

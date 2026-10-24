@@ -1,6 +1,6 @@
 /* Print: plain black on white, no navigation or buttons; install guide and release list stay readable. */
 @media print{
-  :root,:root[data-theme]{--bg:#fff;--fg:#000;--muted:#333;--card:#fff;--line:#999;--accent:#000;--accent-fg:#fff;--ok:#000;--now:#000;--next:#000;--shadow:none}
+  :root:root,html:root[data-theme]{--bg:#fff;--fg:#000;--muted:#333;--card:#fff;--line:#999;--accent:#000;--accent-fg:#fff;--ok:#000;--now:#000;--next:#000;--shadow:none}
   body{background:#fff;color:#000;font-size:11pt;line-height:1.4}
   .top,.skip,.cta,.toolbar,#rel-more,#rel-alert,#rel-stats,.to-top,.row.tools,#qr-dialog,#filters,.chips,.progress-wrap,.sr,#offline,.hc-more,.notes-bar,.hashes,.tablist,#hero-card .eyebrow,.road-more summary,#latest{display:none!important}
   main,footer{max-width:none;padding:0}

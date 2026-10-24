@@ -40,14 +40,26 @@
     setTimeout(function () { live.textContent = msg; }, 30);
   }
 
+  // Rebuilds the buttons of `container` with fn() and gives the focus back to the button that had it (the keyboard keeps its place)
+  App.keepFocus = function (container, fn) {
+    var a = document.activeElement, idx = -1;
+    if (a && container.contains(a)) idx = Array.prototype.indexOf.call(container.children, a);
+    fn();
+    if (idx >= 0 && container.children[idx]) container.children[idx].focus({ preventScroll: true });
+  };
+
   function legacyCopy(text) {
     var ta = document.createElement("textarea");
     ta.value = text; ta.setAttribute("readonly", ""); ta.className = "sr";
-    document.body.appendChild(ta);
+    var host = (document.activeElement && document.activeElement.closest && document.activeElement.closest("dialog")) || document.body; // (a modal dialog makes the rest of the page inert)
+    var prev = document.activeElement;
+    host.appendChild(ta);
+    ta.focus({ preventScroll: true });
     ta.select();
     var ok = false;
     try { ok = document.execCommand("copy"); } catch (e) {}
     ta.remove();
+    if (prev && prev.focus) prev.focus({ preventScroll: true });
     return ok;
   }
 

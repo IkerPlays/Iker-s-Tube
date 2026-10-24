@@ -22,6 +22,7 @@
   <link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png" sizes="180x180">
   <link rel="manifest" href="manifest.webmanifest">
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/print.css" media="print">
   <script type="application/ld+json">
@@ -46,7 +47,7 @@
   <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
   <header class="top">
     <a class="brand" href="#top"><img src="favicon.svg" width="26" height="26" alt=""> Iker's Tube</a>
-    <nav aria-label="Main">
+    <nav aria-label="Main" data-i18n-aria="nav_label">
       <a href="#download" data-i18n="nav_download">Download</a>
       <a href="#features" data-i18n="nav_features">Features</a>
       <a href="#interface" data-i18n="nav_ui">Look</a>
@@ -62,7 +63,7 @@
   <div id="sr-live" class="sr" role="status" aria-live="polite"></div>
 
   <noscript><p class="noscript">This site needs JavaScript for the live releases. / Esta web necesita JavaScript para las versiones en directo. <a href="https://github.com/IkerPlays/Iker-s-Tube/releases">GitHub Releases</a></p></noscript>
-  <main id="main">
+  <main id="main" tabindex="-1">
     <section class="hero" id="top">
       <p class="eyebrow" data-i18n="hero_eyebrow">Homebrew for Nintendo 3DS / 2DS</p>
       <h1 data-i18n="hero_title">YouTube on your Nintendo 3DS</h1>
@@ -72,7 +73,7 @@
         <a class="btn ghost" id="dl-3dsx" href="https://github.com/IkerPlays/Iker-s-Tube/releases/latest/download/IkersTube.3dsx" data-i18n="dl_3dsx">Download .3dsx</a>
         <a class="btn ghost" href="#releases" data-i18n="all_versions">All versions</a>
       </p>
-      <div id="hero-card" class="hero-card" aria-live="polite"></div>
+      <div id="hero-card" class="hero-card"></div>
       <p class="small" id="latest" data-i18n="latest_loading">Latest stable release: loading...</p>
     </section>
 
@@ -149,10 +150,10 @@
       <h2 data-i18n="rel_title">Releases</h2>
       <p class="small" data-i18n="rel_intro">Every version, loaded live from GitHub. Download it or scan the QR with FBI.</p>
       <div class="toolbar">
-        <div class="chips" id="rel-filter" role="group" aria-label="Filter releases"></div>
+        <div class="chips" id="rel-filter" role="group" aria-label="Filter releases" data-i18n-aria="rel_filter_label"></div>
         <div class="tools">
           <button id="rel-sort" class="chip" type="button" data-i18n-aria="rel_sort_label" aria-label="Sort order">Newest first</button>
-          <input id="rel-search" type="search" data-i18n-ph="rel_search_ph" placeholder="Search a version... (press /)" aria-label="Search a version">
+          <input id="rel-search" type="search" data-i18n-ph="rel_search_ph" placeholder="Search a version... (press /)" aria-label="Search a version" data-i18n-aria="rel_search_label">
         </div>
       </div>
       <div id="rel-stats" class="stats" hidden></div>
@@ -167,8 +168,8 @@
       <h2 data-i18n="road_title">Roadmap</h2>
       <p class="small" data-i18n="road_intro">Plans can change. Items move between columns as work goes on.</p>
       <div class="progress-wrap"><progress id="road-progress" max="100" value="0" data-i18n-aria="road_progress" aria-label="Roadmap progress"></progress><span class="small" id="road-progress-text"></span></div>
-      <div class="chips" id="filters" role="group" aria-label="Filter roadmap"></div>
-      <div class="board" id="board" aria-live="polite"></div>
+      <div class="chips" id="filters" role="group" aria-label="Filter roadmap" data-i18n-aria="road_filter_label"></div>
+      <div class="board" id="board"></div>
     </section>
 
     <section id="support">
@@ -187,7 +188,7 @@
 
     <section id="faq">
       <h2 data-i18n="faq_title">Questions</h2>
-      <input id="faq-search" type="search" class="faq-search" data-i18n-ph="faq_search" placeholder="Search the questions" aria-label="Search the questions">
+      <input id="faq-search" type="search" class="faq-search" data-i18n-ph="faq_search" placeholder="Search the questions" aria-label="Search the questions" data-i18n-aria="faq_search">
       <details><summary data-i18n="q1">What do I need?</summary><p data-i18n="a1">A Nintendo 3DS / 2DS family console with custom firmware (homebrew), and FBI or the Homebrew Launcher.</p></details>
       <details><summary data-i18n="q2">Stable or devbuild?</summary><p data-i18n="a2">Stable releases are installed by the in-app updater. Devbuilds are test builds that the app only offers; they may be unstable. Only the newest 15 devbuilds of each version are kept.</p></details>
       <details><summary data-i18n="q3">There is no sound</summary><p data-i18n-html="a3">Dump the DSP firmware to <code>sdmc:/3ds/dspfirm.cdc</code> (for example with DSP1).</p></details>
@@ -205,7 +206,7 @@
   <dialog id="qr-dialog" aria-labelledby="qr-title" aria-describedby="qr-url">
     <form method="dialog" class="qr-box">
       <h3 id="qr-title">QR</h3>
-      <canvas id="qr-canvas" width="260" height="260" role="img" aria-label="QR code"></canvas>
+      <canvas id="qr-canvas" width="260" height="260" role="img" aria-label="QR code" data-i18n-aria="qr_label"></canvas>
       <p class="small" id="qr-url"></p>
       <p class="small" data-i18n="qr_hint">In FBI: Remote Install &gt; Scan QR code.</p>
       <div class="row">
