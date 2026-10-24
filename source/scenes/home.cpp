@@ -672,16 +672,24 @@ static void update_home_bottom_view(bool force_show_loading) {
 
 static void update_oauth_feed_bottom_view(bool force_show_loading) {
 	delete oauth_feed_videos_bottom_view;
-	if (oauth_feed_has_more || force_show_loading) {
+	if (oauth_feed_has_more || force_show_loading || oauth_feed_error != "") { // (an error row is shown too, and a tap tries again)
 		oauth_feed_videos_bottom_view = (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 		                                    ->set_text([]() {
 			                                    if (oauth_feed_error != "") {
-				                                    return oauth_feed_error;
+				                                    return tr("Tap to try again: ", "Toca para reintentar: ") + truncate_first_line(friendly_error(oauth_feed_error), 170, 0.5);
 			                                    } else {
 				                                    return loading_text();
 			                                    }
 		                                    })
 		                                    ->set_x_alignment(TextView::XAlign::CENTER)
+		                                    ->set_get_background_color([](const View &view) -> u32 { return oauth_feed_error != "" ? View::STANDARD_BACKGROUND(view) : 0; })
+		                                    ->set_on_view_released([](View &) {
+			                                    if (oauth_feed_error != "" && !is_async_task_running(load_oauth_subscription_feed) && !is_async_task_running(load_oauth_subscription_feed_more)) {
+				                                    oauth_feed_error = "";
+				                                    oauth_feed_has_more = true;
+				                                    var_need_refresh = true;
+			                                    }
+		                                    })
 		                                    ->set_on_drawn([](View &) {
 			                                    if (!is_async_task_running(load_oauth_subscription_feed) &&
 			                                        !is_async_task_running(load_oauth_subscription_feed_more) &&
