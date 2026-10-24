@@ -123,7 +123,7 @@ struct View {
 	virtual void update_(Hid_info key) = 0;
 	void update(Hid_info key) {
 		if (is_touchable) {
-			bool inside_view = key.touch_x >= x0 && key.touch_x < x0 + get_width() && key.touch_y >= y0 &&
+			bool inside_view = key.touch_x != -1 && key.touch_x >= x0 && key.touch_x < x0 + get_width() && key.touch_y >= y0 &&
 			                   key.touch_y < y0 + get_height();
 			if (inside_view && (key.p_touch || view_holding_time)) {
 				view_holding_time++;

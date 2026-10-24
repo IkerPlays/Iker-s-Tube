@@ -100,7 +100,7 @@ struct TabView : public FixedSizeView {
 			}
 		}
 		int tab_holded = -1;
-		if (key.touch_y >= y1 - tab_selector_height && key.touch_y < y1) {
+		if (key.touch_x >= x0 && key.touch_x < x1 && key.touch_y >= y1 - tab_selector_height && key.touch_y < y1) {
 			tab_holded = std::max(0, std::min<int>(get_tab_num() - 1, (key.touch_x - x0) * get_tab_num() / (x1 - x0)));
 		}
 

@@ -101,7 +101,7 @@ struct Tab2View : public FixedWidthView {
 			}
 		}
 		int tab_holded = -1;
-		if (key.touch_y >= y0 && key.touch_y < y0 + tab_selector_height) {
+		if (key.touch_x >= x0 && key.touch_x < x1 && key.touch_y >= y0 && key.touch_y < y0 + tab_selector_height) {
 			tab_holded = std::max(0, std::min<int>(get_tab_num() - 1, (key.touch_x - x0) * get_tab_num() / (x1 - x0)));
 		}
 

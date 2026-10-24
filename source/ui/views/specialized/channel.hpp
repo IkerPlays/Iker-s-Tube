@@ -89,7 +89,7 @@ struct ChannelView : public FixedSizeView {
 	}
 	void update_(Hid_info key) override {
 		int subscribe_button_y = y0 + SMALL_MARGIN + CHANNEL_ICON_SIZE - SUBSCRIBE_BUTTON_HEIGHT - SMALL_MARGIN;
-		bool in_subscribe_button = key.touch_x >= x1 - SMALL_MARGIN * 2 - SUBSCRIBE_BUTTON_WIDTH &&
+		bool in_subscribe_button = get_is_subscribed && key.touch_x >= x1 - SMALL_MARGIN * 2 - SUBSCRIBE_BUTTON_WIDTH &&
 		                           key.touch_x < x1 - SMALL_MARGIN * 2 && key.touch_y >= subscribe_button_y &&
 		                           key.touch_y < subscribe_button_y + SUBSCRIBE_BUTTON_HEIGHT;
 		if (key.p_touch && in_subscribe_button) {

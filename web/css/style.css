@@ -215,3 +215,5 @@ progress::-moz-progress-bar{background:var(--ok);border-radius:99px}
 #faq details[hidden]{display:none}
 
 .steps{padding-left:1.3rem;line-height:1.7}.steps li{margin:.4rem 0}
+
+.noscript{margin:0;padding:.8rem 1rem;background:var(--card);border-bottom:1px solid var(--line);text-align:center}

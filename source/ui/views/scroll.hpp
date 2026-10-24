@@ -110,6 +110,9 @@ class ScrollView : public FixedSizeView {
 		update_scroller(key);
 
 		if (key.touch_x < x0 || key.touch_x >= x1 || key.touch_y < y0 || key.touch_y >= y1) {
+			if (key.touch_x != -1) { // the finger slid out of the area while it is still down : the rows are not released, they are cancelled
+				for (auto view : views) view->reset_holding_status();
+			}
 			key.touch_x = -1;
 			key.touch_y = -1;
 			key.p_touch = false;

@@ -107,12 +107,17 @@ struct SelectorView : public FixedSizeView {
 			return true;
 		}
 
+	// the title of a switch row, cut so that the "i" and the state still fit (the drawing and the "i" hit area use the same text)
+	std::string switch_title() const {
+		const float sw_left = x1 - 10 - 30;
+		return truncate_first_line(title, (int)(sw_left - (x0 + 10) - (has_info ? 18 : 0) - 62), 0.5);
+	}
 	void draw_switch() const {
 		float h = y1 - y0 - 2, top = y0 + 1;
 		Draw_round_rect(x0 + 3, top, x1 - x0 - 6, h, UI_RADIUS_CARD, ui_mix(UI_CARD_COLOR, COLOR_ACCENT, holding_button != -1 ? 0.2f : 0));
 		float ty = top + (h - 20 * 0.5f) / 2 - 1;
 		const float sw_left = x1 - 10 - 30;
-				std::string shown_title = truncate_first_line(title, (int)(sw_left - (x0 + 10) - (has_info ? 18 : 0) - 62), 0.5); // (room for the "i" and the state)
+				std::string shown_title = switch_title();
 				Draw(shown_title, x0 + 10, ty, 0.5, 0.5, DEFAULT_TEXT_COLOR);
 				float title_width = Draw_get_width(shown_title, 0.5);
 		if (has_info) Draw_round_info(x0 + 10 + title_width + 7, top + h / 2);
@@ -164,12 +169,12 @@ struct SelectorView : public FixedSizeView {
 	}
 	void update_(Hid_info key) override {
 		if (is_switch()) { // the whole row is one button (the "i" explains it)
-			if (has_info && key.p_touch && key.touch_x >= x0 + 10 + Draw_get_width(title, 0.5) + 1 && key.touch_x < x0 + 10 + Draw_get_width(title, 0.5) + 14 && key.touch_y >= y0 && key.touch_y < y1) {
+			if (has_info && key.p_touch && std::abs(key.touch_x - (x0 + 10 + Draw_get_width(switch_title(), 0.5) + 7)) <= 8 && key.touch_y >= y0 && key.touch_y < y1) {
 				extern void (*show_info_popup_callback)(const std::string &, int);
 				if (show_info_popup_callback) show_info_popup_callback(info_text, popup_height);
 				return;
 			}
-			if (key.p_touch && key.touch_y >= y0 && key.touch_y < y1) holding_button = 0;
+			if (key.p_touch && key.touch_x >= x0 && key.touch_x < x1 && key.touch_y >= y0 && key.touch_y < y1) holding_button = 0;
 			if (key.touch_y != -1 && (key.touch_y < y0 || key.touch_y >= y1)) holding_button = -1;
 			if (holding_button != -1 && key.touch_x == -1) {
 				selected_button = selected_button == 1 ? 0 : 1; // (a stored value other than 0 / 1 is treated as off)
@@ -183,10 +188,10 @@ struct SelectorView : public FixedSizeView {
 		}
 		if (has_info && key.p_touch && key.touch_y >= y0 && key.touch_y < y0 + get_title_height()) {
 			double title_width = Draw_get_width(title, 0.5);
-			double info_x = x0 + SMALL_MARGIN + title_width + 5;
-			double info_width = Draw_get_width("ⓘ", 0.45);
+			// the "i" is drawn centered here when the buttons are rounded (see draw_), at the old place otherwise
+			double info_center = var_round_buttons ? x0 + 10 + title_width + 8 : x0 + SMALL_MARGIN + 3 + title_width + 8;
 
-			if (key.touch_x >= info_x - 3 && key.touch_x < info_x + info_width + 3) {
+			if (std::abs(key.touch_x - info_center) <= 8) {
 				extern void (*show_info_popup_callback)(const std::string &, int);
 				if (show_info_popup_callback) {
 					show_info_popup_callback(info_text, popup_height);
