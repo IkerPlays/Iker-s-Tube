@@ -43,6 +43,7 @@ int offline_download_queued() {
 int offline_download_percent() { return download_percent; }
 std::string offline_download_title() { return download_title; }
 static std::string running_job_id; // the video that is downloading now (under pending_lock)
+static volatile int save_epoch = 0; // grows at every cancel : the "save by id" tasks queued before it do nothing
 void offline_download_cancel() { // the running download and the queued ones
 	LightLock_Lock(&pending_lock);
 	for (auto job : pending) delete job;
@@ -50,6 +51,7 @@ void offline_download_cancel() { // the running download and the queued ones
 	LightLock_Unlock(&pending_lock);
 	download_cancel = true;
 	downloads_paused = false;
+	save_epoch = save_epoch + 1;
 }
 
 // downloads one file in 1 MB ranged chunks into `<path>.part`, then renames it. `progress` gets 0..100.
@@ -281,10 +283,15 @@ void offline_download_async(const std::string &id, const std::string &title, con
 struct SaveByIdJob {
 	std::string id, title, author;
 	bool want_video;
+	int epoch;
 };
 
 static void save_by_id_task(void *arg) {
 	SaveByIdJob *job = (SaveByIdJob *)arg;
+	if (job->epoch != save_epoch) { // cancelled while it waited in the queue
+		delete job;
+		return;
+	}
 	YouTubeVideoDetail info = youtube_load_video_page(youtube_get_video_url_by_id(job->id));
 	if (!info.is_playable()) {
 		notice_show(tr("Could not load the video", "No se pudo cargar el vídeo"));
@@ -314,5 +321,5 @@ void offline_save_by_id_async(const std::string &id, const std::string &title, c
 		}
 	}
 	notice_show(tr("Loading the video...", "Cargando el vídeo..."));
-	queue_async_task(save_by_id_task, new SaveByIdJob{id, title, author, want_video});
+	queue_async_task(save_by_id_task, new SaveByIdJob{id, title, author, want_video, save_epoch});
 }
