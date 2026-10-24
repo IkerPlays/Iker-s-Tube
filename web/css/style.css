@@ -1,6 +1,6 @@
-:root{--bg:#fafafa;--fg:#1c1c1e;--muted:#5f6368;--card:#fff;--line:#e3e3e6;--accent:#c4302b;--accent-fg:#fff;--ok:#1e8e3e;--now:#b35c00;--next:#1a73e8;--shadow:0 1px 2px rgba(0,0,0,.06),0 6px 20px rgba(0,0,0,.05)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121214;--fg:#ececef;--muted:#a0a3a8;--card:#1c1c20;--line:#2e2e34;--accent:#ff5a52;--accent-fg:#1a0a09;--ok:#4cc26a;--now:#f0a030;--next:#6ea8ff;--shadow:none}}
-:root[data-theme="dark"]{--bg:#121214;--fg:#ececef;--muted:#a0a3a8;--card:#1c1c20;--line:#2e2e34;--accent:#ff5a52;--accent-fg:#1a0a09;--ok:#4cc26a;--now:#f0a030;--next:#6ea8ff;--shadow:none}
+:root{--bg:#fafafa;--fg:#1c1c1e;--muted:#5f6368;--card:#fff;--line:#e3e3e6;--accent:#c4302b;--accent-fg:#fff;--ok:#187a35;--now:#b35c00;--next:#1760c9;--on-ok:#fff;--on-now:#fff;--shadow:0 1px 2px rgba(0,0,0,.06),0 6px 20px rgba(0,0,0,.05)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121214;--fg:#ececef;--muted:#a0a3a8;--card:#1c1c20;--line:#2e2e34;--accent:#ff5a52;--accent-fg:#1a0a09;--ok:#4cc26a;--now:#f0a030;--next:#6ea8ff;--on-ok:#0b1a0f;--on-now:#1a1000;--shadow:none}}
+:root[data-theme="dark"]{--bg:#121214;--fg:#ececef;--muted:#a0a3a8;--card:#1c1c20;--line:#2e2e34;--accent:#ff5a52;--accent-fg:#1a0a09;--ok:#4cc26a;--now:#f0a030;--next:#6ea8ff;--on-ok:#0b1a0f;--on-now:#1a1000;--shadow:none}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:4.2rem}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
@@ -80,11 +80,11 @@ footer{padding:2rem 16px 3rem;color:var(--muted);font-size:.9rem;border-top:1px 
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 h3.sub{margin:1.4rem 0 .2rem;font-size:1.05rem}
 .btn:disabled{opacity:.6;cursor:default}
-.btn.copied{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.copied{background:var(--ok);border-color:var(--ok);color:var(--on-ok)}
 .btn.mini{padding:.1rem .6rem;font-size:.82rem;border-radius:6px}
 
 /* ---- header: offline banner and current section ---- */
-.offline{flex-basis:100%;margin:0;padding:.35rem .8rem;border-radius:8px;background:var(--now);color:#fff;font-size:.9rem;font-weight:600}
+.offline{flex-basis:100%;margin:0;padding:.35rem .8rem;border-radius:8px;background:var(--now);color:var(--on-now);font-size:.9rem;font-weight:600}
 .offline[hidden]{display:none}
 nav a[aria-current]{color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent);font-weight:600}
 @media (max-width:560px){.top{padding:.45rem 12px}nav{gap:.1rem .75rem;font-size:.92rem}.brand{font-size:1rem}}
