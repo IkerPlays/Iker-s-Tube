@@ -99,13 +99,33 @@ struct SelectorView : public FixedSizeView {
 	}
 
 	// a yes / no setting is shown as a row with a switch (the whole row is the button)
-	bool is_switch() const {
-			if (!(isBoolean_ && button_num == 2 && var_round_buttons)) return false;
-			for (int i = 0; i < 2; i++) { // only a real yes / no : the two texts are short (a longer choice keeps the segmented look)
-				if (Draw_get_width((std::string)button_texts[i], 0.42) > 52) return false;
-			}
-			return true;
+	// the answers of the measurements below are remembered while the texts and the text size stay the same (measuring is slow on the 3DS)
+	mutable std::string measure_key;
+	mutable bool switch_cached = false;
+	mutable float font_cached = 0.5f;
+	std::string measure_key_now() const {
+		std::string key = std::to_string(var_text_scale) + "|" + std::to_string((int)button_x_size()) + "|" + std::to_string(button_num);
+		for (int i = 0; i < button_num && i < (int)button_texts.size(); i++) key += "|" + (std::string)button_texts[i];
+		return key;
+	}
+	void refresh_measures() const {
+		std::string key = measure_key_now();
+		if (key == measure_key) return;
+		measure_key = key;
+		switch_cached = isBoolean_ && button_num == 2 && var_round_buttons;
+		for (int i = 0; switch_cached && i < 2; i++) { // only a real yes / no : the two texts are short (a longer choice keeps the segmented look)
+			if (Draw_get_width((std::string)button_texts[i], 0.42) > 52) switch_cached = false;
 		}
+		font_cached = 0.5f; // one font size for all the buttons : a long label (as in Spanish) makes them all smaller instead of overflowing its pill
+		for (int i = 0; i < button_num; i++) {
+			while (font_cached > 0.34f && Draw_get_width((std::string)button_texts[i], font_cached) > button_x_size() - 6) font_cached -= 0.02f;
+		}
+	}
+	bool is_switch() const {
+		if (!(isBoolean_ && button_num == 2 && var_round_buttons)) return false;
+		refresh_measures();
+		return switch_cached;
+	}
 
 	// the title of a switch row, cut so that the "i" and the state still fit (the drawing and the "i" hit area use the same text)
 	std::string switch_title() const {
@@ -161,10 +181,8 @@ struct SelectorView : public FixedSizeView {
 		} else {
 			Draw_texture(var_square_image[0], selected_color, button_x_left(selected_button), button_y_pos(), button_x_size(), button_y_size());
 		}
-		float font = 0.5f; // one font size for all the buttons : a long label (as in Spanish) makes them all smaller instead of overflowing its pill
-		for (int i = 0; i < button_num; i++) {
-			while (font > 0.34f && Draw_get_width((std::string)button_texts[i], font) > button_x_size() - 6) font -= 0.02f;
-		}
+		refresh_measures();
+		const float font = font_cached;
 		for (int i = 0; i < button_num; i++) {
 			bool sel = i == selected_button;
 			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos() + (button_y_size() - 20 * 0.5f) / 2 - 1 + (0.5f - font) * 8, font, font,
