@@ -243,7 +243,7 @@
     if (failed) { elStatus.textContent = ""; elMore.hidden = true; return; }
     if (!loaded) { elStatus.textContent = t("rel_loading"); elMore.hidden = true; skeleton(); return; }
     var list = visible();
-    elStatus.textContent = list.length ? list.length + " " + t("rel_count") : t("rel_none");
+    elStatus.textContent = list.length ? list.length + " " + t("rel_count") : t(all.length ? "rel_none" : "rel_empty");
     list.slice(0, shown).forEach(function (r) { elList.appendChild(card(r)); });
     elMore.hidden = list.length <= shown;
   }
