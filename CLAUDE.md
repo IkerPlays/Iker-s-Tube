@@ -14,6 +14,6 @@
   what comes after that stable. English, plain text, no emojis.
 - Compile locally before pushing: `docker run --rm -v $PWD:/src -w /src devkitpro/devkitarm make -j8` (the .cia step needs makerom
   and is only done in CI; the .3dsx must link).
-- New user-visible text: use `tr("English", "Spanish")` and add the other languages in `source/data_io/translations.cpp`.
+- New user-visible text: use `tr("English", "Spanish")` and add the other languages in `source/data_io/translations.cpp`. `python3 tools/check_translations.py` lists the texts that still have no row.
 - UI work: `tools/ui_preview` compiles the real view classes for the PC and renders sample screens to PNG (see its README). Use it to look at layout and
   colors before and after a change (the 3DS itself cannot be run here).
