@@ -32,6 +32,16 @@ std::string youtube_audio_probe_info_get() {
 static std::string build_player_body(int client, const std::string &video_id, const std::string &playlist_id,
                                      const std::string &visitor_data);
 static std::string last_visitor_data; // the visitor data of the last video page (the probe asks YouTube the same way)
+static LightLock visitor_lock; // (the offline download thread loads video pages too)
+static struct VisitorLockInit {
+	VisitorLockInit() { LightLock_Init(&visitor_lock); }
+} visitor_lock_init;
+static std::string visitor_data_get() {
+	LightLock_Lock(&visitor_lock);
+	std::string copy = last_visitor_data;
+	LightLock_Unlock(&visitor_lock);
+	return copy;
+}
 bool youtube_audio_probe_reached = false; // true when YouTube answered the last probe (so "only one track" is a fact)
 
 static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std::string &video_id) {
@@ -45,7 +55,7 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 	static const char *names[3] = {"VR", "ANDROID", "VISIONOS"};
 	for (int c = 0; c < 3 && best.size() < 2 && !youtube_load_cancel; c++) {
 		out.clear();
-		std::string body = build_player_body(clients[c], video_id, "", last_visitor_data);
+		std::string body = build_player_body(clients[c], video_id, "", visitor_data_get());
 		body.insert(body.size() - 1, R"(, "contentCheckOk": true, "racyCheckOk": true)");
 		std::map<std::string, std::string> headers;
 		if (OAuth::is_authenticated()) headers["Authorization"] = "Bearer " + OAuth::get_access_token();
@@ -55,7 +65,7 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 		    [&]() { return http_post_json(get_innertube_api_url("player"), body, headers); },
 		    [&](Document &, RJson data) {
 			    status = data["playabilityStatus"]["status"].string_value();
-			    if (status != "") reached = true;
+			    if (status == "OK") reached = true;
 			    for (auto f : data["streamingData"]["adaptiveFormats"].array_items()) {
 				    formats++;
 				    std::string mime = f["mimeType"].string_value();
@@ -744,7 +754,13 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 	youtube_load_cancel = false;
 	std::string video_content;
 	std::string visitor_data = extractVisitorData();
-	if (visitor_data != "") last_visitor_data = visitor_data;
+	if (visitor_data != "") {
+		LightLock_Lock(&visitor_lock);
+		last_visitor_data = visitor_data;
+		LightLock_Unlock(&visitor_lock);
+	}
+	youtube_audio_probe_count = -1; // (the answer of the last probe belongs to the last video)
+	youtube_audio_probe_reached = false;
 	if (youtube_load_cancel) {
 		res.error = "cancelled";
 		return res;

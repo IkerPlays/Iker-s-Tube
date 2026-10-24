@@ -77,6 +77,8 @@ struct SectionTitleWithInfoView : public FixedSizeView {
 	}
 };
 
+static SelectorView *video_quality_setting_view = NULL; // the Video quality row (resynced when the menu comes back)
+
 namespace Settings {
 	bool thread_suspend = false;
 	bool already_init = false;
@@ -1296,7 +1298,7 @@ void Sem_init(void) {
 							}
 						}),
 					// Video quality (the same value as the quality selector of the player)
-					(new SelectorView(0, 0, 320, 35, false))
+					(video_quality_setting_view = new SelectorView(0, 0, 320, 35, false))
 						->set_texts({
 							(std::function<std::string ()>) []() { return tr("Audio", "Audio"); },
 							(std::function<std::string ()>) []() { return std::string("144p"); },
@@ -2618,6 +2620,10 @@ void Sem_suspend(void) {
 	thread_suspend = true;
 }
 void Sem_resume(std::string arg) {
+	if (video_quality_setting_view) { // (the quality may have changed in the player)
+		int q = var_video_quality;
+		video_quality_setting_view->selected_button = q <= 0 ? 0 : q <= 144 ? 1 : q <= 240 ? 2 : q <= 360 ? 3 : 4;
+	}
 	overlay_menu_on_resume();
 	thread_suspend = false;
 	var_need_refresh = true;

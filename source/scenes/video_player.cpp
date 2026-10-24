@@ -83,7 +83,7 @@ volatile bool eof_reached = false;
 volatile bool audio_only_mode = false;
 volatile bool video_skip_drawing = false; // for performance reason, enabled when opening keyboard
 volatile int video_p_value = 360;
-static bool quality_chosen_by_hand = false; // (a quality picked on the quality selector wins over the data saver)
+static std::string quality_chosen_video; // the video whose quality was picked by hand (that pick wins over the data saver for that video only)
 volatile double seek_at_init_request = -1;
 static char vid_resume_id[16] = {0}; // id of the playing video, readable from the converter thread without a lock
 
@@ -2543,7 +2543,7 @@ debug_info_view =
 				                         make_tool([]() { return audio_only_mode ? tr("Quality: audio", "Calidad: audio") : tr("Quality: ", "Calidad: ") + std::to_string((int)video_p_value) + "p"; }, 110,
 				                                   []() { // the same choice as the quality selector of the Playback tab, one tap away
 					                                   SelectorView *sel = video_quality_selector_view;
-					                                   if (!sel || sel->button_num < 2 || !sel->on_change_func) {
+					                                   if (!sel || sel->button_num < (audio_only_mode ? 2 : 3) || !sel->on_change_func) {
 						                                   notice_show(tr("No other quality for this video", "No hay otra calidad para este vídeo"));
 						                                   return;
 					                                   }
@@ -2571,9 +2571,9 @@ debug_info_view =
 							                                   youtube_audio_probe_count = -1;
 							                                   return;
 						                                   }
-						                                   youtube_audio_probe_request = true;
-						                                   notice_show(tr("Looking for audio tracks...", "Buscando pistas de audio..."));
 						                                   if (!is_async_task_running(load_video_page)) {
+							                                   youtube_audio_probe_request = true;
+							                                   notice_show(tr("Looking for audio tracks...", "Buscando pistas de audio..."));
 							                                   seek_at_init_request = vid_current_pos;
 							                                   send_change_video_request_wo_lock(cur_playing_url, true, false, true);
 							                                   video_retry_left = MAX_RETRY_CNT;
@@ -3289,7 +3289,7 @@ debug_info_view =
 	    if (tmp_video_info.audio_stream_url == "") { // without a separate audio stream only the muxed 360p can play
 		    available_qualities.clear();
 	    }
-	    if (tmp_video_info.both_stream_url != "" && std::find(available_qualities.begin(), available_qualities.end(), 360) == available_qualities.end()) {
+	    if (tmp_video_info.both_stream_url != "" && (var_is_new3ds || available_qualities.empty()) && std::find(available_qualities.begin(), available_qualities.end(), 360) == available_qualities.end()) {
 		    available_qualities.push_back(360); // (the muxed stream is the 360p)
 		    std::sort(available_qualities.begin(), available_qualities.end());
 	    }
@@ -3307,7 +3307,7 @@ debug_info_view =
     if (var_auto_quality && var_auto_quality_cap > 0 && wanted_quality > var_auto_quality_cap) {
 	    wanted_quality = var_auto_quality_cap;
     }
-    if (var_data_saver && wanted_quality > 240 && !quality_chosen_by_hand) {
+    if (var_data_saver && wanted_quality > 240 && quality_chosen_video != tmp_video_info.id) {
 	    wanted_quality = 240;
     }
     const bool offline_item = tmp_video_info.url.compare(0, 8, "offline:") == 0;
@@ -3390,7 +3390,7 @@ debug_info_view =
 		    }
 	    }
 	    var_video_quality = audio_only_mode ? 0 : video_p_value;
-	    quality_chosen_by_hand = true; // a quality picked here is not lowered by the data saver (the automatic quality may still lower the next videos if playback stalls)
+	    quality_chosen_video = cur_video_info.id; // a quality picked here is not lowered by the data saver (the automatic quality may still lower the next videos if playback stalls)
 	    var_auto_quality_cap = 0;
 	    if (changed) notice_show(audio_only_mode ? tr("Audio only", "Solo audio") : tr("Quality: ", "Calidad: ") + std::to_string((int)video_p_value) + "p");
 	    misc_tasks_request(TASK_SAVE_SETTINGS);
