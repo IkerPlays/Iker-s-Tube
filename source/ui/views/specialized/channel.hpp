@@ -4,6 +4,7 @@
 #include <string>
 #include "youtube_parser/parser.hpp"
 #include "ui/ui_common.hpp"
+#include "util/util.hpp"
 #include "../view.hpp"
 #include "data_io/string_resource.hpp"
 
@@ -62,19 +63,20 @@ struct ChannelView : public FixedSizeView {
 			thumbnail_draw(icon_handle, x0 + SMALL_MARGIN, y0 + SMALL_MARGIN, CHANNEL_ICON_SIZE,
 			CHANNEL_ICON_SIZE); // icon : a circle
 			ui_mask_corners(x0 + SMALL_MARGIN, y0 + SMALL_MARGIN, CHANNEL_ICON_SIZE, CHANNEL_ICON_SIZE, CHANNEL_ICON_SIZE / 2, UI_PAGE_COLOR);
-			Draw(name, x0 + CHANNEL_ICON_SIZE + SMALL_MARGIN * 3, y0 + SMALL_MARGIN, MIDDLE_FONT_SIZE, MIDDLE_FONT_SIZE,
-			     DEFAULT_TEXT_COLOR); // channel name
+			const int text_x = x0 + CHANNEL_ICON_SIZE + SMALL_MARGIN * 3;
+			Draw(truncate_first_line(name, (int)(x1 - text_x - 6), MIDDLE_FONT_SIZE), text_x, y0 + SMALL_MARGIN, MIDDLE_FONT_SIZE, MIDDLE_FONT_SIZE,
+			     DEFAULT_TEXT_COLOR); // channel name (cut when it is long)
 
 			// Handle
 			double current_y = y0 + SMALL_MARGIN + MIDDLE_FONT_INTERVAL;
 			if (!handle.empty()) {
-				Draw(handle, x0 + CHANNEL_ICON_SIZE + SMALL_MARGIN * 3, current_y, 0.5, 0.5, LIGHT1_TEXT_COLOR);
+				Draw(truncate_first_line(handle, (int)(x1 - 100 - text_x), 0.5), text_x, current_y, 0.5, 0.5, LIGHT1_TEXT_COLOR); // (the Subscribe pill is under the right part)
 				current_y += DEFAULT_FONT_INTERVAL;
 			}
 
 			// Subscriber count
 			if (!subscriber_count.empty()) {
-				Draw(subscriber_count, x0 + CHANNEL_ICON_SIZE + SMALL_MARGIN * 3, current_y, 0.5, 0.5,
+				Draw(truncate_first_line(subscriber_count, (int)(x1 - 100 - text_x), 0.5), text_x, current_y, 0.5, 0.5,
 				     LIGHT1_TEXT_COLOR);
 			}
 

@@ -203,7 +203,7 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 	                   ->set_text(truncate_first_line(title, width - 8, 0.5))
 	                   ->set_x_alignment(TextView::XAlign::CENTER)
 	                   ->set_y_alignment(TextView::YAlign::CENTER)
-	                   ->set_get_text_color([]() { return COLOR_ACCENT; })
+	                   ->set_get_text_color([]() { return (u32)UI_ACCENT_TEXT; })
 	                   ->set_get_background_color([](const View &) { return LIGHT0_BACK_COLOR; }));
 	size_t last = std::min(options.size(), first + per_page);
 	if (options.size() - first <= per_page + 1) last = options.size(); // (the last page may hold one more : no "More" for a single option)
@@ -224,7 +224,7 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 		                   ->set_text(tr("Previous options...", "Opciones anteriores..."))
 		                   ->set_x_alignment(TextView::XAlign::CENTER)
 		                   ->set_y_alignment(TextView::YAlign::CENTER)
-		                   ->set_get_text_color([]() { return COLOR_ACCENT; })
+		                   ->set_get_text_color([]() { return (u32)UI_ACCENT_TEXT; })
 		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                   ->set_on_view_released([title, options, first, per_page](View &) { menu_next_request = true; menu_next_title = title; menu_next_options = options; menu_next_first = first >= per_page ? first - per_page : 0; }));
 	}
@@ -233,7 +233,7 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 		                   ->set_text(tr("More options...", "Más opciones..."))
 		                   ->set_x_alignment(TextView::XAlign::CENTER)
 		                   ->set_y_alignment(TextView::YAlign::CENTER)
-		                   ->set_get_text_color([]() { return COLOR_ACCENT; })
+		                   ->set_get_text_color([]() { return (u32)UI_ACCENT_TEXT; })
 		                   ->set_get_background_color(View::STANDARD_BACKGROUND)
 		                   ->set_on_view_released([title, options, last](View &) { menu_next_request = true; menu_next_title = title; menu_next_options = options; menu_next_first = last; }));
 	}

@@ -15,6 +15,8 @@
 // Used on pictures, which cannot be drawn rounded : the corners are covered with the color of what is behind them.
 // corners : bit 0 top left, 1 top right, 2 bottom left, 3 bottom right.
 static inline void ui_mask_corners(float x, float y, float w, float h, int r, u32 color, int corners = 15) {
+	if (w <= 0 || h <= 0) return;
+	r = std::min(r, (int)(std::min(w, h) / 2)); // (a corner can not be bigger than half the picture)
 	if (r <= 0) return;
 	// rows that need the same width are drawn as one taller rectangle (a round picture would otherwise need ~90 draw calls)
 	int run_start = 0, run_width = -1;

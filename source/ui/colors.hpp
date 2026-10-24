@@ -97,16 +97,37 @@ static inline unsigned int ui_mix(unsigned int a, unsigned int b, float t) {
 	return out;
 }
 
-// The text color that reads best on top of the accent color : white, or near black when the accent is a bright one
-static inline unsigned int ui_text_on(unsigned int abgr) {
+// the relative luminance of a color (WCAG), 0 black .. 1 white
+static inline float ui_luminance(unsigned int abgr) {
 	float c[3];
 	for (int i = 0; i < 3; i++) {
 		float v = ((abgr >> (8 * i)) & 0xFF) / 255.0f;
 		c[i] = v <= 0.03928f ? v / 12.92f : powf((v + 0.055f) / 1.055f, 2.4f);
 	}
-	float luminance = 0.2126f * c[0] + 0.7152f * c[1] + 0.0722f * c[2];
+	return 0.2126f * c[0] + 0.7152f * c[1] + 0.0722f * c[2];
+}
+static inline float ui_contrast(unsigned int a, unsigned int b) {
+	float la = ui_luminance(a), lb = ui_luminance(b);
+	return (std::max(la, lb) + 0.05f) / (std::min(la, lb) + 0.05f);
+}
+
+// The text color that reads best on top of the accent color : white, or near black when the accent is a bright one
+static inline unsigned int ui_text_on(unsigned int abgr) {
+	float luminance = ui_luminance(abgr);
 	return luminance > 0.30f ? RGB_(0x14, 0x16, 0x1B) : 0xFFFFFFFFu;
 }
 #define UI_ON_ACCENT (ui_text_on(theme_accent()))
-// The accent color used for TEXT : on a light page a bright accent is darkened so it can be read
-#define UI_ACCENT_TEXT (var_night_mode ? (unsigned int)theme_accent() : ui_mix(theme_accent(), 0xFF000000u, 0.4f))
+// The accent color used for TEXT : the accent is darkened (on a light page) or lightened (on a dark one) until it reads well on the
+// surface (contrast 4.5 : 1). The answer is remembered while the accent and the mode do not change.
+static inline unsigned int ui_accent_text(unsigned int accent, bool night, unsigned int surface) {
+	static unsigned int last_accent = 0, last_surface = 0, last_result = 0;
+	static bool last_night = false, have = false;
+	if (have && last_accent == accent && last_night == night && last_surface == surface) return last_result;
+	unsigned int result = accent;
+	for (int step = 0; step <= 12 && ui_contrast(result, surface) < 4.5f; step++) {
+		result = ui_mix(accent, night ? 0xFFFFFFFFu : 0xFF000000u, 0.08f * (step + 1));
+	}
+	last_accent = accent, last_surface = surface, last_night = night, last_result = result, have = true;
+	return result;
+}
+#define UI_ACCENT_TEXT (ui_accent_text(theme_accent(), var_night_mode, UI_CARD_COLOR))

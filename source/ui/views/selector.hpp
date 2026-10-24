@@ -129,7 +129,7 @@ struct SelectorView : public FixedSizeView {
 			Draw(state, sx - 6 - state_width, top + (h - 20 * 0.42f) / 2 - 1, 0.42, 0.42, on ? (u32)UI_ACCENT_TEXT : (u32)LIGHT1_TEXT_COLOR);
 		}
 		Draw_round_rect(sx, sy, sw, sh, sh / 2, on ? COLOR_ACCENT : ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.5f));
-		Draw_round_rect(on ? sx + sw - sh + 2 : sx + 2, sy + 2, sh - 4, sh - 4, (sh - 4) / 2, on ? 0xFFFFFFFF : LIGHT1_TEXT_COLOR);
+		Draw_round_rect(on ? sx + sw - sh + 2 : sx + 2, sy + 2, sh - 4, sh - 4, (sh - 4) / 2, on ? (u32)UI_ON_ACCENT : LIGHT1_TEXT_COLOR);
 	}
 	// the little "i" that explains a setting
 	static void Draw_round_info(float cx, float cy) {

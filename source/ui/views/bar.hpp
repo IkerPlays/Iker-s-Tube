@@ -98,7 +98,7 @@ struct BarView : public FixedSizeView {
 		Draw_round_rect(bar_x0(), bar_y() - 2, bar_len(), 4, 2, ui_mix(UI_RAISED_COLOR, UI_OUTLINE_COLOR, 0.6f));
 		if (fill > 0) Draw_round_rect(bar_x0(), bar_y() - 2, fill, 4, 2, COLOR_ACCENT);
 		float handle = holding ? 7.0f : 6.0f;
-		C2D_DrawCircleSolid(get_x_from_value(get_value()), bar_y(), 0, handle, 0xFFFFFFFF);
+		C2D_DrawCircleSolid(get_x_from_value(get_value()), bar_y(), 0, handle, var_night_mode ? 0xFFFFFFFFu : ui_mix(UI_OUTLINE_COLOR, 0xFF000000u, 0.25f)); // (a white ring would vanish on a white card)
 		C2D_DrawCircleSolid(get_x_from_value(get_value()), bar_y(), 0, handle - 2, COLOR_ACCENT);
 	}
 	void update_(Hid_info key) override {

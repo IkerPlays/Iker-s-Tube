@@ -482,6 +482,7 @@ float Draw_get_width(const std::string &text, float text_size_x) {
 void Draw_x_centered(std::string text, float x0, float x1, float y, float text_size_x, float text_size_y,
                      int abgr8888) {
 	float x = x0 + (x1 - x0 - Draw_get_width(text, text_size_x)) / 2;
+	if (x < x0) x = x0; // (a label wider than its box overflows to the right instead of into the neighbour on the left)
 	Draw(text, x, y, text_size_x, text_size_y, abgr8888);
 }
 void Draw_y_centered(std::string text, float x, float y0, float y1, float text_size_x, float text_size_y,
