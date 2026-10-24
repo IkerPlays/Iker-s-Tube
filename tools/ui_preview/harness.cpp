@@ -39,7 +39,7 @@ static void scene_settings(const char *path, bool night) {
 	list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))->set_text("Appearance")->set_font_size(0.6, DEFAULT_FONT_INTERVAL)->set_get_text_color([]() { return (u32)COLOR_ACCENT; }));
 	list->views.push_back((new SelectorView(0, 0, 320, 35, true))->set_texts({(std::function<std::string()>)[]() { return std::string("Off"); }, (std::function<std::string()>)[]() { return std::string("On"); }}, 1)->set_title([](const SelectorView &) { return std::string("Rounded buttons"); }));
 	list->views.push_back((new SelectorView(0, 0, 320, 35, true))->set_texts({(std::function<std::string()>)[]() { return std::string("Small"); }, (std::function<std::string()>)[]() { return std::string("Normal"); }, (std::function<std::string()>)[]() { return std::string("Large"); }}, 1)->set_title([](const SelectorView &) { return std::string("Text size"); }));
-	list->views.push_back(button("Export backup to the SD card", 220));
+	list->views.push_back(button("Export backup to the SD card", 320));
 	{ static double v = 6.0; list->views.push_back((new BarView(0, 0, 320, 35))->set_values_sync(1.0, 15.0, &v)->set_title([](const BarView &) { return std::string("Scroll speed : 6.0"); })); }
 	ScrollView *scroll = (new ScrollView(0, 0, 320, 200))->set_views({list});
 	TabView *tabs = (new TabView(0, 0, 320, 240))->set_views({scroll, new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0)})->set_tab_texts<std::string>({"Display", "Playback", "Data", "Update"});

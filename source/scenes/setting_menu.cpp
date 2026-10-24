@@ -1839,7 +1839,7 @@ void Sem_init(void) {
 							if (2 >= (int) lines.size()) return "";
 							auto cut = truncate_str(lines[2], 310, 1, 0.4, 0.4); return cut.empty() ? std::string() : cut[0];
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Save full log to the SD card", "Guardar el registro completo en la SD"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -1857,7 +1857,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Create a report to send", "Crear un informe para enviar"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -1875,7 +1875,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Show the news again (next start)", "Ver las novedades otra vez (al reiniciar)"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -1893,7 +1893,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Export lists as text files", "Exportar listas como texto"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -1962,7 +1962,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Import subscriptions (import_subscriptions.csv)", "Importar suscripciones (import_subscriptions.csv)"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2004,7 +2004,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Hidden channels: ", "Canales ocultos: ") + std::to_string(hidden_channel_count()) + tr(" (tap to show all)", " (toca para mostrar todos)"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2021,7 +2021,7 @@ void Sem_init(void) {
 							if (options.size()) overlay_show_menu(tr("Hidden channels", "Canales ocultos"), options);
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Reset the settings (next start)", "Restablecer los ajustes (al reiniciar)"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2056,7 +2056,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Forget where I stopped in the videos", "Olvidar dónde dejé los vídeos"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2075,7 +2075,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Clear the picture cache", "Vaciar la caché de imágenes"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2105,7 +2105,7 @@ void Sem_init(void) {
 							toast_frames_left = 150;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Storage used by the app", "Espacio que usa la app"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2114,7 +2114,7 @@ void Sem_init(void) {
 						notice_show(tr("Counting...", "Contando..."));
 						queue_async_task(storage_scan_task, NULL); // (many files : counted by the worker so the screen does not freeze)
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Clear the search history", "Borrar el historial de búsquedas"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2124,7 +2124,7 @@ void Sem_init(void) {
 							search_history_clear();
 							settings_toast(tr("Search history cleared", "Historial de búsquedas borrado"));
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Reset the play statistics", "Reiniciar las estadísticas de uso"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2139,7 +2139,7 @@ void Sem_init(void) {
 							misc_tasks_request(TASK_SAVE_SETTINGS);
 							settings_toast(tr("Statistics reset", "Estadísticas reiniciadas"));
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 					->set_text((std::function<std::string ()>) [] () { return tr("Restore the settings from before a crash", "Recuperar los ajustes de antes de un fallo"); })
 					->set_x_alignment(TextView::XAlign::CENTER)
 					->set_text_offset(0, -2)
@@ -2153,7 +2153,7 @@ void Sem_init(void) {
 						if (FILE *flag = fopen("sdmc:/3ds/IkersTube/restore_settings.flag", "w")) fclose(flag);
 						settings_toast(tr("They come back when the app restarts", "Vuelven al reiniciar la app"));
 					}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 					->set_text((std::function<std::string ()>) [] () { return tr("Clean leftover temporary files", "Limpiar archivos temporales sobrantes"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2165,7 +2165,7 @@ void Sem_init(void) {
 						->set_text((std::function<std::string ()>) [] () { return tr("Last backup: ", "Última copia: ") + backup_date_text(); })
 						->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
 						->set_get_text_color([] () { return LIGHT0_TEXT_COLOR; }),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Export backup to the SD card", "Exportar copia a la SD"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
@@ -2184,7 +2184,7 @@ void Sem_init(void) {
 							toast_frames_left = 180;
 							var_need_refresh = true;
 						}),
-					(new TextView(10, 0, 220, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Import backup (restart the app after)", "Importar copia (reinicia la app después)"); })
 						->set_x_alignment(TextView::XAlign::CENTER)
 						->set_text_offset(0, -2)
