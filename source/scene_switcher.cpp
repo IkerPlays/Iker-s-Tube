@@ -193,9 +193,10 @@ void Menu_init(void) {
 	int tries = 0;
 	while (var_wifi_state != 2) {
 		tries++;
-		if (tries > 20) {
+		if (tries > 12) { // (the saved videos work without Wi-Fi : do not keep the user waiting)
 			break;
 		}
+		Menu_boot_step(0.15f + 0.01f * tries); // the loading screen stays alive while waiting
 		// Enable Wi-Fi in case the user disabled it for whatever reason.
 		if (tries < 2) {
 			Util_cset_set_wifi_state(true);
