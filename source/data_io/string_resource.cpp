@@ -118,6 +118,7 @@ std::string friendly_error(const std::string &raw) {
 	if (has("timed out") || has("timeout")) return tr("The connection timed out", "La conexión tardó demasiado");
 	if (has("ssl") || has("certificate")) return tr("Secure connection failed", "Falló la conexión segura");
 	if (has("429") || has("too many")) return tr("YouTube is busy, try again later", "YouTube está saturado, prueba más tarde");
+	if (has("server error")) return tr("YouTube had a problem, try again later", "YouTube tuvo un problema, prueba más tarde");
 	if (has("network request failed") || has("http request failed") || has("empty response")) return tr("Network problem, try again", "Problema de red, inténtalo de nuevo");
 	return raw;
 }

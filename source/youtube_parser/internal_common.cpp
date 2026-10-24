@@ -52,6 +52,9 @@ std::pair<bool, std::string> http_get(const std::string &url, std::map<std::stri
 	if (result.fail) {
 		debug_error("fail : " + result.error);
 		return {false, result.error};
+	} else if (result.status_code == 429 || result.status_code >= 500) { // a busy or broken server : its page is not data, say so instead of "parsing error"
+		debug_error("http " + std::to_string(result.status_code));
+		return {false, std::string(result.status_code == 429 ? "HTTP 429 too many requests" : "HTTP " + std::to_string(result.status_code) + " server error")};
 	} else {
 		debug_info("ok");
 		return {true, std::string(result.data.begin(), result.data.end())};
@@ -77,6 +80,9 @@ std::pair<bool, std::string> http_post_json(const std::string &url, const std::s
 	if (result.fail) {
 		debug_error("fail : " + result.error);
 		return {false, result.error};
+	} else if (result.status_code == 429 || result.status_code >= 500) { // a busy or broken server : its page is not data, say so instead of "parsing error"
+		debug_error("http " + std::to_string(result.status_code));
+		return {false, std::string(result.status_code == 429 ? "HTTP 429 too many requests" : "HTTP " + std::to_string(result.status_code) + " server error")};
 	} else {
 		debug_info("ok");
 		return {true, std::string(result.data.begin(), result.data.end())};
