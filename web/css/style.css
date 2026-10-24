@@ -213,3 +213,5 @@ progress::-moz-progress-bar{background:var(--ok);border-radius:99px}
 .faq-search{width:100%;max-width:26rem;box-sizing:border-box;margin:.3rem 0 .6rem;padding:.55rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit}
 .faq-search:focus-visible{outline:2px solid var(--accent,#e0343c);outline-offset:2px}
 #faq details[hidden]{display:none}
+
+.steps{padding-left:1.3rem;line-height:1.7}.steps li{margin:.4rem 0}
