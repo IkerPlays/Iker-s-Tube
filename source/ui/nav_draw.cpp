@@ -77,6 +77,8 @@ void nav_paint(const NavPaint &p, const std::string labels[NAV_ITEM_COUNT]) {
 			Draw_round_rect(cx + 7, cy - 10, w, 11, 5.5f, COLOR_ACCENT);
 			Draw_x_centered(n, cx + 7, cx + 7 + w, cy - 10.5f, 0.4, 0.4, UI_ON_ACCENT);
 		}
-		Draw_x_centered(labels[i], x0, x1, top + 19.5f, 0.4, 0.4, sel ? (u32)DEFAULT_TEXT_COLOR : (u32)LIGHT1_TEXT_COLOR);
+		float label_size = 0.4f; // (a long label, as in German, gets smaller instead of touching its neighbours)
+		while (label_size > 0.3f && Draw_get_width(labels[i], label_size) > x1 - x0 - 4) label_size -= 0.02f;
+		Draw_x_centered(labels[i], x0, x1, top + 19.5f + (0.4f - label_size) * 6, label_size, label_size, sel ? (u32)DEFAULT_TEXT_COLOR : (u32)LIGHT1_TEXT_COLOR);
 	}
 }
