@@ -25,7 +25,16 @@ static volatile bool download_running = false; // one download at a time
 static volatile bool download_cancel = false;
 static volatile bool downloads_paused = false; // the running download waits between two chunks
 static volatile int download_percent = 0;
-static std::string download_title; // set before the thread starts, read by the UI
+static std::string download_title; // set before the thread starts, read by the UI (under title_lock)
+static LightLock title_lock;
+static struct TitleLockInit {
+	TitleLockInit() { LightLock_Init(&title_lock); }
+} title_lock_init;
+static void set_download_title(const std::string &t) {
+	LightLock_Lock(&title_lock);
+	download_title = t;
+	LightLock_Unlock(&title_lock);
+}
 
 static LightLock pending_lock;
 static std::vector<DownloadJob *> pending; // queued while a download runs
@@ -41,7 +50,12 @@ int offline_download_queued() {
 	return n;
 }
 int offline_download_percent() { return download_percent; }
-std::string offline_download_title() { return download_title; }
+std::string offline_download_title() {
+	LightLock_Lock(&title_lock);
+	std::string copy = download_title;
+	LightLock_Unlock(&title_lock);
+	return copy;
+}
 static std::string running_job_id; // the video that is downloading now (under pending_lock)
 static volatile int save_epoch = 0; // grows at every cancel : the "save by id" tasks queued before it do nothing
 void offline_download_cancel() { // the running download and the queued ones
@@ -110,7 +124,7 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 		progress(total ? (int)(done * 100 / total) : 0);
 		if (total && done >= total) break;
 	}
-	if (file) fclose(file);
+	if (file && fclose(file) != 0) ok = false; // (the buffered end of the file is written by fclose : a full card shows up here)
 	if (ok && total && done >= total) {
 		return true; // complete : stays as `<path>.part` until every part of the job is done (see run_job)
 	}
@@ -119,7 +133,7 @@ static bool download_part(NetworkSessionList &session, const DownloadPart &part,
 }
 
 static void run_job(DownloadJob *job, NetworkSessionList &session) {
-	download_title = job->title;
+	set_download_title(job->title);
 	download_percent = 0;
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
@@ -262,7 +276,7 @@ void offline_download_async(const std::string &id, const std::string &title, con
 	download_running = true;
 	running_job_id = id;
 	download_cancel = false; // (a cancel of the previous downloads must not stop this one)
-	download_title = title;
+	set_download_title(title);
 	download_percent = 0;
 	LightLock_Unlock(&pending_lock);
 	notice_show(tr("Downloading: 0%", "Descargando: 0%"));
@@ -291,6 +305,13 @@ static void save_by_id_task(void *arg) {
 	if (job->epoch != save_epoch) { // cancelled while it waited in the queue
 		delete job;
 		return;
+	}
+	{ // saved meanwhile by the same request tapped twice : not downloaded again
+		OfflineItem saved;
+		if (offline_get(job->id, saved) && (!job->want_video || saved.quality > 0)) {
+			delete job;
+			return;
+		}
 	}
 	YouTubeVideoDetail info = youtube_load_video_page(youtube_get_video_url_by_id(job->id));
 	if (!info.is_playable()) {

@@ -201,7 +201,7 @@ void Util_expl_main(Hid_info key) {
 		if (expl_view_offset_y <= -1) {
 			expl_view_offset_y = 0;
 		} else if (expl_view_offset_y + expl_selected_file_num >= expl_num_of_file) {
-			expl_view_offset_y = expl_num_of_file - 16;
+			expl_view_offset_y = std::max(0, expl_num_of_file - 16); // (an empty or short folder starts at the top)
 		}
 	}
 }
