@@ -120,3 +120,8 @@ Ajustes, Datos, "Crear un informe para enviar" escribe `sdmc:/3ds/IkersTube/repo
   vídeo en ese momento.
 - Historial: buscar por título o canal, "Reproducir todo", "Aleatorio" y borrar lo de más de 30 días.
 - La lista de canales suscritos locales sale ordenada alfabéticamente.
+
+## Calidad de vídeo
+- **Mientras suena un vídeo:** pestaña Reproducción, fila "Vídeo" (Audio, 144p, 240p, 360p, 480p), o el botón "Calidad" de la pestaña General, que cambia de una a la siguiente con cada toque.
+- **Calidad con la que empiezan los vídeos:** Ajustes > Pantalla > "Calidad de vídeo". La "Calidad automática" puede bajarla si la reproducción se atasca; lo que eliges a mano no se baja solo.
+- La familia 3DS antigua solo muestra las calidades bajas.
