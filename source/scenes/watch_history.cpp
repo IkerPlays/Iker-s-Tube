@@ -82,6 +82,7 @@ void History_resume(std::string arg) {
 	var_need_refresh = true;
 
 	update_watch_history(get_valid_watch_history());
+	if (cur_sort_type > 0) sort_request = cur_sort_type; // (the list comes back in the order the selector says)
 }
 
 static void update_watch_history(const std::vector<HistoryVideo> &new_watch_history) {
@@ -361,9 +362,12 @@ void History_draw(void) {
 	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
 	} else {
+		bool popup_took_input = false; // B that closes a popup must not also leave the scene
 		if (qr_popup_update(key)) {
 			// the QR popup takes the input while it is open
+			popup_took_input = true;
 		} else if (on_long_tap_dialog->is_visible) {
+			popup_took_input = true;
 			on_long_tap_dialog->update(key);
 		} else {
 			update_overlay_menu(&key);
@@ -533,7 +537,7 @@ void History_draw(void) {
 			}
 			if (sort_request != -1) {
 				auto tmp_watch_history = watch_history;
-				std::sort(tmp_watch_history.begin(), tmp_watch_history.end(),
+				std::stable_sort(tmp_watch_history.begin(), tmp_watch_history.end(),
 				          [](const HistoryVideo &i, const HistoryVideo &j) {
 					          if (sort_request == 0) {
 						          return i.last_watch_time > j.last_watch_time;
@@ -567,7 +571,7 @@ void History_draw(void) {
 			}
 		}
 
-		if (key.p_b) {
+		if (key.p_b && !popup_took_input) {
 			global_intent.next_scene = SceneType::BACK;
 		}
 	}

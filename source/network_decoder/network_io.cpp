@@ -152,6 +152,7 @@ void NetworkSessionList::curl_add_request(const HttpRequest &request, NetworkRes
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &res->response_headers);
 	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, request.method.c_str());
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, (long)request.follow_redirect);
+	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 6L);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request.body.c_str());
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)request.body.size()); // the body can be binary
 	curl_easy_setopt(curl, CURLOPT_URL, request.url.c_str());

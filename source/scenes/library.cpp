@@ -1183,9 +1183,12 @@ void Library_draw(void) {
 	} else if (Util_expl_query_show_flag()) {
 		Util_expl_main(key);
 	} else {
+		bool popup_took_input = false; // B that closes a popup must not also leave the scene
 		if (qr_popup_update(key)) {
 			// the QR popup takes the input while it is open
+			popup_took_input = true;
 		} else if (on_long_tap_dialog->is_visible) {
+			popup_took_input = true;
 			on_long_tap_dialog->update(key);
 		} else {
 			update_overlay_menu(&key);
@@ -1224,7 +1227,7 @@ void Library_draw(void) {
 		open_playlist = -1;
 		rebuild_views();
 		}
-		if (key.p_b) {
+		if (key.p_b && !popup_took_input) {
 		if (mode == 2 && open_playlist >= 0) {
 				open_playlist = -1; // back to the list of playlists
 				rebuild_views();

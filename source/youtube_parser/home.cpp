@@ -154,6 +154,7 @@ void YouTubeHomeResult::load_more_results() {
 	post_content = std::regex_replace(post_content, std::regex("\\$2"), visitor_data);
 	post_content = std::regex_replace(post_content, std::regex("\\$3"), continue_token);
 
+	const std::string old_continue_token = continue_token; // (kept if the request fails : a retry needs it)
 	continue_token = "";
 
 	std::map<std::string, std::string> headers;
@@ -192,5 +193,8 @@ void YouTubeHomeResult::load_more_results() {
 			    }
 		    }
 	    },
-	    [&](const std::string &error) { debug_error((this->error = "[home-c] " + error)); });
+	    [&](const std::string &error) {
+		    debug_error((this->error = "[home-c] " + error));
+		    continue_token = old_continue_token;
+	    });
 }

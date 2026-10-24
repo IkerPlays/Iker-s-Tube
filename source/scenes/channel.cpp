@@ -277,7 +277,7 @@ void Channel_init(void) {
     }
 
     void Channel_resume(std::string arg) {
-	    if (arg != "" && arg != cur_channel_url) {
+	    if (arg != "" && (arg != cur_channel_url || (channel_info.error != "" && !is_async_task_running(load_channel)))) { // (the same channel again after a failed load tries again)
 		    send_load_request(arg);
 		    tab_view->selected_tab = 0;
 	    } else {

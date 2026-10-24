@@ -650,7 +650,11 @@ static void update_home_bottom_view(bool force_show_loading) {
 		                              ->set_on_view_released([](View &) {
 		                              	if (home_info.error != "" && !is_async_task_running(load_home_page) && !is_async_task_running(load_home_page_more)) { // the loading is over : nothing else touches the error
 		                              		home_info.error = "";
-		                              		queue_async_task(load_home_page_more, NULL);
+		                              		if (home_info.videos.empty()) { // the first page never came : it is loaded again, not "more"
+		                              			queue_async_task(load_home_page, NULL);
+		                              		} else {
+		                              			queue_async_task(load_home_page_more, NULL);
+		                              		}
 		                              		var_need_refresh = true;
 		                              	}
 		                              })
@@ -857,8 +861,10 @@ static void load_subscription_feed(void *) {
 			new_info.name = result.name;
 			new_info.icon_url = result.icon_url;
 			new_info.subscriber_count_str = result.subscriber_count_str;
-			subscription_unsubscribe(result.id);
-			subscription_subscribe(new_info);
+			if (subscription_is_subscribed(result.id)) { // (a channel unsubscribed while the refresh ran must stay unsubscribed)
+				subscription_unsubscribe(result.id);
+				subscription_subscribe(new_info);
+			}
 		}
 
 		int loaded_cnt = 0;
