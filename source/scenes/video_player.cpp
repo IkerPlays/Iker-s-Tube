@@ -1199,7 +1199,7 @@ void VideoPlayer_init(void) {
 			}
 		}
 	});
-	video_quality_selector_view = (new SelectorView(0, 0, 320, 35, false))
+	video_quality_selector_view = (new SelectorView(0, 0, 320, 40, false))
 	                                  ->set_texts({(std::function<std::string()>)[]() { return tr("Audio","Audio");
 }
 }, 0)

@@ -1,1 +1,1 @@
-Hotfix: every row of buttons that works like a selector (video quality, text size, languages, themes...) ignored every button except the first one, because letting go of the screen was read as a touch on the first button. Fixed.
+The quality selector row is taller (easier to hit). New host-side regression test for selector taps (tools/ui_preview/selector_test.sh).
