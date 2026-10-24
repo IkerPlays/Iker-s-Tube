@@ -74,9 +74,13 @@ struct TabView : public FixedSizeView {
 		// the selected tab is a rounded pill
 		Draw_round_rect(tab_pos_x(selected_tab) + 4, y1 - tab_selector_height + 3, tab_width() - 8, tab_selector_height - 6,
 		(tab_selector_height - 6) / 2, COLOR_ACCENT);
+		float size = tab_font_size; // one font size for all the tabs : a long label (as in Spanish) makes every label smaller instead of running into its neighbours
+		for (int i = 0; i < tab_num; i++) {
+			while (size > 0.32f && Draw_get_width(tab_texts[i], size) > tab_width() - 14) size -= 0.02f;
+		}
 		for (int i = 0; i < tab_num; i++) {
 			float y = y1 - tab_selector_height + (tab_selector_height - Draw_get_height(tab_texts[i], 0.5)) / 2 - 2;
-			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y, tab_font_size, tab_font_size,
+			Draw_x_centered(tab_texts[i], tab_pos_x(i), tab_pos_x(i + 1), y + (tab_font_size - size) * 8, size, size,
 			                i == selected_tab ? (u32)UI_ON_ACCENT : (u32)LIGHT0_TEXT_COLOR);
 		}
 	}

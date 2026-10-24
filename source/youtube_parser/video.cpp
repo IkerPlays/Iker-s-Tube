@@ -256,6 +256,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 
 		for (auto i : video_formats) {
 			int cur_itag = i["itag"].int_value();
+			if (cur_itag == 18 || i["mimeType"].string_value().find("mp4a") != std::string::npos) continue; // the muxed stream is both_stream_url, not a video-only one
 			std::string url = i["url"].string_value();
 			int height = i["height"].int_value(); // Video resolution height
 

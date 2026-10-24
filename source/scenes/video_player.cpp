@@ -2548,6 +2548,7 @@ debug_info_view =
 						                                   return;
 					                                   }
 					                                   sel->selected_button = (sel->selected_button + 1) % sel->button_num;
+					                           if (sel->selected_button == 0) sel->selected_button = 1; // (the tool never goes to audio only by itself)
 					                                   sel->on_change_func(*sel);
 					                                   var_need_refresh = true;
 				                                   }),
@@ -3284,6 +3285,15 @@ debug_info_view =
 	    }
 	    available_qualities = playable;
     }
+    if (tmp_video_info.url.compare(0, 8, "offline:") != 0) {
+	    if (tmp_video_info.audio_stream_url == "") { // without a separate audio stream only the muxed 360p can play
+		    available_qualities.clear();
+	    }
+	    if (tmp_video_info.both_stream_url != "" && std::find(available_qualities.begin(), available_qualities.end(), 360) == available_qualities.end()) {
+		    available_qualities.push_back(360); // (the muxed stream is the 360p)
+		    std::sort(available_qualities.begin(), available_qualities.end());
+	    }
+    }
     for (auto i : available_qualities) {
 	    video_quality_selector_view->button_texts.push_back(std::to_string(i) + "p");
     }
@@ -3315,21 +3325,20 @@ debug_info_view =
 	    audio_only_mode = true;
     } else {
 	    if (!audio_only_mode && !is_available(wanted_quality)) {
-		    video_p_value = var_is_new3ds ? 360 : 144;
-		    if (var_is_new3ds && !is_available(video_p_value)) {
-			    auto it =
-			        std::find_if(available_qualities.rbegin(), available_qualities.rend(),
-			                     [&is_available](int quality) { return quality != 480 && is_available(quality); });
-			    if (it != available_qualities.rend()) {
-				    video_p_value = *it;
-			    } else {
-				    audio_only_mode = true;
+		    // the closest quality that exists : the highest one at or below the wanted one, else the lowest above it
+		    int best = 0;
+		    for (int quality : available_qualities) {
+			    if (quality <= wanted_quality && quality > best) best = quality;
+		    }
+		    if (!best) {
+			    for (int quality : available_qualities) {
+				    if (!best || quality < best) best = quality;
 			    }
+		    }
+		    if (best) {
+			    video_p_value = best;
 		    } else {
-			    video_p_value = 144;
-			    if (!is_available(video_p_value)) {
-				    audio_only_mode = true;
-			    }
+			    audio_only_mode = true;
 		    }
 	    } else {
 		    video_p_value = wanted_quality;
@@ -3373,14 +3382,15 @@ debug_info_view =
 		    video_p_value = new_p_value;
 	    }
 	    if (changed) {
-		    seek_at_init_request = vid_current_pos;
+		    if (!vid_change_video_request || seek_at_init_request < 0) seek_at_init_request = vid_current_pos; // (a second quick change must not restart from 0:00)
+		    video_retry_left = MAX_RETRY_CNT;
 		    vid_change_video_request = true;
 		    if (network_decoder.ready) {
 			    network_decoder.interrupt = true;
 		    }
 	    }
 	    var_video_quality = audio_only_mode ? 0 : video_p_value;
-	    quality_chosen_by_hand = true; // a quality picked here is not lowered by the data saver or the automatic quality
+	    quality_chosen_by_hand = true; // a quality picked here is not lowered by the data saver (the automatic quality may still lower the next videos if playback stalls)
 	    var_auto_quality_cap = 0;
 	    if (changed) notice_show(audio_only_mode ? tr("Audio only", "Solo audio") : tr("Quality: ", "Calidad: ") + std::to_string((int)video_p_value) + "p");
 	    misc_tasks_request(TASK_SAVE_SETTINGS);

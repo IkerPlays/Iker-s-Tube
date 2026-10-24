@@ -112,6 +112,26 @@ static void scene_player_info(const char *path, bool night) {
 	tabs->draw();
 	rec_end();
 }
+static void scene_playback(const char *path, bool night) {
+	var_night_mode = night;
+	rec_begin(path, 320, 240);
+	Draw_texture(var_square_image[0], DEFAULT_BACK_COLOR, 0, 0, 320, 240);
+	VerticalListView *list = (new VerticalListView(0, 0, 320))->set_margin(SMALL_MARGIN);
+	auto S = [](const std::string &t) { return (std::function<std::string()>)[t]() { return t; }; };
+	list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))->set_text("Currently playing"));
+	SuccinctVideoView *v = new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT);
+	v->thumbnail_handle = 100; v->thumbnail_fade = 99; v->set_title_lines(L("Lofi hip hop radio - beats to relax/study to"))->set_auxiliary_lines({"Lofi Girl"})->set_thumbnail_url("x");
+	list->views.push_back(v);
+	list->views.push_back(button("Reload", 100));
+	list->views.push_back((new SelectorView(0, 0, 320, 40, false))->set_texts({S("Audio"), S("144p"), S("240p"), S("360p"), S("480p")}, 3)->set_title([](const SelectorView &) { return std::string("Video"); }));
+	list->views.push_back((new SelectorView(0, 0, 320, 35, true))->set_texts({S("Off"), S("Side by Side")}, 0)->set_title([](const SelectorView &) { return std::string("3D"); }));
+	list->views.push_back((new SelectorView(0, 0, 320, 35, true))->set_texts({S("Off"), S("On")}, 1)->set_title([](const SelectorView &) { return std::string("Loop"); }));
+	{ static double v2 = 0; list->views.push_back((new BarView(0, 0, 260, 30))->set_values(std::log(0.25), std::log(4), 0)->set_title([](const BarView &) { return std::string("Preamp : 100%"); })); (void)v2; }
+	ScrollView *scroll = (new ScrollView(0, 0, 320, 200))->set_views({list});
+	TabView *tabs = (new TabView(0, 0, 320, 240))->set_views({new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0), scroll}, 4)->set_tab_texts<std::string>({"General", "Suggested", "Comments", "Captions", "Playback"});
+	tabs->draw();
+	rec_end();
+}
 int main() {
 	var_round_buttons = 1;
 	var_square_image[0].tex = (void *)1;
@@ -125,5 +145,7 @@ int main() {
 	scene_player_info("out/info_dark.json", true);
 	scene_channels("out/chan_dark.json", true);
 	scene_menu("out/menu_light.json", false);
+	scene_playback("out/playback_dark.json", true);
+	scene_playback("out/playback_light.json", false);
 	return 0;
 }
