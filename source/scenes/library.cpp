@@ -314,7 +314,9 @@ void Library_exit(void) {
 }
 void Library_suspend(void) { thread_suspend = true; }
 bool Library_is_offline_mode(void) { return mode == 4; }
+static bool liked_retry_on_resume = false; // coming back to the Library : a failed "Liked" load is tried again
 void Library_resume(std::string arg) {
+	liked_retry_on_resume = true;
 	if (arg == "favorites") {
 		mode = 1, open_playlist = -1;
 	} else if (arg == "queue") {
@@ -616,6 +618,10 @@ static void build_liked(VerticalListView *list) {
 		return;
 	}
 	resource_lock_lib.lock();
+	if (liked_retry_on_resume) {
+		liked_retry_on_resume = false;
+		if (liked_failed && !liked_task_running) liked_failed = false;
+	}
 	if (!liked_loaded && !liked_failed && !liked_loading && !liked_task_running) {
 		liked_loading = true;
 		liked_task_running = true;

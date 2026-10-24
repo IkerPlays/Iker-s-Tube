@@ -574,10 +574,12 @@ void thumbnail_downloader_thread_func(void *arg) {
 			} else {
 				if (res.status_code == 0 && res.data.size()) remove(disk_cache_path(info.url).c_str()); // a bad file from the SD card cache
 				resource_lock.lock();
+				thumbnail_cache.erase(info.url); // (a bad picture in memory would be decoded again and again at every retry)
 				if (requested_urls.count(info.url)) {
 					requested_urls[info.url].is_loaded = false;
 					requested_urls[info.url].error = true;
-					if (res.status_code / 100 != 4 && res.status_code / 100 != 2) {
+					const bool transient = res.status_code == 403 || res.status_code == 408 || res.status_code == 429; // (busy server : asked again later, like a 5xx)
+					if ((res.status_code / 100 != 4 || transient) && res.status_code / 100 != 2) {
 						requested_urls[info.url].waiting_retry = true;
 						requested_urls[info.url].next_retry = time(NULL) + std::min(60, 3 << std::min(requested_urls[info.url].retry_count++, 4)); // 3, 6, 12, 24, 48 s...
 					} else {
