@@ -45,6 +45,11 @@ static bool copy_file(const std::string &from, const std::string &to) {
 		remove(tmp.c_str());
 		return false;
 	}
+	if (to.find("/backup/") != std::string::npos && access(to.c_str(), F_OK) == 0) { // the backup before this one stays as *.prev (a damaged file must not erase the last good copy)
+		std::string prev = to + ".prev";
+		remove(prev.c_str());
+		rename(to.c_str(), prev.c_str());
+	}
 	remove(to.c_str());
 	return rename(tmp.c_str(), to.c_str()) == 0;
 }
