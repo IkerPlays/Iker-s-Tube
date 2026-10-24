@@ -37,11 +37,11 @@ int main() {
 		BarView *bar = new BarView(0, 0, 260, 30);
 		bar->set_values(0, 1, 0);
 		VerticalListView *list = new VerticalListView(0, 0, 320);
-		list->views = {bar, new EmptyView(0, 0, 320, 600)};
+		list->views = {new EmptyView(0, 0, 320, 100), bar, new EmptyView(0, 0, 320, 600)}; // the slider is at y = 115
 		ScrollView *sv = new ScrollView(0, 0, 320, 200);
 		sv->set_views({list});
-		sv->update(touch(100, 15, true));
-		for (int y = 15; y < 60; y += 5) sv->update(touch(100 + y, y, false)); // drifts down while sliding right
+		sv->update(touch(100, 115, true));
+		for (int i = 1; i <= 9; i++) sv->update(touch(100 + i * 10, 115 - i * 4, false)); // drifts up while sliding right
 		CHECK(sv->get_offset() == 0, "the page does not scroll while a slider is dragged");
 		sv->update(release());
 	}

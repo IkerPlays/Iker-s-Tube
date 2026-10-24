@@ -10,3 +10,6 @@ The 3DS cannot be run here, so this tool compiles the real view classes of `sour
 - It needs `g++`, Python with Pillow and the Inter font (`/usr/share/fonts/opentype/inter`).
 
 It shows layout and colors, not performance or real pictures (thumbnails are colored blocks).
+
+## Regression tests for touches
+`./selector_test.sh` and `./input_test.sh` simulate taps and drags on the real view classes (selector buttons, buttons, tabs, a slider inside a scroll view) and print OK or FAIL. Run them after touching `source/ui/views`.
