@@ -136,6 +136,22 @@
   // Printing: open the FAQ answers
   window.addEventListener("beforeprint", function () { document.querySelectorAll("#faq details").forEach(function (d) { d.open = true; }); });
 
+  // FAQ search : hides the questions that do not contain the typed text
+  var faqBox = document.getElementById("faq-search");
+  if (faqBox) {
+    var faqNone = document.createElement("p");
+    faqNone.className = "small"; faqNone.hidden = true;
+    faqBox.parentNode.appendChild(faqNone);
+    faqBox.addEventListener("input", function () {
+      var q = faqBox.value.trim().toLowerCase(), shown = 0;
+      document.querySelectorAll("#faq details").forEach(function (d) {
+        var ok = !q || d.textContent.toLowerCase().indexOf(q) !== -1;
+        d.hidden = !ok; if (ok) shown++;
+      });
+      faqNone.textContent = App.t ? App.t("faq_none") : ""; faqNone.hidden = shown > 0;
+    });
+  }
+
   App.onLang(renderRoadmap);
   App.apply();
 })();

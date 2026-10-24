@@ -209,3 +209,7 @@ progress::-moz-progress-bar{background:var(--ok);border-radius:99px}
 .shots img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);display:block;background:#000}
 .shots figcaption{font-size:.85rem;color:var(--muted);text-align:center;margin-top:.3rem}
 @media print{.shots{display:none}}
+
+.faq-search{width:100%;max-width:26rem;box-sizing:border-box;margin:.3rem 0 .6rem;padding:.55rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit}
+.faq-search:focus-visible{outline:2px solid var(--accent,#e0343c);outline-offset:2px}
+#faq details[hidden]{display:none}
