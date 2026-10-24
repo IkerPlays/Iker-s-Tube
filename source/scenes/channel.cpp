@@ -99,6 +99,17 @@ static void load_channel_stream_more(void *);
 static void load_channel_stream(void *);
 static void load_channel_shorts(void *);
 static void load_channel_shorts_more(void *);
+// a tap on the error line of a tab : the page that never came is asked again, or the failed "load more" is allowed to run again
+static void channel_retry_tap(View &) {
+	if (channel_info.error == "" || is_async_task_running(load_channel) || is_async_task_running(load_channel_more) || is_async_task_running(load_channel_stream_more) || is_async_task_running(load_channel_shorts_more)) return;
+	if (channel_info.videos.empty() && cur_channel_url != "") {
+		send_load_request(cur_channel_url);
+	} else {
+		channel_info.error = "";
+	}
+	var_need_refresh = true;
+}
+
 static void load_channel_playlists(void *);
 static void load_channel_community_posts(void *);
 
@@ -207,6 +218,9 @@ void Channel_init(void) {
     });
     community_post_list_view = (new VerticalListView(0, 0, 320));
     community_post_list_view->set_on_drawn([](View &view) { community_post_y = view.y0; });
+    video_load_more_view->set_on_view_released(channel_retry_tap);
+    stream_load_more_view->set_on_view_released(channel_retry_tap);
+    shorts_load_more_view->set_on_view_released(channel_retry_tap);
     community_post_load_more_view = (new TextView(0, 0, 320, 0));
     community_post_load_more_view
         ->set_text((std::function<std::string()>)[]() {
