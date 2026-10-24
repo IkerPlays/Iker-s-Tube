@@ -161,7 +161,11 @@ Result_with_string NetworkMultipleDecoder::init(std::string video_url, std::stri
 	return result;
 
 cleanup:
-	tmp_ffmpeg_data.deinit(false);
+	if (fragments.count(fragment_id)) {
+		fragments[fragment_id].deinit(false); // the copy in the map owns the same buffers : it is freed (and its pointers cleared) once, so the later deinit() frees nothing twice
+	} else {
+		tmp_ffmpeg_data.deinit(false);
+	}
 	decoder.deinit_filter();
 	for (auto stream : streams) {
 		stream->quit_request = true;
@@ -189,9 +193,11 @@ void NetworkMultipleDecoder::check_filter_update() {
 NetworkMultipleDecoder::PacketType NetworkMultipleDecoder::next_decode_type() {
 	PacketType res = decoder.next_decode_type();
 	if (res == PacketType::EoF) {
+		bool locked = false; // (the lock is held only when the next fragment was found : the unlock below must match it)
 		while (!initer_exit_request && !interrupt && seq_using + 1 < seq_num) {
 			fragments_lock.lock();
 			if (fragments.count(seq_using + 1)) {
+				locked = true;
 				break;
 			}
 			fragments_lock.unlock();
@@ -214,7 +220,7 @@ NetworkMultipleDecoder::PacketType NetworkMultipleDecoder::next_decode_type() {
 			res = decoder.next_decode_type();
 			// Util_log_save("net-mul", "after change ffmpeg res : " + std::to_string((int) res));
 		}
-		fragments_lock.unlock();
+		if (locked) fragments_lock.unlock();
 	}
 	return res;
 }
@@ -261,15 +267,18 @@ Result_with_string NetworkMultipleDecoder::seek(s64 microseconds) {
 		}
 		next_fragment = std::min(next_fragment, (int)seq_head); // just to be safe
 		seq_using = next_fragment;
+		bool locked = false;
 		while (!initer_exit_request && !decoder.interrupt) {
 			fragments_lock.lock();
 			if (fragments.count((int)seq_using)) {
+				locked = true;
 				break;
 			}
 			fragments_lock.unlock();
 			usleep(30000);
 		}
 		if (initer_exit_request || decoder.interrupt) {
+			if (locked) fragments_lock.unlock();
 			result.code = -1;
 			result.error_description = initer_exit_request ? "The app is about to close" : "Interrupted";
 			return result;

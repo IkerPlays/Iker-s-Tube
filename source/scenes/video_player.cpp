@@ -3786,6 +3786,7 @@ debug_info_view =
 	    if (update_player) {
 		    if (cur_playing_url != url) {
 			    vid_play_request = false;
+			    video_retry_left = MAX_RETRY_CNT; // (a new video starts with its own retries, whoever asked for it)
 			    cur_playing_url = url;
 		    }
 	    }
@@ -4214,7 +4215,7 @@ static void autoplay_countdown_tick() {
     return steps[std::max(0, std::min(3, var_seek_step_z))];
     }
     static void toggle_pause() {
-    if (!vid_play_request) return;
+    if (!vid_play_request || !network_decoder.ready) return; // (while the stream is opening, the pause would be lost when the speaker starts)
 	    if (vid_pausing) {
 		    if (!vid_pausing_seek) Util_speaker_resume(0);
 		    if (eof_reached) send_seek_request_wo_lock(0);
@@ -4662,6 +4663,7 @@ static void autoplay_countdown_tick() {
 					                               result.code);
 					    Util_err_set_error_show_flag(true);
 					    var_need_refresh = true;
+					    seek_at_init_request = -1; // (the position of this video must not leak into the next one)
 				    }
 				    vid_play_request = false;
 			    }
@@ -4773,7 +4775,11 @@ static void autoplay_countdown_tick() {
 					    }
 					    vid_pausing = true;
 					    bool break_flag = false;
-					    if (!eof_reached) { // the first time it reaches EOF
+					    if (!eof_reached && !playing_video_info.is_livestream && vid_duration > 30 && vid_current_pos < vid_duration - 20) {
+						    // the stream ended long before the end of the video (the connection died) : that is not a watched video, so the
+						    // resume point, the lists and the autoplay stay as they are
+						    notice_show(tr("The video stopped before the end. Check the connection", "El vídeo se cortó antes del final. Revisa la conexión"));
+					    } else if (!eof_reached) { // the first time it reaches EOF
 						    small_resource_lock.lock();
 						    bool stop_here = stop_after_video; // "stop after this video" was requested
 						    stop_after_video = false;
@@ -4819,6 +4825,7 @@ static void autoplay_countdown_tick() {
 						    if (!break_flag && autoplay_pending_url == "" && var_loop_mode == false && !limit_stop) { // nothing follows : say why it stopped
 						    	notice_show(stop_here ? tr("Stopped after this video", "Parado tras este vídeo") : tr("Video ended (A: play again)", "Vídeo terminado (A: repetir)"));
 						    }
+						    eof_reached = true; // (before the unlock : the countdown of the UI thread must see it together with the pending url)
 						    small_resource_lock.unlock();
 					    }
 					    eof_reached = true;
@@ -5573,7 +5580,7 @@ static void autoplay_countdown_tick() {
 			    video_update_playing_bar(key);
 		    }
 		    if (key.p_a) {
-			    if (vid_play_request) {
+			    if (vid_play_request && network_decoder.ready) {
 				    if (vid_pausing) {
 					    if (!vid_pausing_seek) {
 						    Util_speaker_resume(0);
