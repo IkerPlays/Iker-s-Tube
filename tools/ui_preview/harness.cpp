@@ -132,6 +132,24 @@ static void scene_playback(const char *path, bool night) {
 	tabs->draw();
 	rec_end();
 }
+static void scene_settings_es(const char *path, bool night) {
+	var_night_mode = night;
+	rec_begin(path, 320, 240);
+	Draw_texture(var_square_image[0], DEFAULT_BACK_COLOR, 0, 0, 320, 240);
+	VerticalListView *list = (new VerticalListView(0, 0, 320))->set_margin(SMALL_MARGIN);
+	auto S = [](const std::string &t) { return (std::function<std::string()>)[t]() { return t; }; };
+	auto sw = [&](const std::string &title, int v, bool info) { SelectorView *sv = (new SelectorView(0, 0, 320, 35, true))->set_texts({S("No"), S("Sí")}, v)->set_title([title](const SelectorView &) { return title; }); if (info) sv->set_info("x"); return sv; };
+	list->views.push_back(sw("Retroceder un poco al reanudar tras una pausa larga", 1, true));
+	list->views.push_back(sw("Abrir el chat automáticamente en los directos", 0, false));
+	list->views.push_back(sw("Ahorro de datos", 1, true));
+	list->views.push_back((new SelectorView(0, 0, 320, 35, true))->set_texts({S("Automática"), S("144p"), S("240p"), S("360p")}, 0)->set_title([](const SelectorView &) { return std::string("Calidad de los vídeos guardados"); })->set_info("x"));
+	list->views.push_back((new SelectorView(0, 0, 320, 35, true))->set_texts({S("Manual"), S("Abrir solo")}, 1)->set_title([](const SelectorView &) { return std::string("Chat en los directos"); }));
+	list->views.push_back(button("Exportar copia de seguridad a la tarjeta SD", 300));
+	ScrollView *scroll = (new ScrollView(0, 0, 320, 200))->set_views({list});
+	TabView *tabs = (new TabView(0, 0, 320, 240))->set_views({scroll, new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0)})->set_tab_texts<std::string>({"Pantalla", "Reproducción", "Datos", "Cuenta", "Actualizar"});
+	tabs->draw();
+	rec_end();
+}
 int main() {
 	var_round_buttons = 1;
 	var_square_image[0].tex = (void *)1;
@@ -147,5 +165,6 @@ int main() {
 	scene_menu("out/menu_light.json", false);
 	scene_playback("out/playback_dark.json", true);
 	scene_playback("out/playback_light.json", false);
+	scene_settings_es("out/set_es_dark.json", true);
 	return 0;
 }

@@ -161,9 +161,13 @@ struct SelectorView : public FixedSizeView {
 		} else {
 			Draw_texture(var_square_image[0], selected_color, button_x_left(selected_button), button_y_pos(), button_x_size(), button_y_size());
 		}
+		float font = 0.5f; // one font size for all the buttons : a long label (as in Spanish) makes them all smaller instead of overflowing its pill
+		for (int i = 0; i < button_num; i++) {
+			while (font > 0.34f && Draw_get_width((std::string)button_texts[i], font) > button_x_size() - 6) font -= 0.02f;
+		}
 		for (int i = 0; i < button_num; i++) {
 			bool sel = i == selected_button;
-			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos() + (button_y_size() - 20 * 0.5f) / 2 - 1, 0.5, 0.5,
+			Draw_x_centered(button_texts[i], button_x_left(i), button_x_right(i), button_y_pos() + (button_y_size() - 20 * 0.5f) / 2 - 1 + (0.5f - font) * 8, font, font,
 			                sel ? (var_high_contrast ? (u32)DEFAULT_BACK_COLOR : (u32)UI_ON_ACCENT) : (u32)DEFAULT_TEXT_COLOR);
 		}
 	}
