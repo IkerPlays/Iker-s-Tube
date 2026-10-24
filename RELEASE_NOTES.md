@@ -1,1 +1,1 @@
-The quality selector row is taller (easier to hit). New host-side regression test for selector taps (tools/ui_preview/selector_test.sh).
+New General tab tool that cycles the video quality (and audio only) with one tap.

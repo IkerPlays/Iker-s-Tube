@@ -2540,6 +2540,17 @@ debug_info_view =
 						                                   var_need_refresh = true;
 					                                   }
 				                                   }),
+				                         make_tool([]() { return audio_only_mode ? tr("Quality: audio", "Calidad: audio") : tr("Quality: ", "Calidad: ") + std::to_string((int)video_p_value) + "p"; }, 110,
+				                                   []() { // the same choice as the quality selector of the Playback tab, one tap away
+					                                   SelectorView *sel = video_quality_selector_view;
+					                                   if (!sel || sel->button_num < 2 || !sel->on_change_func) {
+						                                   notice_show(tr("No other quality for this video", "No hay otra calidad para este vídeo"));
+						                                   return;
+					                                   }
+					                                   sel->selected_button = (sel->selected_button + 1) % sel->button_num;
+					                                   sel->on_change_func(*sel);
+					                                   var_need_refresh = true;
+				                                   }),
 				                         make_tool([]() {
 					                                   for (auto &t : cur_video_info.audio_tracks) {
 						                                   if (t.selected) return tr("Audio: ", "Audio: ") + t.name.substr(0, 16);
