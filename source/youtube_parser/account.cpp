@@ -99,7 +99,19 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 			response = http_post_json(get_innertube_api_url(endpoint), body, headers);
 		}
 	}
-	bool ok = response.first && response.second.find("\"error\":{") == std::string::npos;
+	// an answer is a success when it is a JSON body without an "error" object (spaces after the colon do not hide it)
+	auto has_error_object = [](const std::string &text) {
+		for (size_t at = text.find("\"error\""); at != std::string::npos; at = text.find("\"error\"", at + 7)) {
+			size_t k = at + 7;
+			while (k < text.size() && (text[k] == ' ' || text[k] == '\n' || text[k] == '\t')) k++;
+			if (k >= text.size() || text[k] != ':') continue;
+			k++;
+			while (k < text.size() && (text[k] == ' ' || text[k] == '\n' || text[k] == '\t')) k++;
+			if (k < text.size() && text[k] == '{') return true;
+		}
+		return false;
+	};
+	bool ok = response.first && !response.second.empty() && response.second[0] != '<' && !has_error_object(response.second);
 	if (!ok) {
 		std::string msg;
 		size_t m = response.second.find("\"message\"");

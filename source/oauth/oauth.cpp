@@ -71,7 +71,12 @@ void init() {
 }
 
 void exit() {
-	save_tokens();
+	{ // (tokens that never loaded, as after an SD read error, must not overwrite the good file at exit)
+		LightLock_Lock(&token_lock);
+		const bool have_tokens = !refresh_token.empty();
+		LightLock_Unlock(&token_lock);
+		if (have_tokens) save_tokens();
+	}
 	if (session_list) {
 		delete session_list;
 		session_list = nullptr;
@@ -252,9 +257,10 @@ void refresh_access_token(bool force) {
 		return;
 	}
 
-	if (result.status_code != 200) {
+	if (result.status_code != 200 && result.status_code != 400 && result.status_code != 401) {
+		// a captive portal, a proxy or a server oddity (403, 404, 408...) says nothing about the refresh token: the user stays signed in
 		oauth_error_message = "HTTP error: " + std::to_string(result.status_code);
-		oauth_state = OAuthState::ERROR;
+		if (previous_state != OAuthState::AUTHENTICATED) oauth_state = OAuthState::ERROR;
 		return;
 	}
 
@@ -271,7 +277,16 @@ void refresh_access_token(bool force) {
 
 	if (response_json.has_key("error")) {
 		oauth_error_message = "OAuth error: " + response_json["error"].string_value();
-		oauth_state = OAuthState::ERROR;
+		const std::string kind = response_json["error"].string_value();
+		// only a refused refresh token signs the user out; any other answer ("temporarily_unavailable"...) is tried again later
+		if (kind == "invalid_grant" || kind == "unauthorized_client" || kind == "invalid_client" || previous_state != OAuthState::AUTHENTICATED) {
+			oauth_state = OAuthState::ERROR;
+		}
+		return;
+	}
+	if (result.status_code != 200) {
+		oauth_error_message = "HTTP error: " + std::to_string(result.status_code);
+		if (previous_state != OAuthState::AUTHENTICATED) oauth_state = OAuthState::ERROR;
 		return;
 	}
 
@@ -435,11 +450,20 @@ void save_tokens() {
 	encrypt_decrypt_data(encrypted_data);
 
 	std::string file_path = DEF_MAIN_DIR + "oauth_tokens";
-	Path(file_path).write_file(encrypted_data.data(), encrypted_data.size());
+	// written to a .tmp first : a power loss while saving leaves the old tokens instead of an empty file (the user stays signed in)
+	const std::string tmp_path = file_path + ".tmp";
+	Result_with_string written = Path(tmp_path).write_file(encrypted_data.data(), encrypted_data.size());
+	if (written.code == 0) {
+		remove(file_path.c_str());
+		rename(tmp_path.c_str(), file_path.c_str());
+	} else {
+		remove(tmp_path.c_str());
+	}
 }
 
 void load_tokens() {
 	std::string file_path = DEF_MAIN_DIR + "oauth_tokens";
+	if (access(file_path.c_str(), F_OK) != 0 && access((file_path + ".tmp").c_str(), F_OK) == 0) rename((file_path + ".tmp").c_str(), file_path.c_str()); // (a save cut between its last two steps)
 
 	std::vector<u8> buffer(4096);
 	u32 read_size;
