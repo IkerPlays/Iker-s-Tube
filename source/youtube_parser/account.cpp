@@ -88,14 +88,14 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 	replace_first(body, "%1", country_code);
 	replace_first(body, "%2", fields);
 	std::map<std::string, std::string> headers;
-	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	auto response = http_post_json(get_innertube_api_url(endpoint), body, headers);
 	if (response.first && (response.second.find("UNAUTHENTICATED") != std::string::npos || response.second.find("\"code\": 401") != std::string::npos ||
 	                       response.second.find("\"code\":401") != std::string::npos)) {
 		// the access token expired: renew it once and send the request again
 		OAuth::refresh_access_token(true);
 		if (OAuth::is_authenticated()) {
-			headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+			headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 			response = http_post_json(get_innertube_api_url(endpoint), body, headers);
 		}
 	}
@@ -740,7 +740,7 @@ void youtube_account_mark_watched(const std::string &playback_url) {
 	std::string cpn;
 	for (int i = 0; i < 16; i++) cpn += alphabet[rand() % 64];
 	std::map<std::string, std::string> headers;
-	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	auto r = http_get(playback_url + "&ver=2&cpn=" + cpn, headers);
 	logger.info("account", std::string("history ping ") + (r.first ? "ok" : "failed"));
 }

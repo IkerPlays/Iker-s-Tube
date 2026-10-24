@@ -34,6 +34,8 @@ void refresh_access_token(bool force = false); // does nothing while the token i
 void revoke_tokens();
 bool is_authenticated();
 std::string get_access_token();
+// the token after a check that it is still valid (it is renewed first when it is about to expire) : for the worker threads that send requests
+std::string get_fresh_access_token();
 std::string get_user_account_name();
 std::string get_user_channel_id();
 std::string get_user_photo_url();

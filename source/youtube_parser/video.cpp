@@ -58,7 +58,7 @@ static std::vector<YouTubeVideoDetail::AudioTrack> probe_audio_tracks(const std:
 		std::string body = build_player_body(clients[c], video_id, "", visitor_data_get());
 		body.insert(body.size() - 1, R"(, "contentCheckOk": true, "racyCheckOk": true)");
 		std::map<std::string, std::string> headers;
-		if (OAuth::is_authenticated()) headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		if (OAuth::is_authenticated()) headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 		int formats = 0, audio = 0, with_track = 0, with_url = 0;
 		std::string status = "?";
 		access_and_parse_json(
@@ -307,7 +307,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 	if (use_android_vr_for_captions) {
 		captions_content =
 		    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android","osVersion": "14"}}, "videoId": "%2"})";
-		caption_headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		caption_headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	} else {
 		captions_content =
 		    R"({"context": {"client": {"hl": "%0","gl": "%1","clientName": "MWEB","clientVersion": "2.20241202.07.00"}}, "videoId": "%2"})";
@@ -819,7 +819,7 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 
 	std::map<std::string, std::string> headers;
 	if (use_android_vr) {
-		headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 		debug_info("Using authenticated Android VR client");
 	}
 
@@ -1000,7 +1000,7 @@ void YouTubeVideoDetail::load_more_suggestions() {
 		post_content =
 		    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "ANDROID_VR", "clientVersion": "1.65.10", "deviceMake": "Oculus", "deviceModel": "Quest 3", "androidSdkVersion": "34", "osName": "Android", "osVersion": "14"}}, "continuation": ")" +
 		    suggestions_continue_token + "\"}";
-		headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	} else {
 		post_content =
 		    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00", "utcOffsetMinutes": 0}, "request": {}, "user": {}}, "continuation": ")" +
@@ -1227,7 +1227,7 @@ void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std
 
 	std::map<std::string, std::string> headers;
 	if (metadata_from_android_vr && OAuth::is_authenticated()) {
-		headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	}
 
 	auto decode_entities = [](std::string text) {

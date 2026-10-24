@@ -26,7 +26,7 @@ YouTubeHomeResult youtube_load_home_page() {
 
 	std::map<std::string, std::string> headers;
 	if (OAuth::is_authenticated()) {
-		headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	}
 
 	access_and_parse_json(
@@ -159,7 +159,7 @@ void YouTubeHomeResult::load_more_results() {
 
 	std::map<std::string, std::string> headers;
 	if (OAuth::is_authenticated()) {
-		headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+		headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	}
 
 	access_and_parse_json(

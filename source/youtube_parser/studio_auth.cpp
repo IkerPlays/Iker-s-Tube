@@ -206,7 +206,7 @@ std::string studio_auth_access_token() {
 std::string studio_bearer_token() {
 	std::string t = studio_auth_access_token();
 	if (t != "") return t;
-	return OAuth::is_authenticated() ? OAuth::get_access_token() : "";
+	return OAuth::is_authenticated() ? OAuth::get_fresh_access_token() : "";
 }
 
 bool studio_auth_request_code(StudioDeviceCode &out, std::string &error) {

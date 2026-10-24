@@ -407,6 +407,10 @@ void revoke_tokens() {
 	save_tokens();
 }
 
+std::string get_fresh_access_token() {
+	refresh_access_token(false); // (nothing happens while the token is fresh)
+	return get_access_token();
+}
 bool is_authenticated() { return oauth_state == OAuthState::AUTHENTICATED && !get_access_token().empty(); }
 
 std::string get_access_token() {

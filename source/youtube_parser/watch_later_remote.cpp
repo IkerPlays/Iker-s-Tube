@@ -18,7 +18,7 @@ void watch_later_sync_remote(const std::string &video_id, bool add) {
 	body = std::regex_replace(body, std::regex("%3"), add ? "addedVideoId" : "removedVideoId");
 	body = std::regex_replace(body, std::regex("%4"), video_id);
 	std::map<std::string, std::string> headers;
-	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	auto response = http_post_json(get_innertube_api_url("browse/edit_playlist"), body, headers);
 	logger.info("watch-later", std::string(add ? "add " : "remove ") + video_id + " -> " +
 	                               (response.first ? "ok" : "request failed"));
@@ -44,7 +44,7 @@ bool account_playlist_videos(const std::string &browse_id, std::vector<FavoriteV
 	body = std::regex_replace(body, std::regex("%1"), country_code);
 	body = std::regex_replace(body, std::regex("%2"), browse_id);
 	std::map<std::string, std::string> headers;
-	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	auto response = http_post_json(get_innertube_api_url("browse"), body, headers);
 	if (!response.first) return false;
 	const std::string &json = response.second;
@@ -94,7 +94,7 @@ int watch_later_pull_remote() {
 	body = std::regex_replace(body, std::regex("%0"), language_code);
 	body = std::regex_replace(body, std::regex("%1"), country_code);
 	std::map<std::string, std::string> headers;
-	headers["Authorization"] = "Bearer " + OAuth::get_access_token();
+	headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
 	auto response = http_post_json(get_innertube_api_url("browse"), body, headers);
 	if (!response.first) {
 		logger.warning("watch-later", "pull failed (request)");
