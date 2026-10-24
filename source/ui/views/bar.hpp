@@ -105,8 +105,10 @@ struct BarView : public FixedSizeView {
 		if (key.p_touch && key.touch_y >= bar_y() - 5 && key.touch_y <= bar_y() + 5 && key.touch_x >= bar_x0() - 5 &&
 		    key.touch_x <= bar_x1() + 5) {
 			holding = true;
+			view_drag_captured = true;
 		}
 		if (holding && key.touch_x == -1) {
+			view_drag_captured = false;
 			var_need_refresh = true;
 			if (on_release_func) {
 				on_release_func(*this);

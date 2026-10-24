@@ -13,6 +13,7 @@ void ScrollView::update_scroller(Hid_info key) {
 	content_height += std::max((int)views.size() - 1, 0) * margin;
 
 	double scroll_max = std::max<double>(0, content_height - (y1 - y0));
+	if (key.touch_x == -1) view_drag_captured = false; // (a slider that never saw the release must not block the scrolling for good)
 	if (key.p_touch) {
 		first_touch_x = key.touch_x;
 		first_touch_y = key.touch_y;
@@ -22,7 +23,7 @@ void ScrollView::update_scroller(Hid_info key) {
 		    (var_time_to_turn_off_lcd == 0 || var_afk_time <= var_time_to_turn_off_lcd)) {
 			grabbed = true;
 		}
-	} else if (grabbed && !scrolling && key.touch_y != -1 && std::abs(key.touch_y - first_touch_y) >= 8) {
+	} else if (grabbed && !scrolling && !view_drag_captured && key.touch_y != -1 && std::abs(key.touch_y - first_touch_y) >= 8) {
 		scrolling = true;
 		offset += first_touch_y - key.touch_y;
 	} else if (scrolling && key.touch_y != -1) {

@@ -8,6 +8,9 @@
 #include "variables.hpp"
 #include "ui/style.hpp"
 
+// true while a slider (BarView) is being dragged : the scroll views must not take that drag for a scroll
+inline bool view_drag_captured = false;
+
 struct View {
   private:
 	static constexpr double TOUCH_DARKNESS_SPEED = 0.1;
