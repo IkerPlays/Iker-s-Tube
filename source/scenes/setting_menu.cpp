@@ -83,6 +83,7 @@ static SelectorView *limit_to_old3ds_qualities(SelectorView *view) {
 	if (!var_is_new3ds) {
 		view->button_num = 3;
 		view->selected_button = std::min(view->selected_button, 2);
+		var_video_quality = std::min((int)var_video_quality, 240); // (a New 3DS value from a copied settings file or backup)
 	}
 	return view;
 } // the Video quality row (resynced when the menu comes back)
@@ -319,7 +320,7 @@ static void update_worker_thread_func(void *) {
 			std::string new_error_message;
 			
 			bool check_success = false;
-			auto result = session_list.perform(HttpRequest::GET("https://api.github.com/repos/IkerPlays/Iker-s-Tube/releases?per_page=10", {}));
+			auto result = session_list.perform(HttpRequest::GET("https://api.github.com/repos/IkerPlays/Iker-s-Tube/releases?per_page=30", {}));
 			if (result.fail) new_error_message = "Failed accessing(deep fail) : " + result.error;
 			else if (result.status_code == 200) {
 				result.data.push_back('\0');
@@ -358,8 +359,8 @@ static void update_worker_thread_func(void *) {
 						}
 						if (!v.valid) continue;
 						bool is_pre = item["prerelease"].bool_value(); // the GitHub flag decides what is a devbuild
-						v.is_dev = is_pre;
-						if (!is_pre) v.dev = 0;
+						v.is_dev = is_pre || v.is_dev; // (a -dev.N tag is a devbuild even if the GitHub flag is missing)
+						if (!is_pre && !v.is_dev) v.dev = 0;
 						if (is_pre) {
 							if (!best_dev.is_valid() || app_version_compare(v, best_dev_v) > 0) best_dev = item, best_dev_v = v, best_dev_str = version_str;
 						} else {
@@ -467,7 +468,7 @@ static void update_worker_thread_func(void *) {
 						var_need_refresh = true;
 						check_success = true;
 						static bool auto_install_tried = false; // never loop : one automatic attempt per session
-						if (update_available && auto_install && !auto_install_tried) {
+						if (update_available && auto_install && !auto_install_tried && !video_is_playing()) { // (not while a video plays : the install ends with a jump)
 							auto_install_tried = true;
 							var_update_banner = tr_static("Updating...", "Actualizando...");
 							update_state = UpdateState::INSTALLING;
@@ -1487,7 +1488,7 @@ void Sem_init(void) {
 						->set_on_change([](const SelectorView &view) {
 							if (var_autoplay_level != view.selected_button) {
 								var_autoplay_level = view.selected_button;
-								misc_tasks_request(TASK_CHANGE_BRIGHTNESS);
+								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
 						}),
 
