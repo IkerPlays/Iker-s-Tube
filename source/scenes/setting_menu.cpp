@@ -77,7 +77,15 @@ struct SectionTitleWithInfoView : public FixedSizeView {
 	}
 };
 
-static SelectorView *video_quality_setting_view = NULL; // the Video quality row (resynced when the menu comes back)
+static SelectorView *video_quality_setting_view = NULL;
+// the old 3DS family plays 240p at most : the Video quality row only offers Audio, 144p and 240p there
+static SelectorView *limit_to_old3ds_qualities(SelectorView *view) {
+	if (!var_is_new3ds) {
+		view->button_num = 3;
+		view->selected_button = std::min(view->selected_button, 2);
+	}
+	return view;
+} // the Video quality row (resynced when the menu comes back)
 
 namespace Settings {
 	bool thread_suspend = false;
@@ -1298,7 +1306,7 @@ void Sem_init(void) {
 							}
 						}),
 					// Video quality (the same value as the quality selector of the player)
-					(video_quality_setting_view = new SelectorView(0, 0, 320, 35, false))
+					limit_to_old3ds_qualities(video_quality_setting_view = (new SelectorView(0, 0, 320, 35, false))
 						->set_texts({
 							(std::function<std::string ()>) []() { return tr("Audio", "Audio"); },
 							(std::function<std::string ()>) []() { return std::string("144p"); },
@@ -1317,7 +1325,7 @@ void Sem_init(void) {
 								var_auto_quality_cap = 0;
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
-						}),
+						})),
 					// Automatic quality
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
@@ -2623,6 +2631,7 @@ void Sem_resume(std::string arg) {
 	if (video_quality_setting_view) { // (the quality may have changed in the player)
 		int q = var_video_quality;
 		video_quality_setting_view->selected_button = q <= 0 ? 0 : q <= 144 ? 1 : q <= 240 ? 2 : q <= 360 ? 3 : 4;
+		if (!var_is_new3ds) video_quality_setting_view->selected_button = std::min(video_quality_setting_view->selected_button, 2);
 	}
 	overlay_menu_on_resume();
 	thread_suspend = false;

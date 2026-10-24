@@ -60,9 +60,7 @@ static void save_locked() {
 		}
 		fprintf(f, "%s\t%.1f\t%s\n", e.id.c_str(), e.time, name.c_str());
 	}
-	fclose(f);
-	remove(BOOKMARKS_PATH);
-	rename(BOOKMARKS_TMP_PATH, BOOKMARKS_PATH);
+	finish_tmp_write(f, BOOKMARKS_TMP_PATH, BOOKMARKS_PATH);
 }
 
 std::vector<Bookmark> bookmarks_get(const std::string &video_id) {

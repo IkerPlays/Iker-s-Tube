@@ -87,9 +87,7 @@ void resume_save() {
 		for (auto &e : entries) {
 			fprintf(f, "%s\t%.1f\n", e.first.c_str(), e.second);
 		}
-		fclose(f);
-		remove(RESUME_PATH);
-		rename(RESUME_TMP_PATH, RESUME_PATH);
+		finish_tmp_write(f, RESUME_TMP_PATH, RESUME_PATH);
 	}
 	resume_lock.unlock();
 }

@@ -12,6 +12,18 @@ inline FILE *fopen_or_recover(const char *path, const char *tmp, const char *mod
 	return NULL;
 }
 
+// Ends a write that went to `tmp`: only a complete write replaces `path` (a full card keeps the old file).
+inline bool finish_tmp_write(FILE *f, const char *tmp, const char *path) {
+	bool good = !ferror(f);
+	if (fclose(f) != 0) good = false;
+	if (!good) {
+		remove(tmp);
+		return false;
+	}
+	remove(path);
+	return rename(tmp, path) == 0;
+}
+
 // Writes `content` to `path` through `path`.tmp : a full card, a cut or a power loss in the middle never leaves a half written
 // file (the old one stays until the new one is complete; fopen_or_recover() finishes a swap that was cut between the last steps).
 inline bool save_text_atomic(const char *path, const std::string &content) {

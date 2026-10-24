@@ -48,9 +48,7 @@ static void save_locked() {
 		fprintf(f, "%s\t%s\t%s\t%s\n", clean_field(v.id).c_str(), clean_field(v.title).c_str(),
 		        clean_field(v.author).c_str(), clean_field(v.length_text).c_str());
 	}
-	fclose(f);
-	remove(WATCH_LATER_PATH);
-	rename(WATCH_LATER_TMP_PATH, WATCH_LATER_PATH);
+	finish_tmp_write(f, WATCH_LATER_TMP_PATH, WATCH_LATER_PATH);
 }
 
 void watch_later_load() {
@@ -152,7 +150,7 @@ int watch_later_merge(const std::vector<FavoriteVideo> &videos) {
 				break;
 			}
 		}
-		if (!exists) {
+		if (!exists && watch_later_list.size() < 1000) { // (the list keeps 1000 videos at most)
 			watch_later_list.push_back(v);
 			added++;
 		}

@@ -88,6 +88,7 @@ void save_watch_history() {
 		cur_json.AddMember("id", video.id, allocator);
 		cur_json.AddMember("title", video.title, allocator);
 		cur_json.AddMember("author_name", video.author_name, allocator);
+		cur_json.AddMember("length", video.length_text, allocator);
 		cur_json.AddMember("my_view_count", Value(video.my_view_count), allocator);
 		cur_json.AddMember("last_watch_time", std::to_string(video.last_watch_time),
 		                   allocator); // string value because we have to deal with u32 value, not int

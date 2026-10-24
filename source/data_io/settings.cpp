@@ -10,11 +10,14 @@
 // app exits). If it is still there at the next start, the last start died: the settings and the optional files are set
 // aside (renamed, nothing is deleted) and the app starts in "safe mode" without the background extras.
 static u64 started_at_ms = 0;
+// the flag file holds how many starts in a row did not finish (a battery that dies or a power-off within the first 30 seconds is
+// one unfinished start; only a second one in a row puts the app in safe mode)
+static int unfinished_starts = 0;
 void settings_mark_started() {
 	started_at_ms = osGetTime();
 	FILE *f = fopen(STARTING_FLAG.c_str(), "w");
 	if (f) {
-		fputs("1\n", f);
+		fprintf(f, "%d\n", unfinished_starts + 1);
 		fclose(f);
 	}
 }
@@ -38,6 +41,15 @@ int local_day_number() {
 
 void load_settings() {
 	if (access(STARTING_FLAG.c_str(), F_OK) == 0) {
+		FILE *flag = fopen(STARTING_FLAG.c_str(), "r");
+		unfinished_starts = 1;
+		if (flag) {
+			if (fscanf(flag, "%d", &unfinished_starts) != 1 || unfinished_starts < 1) unfinished_starts = 1;
+			fclose(flag);
+		}
+		unfinished_starts = std::min(unfinished_starts, 9);
+	}
+	if (unfinished_starts >= 2) {
 		var_safe_mode = true;
 		remove((SETTINGS_FILE_PATH + ".tmp").c_str()); // (a leftover .tmp must not bring the old settings back)
 		static const char *aside[] = {"settings.txt", "pinned_channels.txt", "recent_channels.txt", "hidden_channels.txt", "last_version.txt", "feed_seen.txt", "feed_cache.txt", "caption_lang.txt", "audio_lang.txt"};
@@ -84,7 +96,7 @@ void load_settings() {
 		}
 		char *end;
 		long res = strtol(settings[key].c_str(), &end, 10);
-		if (*end) {
+		if (end == settings[key].c_str() || *end) { // (an empty value is not a 0)
 			return default_value;
 		}
 		res = std::min<long>(res, std::numeric_limits<int>::max());
@@ -97,7 +109,7 @@ void load_settings() {
 		}
 		char *end;
 		double res = strtod(settings[key].c_str(), &end);
-		if (*end) {
+		if (end == settings[key].c_str() || *end || !std::isfinite(res)) {
 			return default_value;
 		}
 		return res;
@@ -195,6 +207,14 @@ void load_settings() {
 	var_autoplay_level = std::min(2, std::max(0, load_int("autoplay_level_v2", 1)));
 	var_loop_mode = std::min(2, std::max(0, load_int("loop_mode", 0)));
 	var_video_quality = std::min(480, std::max(0, load_int("video_quality", var_is_new3ds ? 360 : 144)));
+	{ // only the five qualities of the player exist : a hand-edited value goes to the closest one
+		static const int steps[5] = {0, 144, 240, 360, 480};
+		int best = 0;
+		for (int i = 1; i < 5; i++) {
+			if (std::abs(steps[i] - (int)var_video_quality) < std::abs(steps[best] - (int)var_video_quality)) best = i;
+		}
+		var_video_quality = steps[best];
+	}
 	var_forward_buffer_ratio = std::max(0.1, std::min(1.0, load_double("forward_buffer_ratio", 0.8)));
 	var_av_sync_ms = std::max(-300.0, std::min(300.0, load_double("av_sync_ms", 60.0)));
 	var_show_devbuilds = load_int("show_devbuilds", 0) ? 1 : 0;
@@ -221,7 +241,12 @@ void load_settings() {
 	video_set_linear_filter_enabled(var_video_linear_filter);
 	video_set_show_debug_info(var_video_show_debug_info);
 }
+static LightLock save_settings_lock; // (the misc task thread and the exit of the settings menu can save at the same time)
+static struct SaveSettingsLockInit {
+	SaveSettingsLockInit() { LightLock_Init(&save_settings_lock); }
+} save_settings_lock_init;
 void save_settings() {
+	LightLock_Lock(&save_settings_lock);
 	std::string data;
 	auto add_str = [&](const std::string &key, const std::string &val) {
 		data += "<" + key + ">" + val + "</" + key + ">\n";
@@ -329,4 +354,5 @@ void save_settings() {
 		rename(settings_tmp.c_str(), SETTINGS_FILE_PATH.c_str());
 	}
 	logger.info("settings/save", "write_file()..." + result.string + result.error_description, result.code);
+	LightLock_Unlock(&save_settings_lock);
 }

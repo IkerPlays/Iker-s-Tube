@@ -46,9 +46,7 @@ static void save_locked() {
 	for (auto &s : history) {
 		fprintf(f, "%s\n", s.c_str());
 	}
-	fclose(f);
-	remove(SEARCH_HISTORY_PATH);
-	rename(SEARCH_HISTORY_TMP_PATH, SEARCH_HISTORY_PATH);
+	finish_tmp_write(f, SEARCH_HISTORY_TMP_PATH, SEARCH_HISTORY_PATH);
 }
 
 static bool equals_ignore_case(const std::string &a, const std::string &b) {
