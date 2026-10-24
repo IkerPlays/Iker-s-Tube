@@ -45,6 +45,41 @@ int main() {
 		CHECK(sv->get_offset() == 0, "the page does not scroll while a slider is dragged");
 		sv->update(release());
 	}
+	{ // a yes / no switch toggles on a tap in its row, and not on a tap beside it
+		SelectorView *sw = new SelectorView(0, 0, 200, 35, true);
+		sw->set_texts({std::function<std::string()>([]() { return std::string("Off"); }), std::function<std::string()>([]() { return std::string("On"); })}, 0)->set_title([](const SelectorView &) { return std::string("Title"); });
+		int changes = 0;
+		sw->set_on_change([&](const SelectorView &) { changes++; });
+		sw->update(touch(100, 15, true)); sw->update(release());
+		CHECK(sw->selected_button == 1 && changes == 1, "switch turns on");
+		sw->update(touch(100, 15, true)); sw->update(release());
+		CHECK(sw->selected_button == 0 && changes == 2, "switch turns off");
+		sw->update(touch(250, 15, true)); sw->update(release());
+		CHECK(sw->selected_button == 0 && changes == 2, "a tap beside the switch does nothing");
+		sw->selected_button = 7; // a damaged saved value
+		sw->update(touch(100, 15, true)); sw->update(release());
+		CHECK(sw->selected_button == 1, "a stored value other than 0 / 1 toggles to on");
+	}
+	{ // the second tab bar (channel page) : a tap on the header selects and stays selected, no endless refresh
+		Tab2View *t = new Tab2View(0, 0, 320);
+		t->set_views({new EmptyView(0, 0, 320, 0), new EmptyView(0, 0, 320, 0)})->set_tab_texts<std::string>({"a", "b"});
+		t->update(touch(250, 5, true)); t->update(release());
+		CHECK(t->selected_tab == 1, "tab2 selects the second tab");
+		var_need_refresh = false;
+		for (int i = 0; i < 3; i++) t->update(release());
+		CHECK(!var_need_refresh, "tab2 does not refresh forever after a tap");
+	}
+	{ // a row inside a scroll view : the finger slides out of the area while down, the row must not fire
+		int fired = 0;
+		TextView *row = new TextView(0, 0, 320, 30);
+		row->set_text("row")->set_on_view_released([&](View &) { fired++; });
+		ScrollView *sv = new ScrollView(0, 0, 320, 100);
+		sv->set_views({row});
+		sv->update(touch(100, 15, true)); sv->update(touch(100, 150, false)); sv->update(release());
+		CHECK(fired == 0, "sliding out of the scroll area cancels the row");
+		sv->update(touch(100, 15, true)); sv->update(release());
+		CHECK(fired == 1, "a plain tap on the row fires it");
+	}
 	puts(bad ? "FAIL" : "OK");
 	return bad;
 }
