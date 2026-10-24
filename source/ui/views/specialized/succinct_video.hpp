@@ -23,6 +23,8 @@ struct SuccinctVideoView : public FixedSizeView {
 
 	std::vector<std::string> title_lines;
 	std::vector<std::string> auxiliary_lines;
+	mutable std::vector<std::string> aux_cut, aux_cut_source; // (draw cache of the cut auxiliary lines)
+	mutable int aux_cut_width = -1, aux_cut_scale = -1;
 	std::string bottom_right_overlay;
 	bool grid = false; // grid cell : the thumbnail fills the width and the title goes below it
 	float get_thumbnail_height() const { return grid ? (x1 - x0) * 9 / 16 : y1 - y0; }
@@ -191,8 +193,15 @@ struct SuccinctVideoView : public FixedSizeView {
 		}
 		y += 1;
 		int index = 0;
-		for (const auto &line : auxiliary_lines) { // the channel a little stronger than the numbers
-			Draw(truncate_first_line(line, (int)get_title_width(), index == 0 ? 0.45 : 0.42), text_x, y, index == 0 ? 0.45 : 0.42, index == 0 ? 0.45 : 0.42, index == 0 ? LIGHT0_TEXT_COLOR : LIGHT1_TEXT_COLOR);
+		// the cut lines are remembered : cutting a text measures it letter by letter, too slow to repeat at every frame of a scroll
+		if (aux_cut_width != (int)get_title_width() || aux_cut_scale != var_text_scale || aux_cut_source != auxiliary_lines) {
+			aux_cut.clear();
+			int i = 0;
+			for (const auto &line : auxiliary_lines) aux_cut.push_back(truncate_first_line(line, (int)get_title_width(), i++ == 0 ? 0.45 : 0.42));
+			aux_cut_width = (int)get_title_width(), aux_cut_scale = var_text_scale, aux_cut_source = auxiliary_lines;
+		}
+		for (const auto &line : aux_cut) { // the channel a little stronger than the numbers
+			Draw(line, text_x, y, index == 0 ? 0.45 : 0.42, index == 0 ? 0.45 : 0.42, index == 0 ? LIGHT0_TEXT_COLOR : LIGHT1_TEXT_COLOR);
 			y += 12;
 			index++;
 		}
