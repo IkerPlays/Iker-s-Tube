@@ -14,8 +14,9 @@
 #define BADGES_PATH "sdmc:/3ds/IkersTube/badges.txt"
 
 // the number of the day in the time zone of the console
-static long long local_day_of(time_t t) {
-	struct tm local = *localtime(&t);
+long long local_day_of(time_t t) {
+	struct tm local;
+	if (!localtime_r(&t, &local)) return (long long)(t / 86400);
 	long offset = (long)(local.tm_hour * 3600 + local.tm_min * 60 + local.tm_sec) - (long)(t % 86400);
 	if (offset > 43200) offset -= 86400;
 	if (offset < -43200) offset += 86400;

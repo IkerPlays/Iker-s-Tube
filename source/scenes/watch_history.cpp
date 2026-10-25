@@ -389,9 +389,9 @@ void History_draw(void) {
 					if (video.author_name != "") counts[video.author_name] += std::max(1, video.my_view_count);
 					total_views += std::max(1, video.my_view_count);
 					time_t t = video.last_watch_time;
-					struct tm *local = localtime(&t);
-					if (local) hours[local->tm_hour]++;
-					days.insert((long long)video.last_watch_time / 86400);
+					struct tm local_copy;
+					if (video.last_watch_time > 0 && localtime_r(&t, &local_copy)) hours[local_copy.tm_hour]++;
+					days.insert(local_day_of(video.last_watch_time)); // (local days, like the badges)
 					if (now - video.last_watch_time < 7 * 86400) this_week++;
 				}
 				std::string top_channel = "-";
@@ -402,7 +402,7 @@ void History_draw(void) {
 				int busiest = 0;
 				for (int h = 1; h < 24; h++) if (hours[h] > hours[busiest]) busiest = h;
 				int streak = 0; // days in a row with something watched, counting back from today (or yesterday)
-				long long day = (long long)now / 86400;
+				long long day = local_day_of(now);
 				if (!days.count(day)) day--;
 				while (days.count(day)) streak++, day--;
 				int this_month = 0; // videos watched in the last 30 days

@@ -1,1 +1,1 @@
-Search by pasted address, live chat and SponsorBlock fixes, sign-in renewals under a lock, list and settings fixes (see STABLE_RELEASE_NOTES.md).
+Dialog and menu input fixes, channel menu saves, new videos badge, badges and Wrapped streak fixes, notices queue, trailer on the website.
