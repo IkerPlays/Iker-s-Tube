@@ -1385,6 +1385,7 @@ debug_info_view =
 	                 ->set_on_release([](BarView &view) {
 	view.fix_close_values(0.97, 1.0, 1.03);
 	network_decoder.set_tempo(view.get_value());
+	quick_speed = view.get_value(); // (the speed button and the Status tool follow the bar)
 	                 }),
 	             (new BarView(0, 0, 260, 30)) // pitch
 	                 ->set_values(0.5, 2.0, 1.0)
@@ -3790,6 +3791,7 @@ debug_info_view =
 	    if (update_player) {
 		    if (cur_playing_url != url) {
 			    vid_play_request = false;
+			    stop_after_video = false; // ("stop after this video" belongs to the video it was asked on)
 			    video_retry_left = MAX_RETRY_CNT; // (a new video starts with its own retries, whoever asked for it)
 			    cur_playing_url = url;
 		    }
