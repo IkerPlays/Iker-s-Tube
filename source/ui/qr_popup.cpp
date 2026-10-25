@@ -31,7 +31,7 @@ void qr_popup_show(const std::string &text) {
 	}
 	qr_text = text;
 	qr_visible = true;
-	{ // the 3DS has no clipboard : the link is also written to a text file on the SD card
+	if (!var_incognito) { // the 3DS has no clipboard : the link is also written to a text file on the SD card (not in incognito : nothing is remembered)
 		mkdir("sdmc:/3ds", 0777);
 		mkdir("sdmc:/3ds/IkersTube", 0777);
 		struct stat links_stat;

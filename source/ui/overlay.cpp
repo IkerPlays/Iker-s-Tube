@@ -271,6 +271,7 @@ void overlay_show_channel_menu(const std::string &id, const std::string &name, c
 			subscription_subscribe(channel);
 		}
 		if (OAuth::is_authenticated()) account_subscribe_async(id, !subscribed);
+		misc_tasks_request(TASK_SAVE_SUBSCRIPTION); // (otherwise the change is lost when the app closes)
 		notice_show(subscribed ? tr("Unsubscribed", "Suscripción quitada") : tr("Subscribed", "Suscrito"));
 	}});
 	if (subscribed) { // the channels pinned on top of the subscribed channels list
@@ -523,9 +524,8 @@ void update_overlay_menu(Hid_info *key) {
 	}
 	if (video_menu && video_menu->is_visible) { // the video menu takes all the input while it is open
 		video_menu->update(*key);
+		*key = Hid_info(); // (the d-pad, L / R and the rest must not reach the player while the menu is open)
 		key->touch_x = key->touch_y = -1;
-		key->p_touch = false;
-		key->p_a = key->p_b = key->p_x = key->p_y = false;
 		var_need_refresh = true;
 		return;
 	}
@@ -589,8 +589,8 @@ void update_overlay_menu(Hid_info *key) {
 
 		dialog_view->update(*key);
 
+		*key = Hid_info(); // the dialog takes every input : the buttons must not also reach the scene (B that dismisses "Exit?" would leave it)
 		key->touch_x = key->touch_y = -1;
-		key->p_touch = false;
 	} else {
 	// where a touch lands : the menu icon, an item of the bar or a row of the menu (-1 : nowhere). A tap counts only when the finger
 	// comes up on the same place where it went down (dragging from Home to More no longer opens More).
@@ -697,6 +697,8 @@ void update_overlay_menu(Hid_info *key) {
 			press_zone = zone_at(key->touch_x, key->touch_y);
 			} else {
 				menu_status = CLOSED;
+				key->touch_x = key->touch_y = -1; // the tap that closes the menu is not also a tap on what is under it
+				key->p_touch = false;
 			}
 		}
 

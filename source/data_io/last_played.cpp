@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "headers.hpp"
 #include "data_io/last_played.hpp"
 #include <cstdio>
@@ -10,12 +11,9 @@ void last_played_set(const std::string &id, const std::string &title) {
 	if (id == "") return;
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
-	FILE *f = fopen(LAST_PLAYED_PATH, "w");
-	if (!f) return;
 	std::string clean = title;
 	for (auto &c : clean) if (c == '\n' || c == '\r') c = ' ';
-	fprintf(f, "%s\n%s\n", id.c_str(), clean.c_str());
-	fclose(f);
+	save_text_atomic(LAST_PLAYED_PATH, id + "\n" + clean + "\n"); // (a cut while saving must not leave an empty file)
 }
 
 bool last_played_get(std::string &id, std::string &title) {

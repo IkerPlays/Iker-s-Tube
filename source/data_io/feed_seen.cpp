@@ -1,3 +1,4 @@
+#include "util/file_recover.hpp"
 #include "data_io/feed_seen.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <algorithm>
@@ -11,7 +12,7 @@
 static Mutex seen_lock;
 
 static bool read_seen(std::vector<std::string> &out) {
-	FILE *f = fopen(SEEN_PATH, "r");
+	FILE *f = fopen_or_recover(SEEN_PATH, SEEN_PATH ".tmp", "r");
 	if (!f) return false;
 	char line[64];
 	while (fgets(line, sizeof line, f)) {
@@ -33,11 +34,12 @@ int feed_seen_count_new(const std::vector<std::string> &ids) {
 		for (auto &id : ids) if (id != "" && !set.count(id)) count++;
 	}
 	seen_lock.unlock();
-	if (!existed) feed_seen_mark(ids); // first run : nothing is "new"
+	if (!existed && !ids.empty()) feed_seen_mark(ids); // first run : nothing is "new" (an empty list says nothing : the next run would see everything as new)
 	return count;
 }
 
 void feed_seen_mark(const std::vector<std::string> &ids) {
+	if (ids.empty()) return;
 	seen_lock.lock();
 	std::vector<std::string> all;
 	read_seen(all);
@@ -51,11 +53,9 @@ void feed_seen_mark(const std::vector<std::string> &ids) {
 	if (all.size() > SEEN_MAX) all.erase(all.begin(), all.end() - SEEN_MAX);
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
-	FILE *f = fopen(SEEN_PATH, "w");
-	if (f) {
-		for (auto &id : all) fprintf(f, "%s\n", id.c_str());
-		fclose(f);
-	}
+	std::string content;
+	for (auto &id : all) content += id + "\n";
+	save_text_atomic(SEEN_PATH, content); // (a cut while saving must not leave a truncated list : everything would look new)
 	seen_lock.unlock();
 }
 

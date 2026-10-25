@@ -32,8 +32,8 @@ std::vector<Badge> badges_compute() {
 		if (video.author_name != "") counts[video.author_name] += std::max(1, video.my_view_count);
 		total_views += std::max(1, video.my_view_count);
 		time_t t = video.last_watch_time;
-		struct tm *local = localtime(&t);
-		if (local) hours[local->tm_hour]++;
+		struct tm local_copy;
+		if (video.last_watch_time > 0 && localtime_r(&t, &local_copy)) hours[local_copy.tm_hour]++; // (old entries without a time are not hour 0)
 		days.insert(local_day_of(video.last_watch_time));
 	}
 	int top_count = 0;
@@ -54,8 +54,8 @@ std::vector<Badge> badges_compute() {
 	    {3, streak >= 3, tr("3 days in a row", "3 días seguidos")},
 	    {4, streak >= 7, tr("A full week in a row", "Una semana seguida")},
 	    {5, top_count >= 10, tr("Loyal (10 views of one channel)", "Fiel (10 vistas de un canal)")},
-	    {6, n > 0 && busiest <= 4, tr("Night owl (favorite hour 0-4)", "Búho nocturno (hora favorita 0-4)")},
-	    {7, n > 0 && busiest >= 5 && busiest <= 8, tr("Early bird (favorite hour 5-8)", "Madrugador (hora favorita 5-8)")},
+	    {6, n >= 20 && hours[busiest] >= 5 && busiest <= 4, tr("Night owl (favorite hour 0-4)", "Búho nocturno (hora favorita 0-4)")},
+	    {7, n >= 20 && hours[busiest] >= 5 && busiest >= 5 && busiest <= 8, tr("Early bird (favorite hour 5-8)", "Madrugador (hora favorita 5-8)")},
 	    {8, play_seconds >= 10 * 3600, tr("10 hours playing", "10 horas reproduciendo")},
 	    {9, play_seconds >= 100 * 3600, tr("100 hours playing", "100 horas reproduciendo")},
 	    {10, favorites >= 10, tr("Collector (10 favorites)", "Coleccionista (10 favoritos)")},
