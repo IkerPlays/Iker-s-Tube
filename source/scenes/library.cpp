@@ -483,7 +483,8 @@ static void build_queue(VerticalListView *list) {
 }
 
 static void build_favorites(VerticalListView *list) {
-	auto favs = filter_and_sort(favorites_get());
+	auto favs_all = favorites_get();
+	auto favs = filter_and_sort(favs_all);
 	add_sort_filter_row(list, favs.size(), favorites_get().size());
 	add_list_actions(list, favs, "Favorites");
 	if (favs.size()) {
@@ -524,7 +525,7 @@ static void build_favorites(VerticalListView *list) {
 	}
 	if (!favs.size()) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-		                          ->set_text_lines(std::vector<std::string>{tr("You have no favorites yet.", "Aún no tienes favoritos."), tr("Use the Favorite button inside", "Usa el botón Favorito dentro"), tr("a video.", "de un vídeo.")})
+		                          ->set_text_lines(!favs_all.empty() ? std::vector<std::string>{tr("Nothing matches the filter", "Nada coincide con el filtro"), "", ""} : std::vector<std::string>{tr("You have no favorites yet.", "Aún no tienes favoritos."), tr("Use the Favorite button inside", "Usa el botón Favorito dentro"), tr("a video.", "de un vídeo.")})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
@@ -716,7 +717,8 @@ static void build_watch_later(VerticalListView *list) {
 		pulled_this_session = true;
 		queue_async_task(pull_watch_later_task, NULL);
 	}
-	auto favs = filter_and_sort(watch_later_get());
+	auto favs_all = watch_later_get();
+	auto favs = filter_and_sort(favs_all);
 	add_sort_filter_row(list, favs.size(), watch_later_get().size());
 	add_list_actions(list, favs);
 	if (favs.size()) {
@@ -755,7 +757,7 @@ static void build_watch_later(VerticalListView *list) {
 	}
 	if (!favs.size()) {
 		list->views.push_back((new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL * 4))
-		                          ->set_text_lines(std::vector<std::string>{tr("Nothing to watch later yet.", "Nada para ver más tarde."), tr("Use the Later button inside", "Usa el botón Luego dentro"), tr("a video.", "de un vídeo.")})
+		                          ->set_text_lines(!favs_all.empty() ? std::vector<std::string>{tr("Nothing matches the filter", "Nada coincide con el filtro"), "", ""} : std::vector<std::string>{tr("Nothing to watch later yet.", "Nada para ver más tarde."), tr("Use the Later button inside", "Usa el botón Luego dentro"), tr("a video.", "de un vídeo.")})
 		                          ->set_x_alignment(TextView::XAlign::CENTER)
 		                          ->set_font_size(0.5, DEFAULT_FONT_INTERVAL));
 	}
