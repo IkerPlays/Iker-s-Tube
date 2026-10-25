@@ -62,7 +62,11 @@ bool translate_text(const std::string &text, std::string &out) {
 		size_t nl = text.find('\n', pos);
 		std::string line = text.substr(pos, nl == std::string::npos ? std::string::npos : nl - pos + 1);
 		pos = nl == std::string::npos ? text.size() : nl + 1;
-		if (line.size() > max_chunk) line.resize(max_chunk);
+		if (line.size() > max_chunk) {
+			line.resize(max_chunk);
+			while (!line.empty() && ((unsigned char)line.back() & 0xC0) == 0x80) line.pop_back(); // (not in the middle of a letter)
+			if (!line.empty() && ((unsigned char)line.back() & 0x80)) line.pop_back();
+		}
 		if (!chunk.empty() && chunk.size() + line.size() > max_chunk) {
 			if (!translate_chunk(chunk, out)) return any;
 			any = true;

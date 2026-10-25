@@ -102,7 +102,7 @@ static void chat_thread(void *arg) {
 	}
 	set_status("");
 	std::vector<std::string> seen;
-	int failures = 0;
+	int failures = 0, no_token = 0;
 	while (alive()) {
 		if (chat_toggle_request) { // the other mode of the chat
 			chat_toggle_request = false;
@@ -112,6 +112,7 @@ static void chat_thread(void *arg) {
 			} else {
 				continuation = mode_tokens[other];
 				chat_mode = other;
+				seen.clear(); // (the other chat replays recent messages : they are new for this list)
 				LightLock_Lock(&chat_lock);
 				messages.clear();
 				chat_version++;
@@ -195,6 +196,10 @@ static void chat_thread(void *arg) {
 			if (c != std::string::npos) {
 				std::string next_token = string_after(json, c, json.size(), "\"continuation\":\"");
 				if (next_token != "") continuation = next_token;
+				no_token = 0;
+			} else if (++no_token >= 5) { // an answer with no way to go on : the stream or its chat is over
+				set_status(tr("The chat ended", "El chat terminó"));
+				break;
 			}
 			size_t t = json.rfind("\"timeoutMs\":");
 			if (t != std::string::npos) {

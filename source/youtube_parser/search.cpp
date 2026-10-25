@@ -162,15 +162,14 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 	}
 	query_word = new_query_word;
 
-	std::string post_content =
-	    R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00"}}, "query": ")" +
-	    query_word + "\"";
+	std::string post_head = R"({"context": {"client": {"hl": "%0", "gl": "%1", "clientName": "MWEB", "clientVersion": "2.20241202.07.00"}}, "query": ")";
+	post_head = std::regex_replace(post_head, std::regex("%0"), language_code); // (only the fixed part : a query like "100%0" must stay as typed)
+	post_head = std::regex_replace(post_head, std::regex("%1"), country_code);
+	std::string post_content = post_head + query_word + "\"";
 	if (youtube_search_filter_params.size()) {
 		post_content += ", \"params\": \"" + youtube_search_filter_params + "\"";
 	}
 	post_content += "}";
-	post_content = std::regex_replace(post_content, std::regex("%0"), language_code);
-	post_content = std::regex_replace(post_content, std::regex("%1"), country_code);
 
 	access_and_parse_json(
 	    [&]() { return http_post_json(get_innertube_api_url("search"), post_content); },

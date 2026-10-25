@@ -553,7 +553,7 @@ static void sponsorblock_tick(const std::string &id) {
 		double start = sb_segments[i].first, stop = sb_segments[i].second;
 		if (!sb_done[i] && vid_current_pos >= start && vid_current_pos < stop - 1) {
 			sb_done[i] = true;
-			send_seek_request_wo_lock(stop); // called while small_resource_lock is already held
+			send_seek_request_wo_lock(vid_duration > 0 ? std::min<double>(stop, vid_duration) : stop); // called while small_resource_lock is already held (never past the end)
 			notice_show(tr("Skipped a marked part (SponsorBlock)", "Parte marcada saltada (SponsorBlock)"));
 		} else if (sb_done[i] && vid_current_pos < start - 2) {
 			sb_done[i] = false; // the user went back : it may be skipped again

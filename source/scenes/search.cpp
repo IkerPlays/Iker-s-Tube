@@ -1241,7 +1241,7 @@ void Search_draw(void) {
 			filter_search_due = 0;
 			if (cur_search_word != "") {
 				if (is_async_task_running(load_search_results)) filter_search_due = osGetTime() + 300; // wait for the running search
-				else start_search(cur_search_word);
+				else start_search(cur_search_word, shorts_feed, radio_feed); // (a filter change keeps the Shorts / Radio feed a feed)
 			}
 		}
 		if (retry_search_request) {

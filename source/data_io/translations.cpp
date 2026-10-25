@@ -969,6 +969,7 @@ static const TrEntry kTrEntries[] = {
 	{"The video stopped before the end. Check the connection", {"La vidéo s'est arrêtée avant la fin. Vérifiez la connexion", "Das Video wurde vor dem Ende beendet. Prüfe die Verbindung", "Il video si è fermato prima della fine. Controlla la connessione", "O vídeo parou antes do fim. Verifique a conexão", "動画が最後の前に止まりました。接続を確認してください"}},
 	{"YouTube had a problem, try again later", {"YouTube a eu un problème, réessayez plus tard", "YouTube hatte ein Problem, versuche es später erneut", "YouTube ha avuto un problema, riprova più tardi", "O YouTube teve um problema, tente mais tarde", "YouTubeで問題が発生しました。後でもう一度お試しください"}},
 	{"Could not delete it (in use?)", {"Suppression impossible (en cours d'utilisation ?)", "Konnte nicht gelöscht werden (in Benutzung?)", "Impossibile eliminarlo (in uso?)", "Não foi possível apagar (em uso?)", "削除できません（使用中？）"}},
+	{"The chat ended", {"Le chat est terminé", "Der Chat ist beendet", "La chat è terminata", "O chat terminou", "チャットは終了しました"}},
 };
 
 const std::map<std::string, TrRow> &tr_table() {
