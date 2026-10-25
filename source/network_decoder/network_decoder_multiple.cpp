@@ -357,6 +357,9 @@ void NetworkMultipleDecoder::livestream_initer_thread_func() {
 					seq_num = 0;
 				}
 				logger.caution("net/live-init", "init err : " + result.error_description);
+				if (!(video_stream->livestream_eof || audio_stream->livestream_eof)) { // a failing segment is not asked again in a tight loop (a busy server would be hammered)
+					for (int wait = 0; wait < 10 && !initer_stop_request && !initer_exit_request; wait++) usleep(50000);
+				}
 				video_stream->quit_request = true;
 				audio_stream->quit_request = true;
 				continue;
