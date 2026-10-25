@@ -9,6 +9,7 @@ void watch_later_load();
 bool watch_later_contains(const std::string &video_id);
 bool watch_later_toggle(const FavoriteVideo &video); // returns true if it was added
 void watch_later_remove(const std::string &video_id);
+int watch_later_remove_many(const std::vector<std::string> &video_ids); // one save for all; returns how many were in the list
 std::vector<FavoriteVideo> watch_later_get();
 
 // Downloads the account's YouTube Watch later playlist and adds the videos that are missing locally (OAuth only).

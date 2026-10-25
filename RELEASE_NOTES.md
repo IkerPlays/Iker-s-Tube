@@ -1,1 +1,1 @@
-Library: the long-press menu now says "Remove from queue" for a video that is already queued (before it said "Add to queue" and the tap silently removed it).
+Watch later: "Clear Watch later" and "Remove the watched ones" save the list once instead of once per video, so they no longer freeze the screen on a long list.

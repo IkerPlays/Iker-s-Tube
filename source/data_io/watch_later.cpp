@@ -139,6 +139,24 @@ void watch_later_remove(const std::string &video_id) {
 	sync_remote(video_id, false);
 }
 
+int watch_later_remove_many(const std::vector<std::string> &video_ids) {
+	std::vector<std::string> removed;
+	watch_later_lock.lock();
+	for (auto &id : video_ids) {
+		for (size_t i = 0; i < watch_later_list.size(); i++) {
+			if (watch_later_list[i].id == id) {
+				watch_later_list.erase(watch_later_list.begin() + i);
+				removed.push_back(id);
+				break;
+			}
+		}
+	}
+	if (!removed.empty()) save_locked(); // (a bulk action saves the file once, not once per video)
+	watch_later_lock.unlock();
+	for (auto &id : removed) sync_remote(id, false);
+	return (int)removed.size();
+}
+
 std::vector<FavoriteVideo> watch_later_get() {
 	watch_later_lock.lock();
 	auto res = watch_later_list;

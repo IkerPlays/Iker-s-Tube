@@ -723,16 +723,19 @@ static void build_watch_later(VerticalListView *list) {
 	add_list_actions(list, favs);
 	if (favs.size()) {
 		list->views.push_back(make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
-			int removed = 0;
+			std::vector<std::string> watched;
 			for (auto &v : watch_later_get()) {
-			if (history_has_id(v.id)) { watch_later_remove(v.id); removed++; }
+				if (history_has_id(v.id)) watched.push_back(v.id);
 			}
+			int removed = watch_later_remove_many(watched);
 			notice_show(removed ? tr("Removed: ", "Quitados: ") + std::to_string(removed) : tr("Nothing watched yet", "Nada visto aún"));
 			rebuild_request = true;
 		}));
 		list->views.push_back(make_button(tr("Clear Watch later", "Vaciar Ver más tarde"), 320, []() {
 			show_dialog({make_option(OAuth::is_authenticated() ? tr("Yes, remove all (also on YouTube)", "Sí, quitar todos (también en YouTube)") : tr("Yes, remove all of them", "Sí, quitarlos todos"), []() {
-				             for (auto &v : watch_later_get()) watch_later_remove(v.id);
+				             std::vector<std::string> all_ids;
+				             for (auto &v : watch_later_get()) all_ids.push_back(v.id);
+				             watch_later_remove_many(all_ids);
 				             rebuild_request = true;
 			             }),
 			             make_option(LOCALIZED(CANCEL), []() {})});
