@@ -1,4 +1,5 @@
 ﻿#include "headers.hpp"
+#include "util/utf8.hpp"
 
 #include <sys/stat.h>
 #define LOG_DIR "sdmc:/3ds/IkersTube"
@@ -59,7 +60,7 @@ void Logger::log(LogLevel level, const std::string &str) {
 	if (draw_offset_y + DRAW_LINES <= (int)logs.size()) {
 		draw_offset_y++;
 	}
-	logs.push_back({acc_time, level, std::string(time_str) + " " + str.substr(0, 120)});
+	logs.push_back({acc_time, level, std::string(time_str) + " " + utf8_prefix(str, 120)});
 	if (logs.size() > MAX_BUFFERED_LINES) {
 		logs.pop_front(), draw_offset_y = std::max(0, draw_offset_y - 1);
 	}

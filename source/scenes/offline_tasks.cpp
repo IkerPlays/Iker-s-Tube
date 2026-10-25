@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include "headers.hpp"
+#include "util/utf8.hpp"
 #include "scenes/offline_tasks.hpp"
 #include "data_io/offline.hpp"
 #include "data_io/string_resource.hpp"
@@ -166,7 +167,7 @@ static void run_job(DownloadJob *job, NetworkSessionList &session) {
 		item.quality = job->quality;
 		item.combined = job->combined;
 		if (offline_add(item)) {
-			notice_show(tr("Saved for offline viewing: ", "Guardado para ver sin conexión: ") + job->title.substr(0, 30));
+			notice_show(tr("Saved for offline viewing: ", "Guardado para ver sin conexión: ") + utf8_prefix(job->title, 30));
 		} else { // the list could not be written (SD card full?): the files would be orphans
 			for (auto &part : job->parts) remove(part.path.c_str());
 			notice_show(tr("Could not download it", "No se pudo descargar"));

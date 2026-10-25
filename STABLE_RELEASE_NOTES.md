@@ -13,7 +13,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Settings.** B on a popup (install, remove history, sign-in code) only closes the popup instead of also leaving Settings.
 - **Saving.** A save that cannot be flushed to the SD card (full card) is reported as failed, so the previous copy of history, subscriptions or settings is kept instead of being replaced by a cut file.
 - **History.** It keeps the latest 3000 videos, and the "hide watched" marks no longer miss a video you just watched.
-- **Text.** Titles and chat messages with emoji, escaped quotes or accents are decoded correctly in Watch later pulls, Studio answers, live chat and collaborations.
+- **Text.** The "Saved for offline viewing" notice and the log no longer cut an accented letter or emoji in half. Titles and chat messages with emoji, escaped quotes or accents are decoded correctly in Watch later pulls, Studio answers, live chat and collaborations.
 - **Video info.** The dislike count no longer repeats the like count.
 - **Studio login.** The refresh token and the client are saved through a temporary file, so a full card or a power loss while signing in no longer signs you out.
 - **Live chat.** Closing and reopening the chat of the same video no longer restarts a healthy chat because an old thread ended late.
