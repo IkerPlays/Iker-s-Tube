@@ -1096,6 +1096,10 @@ static void build_playlists(VerticalListView *list) {
 }
 
 static void rebuild_views() {
+	static int last_mode = -1, last_open_playlist = -2;
+	// the list stays where it was after a dialog action, a sort or a filter (a different tab starts at the top)
+	const double kept_offset = (main_view && last_mode == mode && last_open_playlist == open_playlist) ? main_view->get_offset() : 0;
+	last_mode = mode, last_open_playlist = open_playlist;
 	if (main_view) {
 		main_view->recursive_delete_subviews();
 	}
@@ -1139,6 +1143,7 @@ static void rebuild_views() {
 		                                                  rebuild_request = true;
 	                                                  })}),
 	                             (new RuleView(0, 0, 320, 3)), list});
+	main_view->set_offset(kept_offset);
 	var_need_refresh = true;
 }
 

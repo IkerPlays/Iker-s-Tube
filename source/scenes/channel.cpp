@@ -633,6 +633,7 @@ void Channel_init(void) {
 	        ->set_handle(channel_info.handle)
 	        ->set_subscriber_count(channel_info.subscriber_count_str)
 	        ->set_on_subscribe_button_released([](const ChannelView &view) {
+		        if (channel_info.id == "" || channel_info.error != "") return; // (a channel that did not load has nobody to subscribe to)
 		        bool cur_subscribed = subscription_is_subscribed(channel_info.id);
 		        if (cur_subscribed) {
 		        static std::string armed_id; // the first tap only asks : the second one (same channel, within 5 seconds) unsubscribes
@@ -1159,6 +1160,7 @@ void Channel_init(void) {
 	    remove_all_async_tasks_with_type(load_channel_playlists);
 	    remove_all_async_tasks_with_type(load_channel_community_posts);
 
+	    video_sort_request = streams_sort_request = shorts_sort_request = -1; // (a sort asked for the last channel is not applied to this one)
 	    resource_lock.lock();
 	    cur_channel_url = url;
 	    resource_lock.unlock();
