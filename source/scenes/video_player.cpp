@@ -4398,7 +4398,10 @@ static void autoplay_countdown_tick() {
 		    last_y = key.touch_y;
 	    } else if (start_x != -1) { // released
 		    int dx = last_x - start_x, dy = last_y - start_y;
-		    if (std::abs(dx) > 70 && std::abs(dy) < 40) { // swipe : left = next in the queue, right = restart
+		    const bool on_seek_strip = start_y >= 70 && start_y < 100 && start_x >= 20 && start_x < 300;
+		    if (on_seek_strip && std::abs(dx) >= 12) { // a drag along the progress bar seeks to where the finger is lifted (it is not a swipe)
+			    if (network_decoder.ready) send_seek_request_wo_lock(vid_duration * (std::max(20, std::min(300, last_x)) - 20) / 280.0);
+		    } else if (std::abs(dx) > 70 && std::abs(dy) < 40) { // swipe : left = next in the queue, right = restart
 			    dx < 0 ? mini_next() : mini_restart();
 		    } else if (std::abs(dx) < 12 && std::abs(dy) < 12) {
 			    int x = start_x, y = start_y;
