@@ -23,3 +23,4 @@ jobs:
         run: |
           bash tools/ui_preview/selector_test.sh
           bash tools/ui_preview/input_test.sh
+          bash tools/ui_preview/text_test.sh

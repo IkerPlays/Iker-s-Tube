@@ -13,6 +13,7 @@ It shows layout and colors, not performance or real pictures (thumbnails are col
 
 ## Regression tests for touches
 `./selector_test.sh` and `./input_test.sh` simulate taps and drags on the real view classes (selector buttons, buttons, tabs, a slider inside a scroll view) and print OK or FAIL. Run them after touching `source/ui/views`.
+`./text_test.sh` checks the text helpers (decoding of JSON strings with emoji and escapes, cutting on letter boundaries).
 
 ## Trailer
 `python3 tools/make_trailer.py [--lang es]` builds the YouTube trailer (`trailer/IkersTube-trailer.mp4`, 48 s, 1080p, original synthesized music)

@@ -7,3 +7,4 @@ build/
 romfs/gfx/*.t3x
 trailer/
 __pycache__/
+tools/ui_preview/text_test
