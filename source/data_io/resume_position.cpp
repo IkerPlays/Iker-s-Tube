@@ -98,6 +98,7 @@ int resume_clear_all() {
 	int count = (int)entries.size();
 	entries.clear();
 	remove(RESUME_PATH);
+	remove(RESUME_TMP_PATH); // (a leftover tmp would be brought back by fopen_or_recover)
 	resume_lock.unlock();
 	return count;
 }

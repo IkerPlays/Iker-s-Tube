@@ -327,6 +327,7 @@ static void login_thread(void *) {
 			set_login_text(tr("Login failed: ", "Falló el acceso: ") + error);
 			break;
 		}
+		if (result == 2) svcSleepThread(5 * 1000000000LL); // slow_down: 5 more seconds, as the device flow asks
 	}
 	LightLock_Lock(&state_lock);
 	login_url = login_code = "";

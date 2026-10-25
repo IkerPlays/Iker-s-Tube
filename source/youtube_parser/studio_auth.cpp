@@ -253,7 +253,8 @@ int studio_auth_poll(const StudioDeviceCode &code, std::string &error) {
 		return 1;
 	}
 	std::string err = json_text(answer, "error");
-	if (err == "authorization_pending" || err == "slow_down") return 0;
+	if (err == "slow_down") return 2; // (Google asks for a longer wait between polls)
+	if (err == "authorization_pending") return 0;
 	error = err != "" ? err : (r.fail ? r.error : "http " + std::to_string(r.status_code));
 	logger.warning("studio-auth", "poll failed : " + error + " " + redact_tokens(answer).substr(0, 200));
 	return -1;
