@@ -700,9 +700,11 @@ void update_overlay_menu(Hid_info *key) {
 			holding_touch = true;
 			press_zone = zone_at(key->touch_x, key->touch_y);
 			} else {
+				if (menu_status != CLOSED) { // only the tap that closes an open menu is swallowed : it is not also a tap on what is under it
+					key->touch_x = key->touch_y = -1;
+					key->p_touch = false;
+				}
 				menu_status = CLOSED;
-				key->touch_x = key->touch_y = -1; // the tap that closes the menu is not also a tap on what is under it
-				key->p_touch = false;
 			}
 		}
 

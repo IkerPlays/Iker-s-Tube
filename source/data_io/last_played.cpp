@@ -17,7 +17,7 @@ void last_played_set(const std::string &id, const std::string &title) {
 }
 
 bool last_played_get(std::string &id, std::string &title) {
-	FILE *f = fopen(LAST_PLAYED_PATH, "r");
+	FILE *f = fopen_or_recover(LAST_PLAYED_PATH, LAST_PLAYED_PATH ".tmp", "r");
 	if (!f) return false;
 	char a[64] = {0}, b[512] = {0};
 	bool ok = fgets(a, sizeof a, f) != NULL;
