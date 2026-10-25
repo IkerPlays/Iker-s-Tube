@@ -1,1 +1,1 @@
-Tokens renewed before every request, clearer network errors (429 and 5xx), live segment backoff, smoother lists, settings clamps, boot screen wait, website fixes.
+Updater devbuild tag fix, sign-in renewals serialized, list dedupe and cut titles, filtered empty lists, delete in use message, settings clamps.
