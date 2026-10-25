@@ -7,6 +7,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Account actions.** When Like, Subscribe, Comment or a playlist change fails on your YouTube account, the notice gives a short reason (sign in again, too many requests, YouTube busy, check the connection) instead of raw technical text.
 - **Library.** The long-press menu shows "Remove from queue" for a video that is already queued, like the other menus do, instead of an "Add to queue" that silently removed it.
 - **Favorites and Watch later.** "Remove the watched ones" (both lists) and "Clear Watch later" save the list once instead of once per video, so they no longer freeze on a long list.
+- **Comments.** Reply checks that the comments are loaded before it opens the keyboard, so a reply you typed is not lost to an "Open the comments first" failure.
 
 ## Installing
 

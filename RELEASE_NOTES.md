@@ -1,1 +1,1 @@
-Favorites and Watch later: "Remove the watched ones" (both lists) and "Clear Watch later" save the list once instead of once per video, so they no longer freeze the screen on a long list.
+Comments: Reply now checks that the comments are loaded before it opens the keyboard, so a reply you typed is not lost.

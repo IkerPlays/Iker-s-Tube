@@ -5484,8 +5484,11 @@ static void autoplay_countdown_tick() {
 			    if (comment_reply_request) {
 				    comment_reply_request = false;
 				    std::string text;
-				    if (account_ready() && ask_comment_text(tr("Write a reply", "Escribe una respuesta"), text)) {
-					    account_comment_reply_async(comment_actions_token(comment_target_id), comment_target_id, text);
+				    const std::string reply_token = comment_actions_token(comment_target_id);
+				    if (reply_token == "") { // (checked before the keyboard: typing a reply that cannot be sent is lost work)
+					    notice_show(tr("Open the comments first", "Abre antes los comentarios"));
+				    } else if (account_ready() && ask_comment_text(tr("Write a reply", "Escribe una respuesta"), text)) {
+					    account_comment_reply_async(reply_token, comment_target_id, text);
 				    }
 			    }
 			    if (chat_write_request) {
