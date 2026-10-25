@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUT = os.path.join(ROOT, "trailer")
 W, H, FPS = 1920, 1080, 30
+LANG = sys.argv[sys.argv.index("--lang") + 1] if "--lang" in sys.argv else "en"   # en or es
 PREVIEW = "--preview" in sys.argv          # a small, fast version to look at the layout
 SCALE = 0.5 if PREVIEW else 1.0
 ACCENT = (255, 74, 74)
@@ -45,6 +46,21 @@ SCENES = [
     (28.5, 33.0, "info_dark", "Made for playback", "Speed, chapters, sleep timer, queue, SponsorBlock."),
     (33.0, 38.0, "menu_dark", "Yours to keep", "Favorites, watch later, offline downloads, backups."),
 ]
+ES = {
+    "Search. Watch. Sign in.": ("Busca. Mira. Inicia sesión.", "YouTube en tu Nintendo 3DS, 2DS y New 3DS."),
+    "Pick your quality": ("Elige la calidad", "De 144p a 480p, o solo audio."),
+    "Light and dark": ("Claro y oscuro", "Una interfaz nueva y redondeada."),
+    "Seven colour themes": ("Siete temas de color", "Rubí, Océano, Bosque, Violeta, Ámbar, AMOLED y el tuyo."),
+    "In your language": ("En tu idioma", "Español, English, Français, Deutsch, Italiano, Português y japonés."),
+    "Made for playback": ("Hecho para ver vídeos", "Velocidad, capítulos, temporizador, cola y SponsorBlock."),
+    "Yours to keep": ("Tuyo para siempre", "Favoritos, ver más tarde, descargas sin conexión y copias."),
+}
+TXT = {"tagline": "YouTube para tu Nintendo 3DS", "free": "Gratis. Código abierto.", "dl": "Descárgalo para tu 3DS",
+       "scan": "Escanea con FBI: Remote Install > Scan QR code", "preview": "Vista previa de la interfaz"} if LANG == "es" else \
+      {"tagline": "YouTube for your Nintendo 3DS", "free": "Free. Open source.", "dl": "Download it for your 3DS",
+       "scan": "Scan with FBI: Remote Install > Scan QR code", "preview": "Interface preview"}
+if LANG == "es":
+    SCENES = [(a, b, k, ES[t][0], ES[t][1]) for (a, b, k, t, _sub) in SCENES]
 INTRO_END, OUTRO_START, TOTAL = 6.0, 38.0, 48.0
 
 # ---------- drawing helpers ----------
@@ -175,7 +191,7 @@ def render(t):
         bbox = ImageDraw.Draw(l1).textbbox((0, 0), "Iker's Tube", font=F_HUGE)
         img.alpha_composite(text_layer((W, H), [("Iker's Tube", F_HUGE, (255, 255, 255))], (W - (bbox[2] - bbox[0])) // 2, 440 + (1 - a) * 40, a))
         a2 = ease_out((t - 2.2) / 0.8)
-        tag = "YouTube for your Nintendo 3DS"
+        tag = TXT["tagline"]
         tb = ImageDraw.Draw(l1).textbbox((0, 0), tag, font=F_MED)
         img.alpha_composite(text_layer((W, H), [(tag, F_MED, (255, 140, 140))], (W - (tb[2] - tb[0])) // 2, 640, a2))
         fade = clamp((t - (INTRO_END - 0.6)) / 0.6)
@@ -203,7 +219,7 @@ def render(t):
             img.alpha_composite(dev, (x, y))
         if t < OUTRO_START:
             img.alpha_composite(caption_layer(idx, local, b - a))
-            img.alpha_composite(text_layer((W, H), [("Interface preview", F_SMALL, (150, 154, 168))], 130, 980, 0.8))
+            img.alpha_composite(text_layer((W, H), [(TXT["preview"], F_SMALL, (150, 154, 168))], 130, 980, 0.8))
         else:                                           # outro
             o = t - OUTRO_START
             a = ease_out(o / 0.8)
@@ -215,11 +231,11 @@ def render(t):
             layer.alpha_composite(card, (xq, 330))
             layer.putalpha(layer.getchannel("A").point(lambda v: int(v * a)))
             img.alpha_composite(layer)
-            img.alpha_composite(text_layer((W, H), [("Free. Open source.", F_BIG, (255, 255, 255))], 130, 300, a, (1 - a) * -60))
+            img.alpha_composite(text_layer((W, H), [(TXT["free"], F_BIG, (255, 255, 255))], 130, 300, a, (1 - a) * -60))
             ao = ease_out((o - 0.4) / 0.8)
-            img.alpha_composite(text_layer((W, H), [("Download it for your 3DS", F_MED, (255, 140, 140))], 130, 450, ao))
+            img.alpha_composite(text_layer((W, H), [(TXT["dl"], F_MED, (255, 140, 140))], 130, 450, ao))
             img.alpha_composite(text_layer((W, H), [("github.com/IkerPlays/Iker-s-Tube", F_MED, (200, 204, 216))], 130, 520, ao))
-            img.alpha_composite(text_layer((W, H), [("Scan with FBI: Remote Install > Scan QR code", F_SMALL, (150, 154, 168))], 130, 600, ao))
+            img.alpha_composite(text_layer((W, H), [(TXT["scan"], F_SMALL, (150, 154, 168))], 130, 600, ao))
     # global fade in at the start and out at the end
     f_out = clamp((t - (TOTAL - 1.2)) / 1.2)
     if f_out > 0: img.alpha_composite(Image.new("RGBA", (W, H), (14, 15, 20, int(255 * f_out))))
@@ -285,7 +301,7 @@ def main():
     if "--still" in sys.argv:                                    # python3 tools/make_trailer.py --still 12.0
         t = float(sys.argv[sys.argv.index("--still") + 1])
         render(t).save(os.path.join(OUT, "still.png")); return
-    out = os.path.join(OUT, "IkersTube-trailer%s.mp4" % ("-preview" if PREVIEW else ""))
+    out = os.path.join(OUT, "IkersTube-trailer%s%s.mp4" % ("-es" if LANG == "es" else "", "-preview" if PREVIEW else ""))
     size = (int(W * SCALE), int(H * SCALE))
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", "%dx%d" % size, "-r", str(FPS), "-i", "-",
            "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out]
