@@ -104,7 +104,7 @@ struct SelectorView : public FixedSizeView {
 	mutable bool switch_cached = false;
 	mutable float font_cached = 0.5f;
 	std::string measure_key_now() const {
-		std::string key = std::to_string(var_text_scale) + "|" + std::to_string((int)button_x_size()) + "|" + std::to_string(button_num);
+		std::string key = std::to_string(var_text_scale) + "|" + std::to_string((int)(button_x_size() * 4)) + "|" + std::to_string(button_num) + (isBoolean_ ? "b" : "n") + (var_round_buttons ? "r" : "s");
 		for (int i = 0; i < button_num && i < (int)button_texts.size(); i++) key += "|" + (std::string)button_texts[i];
 		return key;
 	}

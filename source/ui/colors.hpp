@@ -90,6 +90,7 @@ static inline unsigned int theme_back(int level) {
 // a color in between (t from 0 to 1), channel by channel
 static inline unsigned int ui_mix(unsigned int a, unsigned int b, float t) {
 	unsigned int out = 0xFF000000u;
+	t = t < 0 ? 0 : t > 1 ? 1 : t; // (a mix never goes past either color : the channels would wrap)
 	for (int shift = 0; shift <= 16; shift += 8) {
 		float ca = (a >> shift) & 0xFF, cb = (b >> shift) & 0xFF;
 		out |= ((unsigned int)(ca + (cb - ca) * t) & 0xFF) << shift;
@@ -124,7 +125,7 @@ static inline unsigned int ui_accent_text(unsigned int accent, bool night, unsig
 	static bool last_night = false, have = false;
 	if (have && last_accent == accent && last_night == night && last_surface == surface) return last_result;
 	unsigned int result = accent;
-	for (int step = 0; step <= 12 && ui_contrast(result, surface) < 4.5f; step++) {
+	for (int step = 0; step < 12 && ui_contrast(result, surface) < 4.5f; step++) {
 		result = ui_mix(accent, night ? 0xFFFFFFFFu : 0xFF000000u, 0.08f * (step + 1));
 	}
 	last_accent = accent, last_surface = surface, last_night = night, last_result = result, have = true;

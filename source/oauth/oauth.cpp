@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 #include "headers.hpp"
 #include "oauth.hpp"
 #include "network_decoder/network_io.hpp"
@@ -304,7 +305,7 @@ void refresh_access_token(bool force) {
 
 	oauth_state = OAuthState::AUTHENTICATED;
 	save_tokens();
-	fetch_library_data();
+	if (user_account_name.empty()) fetch_library_data(); // (the name and photo are asked once, not at every hourly renewal)
 }
 
 // The RJson that is returned points into its Document, and two threads can ask for browse data at the same time: every call
@@ -408,7 +409,16 @@ void revoke_tokens() {
 }
 
 std::string get_fresh_access_token() {
-	refresh_access_token(false); // (nothing happens while the token is fresh)
+	if (oauth_state != OAuthState::AUTHENTICATED) return get_access_token(); // (signed out : nothing to renew, and no error state to set)
+	static bool refreshing = false; // one renewal at a time : the other threads use the token that is there
+	static u64 retry_after_ms = 0;
+	if (!refreshing && osGetTime() >= retry_after_ms) {
+		refreshing = true;
+		const u64 before = token_valid_until_ms;
+		refresh_access_token(false); // (nothing happens while the token is fresh)
+		if (token_valid_until_ms == before && osGetTime() >= token_valid_until_ms) retry_after_ms = osGetTime() + 30000; // it failed : not again for 30 s
+		refreshing = false;
+	}
 	return get_access_token();
 }
 bool is_authenticated() { return oauth_state == OAuthState::AUTHENTICATED && !get_access_token().empty(); }
@@ -457,7 +467,8 @@ void save_tokens() {
 	// written to a .tmp first : a power loss while saving leaves the old tokens instead of an empty file (the user stays signed in)
 	const std::string tmp_path = file_path + ".tmp";
 	Result_with_string written = Path(tmp_path).write_file(encrypted_data.data(), encrypted_data.size());
-	if (written.code == 0) {
+	struct stat tmp_stat; // (a short write may leave no error code : the file must have the full size)
+	if (written.code == 0 && written.string.empty() && stat(tmp_path.c_str(), &tmp_stat) == 0 && (size_t)tmp_stat.st_size == encrypted_data.size()) {
 		remove(file_path.c_str());
 		rename(tmp_path.c_str(), file_path.c_str());
 	} else {

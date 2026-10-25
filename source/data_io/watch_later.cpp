@@ -34,6 +34,11 @@ static std::string clean_field(std::string s) {
 			c = ' ';
 		}
 	}
+	if (s.size() > 200) { // a line of the file must fit the 1023 bytes read back by fgets : a long title is cut (on a letter boundary)
+		s.resize(200);
+		while (!s.empty() && ((unsigned char)s.back() & 0xC0) == 0x80) s.pop_back(); // (a cut in the middle of a letter)
+		if (!s.empty() && ((unsigned char)s.back() & 0x80)) s.pop_back();
+	}
 	return s;
 }
 
@@ -78,7 +83,9 @@ void watch_later_load() {
 				v.title = parts[1];
 				v.author = parts.size() > 2 ? parts[2] : "";
 				v.length_text = parts.size() > 3 ? parts[3] : "";
-				watch_later_list.push_back(v);
+				bool duplicate = false; // (a hand-edited or restored file may repeat an id)
+				for (auto &o : watch_later_list) duplicate = duplicate || o.id == v.id;
+				if (!duplicate && watch_later_list.size() < 1000) watch_later_list.push_back(v);
 			}
 		}
 		fclose(f);

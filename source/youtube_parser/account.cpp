@@ -111,7 +111,7 @@ static std::pair<bool, std::string> account_post(const std::string &endpoint, co
 		}
 		return false;
 	};
-	bool ok = response.first && !response.second.empty() && response.second[0] != '<' && !has_error_object(response.second);
+	bool ok = response.first && (response.second.empty() || response.second[0] != '<') && !has_error_object(response.second);
 	if (!ok) {
 		std::string msg;
 		size_t m = response.second.find("\"message\"");

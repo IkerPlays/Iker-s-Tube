@@ -361,7 +361,7 @@ static void update_worker_thread_func(void *) {
 						bool is_pre = item["prerelease"].bool_value(); // the GitHub flag decides what is a devbuild
 						v.is_dev = is_pre || v.is_dev; // (a -dev.N tag is a devbuild even if the GitHub flag is missing)
 						if (!is_pre && !v.is_dev) v.dev = 0;
-						if (is_pre) {
+						if (v.is_dev) { // (a -dev.N tag is a devbuild whatever the GitHub flag says)
 							if (!best_dev.is_valid() || app_version_compare(v, best_dev_v) > 0) best_dev = item, best_dev_v = v, best_dev_str = version_str;
 						} else {
 							if (!best_stable.is_valid() || app_version_compare(v, best_stable_v) > 0) best_stable = item, best_stable_v = v, best_stable_str = version_str;
