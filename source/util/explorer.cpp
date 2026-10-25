@@ -338,7 +338,7 @@ void Util_expl_read_dir_thread(void *arg) {
 
 				result = Path(expl_current_patch + expl_files[i]).get_size(file_size);
 				if (result.code == 0) {
-					expl_size[i] = (int)file_size;
+					expl_size[i] = (int)std::min<u64>((u64)file_size, 2147483647ULL);
 					var_need_refresh = true;
 				}
 			}
