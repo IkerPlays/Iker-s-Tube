@@ -862,8 +862,7 @@ static void build_offline(VerticalListView *list) {
 			             int removed = 0;
 			             for (auto &item : offline_list()) {
 				             if (history_has_id(item.id)) {
-					             offline_remove(item.id);
-					             removed++;
+					             if (offline_remove(item.id)) removed++;
 				             }
 			             }
 			             notice_show(tr("Deleted: ", "Borradas: ") + std::to_string(removed));
@@ -945,7 +944,7 @@ static void build_offline(VerticalListView *list) {
 		    	global_intent.arg = "q:" + author;
 		    }),
 		    make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
-			                 make_option(tr("Delete from the SD card", "Borrar de la SD"), [id]() { offline_remove(id); rebuild_request = true; })});
+			                 make_option(tr("Delete from the SD card", "Borrar de la SD"), [id]() { if (!offline_remove(id)) notice_show(tr("Could not delete it (in use?)", "No se pudo borrar (¿en uso?)")); rebuild_request = true; })});
 		    });
 		list->views.push_back(view);
 	}

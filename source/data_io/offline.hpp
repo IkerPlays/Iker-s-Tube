@@ -17,5 +17,5 @@ std::string offline_file_path(const std::string &id); // "sdmc:/3ds/IkersTube/of
 std::string offline_video_path(const std::string &id); // "sdmc:/3ds/IkersTube/offline/<id>.mp4"
 bool offline_add(const OfflineItem &item);              // registers a finished download (false: the index could not be written)
 bool offline_has_id(const std::string &id);     // cheap (cached) : is this video saved ?
-void offline_remove(const std::string &id);             // deletes the file and the entry
+bool offline_remove(const std::string &id);             // deletes the file and the entry (false when a file could not be deleted : the entry stays)
 void offline_remove_all();                              // everything at once (the index is written once)

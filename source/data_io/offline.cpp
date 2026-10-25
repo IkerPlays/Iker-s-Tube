@@ -132,7 +132,7 @@ void offline_remove_all() {
 	offline_lock.unlock();
 }
 
-void offline_remove(const std::string &id) {
+bool offline_remove(const std::string &id) {
 	offline_lock.lock();
 	// the files go first : if one cannot be deleted (it may still be open) the entry stays instead of leaving an orphan file
 	bool removed = true;
@@ -150,6 +150,7 @@ void offline_remove(const std::string &id) {
 		write_index(items);
 	}
 	offline_lock.unlock();
+	return removed;
 }
 
 bool offline_has_id(const std::string &id) {
