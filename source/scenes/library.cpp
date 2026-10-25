@@ -489,10 +489,11 @@ static void build_favorites(VerticalListView *list) {
 	add_list_actions(list, favs, "Favorites");
 	if (favs.size()) {
 		list->views.push_back(make_button(tr("Remove the watched ones", "Quitar los ya vistos"), 320, []() {
-			int removed = 0;
+			std::vector<std::string> watched;
 			for (auto &v : favorites_get()) {
-			if (history_has_id(v.id)) { favorites_remove(v.id); removed++; }
+				if (history_has_id(v.id)) watched.push_back(v.id);
 			}
+			int removed = favorites_remove_many(watched);
 			notice_show(removed ? tr("Removed: ", "Quitados: ") + std::to_string(removed) : tr("Nothing watched yet", "Nada visto aún"));
 			rebuild_request = true;
 		}));

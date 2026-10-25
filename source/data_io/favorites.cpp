@@ -128,6 +128,23 @@ void favorites_remove(const std::string &video_id) {
 	favorites_lock.unlock();
 }
 
+int favorites_remove_many(const std::vector<std::string> &video_ids) {
+	int removed = 0;
+	favorites_lock.lock();
+	for (auto &id : video_ids) {
+		for (size_t i = 0; i < favorites.size(); i++) {
+			if (favorites[i].id == id) {
+				favorites.erase(favorites.begin() + i);
+				removed++;
+				break;
+			}
+		}
+	}
+	if (removed) save_locked();
+	favorites_lock.unlock();
+	return removed;
+}
+
 void favorites_clear() {
 	favorites_lock.lock();
 	favorites.clear();
