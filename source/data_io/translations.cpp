@@ -970,6 +970,7 @@ static const TrEntry kTrEntries[] = {
 	{"YouTube had a problem, try again later", {"YouTube a eu un problème, réessayez plus tard", "YouTube hatte ein Problem, versuche es später erneut", "YouTube ha avuto un problema, riprova più tardi", "O YouTube teve um problema, tente mais tarde", "YouTubeで問題が発生しました。後でもう一度お試しください"}},
 	{"Could not delete it (in use?)", {"Suppression impossible (en cours d'utilisation ?)", "Konnte nicht gelöscht werden (in Benutzung?)", "Impossibile eliminarlo (in uso?)", "Não foi possível apagar (em uso?)", "削除できません（使用中？）"}},
 	{"The chat ended", {"Le chat est terminé", "Der Chat ist beendet", "La chat è terminata", "O chat terminou", "チャットは終了しました"}},
+	{"Open the page of the playing video first", {"Ouvrez d'abord la page de la vidéo en cours", "Öffne zuerst die Seite des laufenden Videos", "Apri prima la pagina del video in riproduzione", "Abra primeiro a página do vídeo que está tocando", "先に再生中の動画のページを開いてください"}},
 };
 
 const std::map<std::string, TrRow> &tr_table() {

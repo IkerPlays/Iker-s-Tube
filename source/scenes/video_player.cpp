@@ -2500,7 +2500,7 @@ debug_info_view =
 				                     []() {
 					                     return stop_after_video ? tr("Stop after: yes", "Parar al acabar: sí") : tr("Stop after video", "Parar al acabar");
 				                     },
-				                     110,
+				                     126,
 				                     []() {
 					                     stop_after_video = !stop_after_video;
 					                     var_need_refresh = true;
@@ -2557,7 +2557,7 @@ debug_info_view =
 						                                   if (t.selected) return tr("Audio: ", "Audio: ") + t.name.substr(0, 16);
 					                                   }
 					                                   return tr("Audio language", "Idioma del audio");
-				                                   }, 130,
+				                                   }, 150,
 				                                   []() {
 					                                   auto &tracks = cur_video_info.audio_tracks;
 					                                   if (tracks.size() < 2) { // the video page found one : look for the others (the next load asks the ANDROID client)
@@ -2612,7 +2612,7 @@ debug_info_view =
 					                             notice_show(next ? tr("Sleep timer: ", "Temporizador: ") + std::to_string(next) + " min" : tr("Sleep timer off", "Temporizador apagado"));
 					                             var_need_refresh = true;
 				                             }),
-				                         make_tool([]() { return tr("Save list to YouTube", "Guardar lista en YouTube"); }, 150,
+				                         make_tool([]() { return tr("Save list to YouTube", "Guardar lista en YouTube"); }, 170,
 				                                   []() {
 					                                   if (cur_video_info.playlist.id == "") {
 						                                   notice_show(tr("This video is not in a playlist", "Este vídeo no está en una lista"));
@@ -2620,7 +2620,7 @@ debug_info_view =
 					                                   }
 					                                   account_save_playlist_async(cur_video_info.playlist.id);
 				                                   }),
-				                         make_tool([]() { return tr("Save playlist audio", "Guardar audio de la lista"); }, 140,
+				                         make_tool([]() { return tr("Save playlist audio", "Guardar audio de la lista"); }, 160,
 				                                   []() {
 					                                   auto &videos = cur_video_info.playlist.videos;
 					                                   if (videos.empty()) {
@@ -2702,11 +2702,15 @@ debug_info_view =
 					                             notice_show(steps[next] ? tr("Every video of this channel starts ", "Cada vídeo de este canal empieza ") + std::to_string(steps[next]) + tr(" s later", " s más tarde") : tr("Intro skip off", "Saltar intro desactivado"));
 				                             }),
 				                         make_tool([]() { return tr("Go to time", "Ir al minuto"); }, 80, []() { if (network_decoder.ready) goto_time_request = true; }),
-				                         make_tool([]() { return ab_loop_a >= 0 ? tr("Loop: stop", "Bucle: parar") : tr("Loop chapter", "Repetir capítulo"); }, 90,
+				                         make_tool([]() { return ab_loop_a >= 0 ? tr("Loop: stop", "Bucle: parar") : tr("Loop chapter", "Repetir capítulo"); }, 110,
 				                                   []() { // repeats the part of the video between two chapter marks
 					                                   if (ab_loop_a >= 0) { ab_loop_a = ab_loop_b = -1; return; }
 					                                   if (!network_decoder.ready || current_chapters.empty()) {
 						                                   notice_show(tr("This video has no chapters", "Este vídeo no tiene capítulos"));
+						                                   return;
+					                                   }
+					                                   if (cur_video_info.id != playing_video_info.id) { // (the chapters of the page on screen are not the ones of the video that plays)
+						                                   notice_show(tr("Open the page of the playing video first", "Abre primero la página del vídeo que suena"));
 						                                   return;
 					                                   }
 					                                   double start = 0, stop = vid_duration;
@@ -2725,7 +2729,7 @@ debug_info_view =
 				                             []() {
 					                             show_text_popup(tr("Controls", "Controles"), tr("A: pause / play", "A: pausar / reproducir") + "\n" + tr("B: back", "B: atrás") + "\n" + tr("D-pad Left / Right: seek", "Cruceta izquierda / derecha: saltar") + "\n" + tr("D-pad Down / Up: next / previous video", "Cruceta abajo / arriba: siguiente / anterior vídeo") + "\n" + tr("ZL / ZR: jump back / forward (Settings)", "ZL / ZR: saltar atrás / adelante (Ajustes)") + "\n" + tr("L, R, X, Y: choose what they do in Settings", "L, R, X, Y: elige qué hacen en Ajustes") + "\n" + tr("SELECT + D-pad: volume (up, down), brightness (left, right)", "SELECT + cruceta: volumen (arriba, abajo), brillo (izquierda, derecha)") + "\n" + tr("Hold X and press B: stop the video", "Mantén X y pulsa B: parar el vídeo"));
 				                             }),
-				                         make_tool([]() { return tr("Dislikes", "No me gusta"); }, 70,
+				                         make_tool([]() { return tr("Dislikes", "Ver votos"); }, 70,
 				                                   []() {
 					                                   if (cur_video_info.id == "" || is_async_task_running(dislikes_task)) return;
 					                                   notice_show(tr("Asking for the votes...", "Pidiendo los votos..."));
@@ -5258,12 +5262,16 @@ static void autoplay_countdown_tick() {
 			    popup_took_input = true; // the QR popup is open : it takes all the input
 		    } else if (text_popup_view->is_visible) {
 			    text_popup_view->update(key);
+			    popup_took_input = true; // (a popup takes every button : B that closes it must not also leave the player, A must not pause)
 		    } else if (comment_dialog->is_visible) {
 			    comment_dialog->update(key);
+			    popup_took_input = true;
 		    } else if (account_pl_popup_view->is_visible) {
 			    account_pl_popup_view->update(key);
+			    popup_took_input = true;
 		    } else if (equalizer_popup_view->is_visible) {
 			    equalizer_popup_view->update(key);
+			    popup_took_input = true;
 		    } else {
 			    main_view->update(key);
 		    }
@@ -5292,6 +5300,7 @@ static void autoplay_countdown_tick() {
 		    small_resource_lock.unlock();
 		    if (popup_took_input) {
 			    key = Hid_info(); // nothing is pressed for the code below
+			    key.touch_x = key.touch_y = -1; // (and nothing touches the screen)
 		    }
 
 		    {   // account actions that need the keyboard or a popup : handled here, outside of the view update
