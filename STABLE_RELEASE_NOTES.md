@@ -15,6 +15,9 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **History.** It keeps the latest 3000 videos, and the "hide watched" marks no longer miss a video you just watched.
 - **Text.** Titles and chat messages with emoji, escaped quotes or accents are decoded correctly in Watch later pulls, Studio answers, live chat and collaborations.
 - **Video info.** The dislike count no longer repeats the like count.
+- **Studio login.** The refresh token and the client are saved through a temporary file, so a full card or a power loss while signing in no longer signs you out.
+- **Live chat.** Closing and reopening the chat of the same video no longer restarts a healthy chat because an old thread ended late.
+- **Small fixes.** Counts near a million or a billion print as 1.0M / 1.0B instead of 1000.0k, a pasted playlist link with strange characters no longer breaks the request, and History > Shuffle gives a different order after each start.
 
 ## Installing
 

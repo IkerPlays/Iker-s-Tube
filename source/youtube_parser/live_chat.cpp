@@ -77,7 +77,7 @@ static void chat_thread(void *arg) {
 	}
 	if (continuation == "") {
 		if (alive()) set_status(tr("This video has no live chat", "Este vídeo no tiene chat en directo"));
-		chat_thread_running = false;
+		if (chat_generation == generation) chat_thread_running = false; // (an old thread must not mark the new one as ended)
 		return;
 	}
 	set_status("");
@@ -197,7 +197,7 @@ static void chat_thread(void *arg) {
 		}
 		for (int waited = 0; waited < wait_ms && alive(); waited += 100) svcSleepThread(100000000LL);
 	}
-	chat_thread_running = false;
+	if (chat_generation == generation) chat_thread_running = false;
 }
 
 void live_chat_open(const std::string &video_id) {

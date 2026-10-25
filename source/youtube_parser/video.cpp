@@ -467,7 +467,9 @@ static void extract_item(RJson content, YouTubeVideoDetail &res) {
 
 std::string format_count(int count) {
 	std::stringstream ss;
-	if (count >= 1000000) {
+	if (count >= 999950000) { // (999 950 000 would print "1000.0M")
+		ss << std::fixed << std::setprecision(1) << (count / 1000000000.0) << "B";
+	} else if (count >= 999950) { // (999 999 would print "1000.0k")
 		ss << std::fixed << std::setprecision(1) << (count / 1000000.0) << "M";
 	} else if (count >= 1000) {
 		ss << std::fixed << std::setprecision(1) << (count / 1000.0) << "k";

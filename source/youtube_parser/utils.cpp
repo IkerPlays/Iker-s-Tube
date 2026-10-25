@@ -20,8 +20,10 @@ std::string youtube_get_playlist_id_by_url(const std::string &url) {
 	if (pos != std::string::npos) {
 		pos += 6;
 		std::string res;
-		for (size_t i = pos; i < url.size() && url[i] != '&'; i++) {
-			res.push_back(url[i]);
+		for (size_t i = pos; i < url.size() && url[i] != '&' && url[i] != '#'; i++) {
+			char c = url[i];
+			if (isalnum((unsigned char)c) || c == '_' || c == '-') res.push_back(c); // (a playlist id is only letters, digits, _ and -: anything else would break the JSON of the request)
+			else return "";
 		}
 		return res;
 	}

@@ -121,6 +121,7 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 		auto play = [items](bool shuffle) {
 			std::vector<std::pair<std::string, std::string>> list = items;
 			if (shuffle) {
+				srand((unsigned)osGetTime()); // (nothing else seeds it in this scene: the first shuffle after a start was always the same order)
 				for (size_t k = list.size(); k > 1; k--) std::swap(list[k - 1], list[rand() % k]);
 			}
 			if (list.empty()) {

@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/file_recover.hpp"
 #include "youtube_parser/studio_auth.hpp"
 #include "youtube_parser/internal_common.hpp"
 #include "oauth/oauth.hpp"
@@ -65,13 +66,13 @@ static void load_locked() {
 	loaded = true;
 	client_id = STUDIO_CLIENT_ID; // built into the app (GitHub secrets of the build)
 	client_secret = STUDIO_CLIENT_SECRET;
-	FILE *f = fopen(CLIENT_PATH, "r");
+	FILE *f = fopen_or_recover(CLIENT_PATH, CLIENT_PATH ".tmp", "r");
 	if (f && (client_id == "" || client_secret == "")) { // or the one set up on this console
 		client_id = read_line(f);
 		client_secret = read_line(f);
 	}
 	if (f) fclose(f);
-	f = fopen(TOKENS_PATH, "r");
+	f = fopen_or_recover(TOKENS_PATH, TOKENS_PATH ".tmp", "r");
 	if (f) {
 		refresh_token = read_line(f);
 		fclose(f);
@@ -85,10 +86,7 @@ static void save_tokens_locked() {
 		remove(TOKENS_PATH);
 		return;
 	}
-	FILE *f = fopen(TOKENS_PATH, "w");
-	if (!f) return;
-	fprintf(f, "%s\n", refresh_token.c_str());
-	fclose(f);
+	save_text_atomic(TOKENS_PATH, refresh_token + "\n"); // (through a .tmp: a full card or a power loss keeps the old token instead of an empty file)
 }
 
 // the text of a string field of a small JSON answer ("key": "value") and the number of a numeric one
@@ -132,10 +130,7 @@ bool studio_auth_set_client(const std::string &id, const std::string &secret) {
 	if (i == "" || s == "") return false;
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
-	FILE *f = fopen(CLIENT_PATH, "w");
-	if (!f) return false;
-	fprintf(f, "%s\n%s\n", i.c_str(), s.c_str());
-	fclose(f);
+	if (!save_text_atomic(CLIENT_PATH, i + "\n" + s + "\n")) return false;
 	LightLock_Lock(&auth_lock);
 	loaded = false; // read again (the one built into the app still wins)
 	client_id = client_secret = refresh_token = access_token = "";
