@@ -31,6 +31,17 @@ bool account_ready() {
 
 enum { LIKE, SUBSCRIBE, PLAYLISTS, PLAYLIST_EDIT, COMMENT, COMMENT_LIKE, COMMENT_REPLY, TRANSLATE, COMMENT_DELETE, NOT_INTERESTED, BELL, LIVE_CHAT, POST_LIKE, RUN_ENDPOINT, SAVE_PLAYLIST };
 
+// A short reason a person can act on; the raw technical text (endpoint, JSON) only stays in the log and the "Why it failed" screen.
+static std::string friendly_reason(const std::string &why) {
+	auto has = [&](const char *t) { return why.find(t) != std::string::npos; };
+	if (has("not signed in")) return tr("sign in again in Settings", "inicia sesión de nuevo en Ajustes");
+	if (has("401") || has("UNAUTHENTICATED") || has("PERMISSION_DENIED") || has("403")) return tr("YouTube refused it, sign in again", "YouTube lo rechazó, inicia sesión de nuevo");
+	if (has("429") || has("RESOURCE_EXHAUSTED") || has("quota")) return tr("too many requests, try later", "demasiadas peticiones, prueba luego");
+	if (has("500") || has("502") || has("503") || has("504")) return tr("YouTube is busy, try later", "YouTube está ocupado, prueba luego");
+	if (why.find_first_not_of(" ") != std::string::npos && why.find_first_of("{}\"") == std::string::npos && why.size() <= 40) return why; // already a short sentence
+	return tr("check the connection", "revisa la conexión");
+}
+
 static void run_job(void *arg) {
 	AccountJob *job = (AccountJob *)arg;
 	bool ok = false;
@@ -140,7 +151,7 @@ static void run_job(void *arg) {
 		notice_show(done);
 	} else if (!ok) {
 		std::string why = youtube_account_last_error();
-		notice_show(failed + (why != "" && job->type != TRANSLATE ? " (" + why.substr(0, 70) + ")" : ""));
+		notice_show(failed + (why != "" && job->type != TRANSLATE ? " (" + friendly_reason(why) + ")" : ""));
 		if (why != "" && (job->type == COMMENT || job->type == COMMENT_REPLY || job->type == COMMENT_DELETE || job->type == LIVE_CHAT)) {
 			logger.warning("account", "job failed : " + why);
 			result_lock.lock(); // the whole reason on a screen, to read it and send it

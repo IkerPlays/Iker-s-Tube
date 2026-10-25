@@ -1,1 +1,1 @@
-Channel page: only the 8 most recently opened channels are kept in memory (before, every channel opened stayed cached), which saves memory on long sessions.
+Account actions: when Like, Subscribe, Comment or a playlist change fails, the notice now gives a short reason (sign in again, too many requests, YouTube busy, check the connection) instead of raw technical text.
