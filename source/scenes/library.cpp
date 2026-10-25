@@ -498,7 +498,8 @@ static void build_favorites(VerticalListView *list) {
 			rebuild_request = true;
 		}));
 		list->views.push_back(make_button(tr("Clear all favorites", "Vaciar favoritos"), 320, []() {
-			show_dialog({make_option(tr("Yes, remove all of them", "Sí, quitarlos todos"), []() {
+			// (the whole list goes, whatever filter is on: the count tells how many)
+			show_dialog({make_option(tr("Yes, remove all of them", "Sí, quitarlos todos") + " (" + std::to_string(favorites_get().size()) + ")", []() {
 				             favorites_clear();
 				             rebuild_request = true;
 			             }),
@@ -733,7 +734,8 @@ static void build_watch_later(VerticalListView *list) {
 			rebuild_request = true;
 		}));
 		list->views.push_back(make_button(tr("Clear Watch later", "Vaciar Ver más tarde"), 320, []() {
-			show_dialog({make_option(OAuth::is_authenticated() ? tr("Yes, remove all (also on YouTube)", "Sí, quitar todos (también en YouTube)") : tr("Yes, remove all of them", "Sí, quitarlos todos"), []() {
+			const std::string all_count = " (" + std::to_string(watch_later_get().size()) + ")"; // (the whole list goes, whatever filter is on)
+			show_dialog({make_option((OAuth::is_authenticated() ? tr("Yes, remove all (also on YouTube)", "Sí, quitar todos (también en YouTube)") : tr("Yes, remove all of them", "Sí, quitarlos todos")) + all_count, []() {
 				             std::vector<std::string> all_ids;
 				             for (auto &v : watch_later_get()) all_ids.push_back(v.id);
 				             watch_later_remove_many(all_ids);

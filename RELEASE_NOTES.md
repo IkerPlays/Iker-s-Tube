@@ -1,1 +1,1 @@
-Comments: Reply now checks that the comments are loaded before it opens the keyboard, so a reply you typed is not lost.
+Library: the confirm buttons of "Clear all favorites" and "Clear Watch later" now show how many videos will be removed (the whole list goes, even with a filter on).
