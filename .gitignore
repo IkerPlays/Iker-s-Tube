@@ -6,3 +6,4 @@ build/
 *.map
 romfs/gfx/*.t3x
 trailer/
+__pycache__/
