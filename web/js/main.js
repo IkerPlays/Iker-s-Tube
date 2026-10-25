@@ -144,14 +144,16 @@
     var faqNone = document.createElement("p");
     faqNone.className = "small"; faqNone.hidden = true; faqNone.setAttribute("role", "status");
     faqBox.parentNode.appendChild(faqNone);
-    faqBox.addEventListener("input", function () {
+    var runFaqFilter = function () {
       var q = faqBox.value.trim().toLowerCase(), shown = 0;
       document.querySelectorAll("#faq details").forEach(function (d) {
         var ok = !q || d.textContent.toLowerCase().indexOf(q) !== -1;
         d.hidden = !ok; if (ok) shown++;
       });
       faqNone.textContent = App.t ? App.t("faq_none") : ""; faqNone.hidden = shown > 0;
-    });
+    };
+    faqBox.addEventListener("input", runFaqFilter);
+    App.onLang(runFaqFilter); // (the "no question" line follows the language)
   }
 
   App.onLang(renderRoadmap);
