@@ -89,6 +89,12 @@ Mutex resource_lock;
 std::string cur_channel_url;
 YouTubeChannelDetail channel_info; // only modified from async thread
 std::map<std::string, YouTubeChannelDetail> channel_info_cache;
+// the cache keeps only a few channels (each one holds its first videos/shorts/posts, memory is scarce on the 3DS)
+static void channel_cache_put(const std::string &key, const YouTubeChannelDetail &detail) {
+	const size_t max_cached_channels = 8;
+	if (!channel_info_cache.count(key) && channel_info_cache.size() >= max_cached_channels) channel_info_cache.erase(channel_info_cache.begin());
+	channel_info_cache[key] = detail;
+}
 }; // namespace Channel
 using namespace Channel;
 
@@ -600,7 +606,7 @@ void Channel_init(void) {
 	    }
 	    channel_info = result;
 	    streams_tab_error = shorts_tab_error = "";
-	    if (result.error == "") channel_info_cache[url] = result; // (a failed load is not remembered: opening the channel again retries)
+	    if (result.error == "") channel_cache_put(url, result); // (a failed load is not remembered: opening the channel again retries)
 	    if (result.error == "" && result.name != "") recent_channel_add(result.name, result.url_original != "" ? result.url_original : url); // (for the Recent channels of Search)
 
 	    // Update sort selector to match loaded content
@@ -873,7 +879,7 @@ void Channel_init(void) {
 	    }
 	    channel_info = new_result;
 	    if (new_result.error == "") {
-		    channel_info_cache[channel_info.url_original] = channel_info;
+		    channel_cache_put(channel_info.url_original, channel_info);
 	    }
 
 	    video_list_view->views.insert(video_list_view->views.end(), new_video_views.begin(), new_video_views.end());
@@ -924,7 +930,7 @@ void Channel_init(void) {
 		    streams_sort_selector->selected_button = cur_streams_sort_type;
 	    }
 	    if (streams_result.error == "") {
-		    channel_info_cache[channel_info.url_original] = channel_info;
+		    channel_cache_put(channel_info.url_original, channel_info);
 	    }
 
 	    stream_list_view->views.insert(stream_list_view->views.end(), stream_views.begin(), stream_views.end());
@@ -978,7 +984,7 @@ void Channel_init(void) {
 	    }
 	    channel_info = new_result;
 	    if (new_result.error == "") {
-		    channel_info_cache[channel_info.url_original] = channel_info;
+		    channel_cache_put(channel_info.url_original, channel_info);
 	    }
 
 	    stream_list_view->views.insert(stream_list_view->views.end(), new_stream_views.begin(), new_stream_views.end());
@@ -1022,7 +1028,7 @@ void Channel_init(void) {
 	    channel_info.shorts_sort_token_oldest = shorts_result.shorts_sort_token_oldest;
 	    channel_info.current_shorts_sort_type = shorts_result.current_shorts_sort_type;
 	    if (shorts_result.error == "") {
-		    channel_info_cache[channel_info.url_original] = channel_info;
+		    channel_cache_put(channel_info.url_original, channel_info);
 	    }
 
 	    cur_shorts_sort_type = channel_info.current_shorts_sort_type;
@@ -1078,7 +1084,7 @@ void Channel_init(void) {
 	    }
 	    channel_info = new_result;
 	    if (new_result.error == "") {
-		    channel_info_cache[channel_info.url_original] = channel_info;
+		    channel_cache_put(channel_info.url_original, channel_info);
 	    }
 
 	    shorts_list_view->views.insert(shorts_list_view->views.end(), new_shorts_views.begin(), new_shorts_views.end());
@@ -1108,7 +1114,7 @@ void Channel_init(void) {
 	    }
 	    channel_info = new_result;
 	    if (new_result.error == "") {
-		    channel_info_cache[channel_info.url_original] = channel_info;
+		    channel_cache_put(channel_info.url_original, channel_info);
 	    }
 
 	    tab_view->views[3]->recursive_delete_subviews();
@@ -1136,7 +1142,7 @@ void Channel_init(void) {
 	    }
 	    channel_info = new_result;
 	    if (new_result.error == "") {
-		    channel_info_cache[channel_info.url_original] = channel_info;
+		    channel_cache_put(channel_info.url_original, channel_info);
 	    }
 
 	    community_post_list_view->views.insert(community_post_list_view->views.end(), new_post_views.begin(),
@@ -1347,7 +1353,7 @@ void Channel_init(void) {
 				    channel_info.videos.clear();
 				    channel_info.videos_continue_token = sort_token;
 				    channel_info.current_video_sort_type = video_sort_request;
-				    channel_info_cache[cur_channel_url] = channel_info;
+				    channel_cache_put(cur_channel_url, channel_info);
 
 				    if (!is_async_task_running(load_channel_more)) {
 					    queue_async_task(load_channel_more, NULL);
@@ -1373,7 +1379,7 @@ void Channel_init(void) {
 				    channel_info.streams.clear();
 				    channel_info.streams_continue_token = sort_token;
 				    channel_info.current_streams_sort_type = streams_sort_request;
-				    channel_info_cache[cur_channel_url] = channel_info;
+				    channel_cache_put(cur_channel_url, channel_info);
 
 				    if (!is_async_task_running(load_channel_stream_more)) {
 					    queue_async_task(load_channel_stream_more, NULL);
@@ -1399,7 +1405,7 @@ void Channel_init(void) {
 				    channel_info.shorts.clear();
 				    channel_info.shorts_continue_token = sort_token;
 				    channel_info.current_shorts_sort_type = shorts_sort_request;
-				    channel_info_cache[cur_channel_url] = channel_info;
+				    channel_cache_put(cur_channel_url, channel_info);
 
 				    if (!is_async_task_running(load_channel_shorts_more)) {
 					    queue_async_task(load_channel_shorts_more, NULL);

@@ -3,7 +3,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ## What's new since 1.3.3
 
 ### Changes
-- Nothing yet.
+- **Channel page.** It keeps only the 8 most recent channels in memory instead of every channel opened, which saves memory on long sessions.
 
 ## Installing
 

@@ -1,1 +1,1 @@
-Dialog and menu input fixes, channel menu saves, new videos badge, badges and Wrapped streak fixes, notices queue, trailer on the website.
+Channel page: only the 8 most recently opened channels are kept in memory (before, every channel opened stayed cached), which saves memory on long sessions.
