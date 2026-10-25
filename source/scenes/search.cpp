@@ -1114,6 +1114,12 @@ bool Search_show_search_keyboard() {
 			search_word[256] = 0;
 		}
 		cur_search_word = search_word;
+		const std::string typed_text = search_word;
+		if ((typed_text.compare(0, 4, "http") == 0 || typed_text.find("youtu.be/") != std::string::npos) && youtube_get_video_id_by_url(typed_text) != "") {
+			// a pasted video address opens the video instead of searching for the text of the address
+			clicked_url = typed_text;
+			clicked_is_channel = false;
+		} else {
 			shorts_feed = false; // (a typed search is a normal search, not the Shorts or Radio feed that was open before)
 			radio_feed = false;
 			search_history_add(search_word);
@@ -1128,6 +1134,7 @@ bool Search_show_search_keyboard() {
 			queue_async_task(load_search_results, NULL);
 
 			global_intent.next_scene = SceneType::SEARCH;
+		}
 		}
 		if (global_current_scene != SceneType::SEARCH) {
 			resource_lock.unlock();
