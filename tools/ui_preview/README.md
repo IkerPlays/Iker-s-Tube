@@ -13,3 +13,8 @@ It shows layout and colors, not performance or real pictures (thumbnails are col
 
 ## Regression tests for touches
 `./selector_test.sh` and `./input_test.sh` simulate taps and drags on the real view classes (selector buttons, buttons, tabs, a slider inside a scroll view) and print OK or FAIL. Run them after touching `source/ui/views`.
+
+## Trailer
+`python3 tools/make_trailer.py [--lang es]` builds the YouTube trailer (`trailer/IkersTube-trailer.mp4`, 48 s, 1080p, original synthesized music)
+from the renders in `out/` (run `./build.sh && ./run.sh` first). `--still 12.5` writes one frame for a quick look, `--preview` a small fast version.
+The screens are renders of the interface with sample data, not footage from a console, and the video says so.
