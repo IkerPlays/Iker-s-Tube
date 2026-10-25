@@ -582,6 +582,10 @@ void update_overlay_menu(Hid_info *key) {
 	if (global_current_scene != SceneType::ABOUT) {
 		contents.push_back({LOCALIZED(ABOUT), Content::Type::ABOUT});
 	}
+	{ // every row must fit above the icon (with the update banner and the new videos there can be 10 rows : the first ones would be off screen)
+		size_t fit = menu_icon_y > 0 ? (size_t)menu_icon_y / CONTENT_HEIGHT : contents.size();
+		while (contents.size() > fit && contents.size() > 4) contents.erase(contents.begin());
+	}
 
 	if (menu_status == CONFIRMING_CLOSE) {
 		holding_touch = false;
