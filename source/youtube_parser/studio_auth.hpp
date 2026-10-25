@@ -21,7 +21,7 @@ struct StudioDeviceCode {
 	int expires_in = 0;
 };
 bool studio_auth_request_code(StudioDeviceCode &out, std::string &error);
-// 1 : signed in, 0 : waiting for the user, -1 : failed or expired (see `error`)
+// 1 : signed in, 0 : waiting for the user, 2 : waiting and asked to poll slower, -1 : failed or expired (see `error`)
 int studio_auth_poll(const StudioDeviceCode &code, std::string &error);
 
 // the token the Data API calls use : the Studio login if there is one, otherwise the main login (which YouTube refuses)
