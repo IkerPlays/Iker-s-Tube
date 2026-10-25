@@ -210,7 +210,7 @@ static void show_menu_rows(const std::string &title, const std::vector<std::pair
 	for (size_t i = first; i < last; i++) {
 		auto action = options[i].second;
 		rows.push_back((new TextView(0, 0, width, 24))
-		                   ->set_text(options[i].first)
+		                   ->set_text(truncate_first_line(options[i].first, width - 8, 0.5)) // (a long label stays inside its row)
 		                   ->set_x_alignment(TextView::XAlign::CENTER)
 		                   ->set_y_alignment(TextView::YAlign::CENTER)
 		                   ->set_get_background_color(View::STANDARD_BACKGROUND)

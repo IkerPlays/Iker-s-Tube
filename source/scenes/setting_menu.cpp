@@ -1814,7 +1814,7 @@ void Sem_init(void) {
 							std::sort(top.rbegin(), top.rend());
 							std::string res = tr("Most watched: ", "Más vistos: ");
 							for (size_t i = 0; i < top.size() && i < 3; i++) res += (i ? ", " : "") + top[i].second + " (" + std::to_string(top[i].first) + ")";
-							return top.empty() ? res + "-" : res;
+							return truncate_first_line(top.empty() ? res + "-" : res, 306, 0.5); // (three long channel names do not fit one line)
 						}),
 					// network status and last errors
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN))

@@ -1,1 +1,1 @@
-Search filter changes while a search loads are thread-safe; closing the app while a search or channel is loading is safe; Studio login tokens are saved atomically; live chat reopen fix; count format fix; History Shuffle seed.
+Search: a pasted or scanned results link runs that search; the search box says so while a search is still loading. Long menu labels, the Filter row and the Most watched line are cut to fit.

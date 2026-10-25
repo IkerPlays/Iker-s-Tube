@@ -19,6 +19,8 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Live chat.** Closing and reopening the chat of the same video no longer restarts a healthy chat because an old thread ended late.
 - **Small fixes.** Counts near a million or a billion print as 1.0M / 1.0B instead of 1000.0k, a pasted playlist link with strange characters no longer breaks the request, and History > Shuffle gives a different order after each start.
 - **Search.** Changing a search filter while a search is loading no longer risks a crash, and closing the app while a search or channel is loading no longer touches deleted views.
+- **Search.** A pasted or scanned YouTube results link now runs that search, and tapping the search box while a search is loading says so instead of doing nothing.
+- **Long texts.** Long labels in the menus, the Filter row of Search and the "Most watched" line of Settings are cut to fit instead of running past their space.
 
 ## Installing
 

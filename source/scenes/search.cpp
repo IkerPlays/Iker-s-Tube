@@ -648,7 +648,7 @@ void Search_init(void) {
 	                             ->set_margin(0),
 	                         (new TextView(0, 0, 320, FILTER_ROW_HEIGHT - 1))
 	                             ->set_text((std::function<std::string()>)[]() {
-		                             return std::string(tr("Filter: ", "Filtro: ")) + search_filter_text();
+		                             return truncate_first_line(std::string(tr("Filter: ", "Filtro: ")) + search_filter_text(), 300, 0.45);
 	                             })
 	                             ->set_font_size(0.45, DEFAULT_FONT_INTERVAL)
 	                             ->set_x_alignment(TextView::XAlign::CENTER)
@@ -709,6 +709,20 @@ void Search_resume(std::string arg) {
 	resource_lock.lock();
 	show_search_history();
 	if (arg.compare(0, 2, "q:") == 0 && arg.size() > 2) start_search(arg.substr(2)); // "Search similar" of the video menu
+	else if (arg.compare(0, 30, "https://m.youtube.com/results?") == 0) { // a pasted / scanned results link: its search_query is searched
+		size_t at = arg.find("search_query=");
+		if (at != std::string::npos) {
+			std::string word;
+			for (size_t i = at + 13; i < arg.size() && arg[i] != '&' && arg[i] != '#'; i++) {
+				if (arg[i] == '+') word += ' ';
+				else if (arg[i] == '%' && i + 2 < arg.size() + 0 && isxdigit((unsigned char)arg[i + 1]) && isxdigit((unsigned char)arg[i + 2])) {
+					word += (char)strtol(arg.substr(i + 1, 2).c_str(), NULL, 16);
+					i += 2;
+				} else word += arg[i];
+			}
+			if (word != "") start_search(word);
+		}
+	}
 	resource_lock.unlock();
 
 	thread_suspend = false;
@@ -1151,6 +1165,7 @@ bool Search_show_search_keyboard() {
 		}
 		return button_pressed == SWKBD_BUTTON_RIGHT && !opened_video_by_address;
 	} else {
+		notice_show(tr("Still searching, wait a moment", "Aún buscando, espera un momento")); // (a dead search box with no word is worse than a short wait)
 		return false;
 	}
 }
