@@ -1,0 +1,25 @@
+name: Checks
+
+# Fast checks that do not need the 3DS toolchain : the translation table and the touch regression tests of the view classes
+# (they compile the real views on the runner with fake 3DS headers, see tools/ui_preview/README.md).
+on:
+  push:
+    branches: [main]
+    paths: ["source/ui/**", "source/data_io/translations.cpp", "source/**/*.cpp", "tools/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Translations
+        run: python3 tools/check_translations.py
+      - name: Touch tests of the views
+        run: |
+          bash tools/ui_preview/selector_test.sh
+          bash tools/ui_preview/input_test.sh
