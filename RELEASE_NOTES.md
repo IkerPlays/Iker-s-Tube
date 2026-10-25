@@ -1,1 +1,1 @@
-Account actions: when Like, Subscribe, Comment or a playlist change fails, the notice now gives a short reason (sign in again, too many requests, YouTube busy, check the connection) instead of raw technical text.
+Library: the long-press menu now says "Remove from queue" for a video that is already queued (before it said "Add to queue" and the tap silently removed it).

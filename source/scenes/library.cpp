@@ -511,7 +511,7 @@ static void build_favorites(VerticalListView *list) {
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, v](View &) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
-			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(play_queue_position(url) != 0 ? tr("Remove from queue", "Quitar de la cola") : tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
 			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
@@ -684,7 +684,7 @@ static void build_liked(VerticalListView *list) {
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, v](View &) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
-			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(play_queue_position(url) != 0 ? tr("Remove from queue", "Quitar de la cola") : tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
 			                 make_option(tr("More...", "Más..."), [url, v]() { pending_action = [url, v]() { overlay_show_video_menu(url, v.title, v.author); }; }),
@@ -745,7 +745,7 @@ static void build_watch_later(VerticalListView *list) {
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, v](View &) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
-			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(play_queue_position(url) != 0 ? tr("Remove from queue", "Quitar de la cola") : tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Add to a list...", "Añadir a una lista..."), [v]() { pending_action = [v]() { add_to_playlist_dialog(v); }; }),
 			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
@@ -939,7 +939,7 @@ static void build_offline(VerticalListView *list) {
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [id, url, title, author](View &) {
 		    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, title]() { play_queue_play_next(url, title); }),
-		    make_option(tr("Add to queue", "Añadir a la cola"), [url, title]() { play_queue_toggle(url, title); }),
+		    make_option(play_queue_position(url) != 0 ? tr("Remove from queue", "Quitar de la cola") : tr("Add to queue", "Añadir a la cola"), [url, title]() { play_queue_toggle(url, title); }),
 		    make_option(tr("More from this channel", "Más de este canal"), [author]() {
 		    	if (author == "") return;
 		    	global_intent.next_scene = SceneType::SEARCH;
@@ -1078,7 +1078,7 @@ static void build_playlists(VerticalListView *list) {
 		    ->set_on_view_released([url](View &) { clicked_url = url; })
 		    ->add_on_long_hold(35, [index, id, url, v](View &) {
 			    show_dialog({make_option(tr("Play next", "Reproducir a continuación"), [url, v]() { play_queue_play_next(url, v.title); }),
-			                 make_option(tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
+			                 make_option(play_queue_position(url) != 0 ? tr("Remove from queue", "Quitar de la cola") : tr("Add to queue", "Añadir a la cola"), [url, v]() { play_queue_toggle(url, v.title); }),
 			                 make_option(tr("Save video offline", "Guardar vídeo sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", true); }),
 			                 make_option(tr("Save audio offline", "Guardar audio sin conexión"), [id, v]() { offline_save_by_id_async(id, v.title, "", false); }),
 			                 make_option(tr("More...", "Más..."), [url, v]() { pending_action = [url, v]() { overlay_show_video_menu(url, v.title, v.author); }; }),
