@@ -1105,6 +1105,7 @@ bool Search_show_search_keyboard() {
 		video_set_skip_drawing(false);
 		remove_cpu_limit(40);
 
+		bool opened_video_by_address = false;
 		if (button_pressed == SWKBD_BUTTON_RIGHT) {
 		{ // "cats " and "cats" are the same search : the spaces at both ends go away
 			std::string trimmed = search_word;
@@ -1113,13 +1114,18 @@ bool Search_show_search_keyboard() {
 			strncpy(search_word, trimmed.c_str(), 256);
 			search_word[256] = 0;
 		}
-		cur_search_word = search_word;
-		const std::string typed_text = search_word;
-		if ((typed_text.compare(0, 4, "http") == 0 || typed_text.find("youtu.be/") != std::string::npos) && youtube_get_video_id_by_url(typed_text) != "") {
+		std::string typed_text = search_word;
+		{ // a youtu.be share link carries the id in its path
+			size_t short_link = typed_text.find("youtu.be/");
+			if (short_link != std::string::npos && typed_text.size() >= short_link + 9 + 11) typed_text = "https://www.youtube.com/watch?v=" + typed_text.substr(short_link + 9, 11);
+		}
+		if (typed_text.compare(0, 4, "http") == 0 && youtube_get_video_id_by_url(typed_text) != "") {
 			// a pasted video address opens the video instead of searching for the text of the address
-			clicked_url = typed_text;
-			clicked_is_channel = false;
+			global_intent.next_scene = SceneType::VIDEO_PLAYER;
+			global_intent.arg = typed_text;
+			opened_video_by_address = true;
 		} else {
+			cur_search_word = search_word;
 			shorts_feed = false; // (a typed search is a normal search, not the Shorts or Radio feed that was open before)
 			radio_feed = false;
 			search_history_add(search_word);
@@ -1139,7 +1145,7 @@ bool Search_show_search_keyboard() {
 		if (global_current_scene != SceneType::SEARCH) {
 			resource_lock.unlock();
 		}
-		return button_pressed == SWKBD_BUTTON_RIGHT;
+		return button_pressed == SWKBD_BUTTON_RIGHT && !opened_video_by_address;
 	} else {
 		return false;
 	}

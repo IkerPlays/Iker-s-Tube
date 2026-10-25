@@ -410,14 +410,13 @@ void revoke_tokens() {
 
 std::string get_fresh_access_token() {
 	if (oauth_state != OAuthState::AUTHENTICATED) return get_access_token(); // (signed out : nothing to renew, and no error state to set)
-	static bool refreshing = false; // one renewal at a time : the other threads use the token that is there
+	static LightLock refresh_lock = [] { LightLock x; LightLock_Init(&x); return x; }(); // one renewal at a time : the other threads use the token that is there
 	static u64 retry_after_ms = 0;
-	if (!refreshing && osGetTime() >= retry_after_ms) {
-		refreshing = true;
+	if (osGetTime() >= retry_after_ms && LightLock_TryLock(&refresh_lock) == 0) {
 		const u64 before = token_valid_until_ms;
 		refresh_access_token(false); // (nothing happens while the token is fresh)
 		if (token_valid_until_ms == before && osGetTime() >= token_valid_until_ms) retry_after_ms = osGetTime() + 30000; // it failed : not again for 30 s
-		refreshing = false;
+		LightLock_Unlock(&refresh_lock);
 	}
 	return get_access_token();
 }

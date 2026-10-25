@@ -1,1 +1,1 @@
-Updater devbuild tag fix, sign-in renewals serialized, list dedupe and cut titles, filtered empty lists, delete in use message, settings clamps.
+Search by pasted address, live chat and SponsorBlock fixes, sign-in renewals under a lock, list and settings fixes (see STABLE_RELEASE_NOTES.md).
