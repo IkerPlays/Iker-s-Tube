@@ -6,18 +6,37 @@ static Mutex notice_lock;
 static std::string notice_text;
 static u64 notice_until = 0;
 static u64 notice_total = 3500; // long texts stay longer
+static u64 notice_start = 0;
+static std::string notice_next; // a second notice that arrived while the first was still new : it waits for its turn
+static bool notice_has_next = false;
+
+static void notice_start_locked(const std::string &text) {
+	notice_text = text;
+	notice_total = std::min<u64>(7000, 3500 + 40 * (u64)text.size());
+	notice_start = osGetTime();
+	notice_until = notice_start + notice_total;
+}
 
 void notice_show(const std::string &text) {
 	notice_lock.lock();
-	notice_text = text;
-	notice_total = std::min<u64>(7000, 3500 + 40 * (u64)text.size());
-	notice_until = osGetTime() + notice_total;
+	u64 now = osGetTime();
+	if (now < notice_until && !notice_text.empty() && text != notice_text && now - notice_start < 1200) {
+		notice_next = text; // (every notice is readable for at least a second : a badge or a battery warning is not wiped at once)
+		notice_has_next = true;
+	} else {
+		notice_has_next = false;
+		notice_start_locked(text);
+	}
 	notice_lock.unlock();
 	var_need_refresh = true;
 }
 
 void notice_draw(float bottom_y) {
 	notice_lock.lock();
+	if (notice_has_next && osGetTime() >= notice_start + 1200) { // the waiting notice takes over once the first one has had its second
+		notice_has_next = false;
+		notice_start_locked(notice_next);
+	}
 	std::string text = notice_text;
 	u64 until = notice_until;
 	u64 total = notice_total;
