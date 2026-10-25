@@ -306,7 +306,7 @@ std::string youtube_get_video_url_by_id(const std::string &id);
 // set to true to make a running youtube_load_video_page() give up at its next checkpoint (a newer request is waiting)
 extern volatile bool youtube_load_cancel;
 // "params" of the search request (type / upload date / duration filter), empty : no filter
-extern std::string youtube_search_filter_params;
+void youtube_set_search_filter(const std::string &params); // (the UI thread sets it while the search thread may be reading it)
 // The Shorts that follow a Short (the "reel watch sequence" of YouTube, the endless Shorts feed) : video ids, empty if unavailable
 std::vector<std::string> youtube_shorts_sequence(const std::string &seed_video_id);
 std::string get_video_id_from_thumbnail_url(const std::string &url);

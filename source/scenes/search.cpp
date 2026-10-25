@@ -208,7 +208,7 @@ static std::string search_filter_text() { // "Today + Videos + 4-20 min"
 static void search_filter_changed();
 static u64 filter_search_due = 0; // the search with the new filter starts when the button was not tapped again for a moment
 static void search_filter_changed() {
-	youtube_search_filter_params = search_filter_params();
+	youtube_set_search_filter(search_filter_params());
 	if (cur_search_word != "") filter_search_due = osGetTime() + 300;
 	var_need_refresh = true;
 }
@@ -843,6 +843,10 @@ static void load_search_results(void *) {
 	bool feed_shuffle = true;
 	// pre-access processing
 	resource_lock.lock();
+	if (exiting) { // (the scene is gone: result_list_view is deleted)
+		resource_lock.unlock();
+		return;
+	}
 	std::string search_word = cur_search_word;
 	bool feed = shorts_feed;
 	const bool radio_mode = radio_feed; // (a new search may change the global while this one loads)

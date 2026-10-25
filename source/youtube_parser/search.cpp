@@ -2,7 +2,22 @@
 #include "internal_common.hpp"
 #include "parser.hpp"
 
-std::string youtube_search_filter_params;
+static std::string youtube_search_filter_params;
+static LightLock search_filter_lock;
+static struct SearchFilterLockInit {
+	SearchFilterLockInit() { LightLock_Init(&search_filter_lock); }
+} search_filter_lock_init;
+void youtube_set_search_filter(const std::string &params) {
+	LightLock_Lock(&search_filter_lock);
+	youtube_search_filter_params = params;
+	LightLock_Unlock(&search_filter_lock);
+}
+static std::string get_search_filter() {
+	LightLock_Lock(&search_filter_lock);
+	std::string res = youtube_search_filter_params;
+	LightLock_Unlock(&search_filter_lock);
+	return res;
+}
 
 // ReelSequence protobuf : short id (1), params {number = 5} (5), feature 25 (10), feature 0 (13) ; sent as standard base64
 std::vector<std::string> youtube_shorts_sequence(const std::string &seed_video_id) {
@@ -166,8 +181,9 @@ YouTubeSearchResult youtube_load_search(std::string url) {
 	post_head = std::regex_replace(post_head, std::regex("%0"), language_code); // (only the fixed part : a query like "100%0" must stay as typed)
 	post_head = std::regex_replace(post_head, std::regex("%1"), country_code);
 	std::string post_content = post_head + query_word + "\"";
-	if (youtube_search_filter_params.size()) {
-		post_content += ", \"params\": \"" + youtube_search_filter_params + "\"";
+	const std::string filter_params = get_search_filter();
+	if (filter_params.size()) {
+		post_content += ", \"params\": \"" + filter_params + "\"";
 	}
 	post_content += "}";
 

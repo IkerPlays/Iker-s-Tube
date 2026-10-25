@@ -1,1 +1,1 @@
-Studio login tokens are saved through a temporary file (no sign-out after a power loss); reopening a live chat no longer restarts it because of an old thread; counts near a million print as 1.0M; pasted playlist links with strange characters are rejected instead of breaking the request; History Shuffle differs after each start.
+Search filter changes while a search loads are thread-safe; closing the app while a search or channel is loading is safe; Studio login tokens are saved atomically; live chat reopen fix; count format fix; History Shuffle seed.

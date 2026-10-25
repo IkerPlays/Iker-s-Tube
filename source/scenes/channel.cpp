@@ -497,6 +497,10 @@ void Channel_init(void) {
 
     static void load_channel(void *) {
 	    resource_lock.lock();
+	    if (exiting) { // (the scene is gone: its views are deleted)
+		    resource_lock.unlock();
+		    return;
+	    }
 	    auto url = cur_channel_url;
 	    YouTubeChannelDetail result;
 	    bool need_loading = false;
