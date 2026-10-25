@@ -4102,6 +4102,7 @@ static void autoplay_countdown_tick() {
 	    if (vid_duration != 0) { // marks on the bar: the parts SponsorBlock skips (green) and where each chapter starts
 		    sb_lock.lock();
 		    for (auto &segment : sb_segments) {
+			    if (!var_sponsorblock) break; // (SponsorBlock is off : its marks are not shown)
 			    float x0 = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(segment.first);
 			    float x1 = bar_x_l + (bar_x_r - bar_x_l) * network_decoder.get_bar_pos_from_timestamp(segment.second);
 			    Draw_texture(var_square_image[0], 0xFF40B040, x0, y_center - 2, std::max(2.0f, x1 - x0), 4);
