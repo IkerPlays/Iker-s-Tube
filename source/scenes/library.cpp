@@ -193,7 +193,7 @@ static void add_sort_filter_row(VerticalListView *list, size_t shown, size_t tot
 		                                                   misc_tasks_request(TASK_SAVE_SETTINGS);
 		                                                   rebuild_request = true;
 	                                                   }),
-	                                       make_button(list_filter == "" ? tr("Filter: all", "Filtro: todo") : tr("Filter: ", "Filtro: ") + list_filter, 160,
+	                                       make_button(list_filter == "" ? tr("Filter: all", "Filtro: todo") : truncate_first_line(tr("Filter: ", "Filtro: ") + list_filter, 148, 0.5), 160,
 	                                                   []() {
 		                                                   if (list_filter != "") { // tapping an active filter clears it
 			                                                   list_filter = "";
@@ -803,7 +803,7 @@ static void build_offline(VerticalListView *list) {
 	}
 	if (all_items > 3) { // search inside the downloads
 		list->views.push_back((new HorizontalListView(0, 0, 22))
-		                          ->set_views({make_button(offline_filter == "" ? tr("Search downloads", "Buscar en descargas") : tr("Search: ", "Búsqueda: ") + offline_filter,
+		                          ->set_views({make_button(offline_filter == "" ? tr("Search downloads", "Buscar en descargas") : truncate_first_line(tr("Search: ", "Búsqueda: ") + offline_filter, 228, 0.5),
 		                                                   offline_filter == "" ? 320 : 240,
 		                                                   []() {
 			                                                   std::string text;
