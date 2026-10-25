@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/json_text.hpp"
 #include "youtube_parser/studio.hpp"
 #include "youtube_parser/internal_common.hpp"
 #include "oauth/oauth.hpp"
@@ -464,32 +465,7 @@ static std::string raw_string(const std::string &json, size_t from, const std::s
 	return json.substr(p + 1, e - p - 1);
 }
 
-static std::string unescape_json(const std::string &raw) {
-	std::string out;
-	for (size_t i = 0; i < raw.size(); i++) {
-		if (raw[i] != '\\' || i + 1 >= raw.size()) {
-			out += raw[i];
-			continue;
-		}
-		char c = raw[++i];
-		if (c == 'n') out += ' ';
-		else if (c == 't') out += ' ';
-		else if (c == 'u' && i + 4 < raw.size()) {
-			unsigned code = strtoul(raw.substr(i + 1, 4).c_str(), NULL, 16);
-			i += 4;
-			if (code < 0x80) out += (char)code;
-			else if (code < 0x800) {
-				out += (char)(0xC0 | (code >> 6));
-				out += (char)(0x80 | (code & 0x3F));
-			} else {
-				out += (char)(0xE0 | (code >> 12));
-				out += (char)(0x80 | ((code >> 6) & 0x3F));
-				out += (char)(0x80 | (code & 0x3F));
-			}
-		} else out += c; // \" \\ \/
-	}
-	return out;
-}
+static std::string unescape_json(const std::string &raw) { return json_text_unescape(raw); }
 
 // the API answer as text : the message of the error if there is one
 static std::string api_error(const NetworkResult &r, const std::string &body) {

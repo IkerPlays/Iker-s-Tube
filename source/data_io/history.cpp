@@ -107,7 +107,6 @@ void save_watch_history() {
 }
 void add_watched_video(HistoryVideo video) {
 	if (var_incognito) return; // incognito : nothing is remembered
-	watched_ids_dirty = true;
 	if (var_history_enabled) {
 		video.title_lines = truncate_str(video.title, VIDEO_LIST_TEXT_WIDTH, 2, 0.5, 0.5);
 		resource_lock.lock();
@@ -126,12 +125,14 @@ void add_watched_video(HistoryVideo video) {
 		}
 		std::sort(watch_history.begin(), watch_history.end(),
 		          [](const HistoryVideo &i, const HistoryVideo &j) { return i.last_watch_time > j.last_watch_time; });
+		if (watch_history.size() > 3000) watch_history.resize(3000); // (the oldest go: every save rewrites the whole file, and the 3DS has little memory)
+		watched_ids_dirty = true; // (inside the lock: history_has_id could rebuild the set between the change and the flag)
 		resource_lock.unlock();
 	}
 }
 void history_erase_by_id(const std::string &id) {
-	watched_ids_dirty = true;
 	resource_lock.lock();
+	watched_ids_dirty = true;
 	std::vector<HistoryVideo> tmp_watch_history;
 	for (auto video : watch_history) {
 		if (video.id != id) {
@@ -142,8 +143,8 @@ void history_erase_by_id(const std::string &id) {
 	resource_lock.unlock();
 }
 void history_erase_all() {
-	watched_ids_dirty = true;
 	resource_lock.lock();
+	watched_ids_dirty = true;
 	watch_history.clear();
 	resource_lock.unlock();
 }

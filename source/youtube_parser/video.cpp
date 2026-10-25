@@ -1,4 +1,5 @@
 #include <regex>
+#include "util/json_text.hpp"
 #include "internal_common.hpp"
 #include "parser.hpp"
 #include <iostream>
@@ -386,9 +387,9 @@ static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res) 
 
 		if (button.has_key("slimMetadataButtonRenderer") &&
 		    button["slimMetadataButtonRenderer"]["button"].has_key("segmentedLikeDislikeButtonViewModel")) {
-			auto get_text_from_view_model = [](RJson button) -> std::string {
+			auto get_text_from_view_model = [](RJson button, const char *which) -> std::string {
 				auto text = button["slimMetadataButtonRenderer"]["button"]["segmentedLikeDislikeButtonViewModel"]
-				                  ["likeButtonViewModel"]["likeButtonViewModel"]["toggleButtonViewModel"]
+				                  [which][which]["toggleButtonViewModel"]
 				                  ["toggleButtonViewModel"]["defaultButtonViewModel"]["buttonViewModel"]["title"]
 				                      .string_value();
 				if (text.size() && !isdigit(text[0])) {
@@ -396,8 +397,9 @@ static void extract_like_dislike_counts(RJson buttons, YouTubeVideoDetail &res) 
 				}
 				return text;
 			};
-			res.like_count_str = get_text_from_view_model(button);
-			res.dislike_count_str = get_text_from_view_model(button); // Update the dislike count similarly
+			res.like_count_str = get_text_from_view_model(button, "likeButtonViewModel");
+			std::string dislikes = get_text_from_view_model(button, "dislikeButtonViewModel"); // (it used to copy the like count here)
+			if (dislikes != "") res.dislike_count_str = dislikes;
 		}
 	}
 }
@@ -1401,31 +1403,18 @@ void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std
 // the text of a JSON string that starts at `s` (until the closing quote) with the common escapes undone and the invisible
 // direction marks YouTube puts around handles removed
 static std::string collab_text(const std::string &json, size_t s) {
+	std::string decoded = json_text_unescape(json.substr(s, json_string_end(json, s) - s));
 	std::string out;
-	for (size_t i = s; i < json.size() && json[i] != '"'; i++) {
-		if (json[i] == '\\' && i + 1 < json.size()) {
-			char c = json[++i];
-			if (c == 'u' && i + 4 < json.size()) {
-				unsigned code = strtoul(json.substr(i + 1, 4).c_str(), NULL, 16);
-				i += 4;
-				if (code == 0x200E || code == 0x2068 || code == 0x2069) continue;
-				if (code < 0x80) out += (char)code;
-				else if (code < 0x800) {
-					out += (char)(0xC0 | (code >> 6));
-					out += (char)(0x80 | (code & 0x3F));
-				} else {
-					out += (char)(0xE0 | (code >> 12));
-					out += (char)(0x80 | ((code >> 6) & 0x3F));
-					out += (char)(0x80 | (code & 0x3F));
-				}
-			} else if (c == 'n') out += ' ';
-			else out += c;
-		} else if ((unsigned char)json[i] == 0xE2 && i + 2 < json.size() && (unsigned char)json[i + 1] == 0x81 &&
-		           ((unsigned char)json[i + 2] == 0xA8 || (unsigned char)json[i + 2] == 0xA9)) {
-			i += 2; // U+2068 / U+2069
-		} else {
-			out += json[i];
+	for (size_t i = 0; i < decoded.size(); i++) { // (U+200E / U+2068 / U+2069 as UTF-8 : E2 80 8E, E2 81 A8, E2 81 A9)
+		unsigned char c0 = decoded[i];
+		if (c0 == 0xE2 && i + 2 < decoded.size()) {
+			unsigned char c1 = decoded[i + 1], c2 = decoded[i + 2];
+			if ((c1 == 0x80 && c2 == 0x8E) || (c1 == 0x81 && (c2 == 0xA8 || c2 == 0xA9))) {
+				i += 2;
+				continue;
+			}
 		}
+		out += decoded[i];
 	}
 	return out;
 }

@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/json_text.hpp"
 #include "youtube_parser/live_chat.hpp"
 #include "youtube_parser/studio.hpp"
 #include "ui/notice.hpp"
@@ -27,29 +28,8 @@ static std::string string_after(const std::string &s, size_t from, size_t to, co
 	size_t p = s.find(key, from);
 	if (p == std::string::npos || p >= to) return "";
 	p += key.size();
-	std::string res;
-	size_t i = p;
-	for (; i < s.size() && s[i] != '"'; i++) {
-		if (s[i] != '\\' || i + 1 >= s.size()) {
-			res += s[i];
-			continue;
-		}
-		char c = s[++i];
-		if (c == 'n' || c == 't') res += ' ';
-		else if (c == 'u' && i + 4 < s.size()) {
-			unsigned cp = (unsigned)strtoul(s.substr(i + 1, 4).c_str(), NULL, 16);
-			i += 4;
-			if (cp >= 0xD800 && cp < 0xDC00 && i + 6 < s.size() && s[i + 1] == '\\' && s[i + 2] == 'u') {
-				unsigned low = (unsigned)strtoul(s.substr(i + 3, 4).c_str(), NULL, 16);
-				cp = 0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00);
-				i += 6;
-			}
-			if (cp < 0x80) res += (char)cp;
-			else if (cp < 0x800) res += (char)(0xC0 | (cp >> 6)), res += (char)(0x80 | (cp & 0x3F));
-			else if (cp < 0x10000) res += (char)(0xE0 | (cp >> 12)), res += (char)(0x80 | ((cp >> 6) & 0x3F)), res += (char)(0x80 | (cp & 0x3F));
-			else res += (char)(0xF0 | (cp >> 18)), res += (char)(0x80 | ((cp >> 12) & 0x3F)), res += (char)(0x80 | ((cp >> 6) & 0x3F)), res += (char)(0x80 | (cp & 0x3F));
-		} else res += c; // \" \\ \/
-	}
+	size_t i = json_string_end(s, p);
+	std::string res = json_text_unescape(s.substr(p, i - p));
 	if (end_pos) *end_pos = i;
 	return res;
 }

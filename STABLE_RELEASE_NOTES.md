@@ -9,6 +9,12 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Favorites and Watch later.** "Remove the watched ones" (both lists) and "Clear Watch later" save the list once instead of once per video, so they no longer freeze on a long list.
 - **Comments.** Reply checks that the comments are loaded before it opens the keyboard, so a reply you typed is not lost to an "Open the comments first" failure.
 - **Library.** The confirm buttons of "Clear all favorites" and "Clear Watch later" show how many videos will go (the whole list is cleared even when a filter is on).
+- **Channel page.** Tapping the error line of a channel no longer freezes the console, a failed Streams or Shorts tab can be retried with a tap, B on the QR popup only closes it, and a community post image without a size no longer crashes.
+- **Settings.** B on a popup (install, remove history, sign-in code) only closes the popup instead of also leaving Settings.
+- **Saving.** A save that cannot be flushed to the SD card (full card) is reported as failed, so the previous copy of history, subscriptions or settings is kept instead of being replaced by a cut file.
+- **History.** It keeps the latest 3000 videos, and the "hide watched" marks no longer miss a video you just watched.
+- **Text.** Titles and chat messages with emoji, escaped quotes or accents are decoded correctly in Watch later pulls, Studio answers, live chat and collaborations.
+- **Video info.** The dislike count no longer repeats the like count.
 
 ## Installing
 

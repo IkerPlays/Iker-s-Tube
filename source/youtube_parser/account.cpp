@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/json_text.hpp"
 #include "youtube_parser/studio.hpp"
 #include "youtube_parser/studio_auth.hpp"
 #include <map>
@@ -129,38 +130,9 @@ static std::string text_after(const std::string &body, size_t from, size_t to, c
 	size_t p = body.find(key, from);
 	if (p == std::string::npos || p >= to) return "";
 	p += key.size();
-	size_t e = p;
-	while (e < body.size() && body[e] != '"') {
-		if (body[e] == '\\') e++; // escaped character (\" or \u0026 ...)
-		e++;
-	}
+	size_t e = json_string_end(body, p);
 	if (e >= body.size()) return "";
-	// unescape the common sequences so that titles read normally
-	std::string raw = body.substr(p, e - p), res;
-	for (size_t i = 0; i < raw.size(); i++) {
-		if (raw[i] == '\\' && i + 1 < raw.size()) {
-			char c = raw[i + 1];
-			if (c == '"' || c == '\\' || c == '/') res += c, i++;
-			else if (c == 'n') res += ' ', i++;
-			else if (c == 'u' && i + 5 < raw.size()) {
-				unsigned cp = (unsigned)strtoul(raw.substr(i + 2, 4).c_str(), NULL, 16);
-				i += 5;
-				if (cp >= 0xD800 && cp < 0xDC00 && i + 6 < raw.size() && raw[i + 1] == '\\' && raw[i + 2] == 'u') { // surrogate pair
-					unsigned low = (unsigned)strtoul(raw.substr(i + 3, 4).c_str(), NULL, 16);
-					cp = 0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00);
-					i += 6;
-				}
-				if (cp < 0x80) res += (char)cp;
-				else if (cp < 0x800) res += (char)(0xC0 | (cp >> 6)), res += (char)(0x80 | (cp & 0x3F));
-				else if (cp < 0x10000) res += (char)(0xE0 | (cp >> 12)), res += (char)(0x80 | ((cp >> 6) & 0x3F)), res += (char)(0x80 | (cp & 0x3F));
-				else res += (char)(0xF0 | (cp >> 18)), res += (char)(0x80 | ((cp >> 12) & 0x3F)), res += (char)(0x80 | ((cp >> 6) & 0x3F)), res += (char)(0x80 | (cp & 0x3F));
-			}
-			else res += raw[i];
-		} else {
-			res += raw[i];
-		}
-	}
-	return res;
+	return json_text_unescape(body.substr(p, e - p)); // (titles read normally: escaped quotes, accents, emoji)
 }
 
 bool youtube_account_like(const std::string &video_id, int rating) {

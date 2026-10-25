@@ -1,1 +1,1 @@
-Library: the confirm buttons of "Clear all favorites" and "Clear Watch later" now show how many videos will be removed (the whole list goes, even with a filter on).
+Fixes: tapping the error line on a channel no longer freezes the console; failed Streams/Shorts tabs can be retried; B on the QR popup or on a Settings popup only closes it; saves that cannot be flushed (full SD card) keep the previous copy; history keeps the latest 3000 videos; emoji and escaped quotes in titles and chat are decoded correctly; the dislike count no longer repeats the like count.

@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/json_text.hpp"
 #include <regex>
 #include <map>
 #include "data_io/watch_later.hpp"
@@ -31,8 +32,8 @@ static std::string text_after(const std::string &body, size_t from, size_t to, c
 		return "";
 	}
 	p += key.size();
-	size_t e = body.find('"', p);
-	return e == std::string::npos ? "" : body.substr(p, e - p);
+	size_t e = json_string_end(body, p);
+	return e >= body.size() ? "" : json_text_unescape(body.substr(p, e - p)); // (a title with \" or an accent is read whole)
 }
 
 // The videos of one of the account's playlists ("VLLL" = liked videos, "VLWL" = watch later); false if the request failed.

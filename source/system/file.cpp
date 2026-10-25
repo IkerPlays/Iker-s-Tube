@@ -25,9 +25,14 @@ Result_with_string Path::write_file(const u8 *data, u32 size) {
 		}
 		errno = 0;
 		u32 written = fwrite(data, 1, size, fp);
-		fclose(fp);
+		bool flushed = fflush(fp) == 0 && !ferror(fp); // (the buffered tail is written here: a full card shows up now, not as a silently cut file)
+		if (fclose(fp) != 0) flushed = false;
 		if (written < size) {
 			return "fwrite() failed(" + std::to_string(written) + " < " + std::to_string(size) + ")";
+		}
+		if (!flushed) {
+			if (errno == 0) errno = EIO;
+			return "flush/close failed";
 		}
 		return "";
 	}();

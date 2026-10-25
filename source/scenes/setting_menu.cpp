@@ -2693,12 +2693,13 @@ void Sem_draw(void)
 		
 		// toast_view is never 'updated'
 		resource_lock.lock();
-		if (popup_view->is_visible) popup_view->update(key);
+		const bool popup_took_input = popup_view->is_visible; // (its B closes it: it must not also leave the Settings)
+		if (popup_took_input) popup_view->update(key);
 		else main_view->update(key);
 		resource_lock.unlock();
 		
 		if (video_playing_bar_show) video_update_playing_bar(key);
 		
-		if (key.p_b) global_intent.next_scene = SceneType::BACK;
+		if (key.p_b && !popup_took_input) global_intent.next_scene = SceneType::BACK;
 	}
 }

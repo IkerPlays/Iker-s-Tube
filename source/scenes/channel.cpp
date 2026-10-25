@@ -99,6 +99,7 @@ static void channel_cache_put(const std::string &key, const YouTubeChannelDetail
 using namespace Channel;
 
 static bool send_load_request(std::string url);
+static void drop_pending_channel_tasks();
 static void load_channel(void *);
 static void load_channel_more(void *);
 static void load_channel_stream_more(void *);
@@ -107,9 +108,23 @@ static void load_channel_shorts(void *);
 static void load_channel_shorts_more(void *);
 // a tap on the error line of a tab : the page that never came is asked again, or the failed "load more" is allowed to run again
 static void channel_retry_tap(View &) {
+	// a Streams / Shorts tab that failed: its flag is reset so the tab asks for the page again as it is drawn
+	if (channel_info.error == "" && streams_tab_error != "" && !is_async_task_running(load_channel_stream)) {
+		streams_tab_error = "";
+		channel_info.streams_loaded = false;
+		var_need_refresh = true;
+		return;
+	}
+	if (channel_info.error == "" && shorts_tab_error != "" && !is_async_task_running(load_channel_shorts)) {
+		shorts_tab_error = "";
+		channel_info.shorts_loaded = false;
+		var_need_refresh = true;
+		return;
+	}
 	if (channel_info.error == "" || is_async_task_running(load_channel) || is_async_task_running(load_channel_more) || is_async_task_running(load_channel_stream_more) || is_async_task_running(load_channel_shorts_more)) return;
 	if (channel_info.videos.empty() && cur_channel_url != "") {
-		send_load_request(cur_channel_url);
+		drop_pending_channel_tasks(); // (not send_load_request: this tap runs inside main_view->update with resource_lock held, and the lock is not recursive)
+		queue_async_task(load_channel, NULL);
 	} else {
 		channel_info.error = "";
 	}
@@ -1156,7 +1171,8 @@ void Channel_init(void) {
 	    var_need_refresh = true;
 	    resource_lock.unlock();
     }
-    static bool send_load_request(std::string url) {
+    // the part of a load request that does not need resource_lock (a tap on the error line runs with it held)
+    static void drop_pending_channel_tasks() {
 	    // (a channel that is already loading finishes first, the new one is queued behind it: the last one asked is the one that stays)
 	    remove_all_async_tasks_with_type(load_channel_more);
 	    remove_all_async_tasks_with_type(load_channel_stream);
@@ -1167,6 +1183,10 @@ void Channel_init(void) {
 	    remove_all_async_tasks_with_type(load_channel_community_posts);
 
 	    video_sort_request = streams_sort_request = shorts_sort_request = -1; // (a sort asked for the last channel is not applied to this one)
+    }
+
+    static bool send_load_request(std::string url) {
+	    drop_pending_channel_tasks();
 	    resource_lock.lock();
 	    cur_channel_url = url;
 	    resource_lock.unlock();
@@ -1230,7 +1250,8 @@ void Channel_init(void) {
 		    if (video_playing_bar_show) {
 			    video_update_playing_bar(key);
 		    }
-		    if (!qr_popup_update(key)) { // the QR popup takes the input while it is open
+		    const bool qr_took_input = qr_popup_update(key); // the QR popup takes the input while it is open (its B must not also leave the channel)
+		    if (!qr_took_input) {
 			    main_view->update(key);
 		    }
 
@@ -1286,7 +1307,7 @@ void Channel_init(void) {
 			    }
 			    for (auto i : newly_loading_views) {
 				    // Override Google's parameters with ours. Optimized for speed and compression.
-				    if (i->additional_image_url != "") {
+				    if (i->additional_image_url != "" && i->additional_image_url.find('=') != std::string::npos) { // (no "=": nothing to replace, and erase(npos) throws)
 					    i->additional_image_url =
 					        i->additional_image_url.erase(i->additional_image_url.find("=")) + "=-rj-v2-s" +
 					        std::to_string(COMMUNITY_IMAGE_SIZE * 2); // Multiply so the images don't look too grainy
@@ -1416,7 +1437,7 @@ void Channel_init(void) {
 		    }
 		    resource_lock.unlock();
 
-		    if (key.p_b) {
+		    if (key.p_b && !qr_took_input) {
 			    global_intent.next_scene = SceneType::BACK;
 		    }
 	    }
