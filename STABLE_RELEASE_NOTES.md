@@ -3,7 +3,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ## What's new since 1.3.4
 
 ### Changes
-- Nothing yet.
+- **Settings.** The "updates available" text is written under the same lock the screen reads it with, so the version shown in the Update tab cannot be garbled while a check finishes.
 
 ## Installing
 

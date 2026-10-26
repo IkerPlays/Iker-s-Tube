@@ -462,8 +462,10 @@ static void update_worker_thread_func(void *) {
    						}
    						resource_lock.unlock();
 
-						if (update_available) update_state = UpdateState::UPDATES_AVAILABLE, next_version_str = best_version_str;
+						resource_lock.lock(); // (the Update tab text reads next_version_str while it is drawn, under this lock)
+						if (update_available) next_version_str = best_version_str, update_state = UpdateState::UPDATES_AVAILABLE;
 						else update_state = UpdateState::UP_TO_DATE;
+						resource_lock.unlock();
 						var_update_available = update_available;
 						var_need_refresh = true;
 						check_success = true;

@@ -1,1 +1,1 @@
-Search: a pasted or scanned results link runs that search; the search box says so while a search is still loading. Long menu labels, the Filter row and the Most watched line are cut to fit.
+Settings: the version shown in the Update tab is written under the lock the screen reads it with.
