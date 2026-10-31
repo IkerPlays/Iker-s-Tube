@@ -455,6 +455,8 @@ static const TrEntry kTrEntries[] = {
 	{"YouTube is busy, try later", {"YouTube est occupé, réessayez plus tard", "YouTube ist ausgelastet, später versuchen", "YouTube è occupato, riprova più tardi", "O YouTube está ocupado, tente depois", "YouTubeが混雑中です。後でお試しください"}},
 	{"YouTube refused it, sign in again", {"YouTube a refusé, reconnectez-vous", "YouTube hat abgelehnt, erneut anmelden", "YouTube ha rifiutato, accedi di nuovo", "O YouTube recusou, entre de novo", "YouTubeに拒否されました。再ログインしてください"}},
 	{"check the connection", {"vérifiez la connexion", "Verbindung prüfen", "controlla la connessione", "verifique a conexão", "接続を確認してください"}},
+	{"Could not load the comments, try again", {"Impossible de charger les commentaires, réessayez", "Kommentare konnten nicht geladen werden, erneut versuchen", "Impossibile caricare i commenti, riprova", "Não foi possível carregar os comentários, tente de novo", "コメントを読み込めませんでした。もう一度お試しください"}},
+	{"This video cannot be played", {"Cette vidéo ne peut pas être lue", "Dieses Video kann nicht abgespielt werden", "Questo video non può essere riprodotto", "Este vídeo não pode ser reproduzido", "この動画は再生できません"}},
 	{"Still searching, wait a moment", {"Recherche en cours, patientez", "Suche läuft noch, bitte warten", "Ricerca in corso, attendi un momento", "Ainda pesquisando, aguarde um momento", "検索中です。少々お待ちください"}},
 	{"sign in again in Settings", {"reconnectez-vous dans Réglages", "in den Einstellungen erneut anmelden", "accedi di nuovo in Impostazioni", "entre de novo em Configurações", "設定で再ログインしてください"}},
 	{"too many requests, try later", {"trop de requêtes, réessayez plus tard", "zu viele Anfragen, später versuchen", "troppe richieste, riprova più tardi", "muitas solicitações, tente depois", "リクエストが多すぎます。後でお試しください"}},

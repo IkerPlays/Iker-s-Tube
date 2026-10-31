@@ -80,6 +80,7 @@ volatile bool vid_change_video_request = false;
 volatile bool vid_pausing = false;
 volatile bool vid_pausing_seek = false;
 volatile bool eof_reached = false;
+volatile double eof_resume_pos = -1; // where a stream that was cut before its end stopped (Play goes back there, not to 0:00); -1 : the video really ended
 volatile bool audio_only_mode = false;
 volatile bool video_skip_drawing = false; // for performance reason, enabled when opening keyboard
 volatile int video_p_value = 360;
@@ -3221,6 +3222,12 @@ debug_info_view =
     small_resource_lock.unlock();
     }
 
+    if (is_to_play && !tmp_video_info.is_playable()) { // (autoplay, queue and next video loads showed nothing when the page could not be played)
+	    small_resource_lock.lock();
+	    const bool still_wanted = vid_already_init && cur_playing_url == url;
+	    small_resource_lock.unlock();
+	    if (still_wanted) notice_show(tr("This video cannot be played", "Este vídeo no se puede reproducir") + (tmp_video_info.error != "" ? ": " + tmp_video_info.error.substr(0, 40) : std::string()));
+    }
     if (is_to_play && tmp_video_info.is_playable()) {
 	    small_resource_lock.lock();
 	    if (!vid_already_init) { // app shut down while loading
@@ -3528,6 +3535,11 @@ debug_info_view =
 	    new_result.comment_sort_type = target;
 	    new_result.load_more_comments();
 	    remove_cpu_limit(ADDITIONAL_CPU_LIMIT);
+
+	    if (new_result.comments.empty() && new_result.error != "") { // the new order could not be loaded: the comments on screen stay
+		    notice_show(tr("Could not load the comments, try again", "No se pudieron cargar los comentarios, inténtalo de nuevo"));
+		    return;
+	    }
 
 	    std::vector<View *> new_comment_views;
 	    for (size_t i = 0; i < new_result.comments.size(); i++) {
@@ -4184,7 +4196,8 @@ static void autoplay_countdown_tick() {
 			    if (vid_pausing) {
 			    vid_pausing = false;
 			    if (eof_reached) {
-			    send_seek_request_wo_lock(0);
+			    send_seek_request_wo_lock(eof_resume_pos >= 0 ? eof_resume_pos : 0);
+			    eof_resume_pos = -1;
 			    } else if (double back = pause_rewind_seconds()) {
 			    send_seek_request_wo_lock(std::max(0.0, vid_current_pos - back));
 			    }
@@ -4196,6 +4209,7 @@ static void autoplay_countdown_tick() {
 			    }
 		    } else if (cur_video_info.is_playable()) {
 			    network_waiting_status = NULL;
+			    video_retry_left = MAX_RETRY_CNT; // (Play after the retries ran out gets its own retries)
 			    send_change_video_request_wo_lock(cur_displaying_url, true, false, false);
 		    }
 	    }
@@ -4225,7 +4239,10 @@ static void autoplay_countdown_tick() {
     if (!vid_play_request || !network_decoder.ready) return; // (while the stream is opening, the pause would be lost when the speaker starts)
 	    if (vid_pausing) {
 		    if (!vid_pausing_seek) Util_speaker_resume(0);
-		    if (eof_reached) send_seek_request_wo_lock(0);
+		    if (eof_reached) {
+			    send_seek_request_wo_lock(eof_resume_pos >= 0 ? eof_resume_pos : 0);
+			    eof_resume_pos = -1;
+		    }
 		    else if (double back = pause_rewind_seconds()) send_seek_request_wo_lock(std::max(0.0, vid_current_pos - back));
 		    vid_pausing = false;
 	    } else {
@@ -4581,7 +4598,7 @@ static void autoplay_countdown_tick() {
 			    vid_audio_format = "n/a";
 			    vid_change_video_request = false;
 			    vid_seek_request = false;
-			    eof_reached = false;
+			    eof_reached = false; eof_resume_pos = -1;
 			    vid_play_request = true;
 			    vid_total_time = 0;
 			    vid_total_frames = 0;
@@ -4789,6 +4806,7 @@ static void autoplay_countdown_tick() {
 						    // the stream ended long before the end of the video (the connection died) : that is not a watched video, so the
 						    // resume point, the lists and the autoplay stay as they are
 						    notice_show(tr("The video stopped before the end. Check the connection", "El vídeo se cortó antes del final. Revisa la conexión"));
+						    eof_resume_pos = std::max(0.0, (double)vid_current_pos - 2);
 					    } else if (!eof_reached) { // the first time it reaches EOF
 						    small_resource_lock.lock();
 						    bool stop_here = stop_after_video; // "stop after this video" was requested
@@ -4845,7 +4863,7 @@ static void autoplay_countdown_tick() {
 					    usleep(10000);
 					    continue;
 				    } else {
-					    eof_reached = false;
+					    eof_reached = false; eof_resume_pos = -1;
 				    }
 
 				    if (type == NetworkMultipleDecoder::PacketType::AUDIO) {
@@ -5604,7 +5622,8 @@ static void autoplay_countdown_tick() {
 						    Util_speaker_resume(0);
 					    }
 					    if (eof_reached) {
-					    send_seek_request(0);
+					    send_seek_request(eof_resume_pos >= 0 ? eof_resume_pos : 0);
+					    eof_resume_pos = -1;
 					    } else if (double back = pause_rewind_seconds()) {
 					    send_seek_request(std::max(0.0, vid_current_pos - back));
 					    }

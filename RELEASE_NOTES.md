@@ -1,1 +1,1 @@
-Settings: the version shown in the Update tab is written under the lock the screen reads it with.
+Player: unplayable videos opened by autoplay/queue say so, Play after failed retries retries again, a cut stream resumes where it stopped, a failed comment reorder keeps the comments. Decoder: bounds checks for damaged H.264 packets, failed probes are reported. Exit: no double free of the sign-in session.

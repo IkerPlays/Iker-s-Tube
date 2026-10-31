@@ -78,11 +78,8 @@ void exit() {
 		LightLock_Unlock(&token_lock);
 		if (have_tokens) save_tokens();
 	}
-	if (session_list) {
-		delete session_list;
-		session_list = nullptr;
-	}
-
+	// (session_list is not deleted here: NetworkSessionList::init() put it in the list that at_exit() deinitializes later,
+	// and a worker may still be inside perform())
 	psExit();
 }
 

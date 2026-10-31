@@ -180,7 +180,7 @@ Result_with_string NetworkDecoderFFmpegIOData::init_(int type, NetworkDecoder *p
 		goto fail;
 	}
 	ffmpeg_result = avformat_find_stream_info(format_context[type], NULL);
-	if (!format_context[type]) {
+	if (ffmpeg_result < 0) { // (the test was on the context, which is never null here: a failed probe went on with incomplete stream info)
 		result.error_description = "avformat_find_stream_info() failed " + std::to_string(ffmpeg_result);
 		goto fail;
 	}
@@ -871,6 +871,7 @@ ffmpeg_fail:
 	result.string = DEF_ERR_FFMPEG_RETURNED_NOT_SUCCESS_STR;
 	return result;
 reinit_fail:
+	av_packet_free(&tmp_packet); // (the packet read before the failed reinit is not pushed anywhere)
 	logger.error("debug", "avformat reinit fail : " + result.error_description);
 	return result;
 }
@@ -948,8 +949,26 @@ Result_with_string NetworkDecoder::mvd_decode(int *width, int *height) {
 	int source_offset = 0;
 
 	AVPacket *packet_read = packet_buffer[VIDEO][0];
-	u8 *mvd_packet = (u8 *)linearAlloc_concurrent(packet_read->size);
-	if (mvd_first) {
+	const int extradata_size = decoder_context[VIDEO]->extradata_size;
+	u8 *mvd_packet = (u8 *)linearAlloc_concurrent(std::max(packet_read->size, extradata_size + 8));
+	if (!mvd_packet) {
+		logger.error("mvd", "linearAlloc_concurrent() failed");
+		result.code = DEF_ERR_OTHER;
+		result.string = DEF_ERR_OTHER_STR;
+		result.error_description = "out of linear memory";
+		return result;
+	}
+	// (the SPS and PPS are sent only when the extradata really holds them: no reads past it)
+	bool send_parameter_sets = false;
+	if (mvd_first && extradata_size >= 11) {
+		const u8 *extradata = decoder_context[VIDEO]->extradata;
+		int sps_len = extradata[7];
+		if (11 + sps_len <= extradata_size) {
+			int pps_len = extradata[10 + sps_len];
+			send_parameter_sets = 11 + sps_len + pps_len <= extradata_size;
+		}
+	}
+	if (send_parameter_sets) {
 		// set extra data
 
 		offset = 0;
@@ -988,6 +1007,7 @@ Result_with_string NetworkDecoder::mvd_decode(int *width, int *height) {
 		int size = *((int *)(packet_read->data + source_offset));
 		size = __builtin_bswap32(size);
 		source_offset += 4;
+		if (size <= 0 || size > packet_read->size - source_offset) break; // (a corrupt length would read past the packet and write past mvd_packet)
 
 		// set nal prefix 0x0 0x0 0x1
 		memset(mvd_packet + offset, 0x0, 0x2);
