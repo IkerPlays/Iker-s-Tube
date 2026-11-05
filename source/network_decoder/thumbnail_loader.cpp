@@ -497,6 +497,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 				}
 				// channel icon : round
 				// with alpha mask
+				bool icon_converted = false; // (when the RGBA copy cannot be allocated the icon stays RGB565 and is uploaded as such)
 				if (info.type == ThumbnailType::ICON) {
 					u32 *rgba_data = (u32 *)malloc(w * h * 4);
 					if (rgba_data) {
@@ -524,6 +525,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 						}
 						free(decoded_data);
 						decoded_data = (u8 *)rgba_data;
+						icon_converted = true;
 					}
 				}
 
@@ -538,7 +540,7 @@ void thumbnail_downloader_thread_func(void *arg) {
 				}
 
 				Result_with_string result;
-				GPU_TEXCOLOR format = (info.type == ThumbnailType::ICON) ? GPU_RGBA8 : GPU_RGB565;
+				GPU_TEXCOLOR format = icon_converted ? GPU_RGBA8 : GPU_RGB565;
 
 				result = Draw_c2d_image_init(&result_image, texture_w, texture_h, format);
 				if (result.code != 0) {

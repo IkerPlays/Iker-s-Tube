@@ -291,7 +291,15 @@ Result_with_string NetworkMultipleDecoder::seek(s64 microseconds) {
 		decoder.clear_buffer();
 		// flush data buffered inside the filter
 		decoder.deinit_filter();
-		decoder.init_filter();
+		auto filter_result = decoder.init_filter();
+		if (filter_result.code != 0) { // (a missing filter graph would crash the next audio frame: it is built once more, else the seek fails)
+			decoder.deinit_filter();
+			filter_result = decoder.init_filter();
+		}
+		if (filter_result.code != 0) {
+			decoder.deinit_filter();
+			return filter_result;
+		}
 
 		decoder.change_ffmpeg_io_data(fragments[(int)seq_using], adjust_timestamp ? seq_using * fragment_len : 0);
 		// trying to seek to a point too close to the end somehow causes ffmpeg to read the entire stream again ?

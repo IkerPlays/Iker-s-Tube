@@ -8,6 +8,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Live chat.** The chat window is not rebuilt while a finger is on it, so taps on Write, Close and the mode button are no longer lost on a busy chat.
 - **Sign-in.** The requests of the sign-in code (token refresh, device code, library and subscription fetches) go one at a time through its network session, so two threads can no longer free each other's connections.
 - **Live streams.** A live segment that fails to open, or is interrupted, frees its ffmpeg contexts, so a long outage no longer eats memory with every retry.
+- **Decoder and icons.** A seek whose audio filter cannot be rebuilt now fails cleanly instead of crashing on the next audio frame, and a channel icon that cannot get its transparency copy (low memory) is drawn as it is instead of reading past its buffer.
 
 ## Installing
 
