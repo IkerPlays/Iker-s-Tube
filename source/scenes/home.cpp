@@ -686,7 +686,11 @@ static void update_oauth_feed_bottom_view(bool force_show_loading) {
 		                                    ->set_on_view_released([](View &) {
 			                                    if (oauth_feed_error != "" && !is_async_task_running(load_oauth_subscription_feed) && !is_async_task_running(load_oauth_subscription_feed_more)) {
 				                                    oauth_feed_error = "";
-				                                    oauth_feed_has_more = true;
+				                                    if (oauth_feed_continuation_token == "") { // the first page failed: there is no "more" to ask, the feed itself is loaded again
+					                                    queue_async_task(load_oauth_subscription_feed, NULL);
+				                                    } else {
+					                                    oauth_feed_has_more = true;
+				                                    }
 				                                    var_need_refresh = true;
 			                                    }
 		                                    })
@@ -870,8 +874,7 @@ static void load_subscription_feed(void *) {
 			new_info.icon_url = result.icon_url;
 			new_info.subscriber_count_str = result.subscriber_count_str;
 			if (subscription_is_subscribed(result.id)) { // (a channel unsubscribed while the refresh ran must stay unsubscribed)
-				subscription_unsubscribe(result.id);
-				subscription_subscribe(new_info);
+				subscription_subscribe(new_info); // (it replaces the entry by id: no moment where the channel is missing from the saved list)
 			}
 		}
 
@@ -1455,9 +1458,13 @@ static void load_oauth_subscribed_channels(void *) {
 		return;
 	}
 
+	auto new_oauth_channels = get_oauth_subscribed_channels(); // (before the lock: it can wait for the Wi-Fi and fetch, and Home_draw needs the lock every frame)
 	resource_lock.lock();
-	auto new_oauth_channels = get_oauth_subscribed_channels();
-	update_oauth_subscribed_channels(new_oauth_channels);
+	if (new_oauth_channels.empty()) {
+		notice_show(tr("Could not refresh the channels", "No se pudieron actualizar los canales")); // (a failed fetch must not wipe the list on screen)
+	} else {
+		update_oauth_subscribed_channels(new_oauth_channels);
+	}
 
 	if (oauth_channels_tab_view) {
 		oauth_channels_tab_view->finish_pull_refresh();

@@ -807,7 +807,7 @@ static void build_offline(VerticalListView *list) {
 		            }),
 		            items.end());
 	}
-	if (all_items > 3) { // search inside the downloads
+	if (all_items > 3 || offline_filter != "") { // search inside the downloads (the row stays while a filter is set: it holds the Clear button)
 		list->views.push_back((new HorizontalListView(0, 0, 22))
 		                          ->set_views({make_button(offline_filter == "" ? tr("Search downloads", "Buscar en descargas") : truncate_first_line(tr("Search: ", "Búsqueda: ") + offline_filter, 228, 0.5),
 		                                                   offline_filter == "" ? 320 : 240,
@@ -881,7 +881,7 @@ static void build_offline(VerticalListView *list) {
 	}
 	if (items.size() > 0) { // delete everything (asks first)
 		list->views.push_back(make_button(tr("Delete all downloads", "Borrar todas las descargas"), 320, []() {
-			show_dialog({make_option(tr("Yes, delete everything", "Sí, borrar todo"), []() {
+			show_dialog({make_option(tr("Yes, delete everything", "Sí, borrar todo") + " (" + std::to_string(offline_list().size()) + ")", []() { // (the whole list goes, whatever the search shows: the count tells how many)
 				             offline_download_cancel(); // nothing running or queued comes back after the delete
 				             offline_remove_all();
 				             rebuild_request = true;
@@ -1238,7 +1238,7 @@ void Library_draw(void) {
 			rebuild_request = false;
 			rebuild_views();
 		}
-		if ((key.p_l || key.p_r) && !on_long_tap_dialog->is_visible) { // L / R : the next / previous tab (like Home and Channel)
+		if ((key.p_l || key.p_r) && !on_long_tap_dialog->is_visible && !popup_took_input) { // L / R : the next / previous tab (like Home and Channel)
 		mode = (mode + (key.p_r ? 1 : 5)) % 6;
 		var_library_tab = mode;
 		misc_tasks_request(TASK_SAVE_SETTINGS);

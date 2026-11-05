@@ -11,6 +11,8 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Decoder and icons.** A seek whose audio filter cannot be rebuilt now fails cleanly instead of crashing on the next audio frame, and a channel icon that cannot get its transparency copy (low memory) is drawn as it is instead of reading past its buffer.
 - **Theme.** Choosing the dark theme by hand while "Automatic theme by time" is on turns the automatic theme off (it used to flip the choice back at once), and both settings show the real state when you come back to Settings.
 - **Thumbnails.** A picture whose texture upload fails is asked again after a few seconds instead of being decoded again at every loop.
+- **Home.** Pull to refresh on Account channels no longer freezes Home while it waits for the Wi-Fi and a failed refresh keeps the list, Tap to try again on the account feed reloads it when the first page failed, and refreshing a channel no longer leaves a moment where it is missing from your subscriptions.
+- **Library.** L / R do not change tabs under an open QR popup, Delete all downloads shows how many downloads go, and the downloads search row stays visible while a filter is set.
 
 ## Installing
 
