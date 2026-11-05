@@ -258,7 +258,11 @@ void YouTubeSearchResult::load_more_results() {
 	access_and_parse_json(
 	    [&]() { return http_post_json(get_innertube_api_url("search"), post_content); },
 	    [&](Document &, RJson yt_result) {
-		    estimated_result_num = yt_result["estimatedResults"].string_value();
+		    if (yt_result.has_key("error")) { // (a 400/403 answer is not "no more results": the token stays so that asking again works)
+			    error = "[se+] " + yt_result["error"]["message"].string_value().substr(0, 60);
+			    return;
+		    }
+		    if (yt_result.has_key("estimatedResults")) estimated_result_num = yt_result["estimatedResults"].string_value(); // (a continuation answer has none: the first page's count stays)
 		    continue_token = "";
 		    for (auto i : yt_result["onResponseReceivedCommands"].array_items()) {
 			    for (auto j : i["appendContinuationItemsAction"]["continuationItems"].array_items()) {

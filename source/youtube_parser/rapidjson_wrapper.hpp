@@ -42,7 +42,7 @@ class RJson {
 
 	const char *cstring_value() const { return json && json->IsString() ? json->GetString() : ""; }
 	std::string string_value() const { return cstring_value(); }
-	int int_value() const { return json && json->IsInt() ? json->GetInt() : 0; }
+	int int_value() const { return json && json->IsInt() ? json->GetInt() : json && json->IsString() ? atoi(json->GetString()) : 0; } // (YouTube sends many numbers as strings: "120")
 	bool bool_value() const { return json && json->IsBool() ? json->GetBool() : false; }
 	std::vector<RJson> array_items() const {
 		if (!json || !json->IsArray()) {

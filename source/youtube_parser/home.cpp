@@ -129,10 +129,10 @@ void YouTubeHomeResult::load_more_results() {
 		return;
 	}
 
+	error = ""; // (an error of an earlier failed load-more must not block every later one)
 	if (continue_token == "") {
 		error = "[home] continue token not set";
-	}
-	if (visitor_data == "") {
+	} else if (visitor_data == "") {
 		error = "[home] visitor data not set";
 	}
 	if (error != "") {

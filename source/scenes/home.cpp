@@ -880,12 +880,19 @@ static void load_subscription_feed(void *) {
 
 		int loaded_cnt = 0;
 		for (auto video : result.videos) {
-			std::string date_number_str;
-			for (auto c : video.publish_date) {
-				if (isdigit(c)) {
-					date_number_str.push_back(c);
+			std::string date_number_str; // (the first group of digits only: "3 days ago 2024" is 3, not 32024)
+			{
+				bool in_number = false;
+				for (auto c : video.publish_date) {
+					if (isdigit((unsigned char)c)) {
+						date_number_str.push_back(c);
+						in_number = true;
+					} else if (in_number) {
+						break;
+					}
 				}
 			}
+			if (date_number_str.size() > 4) continue; // (an absolute date like "2024": not a relative age; no digits at all stays as it was: "just now")
 
 			// 1 : seconds
 			char *end;

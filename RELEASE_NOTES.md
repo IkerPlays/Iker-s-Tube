@@ -1,1 +1,1 @@
-Studio: empty description/tags are refused, Delete confirmation expires, upload resume keeps the category, long text cut on letters. Notices: a repeated notice no longer drops the waiting one. Plus the Home, Library, Playlists, Watch later, theme, volume, player and decoder fixes listed in the stable notes.
+Search: an error answer to Load more keeps the continue token; the results count stays. Home: a failed Load more no longer blocks the next ones; the New videos filter reads dates correctly. Numbers sent as text by YouTube are read. History dialog leak and tab index clamp.
