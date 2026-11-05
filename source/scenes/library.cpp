@@ -633,7 +633,7 @@ static void build_liked(VerticalListView *list) {
 		queue_async_task(load_liked_task, NULL);
 	}
 	std::vector<FavoriteVideo> videos = filter_and_sort(liked_videos);
-	bool loading = liked_loading, failed = liked_failed;
+	bool loading = liked_loading || (liked_task_running && !liked_loaded), failed = liked_failed; // (a source switch while the old load still runs shows Loading, not "No liked videos")
 	resource_lock_lib.unlock();
 	{
 		resource_lock_lib.lock();
