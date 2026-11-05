@@ -20,7 +20,9 @@ static void notice_start_locked(const std::string &text) {
 void notice_show(const std::string &text) {
 	notice_lock.lock();
 	u64 now = osGetTime();
-	if (now < notice_until && !notice_text.empty() && text != notice_text && now - notice_start < 1200) {
+	if (now < notice_until && !notice_text.empty() && text == notice_text && notice_has_next) {
+		// (the same text again while another notice waits behind it: the waiting one must not be wiped)
+	} else if (now < notice_until && !notice_text.empty() && text != notice_text && now - notice_start < 1200) {
 		notice_next = text; // (every notice is readable for at least a second : a badge or a battery warning is not wiped at once)
 		notice_has_next = true;
 	} else {

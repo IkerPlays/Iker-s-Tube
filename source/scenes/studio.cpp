@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/utf8.hpp"
 #include "util/misc_tasks.hpp"
 #include "scenes/studio.hpp"
 #include "scenes/video_player.hpp"
@@ -45,6 +46,7 @@ static bool my_public_only = false; // the list is the public one (no Studio log
 static StudioVideo sel_video;
 static std::string sel_stats; // views, likes and comments of the open video (guarded by state_lock)
 static bool delete_armed = false; // the first tap on Delete only asks for a second one
+static u64 delete_armed_at = 0;   // ...which counts for 4 seconds only
 static std::string pick_dir = "sdmc:/";
 static std::string form_path, form_title, form_desc;
 static int form_privacy = 0; // 0 private, 1 unlisted, 2 public
@@ -254,8 +256,10 @@ static void start_upload(const std::string &resume_path = "", const std::string 
 	                     : new UploadJob{form_path, form_title, form_desc, privacy_name(form_privacy), categories[form_category].id, form_thumb, form_tags, "", form_short, publish_options[form_publish],
 	                                  form_playlist >= 0 && form_playlist < (int)form_lists.size() ? form_lists[form_playlist].id : std::string()};
 	for (auto &c : job->privacy) c = tolower(c);
-	var_studio_category = form_category;
-	misc_tasks_request(TASK_SAVE_SETTINGS);
+	if (resume_url == "") { // (resuming an upload must not overwrite the remembered category with the empty form's)
+		var_studio_category = form_category;
+		misc_tasks_request(TASK_SAVE_SETTINGS);
+	}
 	upload_running = true;
 	upload_percent = 0;
 	LightLock_Lock(&state_lock);
@@ -432,7 +436,7 @@ static std::vector<View *> build_dash() {
 	{ // an upload that did not finish can be continued
 		std::string pending_path, pending_title, pending_url;
 		if (!upload_running && youtube_studio_pending_upload(pending_path, pending_title, pending_url)) {
-			v.push_back(button([pending_title]() { return tr("Continue the unfinished upload: ", "Seguir la subida sin terminar: ") + pending_title.substr(0, 20); },
+			v.push_back(button([pending_title]() { return tr("Continue the unfinished upload: ", "Seguir la subida sin terminar: ") + utf8_prefix(pending_title, 20); },
 			                   [pending_path, pending_title, pending_url]() {
 				                   if (studio_ready_or_notice()) start_upload(pending_path, pending_title, pending_url);
 			                   }));
@@ -579,7 +583,7 @@ static std::vector<View *> build_form() {
 		if (ask_text(tr("Title", "Título"), form_title, 95, false, out)) form_title = out;
 		var_need_refresh = true;
 	}));
-	v.push_back(button([]() { return tr("Description: ", "Descripción: ") + (form_desc == "" ? "-" : form_desc.substr(0, 40)); }, []() {
+	v.push_back(button([]() { return tr("Description: ", "Descripción: ") + (form_desc == "" ? "-" : utf8_prefix(form_desc, 40)); }, []() {
 		std::string out;
 		if (ask_text(tr("Description", "Descripción"), form_desc, 400, true, out)) form_desc = out;
 		var_need_refresh = true;
@@ -588,7 +592,7 @@ static std::vector<View *> build_form() {
 		form_privacy = (form_privacy + 1) % 3;
 		var_need_refresh = true;
 	}));
-	v.push_back(button([]() { return tr("Tags: ", "Etiquetas: ") + (form_tags == "" ? std::string("-") : form_tags.substr(0, 30)); }, []() {
+	v.push_back(button([]() { return tr("Tags: ", "Etiquetas: ") + (form_tags == "" ? std::string("-") : utf8_prefix(form_tags, 30)); }, []() {
 		std::string out;
 		if (ask_text(tr("Tags (separated by commas)", "Etiquetas (separadas por comas)"), form_tags, 200, true, out)) form_tags = out;
 		var_need_refresh = true;
@@ -600,7 +604,7 @@ static std::vector<View *> build_form() {
 	                   }));
 	v.push_back(button([]() {
 		                   if (form_lists_loading) return tr("Playlist: loading...", "Lista: cargando...");
-		                   return tr("Playlist: ", "Lista: ") + (form_playlist >= 0 && form_playlist < (int)form_lists.size() ? form_lists[form_playlist].title.substr(0, 24) : tr("none", "ninguna"));
+		                   return tr("Playlist: ", "Lista: ") + (form_playlist >= 0 && form_playlist < (int)form_lists.size() ? utf8_prefix(form_lists[form_playlist].title, 24) : tr("none", "ninguna"));
 	                   },
 	                   []() {
 		                   if (form_lists.empty()) {
@@ -741,7 +745,7 @@ static std::vector<View *> build_myvideos() {
 	for (auto &video : list) {
 		StudioVideo copy = video;
 		std::string text = "[" + (copy.privacy == "public" ? tr("Public", "Público") : copy.privacy == "unlisted" ? tr("Unlisted", "No listado") : tr("Private", "Privado")) + "] " + copy.title;
-		if (text.size() > 38) text = text.substr(0, 38) + "..";
+		if (text.size() > 38) text = utf8_prefix(text, 38) + "..";
 		if (copy.views != "") text += " - " + copy.views;
 		v.push_back(button([text]() { return text; }, [copy]() {
 			LightLock_Lock(&state_lock);
@@ -761,7 +765,7 @@ static std::vector<View *> build_video() {
 	v.push_back(button([]() { return tr("Back", "Atrás"); }, []() { go(MODE_MYVIDEOS); }));
 	v.push_back(label([]() {
 		std::string title = locked_copy(sel_video.title);
-		return title.size() > 46 ? title.substr(0, 46) + ".." : title;
+		return title.size() > 46 ? utf8_prefix(title, 46) + ".." : title;
 	}));
 	v.push_back(label([]() { return locked_copy(sel_stats); }));
 	v.push_back(button([]() {
@@ -779,21 +783,23 @@ static std::vector<View *> build_video() {
 	}));
 	v.push_back(button([]() { return tr("Change the description", "Cambiar la descripción"); }, []() {
 		std::string out;
-		if (ask_text(tr("Description", "Descripción"), "", 1000, true, out)) edit_async(3, locked_copy(sel_video.id), out);
+		if (ask_text(tr("Description", "Descripción"), "", 1000, false, out)) edit_async(3, locked_copy(sel_video.id), out);
 		var_need_refresh = true;
 	}));
 	v.push_back(button([]() { return tr("Change the tags", "Cambiar las etiquetas"); }, []() {
 		std::string out;
-		if (ask_text(tr("Tags (separated by commas)", "Etiquetas (separadas por comas)"), "", 300, true, out)) edit_async(4, locked_copy(sel_video.id), out);
+		if (ask_text(tr("Tags (separated by commas)", "Etiquetas (separadas por comas)"), "", 300, false, out)) edit_async(4, locked_copy(sel_video.id), out);
 		var_need_refresh = true;
 	}));
 	v.push_back(button([]() { return tr("Watch it", "Verlo"); }, []() {
 		global_intent.next_scene = SceneType::VIDEO_PLAYER;
 		global_intent.arg = youtube_get_video_url_by_id(locked_copy(sel_video.id));
 	}));
-	v.push_back(button([]() { return delete_armed ? tr("Tap again to DELETE it for good", "Toca otra vez para BORRARLO") : tr("Delete", "Borrar"); }, []() {
+	v.push_back(button([]() { if (delete_armed && osGetTime() - delete_armed_at > 4000) delete_armed = false; return delete_armed ? tr("Tap again to DELETE it for good", "Toca otra vez para BORRARLO") : tr("Delete", "Borrar"); }, []() {
+		if (delete_armed && osGetTime() - delete_armed_at > 4000) delete_armed = false; // (the arming expired)
 		if (!delete_armed) {
 			delete_armed = true;
+			delete_armed_at = osGetTime();
 			var_need_refresh = true;
 			return;
 		}
