@@ -362,11 +362,13 @@ void NetworkMultipleDecoder::livestream_initer_thread_func() {
 				}
 				video_stream->quit_request = true;
 				audio_stream->quit_request = true;
+				tmp_ffmpeg_data.deinit(false); // (the format and IO contexts of the failed segment: without this each retry leaked them)
 				continue;
 			} else if (decoder.interrupt) {
 				logger.caution("net/live-init", "init interrupt but not err : " + result.error_description);
 				video_stream->quit_request = true;
 				audio_stream->quit_request = true;
+				tmp_ffmpeg_data.deinit(false);
 				continue;
 			} else if (result.code == 0) {
 				if (video_stream->seq_head != -1) {
@@ -401,6 +403,7 @@ void NetworkMultipleDecoder::livestream_initer_thread_func() {
 					seq_num = 0;
 				}
 				both_stream->quit_request = true;
+				tmp_ffmpeg_data.deinit(false);
 				continue;
 			}
 			both_stream->disable_interrupt = false;
