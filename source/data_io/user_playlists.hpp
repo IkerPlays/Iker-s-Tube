@@ -11,6 +11,7 @@ struct UserPlaylist {
 };
 
 std::vector<UserPlaylist> playlists_get();
+std::string playlist_clean_name(const std::string &name); // the name as playlist_create stores it (trimmed, cut to 40 bytes): use it to find the list afterwards
 bool playlist_create(const std::string &name);                      // false : empty / duplicated name / too many
 void playlist_delete(int index);
 bool playlist_rename(int index, const std::string &name);           // false : empty / duplicated name

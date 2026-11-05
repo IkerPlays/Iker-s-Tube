@@ -105,11 +105,12 @@ static void add_to_playlist_dialog(const FavoriteVideo &video) {
 	std::vector<View *> options;
 	auto lists = playlists_get();
 	for (size_t i = 0; i < lists.size(); i++) {
-		options.push_back(make_option(lists[i].name, [i, video]() { playlist_add(i, video); }));
+		options.push_back(make_option(lists[i].name, [i, video]() { if (!playlist_add(i, video)) notice_show(tr("Already in that list, or the list is full", "Ya está en esa lista, o la lista está llena")); }));
 	}
 	options.push_back(make_option(tr("+ New playlist", "+ Nueva lista"), [video]() {
 		std::string name;
 		if (ask_text(tr("Playlist name", "Nombre de la lista").c_str(), name) && playlist_create(name)) {
+			name = playlist_clean_name(name); // (the list is stored under the cleaned name)
 			auto all = playlists_get();
 			for (size_t i = 0; i < all.size(); i++) {
 				if (all[i].name == name) {
@@ -414,6 +415,7 @@ static void build_queue(VerticalListView *list) {
 					                   notice_show(tr("That name is not valid or already exists", "Ese nombre no vale o ya existe"));
 					                   return;
 				                   }
+				                   name = playlist_clean_name(name);
 				                   int index = -1, added = 0;
 				                   auto all = playlists_get();
 				                   for (size_t k = 0; k < all.size(); k++) {
@@ -993,6 +995,7 @@ static void build_playlists(VerticalListView *list) {
 						                             notice_show(tr("That name is not valid or already exists", "Ese nombre no vale o ya existe"));
 						                             return;
 					                             }
+					                             name = playlist_clean_name(name);
 					                             auto all = playlists_get();
 					                             for (size_t k = 0; k < all.size(); k++) {
 						                             if (all[k].name != name) continue;

@@ -36,6 +36,8 @@ static std::string clean(std::string s, size_t limit = 40) { // (40 bytes is for
 	return s;
 }
 
+std::string playlist_clean_name(const std::string &name) { return clean(name); }
+
 static void ensure_loaded_locked() {
 	if (loaded) {
 		return;

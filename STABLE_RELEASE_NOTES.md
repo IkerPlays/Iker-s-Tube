@@ -13,6 +13,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Thumbnails.** A picture whose texture upload fails is asked again after a few seconds instead of being decoded again at every loop.
 - **Home.** Pull to refresh on Account channels no longer freezes Home while it waits for the Wi-Fi and a failed refresh keeps the list, Tap to try again on the account feed reloads it when the first page failed, and refreshing a channel no longer leaves a moment where it is missing from your subscriptions.
 - **Library.** L / R do not change tabs under an open QR popup, Delete all downloads shows how many downloads go, and the downloads search row stays visible while a filter is set.
+- **Playlists.** Creating a list from the add-to-list dialog, Save the queue and Duplicate find the new list under the name it was stored with (a name with a trailing space or accents used to leave an empty list), and adding a video to a list where it already is says so instead of doing nothing.
 
 ## Installing
 
