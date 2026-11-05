@@ -55,7 +55,7 @@ void History_init(void) {
 	top_channels_request = false;
 	logger.info("history/init", "Initializing...");
 
-	on_long_tap_dialog = new OverlayView(0, 0, 320, 240);
+	if (!on_long_tap_dialog) on_long_tap_dialog = new OverlayView(0, 0, 320, 240); // (created once: a second visit used to leak one more)
 	on_long_tap_dialog->set_is_visible(false);
 
 	load_watch_history();

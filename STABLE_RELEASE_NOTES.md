@@ -3,7 +3,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ## What's new since 1.3.7
 
 ### Changes
-- Nothing yet.
+- **History and tabs.** Opening History again no longer leaks a dialog each time, and a tab view given a selected tab out of range clamps it instead of reading past its list.
 
 ## Installing
 

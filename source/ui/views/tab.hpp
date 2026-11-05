@@ -30,7 +30,7 @@ struct TabView : public FixedSizeView {
 	}
 	TabView *set_views(const std::vector<View *> &views, int selected_tab = 0) {
 		this->views = views;
-		this->selected_tab = selected_tab;
+		this->selected_tab = views.empty() ? 0 : std::max(0, std::min(selected_tab, (int)views.size() - 1)); // (an index out of range would be read when drawing)
 		return this;
 	}
 	TabView *set_stretch_subview(bool stretch_subview) {
