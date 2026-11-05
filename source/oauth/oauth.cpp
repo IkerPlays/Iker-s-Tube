@@ -49,6 +49,19 @@ static NetworkSessionList &get_session() {
 	return *session_list;
 }
 
+// The session list is one instance per thread by design (network_io.hpp), but the sign-in code is called from several threads
+// (the OAuth worker, the subscription fetch, the account requests): its requests go one at a time, and it is created under the same lock.
+static LightLock session_net_lock;
+static struct SessionNetLockInit {
+	SessionNetLockInit() { LightLock_Init(&session_net_lock); }
+} session_net_lock_init;
+static NetworkResult session_perform(const HttpRequest &request) {
+	LightLock_Lock(&session_net_lock);
+	NetworkResult result = get_session().perform(request);
+	LightLock_Unlock(&session_net_lock);
+	return result;
+}
+
 static std::string create_browse_request(const std::string &browse_id) {
 	return R"({"context":{"client":{"hl":")" + youtube_parser::language_code + R"(","gl":")" +
 	       youtube_parser::country_code + R"(","clientName":"ANDROID_VR","clientVersion":"1.62.27"}},"browseId":")" +
@@ -96,7 +109,7 @@ void start_device_flow() {
 	std::string post_data = "client_id=" + std::string(CLIENT_ID) + "&scope=" + std::string(SCOPE) +
 	                        "&device_id=" + device_id + "&device_model=NINTENDO3DS";
 
-	auto result = get_session().perform(
+	auto result = session_perform(
 	    HttpRequest::POST(DEVICE_CODE_URL,
 	                      {{"Host", "www.youtube.com"},
 	                       {"User-Agent", "Mozilla/5.0 (Linux; Android 12; Quest 2) AppleWebKit/537.36"},
@@ -151,7 +164,7 @@ void check_device_flow() {
 	std::string post_data = "client_id=" + std::string(CLIENT_ID) + "&client_secret=" + std::string(CLIENT_SECRET) +
 	                        "&code=" + device_code + "&grant_type=" + std::string(GRANT_TYPE_DEVICE);
 
-	auto result = get_session().perform(
+	auto result = session_perform(
 	    HttpRequest::POST(TOKEN_URL,
 	                      {{"Host", "www.youtube.com"},
 	                       {"User-Agent", "Mozilla/5.0 (Linux; Android 12; Quest 2) AppleWebKit/537.36"},
@@ -241,7 +254,7 @@ void refresh_access_token(bool force) {
 	std::string post_data = "client_id=" + std::string(CLIENT_ID) + "&client_secret=" + std::string(CLIENT_SECRET) +
 	                        "&refresh_token=" + refresh_token + "&grant_type=refresh_token";
 
-	auto result = get_session().perform(
+	auto result = session_perform(
 	    HttpRequest::POST(TOKEN_URL,
 	                      {{"Host", "www.youtube.com"},
 	                       {"User-Agent", "Mozilla/5.0 (Linux; Android 12; Quest 2) AppleWebKit/537.36"},
@@ -323,7 +336,7 @@ RJson fetch_browse_data(const std::string &browse_id) {
 
 	std::string post_data = create_browse_request(browse_id);
 
-	auto response = get_session().perform(HttpRequest::POST(
+	auto response = session_perform(HttpRequest::POST(
 	    "https://www.youtube.com/youtubei/v1/browse",
 	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, post_data));
 
@@ -352,7 +365,7 @@ RJson fetch_browse_data_with_continuation(const std::string &browse_id, const st
 
 	std::string post_data = create_browse_request_with_continuation(browse_id, continuation_token);
 
-	auto response = get_session().perform(HttpRequest::POST(
+	auto response = session_perform(HttpRequest::POST(
 	    "https://www.youtube.com/youtubei/v1/browse",
 	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, post_data));
 
@@ -379,7 +392,7 @@ void revoke_tokens() {
 	if (!token_to_revoke.empty()) {
 		std::string post_data = "token=" + token_to_revoke;
 
-		get_session().perform(
+		session_perform(
 		    HttpRequest::POST(REVOKE_URL,
 		                      {{"Host", "www.youtube.com"},
 		                       {"User-Agent", "Mozilla/5.0 (Linux; Android 12; Quest 2) AppleWebKit/537.36"},
@@ -552,7 +565,7 @@ void fetch_library_data() {
 
 	std::string post_data = create_browse_request("FElibrary");
 
-	auto result = get_session().perform(HttpRequest::POST(
+	auto result = session_perform(HttpRequest::POST(
 	    "https://www.youtube.com/youtubei/v1/browse",
 	    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, post_data));
 
@@ -583,7 +596,7 @@ void fetch_library_data() {
 
 	if (!user_channel_id.empty()) {
 		std::string channel_post_data = create_browse_request(user_channel_id);
-		auto channel_result = get_session().perform(HttpRequest::POST(
+		auto channel_result = session_perform(HttpRequest::POST(
 		    "https://www.youtube.com/youtubei/v1/browse",
 		    {{"Content-Type", "application/json"}, {"Authorization", "Bearer " + get_access_token()}}, channel_post_data));
 
