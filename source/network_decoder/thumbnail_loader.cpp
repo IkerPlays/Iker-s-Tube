@@ -558,6 +558,14 @@ void thumbnail_downloader_thread_func(void *arg) {
 					if (result.code != 0) {
 						logger.error("thumb-dl", "Draw_set_texture_data() failed");
 						Draw_c2d_image_free(result_image);
+						resource_lock.lock();
+						if (requested_urls.count(info.url)) { // (like the out of memory case: not decoded again and again, asked again in a few seconds)
+							requested_urls[info.url].is_loaded = false;
+							requested_urls[info.url].error = true;
+							requested_urls[info.url].waiting_retry = true;
+							requested_urls[info.url].next_retry = time(NULL) + 5;
+						}
+						resource_lock.unlock();
 					} else {
 						bool stored = false;
 						resource_lock.lock();
