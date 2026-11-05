@@ -21,6 +21,11 @@ static void sync_task(void *arg) {
 	watch_later_sync_remote(p->id, p->add);
 	delete p;
 }
+static void sync_many_task(void *arg) {
+	std::vector<std::string> *ids = (std::vector<std::string> *)arg;
+	watch_later_sync_remote_remove_many(*ids);
+	delete ids;
+}
 static void sync_remote(const std::string &id, bool add) {
 	if (OAuth::is_authenticated()) {
 		queue_async_task(sync_task, new SyncArg{id, add});
@@ -153,7 +158,8 @@ int watch_later_remove_many(const std::vector<std::string> &video_ids) {
 	}
 	if (!removed.empty()) save_locked(); // (a bulk action saves the file once, not once per video)
 	watch_later_lock.unlock();
-	for (auto &id : removed) sync_remote(id, false);
+	if (removed.size() == 1) sync_remote(removed[0], false);
+	else if (removed.size() > 1 && OAuth::is_authenticated()) queue_async_task(sync_many_task, new std::vector<std::string>(removed)); // (one task, a few requests: not one task per video)
 	return (int)removed.size();
 }
 

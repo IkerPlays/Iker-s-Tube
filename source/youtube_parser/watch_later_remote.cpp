@@ -25,6 +25,26 @@ void watch_later_sync_remote(const std::string &video_id, bool add) {
 	                               (response.first ? "ok" : "request failed"));
 }
 
+void watch_later_sync_remote_remove_many(const std::vector<std::string> &video_ids) {
+	if (!OAuth::is_authenticated()) return;
+	const size_t per_request = 50;
+	for (size_t from = 0; from < video_ids.size(); from += per_request) {
+		std::string actions;
+		for (size_t i = from; i < video_ids.size() && i < from + per_request; i++) {
+			if (video_ids[i].empty() || video_ids[i].find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-") != std::string::npos) continue; // (a video id is only these characters: it goes into the JSON as it is)
+			actions += std::string(actions.empty() ? "" : ", ") + "{\"action\": \"ACTION_REMOVE_VIDEO_BY_VIDEO_ID\", \"removedVideoId\": \"" + video_ids[i] + "\"}";
+		}
+		if (actions.empty()) continue;
+		std::string body = R"({"context": {"client": {"hl": ")" + language_code + R"(","gl": ")" + country_code +
+		                   R"(","clientName": "ANDROID_VR","clientVersion": "1.65.10","deviceMake": "Oculus","deviceModel": "Quest 3","androidSdkVersion": "34","osName": "Android","osVersion": "14"}}, "playlistId": "WL", "actions": [)" +
+		                   actions + "]}";
+		std::map<std::string, std::string> headers;
+		headers["Authorization"] = "Bearer " + OAuth::get_fresh_access_token();
+		auto response = http_post_json(get_innertube_api_url("browse/edit_playlist"), body, headers);
+		logger.info("watch-later", "remove " + std::to_string(std::min(per_request, video_ids.size() - from)) + " videos -> " + (response.first ? "ok" : "request failed"));
+	}
+}
+
 // The answer is minified JSON : the fields of every "playlistVideoRenderer" are read as text (no need for a full parse)
 static std::string text_after(const std::string &body, size_t from, size_t to, const std::string &key) {
 	size_t p = body.find(key, from);
