@@ -78,6 +78,7 @@ struct SectionTitleWithInfoView : public FixedSizeView {
 };
 
 static SelectorView *video_quality_setting_view = NULL;
+static SelectorView *auto_theme_setting_view = NULL, *dark_theme_setting_view = NULL; // (kept to show what the automatic theme did)
 // the old 3DS family plays 240p at most : the Video quality row only offers Audio, 144p and 240p there
 static SelectorView *limit_to_old3ds_qualities(SelectorView *view) {
 	if (!var_is_new3ds) {
@@ -734,7 +735,7 @@ void Sem_init(void) {
 								var_need_refresh = true;
 							}
 						}),
-					(new SelectorView(0, 0, 320, 35, true))
+					(auto_theme_setting_view = new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
@@ -748,7 +749,7 @@ void Sem_init(void) {
 							}
 						}),
 					// Dark theme
-					(new SelectorView(0, 0, 320, 35, true))
+					(dark_theme_setting_view = new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
 							(std::function<std::string ()>) []() { return LOCALIZED(OFF); },
 							(std::function<std::string ()>) []() { return LOCALIZED(ON); }
@@ -756,6 +757,11 @@ void Sem_init(void) {
 						->set_title([](const SelectorView &) { return LOCALIZED(DARK_THEME); })
 						->set_on_change([](const SelectorView &view) {
 							if (var_night_mode != view.selected_button) {
+								if (var_auto_theme) { // (the automatic theme would flip it back at the next frame: choosing by hand turns it off)
+									var_auto_theme = false;
+									if (auto_theme_setting_view) auto_theme_setting_view->selected_button = 0;
+									notice_show(tr("Automatic theme turned off", "Tema automático desactivado"));
+								}
 								var_night_mode = view.selected_button;
 								misc_tasks_request(TASK_SAVE_SETTINGS);
 							}
@@ -2631,6 +2637,8 @@ void Sem_suspend(void) {
 	thread_suspend = true;
 }
 void Sem_resume(std::string arg) {
+	if (auto_theme_setting_view) auto_theme_setting_view->selected_button = var_auto_theme; // (the automatic theme may have changed the theme meanwhile)
+	if (dark_theme_setting_view) dark_theme_setting_view->selected_button = var_night_mode;
 	if (video_quality_setting_view) { // (the quality may have changed in the player)
 		int q = var_video_quality;
 		video_quality_setting_view->selected_button = q <= 0 ? 0 : q <= 144 ? 1 : q <= 240 ? 2 : q <= 360 ? 3 : 4;
