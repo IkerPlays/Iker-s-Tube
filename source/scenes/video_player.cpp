@@ -1361,7 +1361,7 @@ debug_info_view =
 	// volume change needs a reconstruction of the filter graph, so don't update volume too often
 	static int cnt = 0;
 	if (++cnt >= 15) {
-		cnt = 0, network_decoder.set_preamp(volume);
+		cnt = 0, mini_volume_apply(volume); // (the same volume the Mute button and the sleep timer fade use)
 	}
 	                 })
 	                 ->set_on_release([](BarView &view) {
@@ -1369,7 +1369,7 @@ debug_info_view =
 	if (volume >= 0.95 && volume <= 1.05) {
 		volume = 1.0, view.set_value(0);
 	}
-	network_decoder.set_preamp(volume);
+	mini_volume_apply(volume);
 	                 }),
 	             (speed_bar_view = new BarView(0, 0, 260, 30)) // speed
 	                 ->set_values(0.25, 1.5, 1.0)
@@ -5439,7 +5439,7 @@ static void autoplay_countdown_tick() {
 				    show_live_chat();
 			    } else if (live_chat_is_open()) {
 				    if (!account_pl_popup_view->is_visible || live_chat_video() != snap_id) live_chat_close(); // the screen was left with B, or another video was opened
-				    else if (live_chat_version() != chat_shown_version && account_pl_popup_view->subview == chat_popup_subview) show_live_chat();
+				    else if (live_chat_version() != chat_shown_version && account_pl_popup_view->subview == chat_popup_subview && !key.h_touch) show_live_chat(); // (not while a finger is down: the rebuild would delete the pressed button and the tap would be lost)
 			    }
 			    std::vector<YouTubeChannelSuccinct> collab_list;
 			    if (collab_take(collab_list)) {
