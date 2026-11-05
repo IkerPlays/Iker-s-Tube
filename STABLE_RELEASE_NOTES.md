@@ -3,7 +3,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ## What's new since 1.3.6
 
 ### Changes
-- Nothing yet.
+- **Player.** A tap in the bottom-right corner while a popup is open goes to the popup instead of opening the hidden menu, a failed seek says so instead of stopping silently, and a failed Previous no longer leaves its mark on the next load.
 
 ## Installing
 

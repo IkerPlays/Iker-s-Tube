@@ -3226,6 +3226,9 @@ debug_info_view =
 	    small_resource_lock.lock();
 	    const bool still_wanted = vid_already_init && cur_playing_url == url;
 	    small_resource_lock.unlock();
+	    LightLock_Lock(&back_lock);
+	    if (back_nav_target == url) back_nav_target = ""; // (a "previous" that failed to load must not leave its mark on a later load of the same address)
+	    LightLock_Unlock(&back_lock);
 	    if (still_wanted) notice_show(tr("This video cannot be played", "Este vídeo no se puede reproducir") + (tmp_video_info.error != "" ? ": " + tmp_video_info.error.substr(0, 40) : std::string()));
     }
     if (is_to_play && tmp_video_info.is_playable()) {
@@ -4775,6 +4778,7 @@ static void autoplay_countdown_tick() {
 						                result.code);
 						    if (result.code != 0) {
 							    vid_play_request = false;
+							    notice_show(tr("Could not seek, press Play to continue", "No se pudo saltar, pulsa Play para continuar"));
 						    }
 						    break;
 					    }
@@ -5273,7 +5277,15 @@ static void autoplay_countdown_tick() {
 			    thumbnail_set_priorities(priority_list);
 		    }
 
-		    update_overlay_menu(&key);
+		    if (text_popup_view->is_visible || comment_dialog->is_visible || account_pl_popup_view->is_visible || equalizer_popup_view->is_visible) {
+			    // a popup covers the corner of the menu icon: a tap there is the popup's, so the menu gets a copy without the touch
+			    Hid_info menu_key = key;
+			    menu_key.p_touch = menu_key.h_touch = false;
+			    menu_key.touch_x = menu_key.touch_y = -1;
+			    update_overlay_menu(&menu_key);
+		    } else {
+			    update_overlay_menu(&key);
+		    }
 		    auto_quality_tick();
 		    ab_loop_tick();
 		    channel_speed_tick();
