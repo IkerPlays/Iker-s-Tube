@@ -9,6 +9,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **CPU limit.** After a task that raised the CPU limit finished, the app read the first item of an empty list (undefined behaviour), so the 30% base limit could be lost for the rest of the session. It now falls back to the base limit, and a restore without a matching suspend is ignored.
 - **Safe mode.** If a second crash loop happens after settings were already set aside once, the new settings file is moved aside too (the old copy is kept as .crashed.old), so safe mode can no longer loop for ever.
 - **Sound.** The audio buffer is flushed from the CPU cache before it is queued to the DSP (fewer clicks and repeated fragments), and freeing a texture that failed to allocate no longer crashes.
+- **Playback threads.** The decode thread waits instead of spinning and logging when no packet type is available yet, the audio timestamp is stored before its buffer is queued (the clock could read the previous use's stamp right after a seek), and a second failed audio filter build is logged.
 
 ## Installing
 

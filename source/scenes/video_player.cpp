@@ -4941,7 +4941,10 @@ static void autoplay_countdown_tick() {
 					    usleep(1000); // (never a busy loop while a seek or a change is being prepared)
 					    continue;
 				    } else {
-					    logger.error(DEF_SAPP0_DECODE_THREAD_STR, "unknown type of packet");
+					    static int unknown_count = 0;
+					    if (unknown_count++ % 200 == 0) logger.error(DEF_SAPP0_DECODE_THREAD_STR, "unknown type of packet"); // (not one log line per loop)
+					    usleep(10000); // (nothing to decode yet: waiting, not spinning)
+					    continue;
 				    }
 			    }
 

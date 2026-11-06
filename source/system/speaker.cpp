@@ -60,9 +60,8 @@ Result_with_string Util_speaker_add_buffer(int play_ch, int music_ch, u8 *buffer
 
 	util_ndsp_buffer[play_ch][free_queue].nsamples = size / 2;
 	DSP_FlushDataCache(util_ndsp_buffer[play_ch][free_queue].data_vaddr, size * music_ch); // (the DSP reads the memory directly: the CPU cache must be written out first)
+	util_ndsp_buffer_timestamp[play_ch][free_queue] = pts; // (before the buffer is queued: the clock must never read the stamp of its previous use)
 	ndspChnWaveBufAdd(play_ch, &util_ndsp_buffer[play_ch][free_queue]);
-
-	util_ndsp_buffer_timestamp[play_ch][free_queue] = pts;
 	return result;
 }
 

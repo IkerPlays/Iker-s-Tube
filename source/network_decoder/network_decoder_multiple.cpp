@@ -185,7 +185,12 @@ void NetworkMultipleDecoder::check_filter_update() {
 		if (filter_result.code != 0) { // a half built filter graph must not stay: it is cleaned and built once more
 			logger.error("decoder", "init_filter() failed, trying again : " + filter_result.error_description);
 			decoder.deinit_filter();
-			decoder.init_filter();
+			filter_result = decoder.init_filter();
+			if (filter_result.code != 0) { // (still not built: it is only logged and tried one last time; a missing graph is still not guarded in the audio path)
+				logger.error("decoder", "init_filter() failed again : " + filter_result.error_description);
+				decoder.deinit_filter();
+				decoder.init_filter();
+			}
 		}
 	}
 }
