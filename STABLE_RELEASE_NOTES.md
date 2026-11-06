@@ -3,7 +3,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ## What's new since 1.3.11
 
 ### Changes
-- Nothing yet.
+- **Import.** Channels imported from a Takeout CSV stay in your subscriptions after a restart (they were saved without a picture and then hidden as invalid), and a quoted name with "" inside keeps a single quote.
 
 ## Installing
 

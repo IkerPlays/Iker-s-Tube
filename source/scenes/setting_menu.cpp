@@ -2008,7 +2008,10 @@ void Sem_init(void) {
 									channel.id = text.substr(0, c1);
 									if (channel.id.size() < 20 || channel.id.compare(0, 2, "UC") != 0) continue; // (the header and anything else)
 									channel.name = text.substr(c2 + 1);
-									if (channel.name.size() >= 2 && channel.name.front() == '"' && channel.name.back() == '"') channel.name = channel.name.substr(1, channel.name.size() - 2);
+									if (channel.name.size() >= 2 && channel.name.front() == '"' && channel.name.back() == '"') {
+										channel.name = channel.name.substr(1, channel.name.size() - 2);
+										for (size_t q; (q = channel.name.find("\"\"")) != std::string::npos;) channel.name.erase(q, 1); // ("" inside a quoted CSV field is one quote)
+									}
 									channel.url = "https://m.youtube.com/channel/" + channel.id;
 									if (!subscription_is_subscribed(channel.id)) {
 										subscription_subscribe(channel);

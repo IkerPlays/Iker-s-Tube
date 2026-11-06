@@ -19,7 +19,8 @@ static Mutex resource_lock;
 static AtomicFileIO atomic_io(SUBSCRIPTION_FILE_PATH, SUBSCRIPTION_FILE_TMP_PATH);
 
 static bool is_valid_subscription_channel(const SubscriptionChannel &channel) {
-	return is_youtube_url(channel.url) && is_youtube_thumbnail_url(channel.icon_url);
+	// (an imported channel (Takeout CSV) has no picture yet: it is valid, and gets its icon when the channel page is opened)
+	return is_youtube_url(channel.url) && (channel.icon_url.empty() || is_youtube_thumbnail_url(channel.icon_url));
 }
 
 void load_subscription() {
