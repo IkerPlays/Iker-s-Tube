@@ -53,6 +53,15 @@ jobs:
             echo "::error::STABLE_RELEASE_NOTES.md is missing or empty."
             exit 1
           fi
+          if grep -q 'Nothing yet' STABLE_RELEASE_NOTES.md; then
+            echo "::error::STABLE_RELEASE_NOTES.md still has the empty template (Nothing yet): write what is new first."
+            exit 1
+          fi
+          latest=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --exclude-drafts --limit 100 --json tagName --jq '.[].tagName' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)
+          if [ -n "$latest" ] && [ "$(printf '%s\n%s\n' "$latest" "$version" | sort -V | tail -1)" != "$version" ]; then
+            echo "::error::Version $version is not newer than the latest stable ($latest): it would be published as Latest."
+            exit 1
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
   build:
