@@ -290,6 +290,19 @@ Result_with_string NetworkMultipleDecoder::seek(s64 microseconds) {
 		}
 		recalc_buffered_head();
 		decoder.clear_buffer();
+		// the audio clock (first pts + the samples counted since) starts again at the new position, as in a seek of a normal video:
+		// without it the clock kept counting from before the seek and the video ran away from (or froze behind) the audio
+		decoder.deinit_filter();
+		auto live_filter_result = decoder.init_filter();
+		if (live_filter_result.code != 0) {
+			decoder.deinit_filter();
+			live_filter_result = decoder.init_filter();
+		}
+		if (live_filter_result.code != 0) {
+			decoder.deinit_filter();
+			fragments_lock.unlock();
+			return live_filter_result;
+		}
 		decoder.change_ffmpeg_io_data(fragments[(int)seq_using], adjust_timestamp ? seq_using * fragment_len : 0);
 		fragments_lock.unlock();
 	} else {
