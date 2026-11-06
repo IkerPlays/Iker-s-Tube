@@ -1,1 +1,1 @@
-Fixes: 480p automatic quality cap kept across restarts, Home first-load error kept, download part cleanup, live seek audio clock, CPU limit fallback, safe mode rotation, DSP cache flush, parser and web fixes.
+Links: channel links with ?si= and addresses without https:// open correctly. Imported subscriptions survive a restart. CI release check refuses template notes and older versions. Docs updated.

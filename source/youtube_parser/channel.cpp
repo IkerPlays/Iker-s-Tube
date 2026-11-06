@@ -264,8 +264,8 @@ YouTubeChannelDetail youtube_load_channel_page(std::string url_or_id) {
 			                                             "https://m.youtube.com/user/", "https://m.youtube.com/@"}) {
 				if (url.substr(0, pattern.size()) == pattern) {
 					url = url.substr(pattern.size(), url.size());
-					auto next_slash = std::find(url.begin(), url.end(), '/');
-					url = pattern + std::string(url.begin(), next_slash) + "/videos";
+					size_t name_end = url.find_first_of("/?#"); // (a shared link has "?si=..." after the name)
+					url = pattern + url.substr(0, name_end) + "/videos";
 					ok = true;
 					break;
 				}

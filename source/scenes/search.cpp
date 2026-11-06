@@ -716,7 +716,8 @@ void Search_resume(std::string arg) {
 			for (size_t i = at + 13; i < arg.size() && arg[i] != '&' && arg[i] != '#'; i++) {
 				if (arg[i] == '+') word += ' ';
 				else if (arg[i] == '%' && i + 2 < arg.size() + 0 && isxdigit((unsigned char)arg[i + 1]) && isxdigit((unsigned char)arg[i + 2])) {
-					word += (char)strtol(arg.substr(i + 1, 2).c_str(), NULL, 16);
+					char decoded = (char)strtol(arg.substr(i + 1, 2).c_str(), NULL, 16);
+					if (decoded != 0) word += decoded; // (a %00 would end the search word early)
 					i += 2;
 				} else word += arg[i];
 			}
@@ -1070,7 +1071,7 @@ static void access_input_url(void *) {
 		} else if (page_type == YouTubePageType::SEARCH) {
 			global_intent.next_scene = SceneType::SEARCH;
 		}
-		global_intent.arg = url;
+		global_intent.arg = url.compare(0, 4, "http") == 0 ? url : "https://" + url; // (the loaders take a text without a scheme for a channel id)
 	} else {
 		toast_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(NOT_A_YOUTUBE_URL); });
 		toast_view->set_is_visible(true);
