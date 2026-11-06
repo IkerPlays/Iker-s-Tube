@@ -1,1 +1,1 @@
-Search: an error answer to Load more keeps the continue token; the results count stays. Home: a failed Load more no longer blocks the next ones; the New videos filter reads dates correctly. Numbers sent as text by YouTube are read. History dialog leak and tab index clamp.
+Load more on channels (Videos, Streams, Shorts) and comments keeps its continue token after a 400/403 answer. Multi-part downloads clean up their parts when the final rename fails.

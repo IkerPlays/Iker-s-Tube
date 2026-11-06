@@ -507,6 +507,10 @@ void YouTubeChannelDetail::load_more_videos() {
 	access_and_parse_json(
 	    [&]() { return http_post_json(get_innertube_api_url("browse"), post_content); },
 	    [&](Document &, RJson yt_result) {
+		    if (yt_result.has_key("error")) { // (a 400/403 answer is not "no more": the token stays, asking again works)
+			    this->error = "[ch+] " + yt_result["error"]["message"].string_value().substr(0, 60);
+			    return;
+		    }
 		    videos_continue_token = "";
 
 		    for (auto i : yt_result["onResponseReceivedActions"].array_items()) {
@@ -549,6 +553,10 @@ void YouTubeChannelDetail::load_more_streams() {
 	access_and_parse_json(
 	    [&]() { return http_post_json(get_innertube_api_url("browse"), post_content); },
 	    [&](Document &, RJson yt_result) {
+		    if (yt_result.has_key("error")) { // (a 400/403 answer is not "no more": the token stays, asking again works)
+			    this->error = "[ch+s] " + yt_result["error"]["message"].string_value().substr(0, 60);
+			    return;
+		    }
 		    streams_continue_token = "";
 
 		    for (auto i : yt_result["onResponseReceivedActions"].array_items()) {
@@ -593,6 +601,10 @@ void YouTubeChannelDetail::load_more_shorts() {
 	access_and_parse_json(
 	    [&]() { return http_post_json(get_innertube_api_url("browse"), post_content); },
 	    [&](Document &, RJson yt_result) {
+		    if (yt_result.has_key("error")) { // (a 400/403 answer is not "no more": the token stays, asking again works)
+			    this->error = "[ch-shorts+] " + yt_result["error"]["message"].string_value().substr(0, 60);
+			    return;
+		    }
 		    shorts_continue_token = "";
 		    for (auto i : yt_result["onResponseReceivedActions"].array_items()) {
 			    RJson continuation_items;

@@ -154,9 +154,17 @@ static void run_job(DownloadJob *job, NetworkSessionList &session) {
 		});
 	}
 	if (ok) { // every part is complete : only now the files of an older copy are replaced
+		size_t finished = 0;
 		for (auto &part : job->parts) {
 			remove(part.path.c_str());
-			if (rename((part.path + ".part").c_str(), part.path.c_str()) != 0) ok = false;
+			if (rename((part.path + ".part").c_str(), part.path.c_str()) != 0) {
+				ok = false;
+				break;
+			}
+			finished++;
+		}
+		if (!ok) { // (the parts already in place have no list entry: they would be orphans on the card)
+			for (size_t k = 0; k < finished; k++) remove(job->parts[k].path.c_str());
 		}
 	}
 	if (ok) {

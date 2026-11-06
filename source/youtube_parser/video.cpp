@@ -1124,6 +1124,10 @@ void YouTubeVideoDetail::load_more_comments() {
 
 		access_and_parse_json([&]() { return http_post_json(get_innertube_api_url("next"), post_content); },
 		                      [&](Document &, RJson yt_result) {
+			                      if (yt_result.has_key("error")) { // (a 400/403 answer is not "no more comments": the token stays)
+				                      this->error = "[v-com+1] " + yt_result["error"]["message"].string_value().substr(0, 60);
+				                      return;
+			                      }
 			                      comment_continue_type = -1;
 			                      comment_continue_token = "";
 			                      for (auto i : yt_result["onResponseReceivedEndpoints"].array_items()) {
