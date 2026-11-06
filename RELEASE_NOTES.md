@@ -1,1 +1,1 @@
-Sign-in safety: B on a popup after signing in no longer revokes the login; Logout asks for a second tap. Update confirm re-checks its state. About screen translated.
+Playback data: a video loads when only its page data fails, formats without an address are not listed, DRC audio copies are skipped, no probe on unplayable answers. Subtitles format detection, comment actions with a stale token. Website: roadmap, partial release list, cache and security headers.

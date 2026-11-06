@@ -157,6 +157,9 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 		if (i["type"].string_value() == "FORMAT_STREAM_TYPE_OTF") {
 			continue;
 		}
+		if (i["url"].string_value().empty()) { // (a format with a signature cipher or no direct address cannot be played: it must not count as a quality)
+			continue;
+		}
 		auto mime_type = i["mimeType"].string_value();
 		if (mime_type.substr(0, 5) == "video") {
 			// H.264 is virtually the only playable video codec
@@ -165,7 +168,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 			}
 		} else if (mime_type.substr(0, 5) == "audio") {
 			// We can modify ffmpeg to support opus
-			if (mime_type.find("mp4a") != std::string::npos) {
+			if (mime_type.find("mp4a") != std::string::npos && !i["isDrc"].bool_value()) { // (the DRC copy of a track is the same itag 140 with compressed dynamics: it must not replace the normal one)
 				audio_formats.push_back(i);
 			}
 		} else {
@@ -213,7 +216,7 @@ static bool extract_player_data(Document &json_root, RJson player_response, YouT
 		}
 		// The client that gave the streams often lists only one audio track. When a language is wanted (or the tool asked),
 		// the ANDROID client is asked for the full list of dubbed tracks.
-		if (res.audio_tracks.size() < 2 && res.id != "" && (wanted_lang != "" || youtube_audio_probe_request)) {
+		if (res.audio_tracks.size() < 2 && res.id != "" && !audio_formats.empty() && res.playability_status == "OK" && (wanted_lang != "" || youtube_audio_probe_request)) { // (not on an unplayable answer: each fallback client would start 3 more requests)
 			youtube_audio_probe_request = false;
 			std::vector<YouTubeVideoDetail::AudioTrack> probed = probe_audio_tracks(res.id);
 			logger.info("player", "audio tracks found by the probe : " + std::to_string(probed.size()));
@@ -526,13 +529,13 @@ void fetch_like_dislike_counts(const std::string &video_id, YouTubeVideoDetail &
 				logger.info("Dislike count", res.dislike_count_str);
 			}
 		} else {
-			res.like_count_str = "Error";
-			res.dislike_count_str = "Error";
+			if (res.like_count_str == "") res.like_count_str = "Error"; // (what YouTube itself gave stays when the dislike service fails)
+			if (res.dislike_count_str == "") res.dislike_count_str = "Error";
 			std::cerr << "JSON Parsing Error: " << error << std::endl;
 		}
 	} else {
-		res.like_count_str = "N/A";
-		res.dislike_count_str = "N/A";
+		if (res.like_count_str == "") res.like_count_str = "N/A";
+		if (res.dislike_count_str == "") res.dislike_count_str = "N/A";
 	}
 }
 
@@ -849,9 +852,14 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 		}
 		for (int i = 0; i < 2; i++) {
 			if (results[i].fail) {
-				res.error = "[v-#" + std::to_string(i) + "] Network request failed";
-				debug_error(res.error);
-				success = false;
+				if (i == 1) { // the player data: without it there is nothing to play
+					res.error = "[v-#" + std::to_string(i) + "] Network request failed";
+					debug_error(res.error);
+					success = false;
+				} else { // the page data (/next) only adds the description, comments and suggestions: the video still plays without it
+					debug_error("[v-#0] Network request failed (the video is loaded without its page data)");
+					results[i].data.clear();
+				}
 			}
 		}
 	}
@@ -885,10 +893,12 @@ YouTubeVideoDetail youtube_load_video_page(std::string url) {
 					                       res.error = "[v-#" + std::to_string(i) + "] " + error;
 					                       debug_error(res.error);
 				                       });
-			} else {
+			} else if (i == 1) {
 				res.error = "Empty response data for URL index: " + std::to_string(i);
 				debug_error(res.error);
 				success = false;
+			} else {
+				debug_error("Empty response data for URL index: 0 (the video is loaded without its page data)");
 			}
 		}
 
@@ -1390,7 +1400,10 @@ void YouTubeVideoDetail::load_caption(const std::string &base_lang_id, const std
 		}
 		any_response = true;
 		const std::string &body = raw_response.second;
-		if (body.find('<') != std::string::npos) {
+		size_t first = body.find_first_not_of(" \t\r\n\xEF\xBB\xBF"); // (the first character tells the format: a JSON text may contain "<i>" too)
+		if (first != std::string::npos && body[first] == '{') {
+			cur_caption = parse_json3(body);
+		} else if (body.find('<') != std::string::npos) {
 			cur_caption = parse_xml(body);
 		} else if (body.find('{') != std::string::npos) {
 			cur_caption = parse_json3(body);

@@ -329,7 +329,7 @@ static bool fetch_comment_section(const std::string &token, std::string &json, b
 			return true;
 		}
 		if (r.first) facts += " " + section_facts(client, r.second);
-		if (!r.first && token != "") continue; // this client does not take the login (or the token) : the next one
+		if (!r.first && token != "" && get_context_video() == "") continue; // this client does not take the login (or the token) : the next one (with a video known, the page path below still works)
 		std::string video_id = get_context_video();
 		if (video_id != "") { // the page of the video as this client sees it has its own comment tokens
 			if (budget <= 0) break;

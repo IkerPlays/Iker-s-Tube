@@ -350,6 +350,10 @@
     }).then(function (arr) {
       acc = acc.concat(arr.map(slim));
       return arr.length === 100 && p < 5 ? fetchPage(p + 1, acc) : acc;
+    }).catch(function (err) {
+      // a later page that fails (the API limit of 60 requests per hour) must not throw away the pages already loaded
+      if (p > 1 && acc.length) return acc;
+      throw err;
     });
   }
   function readCache() {
