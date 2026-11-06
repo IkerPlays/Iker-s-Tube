@@ -88,6 +88,8 @@ void resume_save() {
 			fprintf(f, "%s\t%.1f\n", e.first.c_str(), e.second);
 		}
 		finish_tmp_write(f, RESUME_TMP_PATH, RESUME_PATH);
+	} else {
+		logger.warning("resume", "could not write the resume file (SD card missing or full?)");
 	}
 	resume_lock.unlock();
 }

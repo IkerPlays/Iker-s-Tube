@@ -1,1 +1,1 @@
-Start screen and first-run welcome now take effect; tapping the current scene's tab no longer pauses it for good; long Settings toasts fit; Mini player/Normal translated; load-more error answers keep their tokens; small fixes.
+Updater: the old .3dsx is kept as .bak until the new one is in place. Failed writes of the queue and resume positions are logged.

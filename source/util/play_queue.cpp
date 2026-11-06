@@ -1,3 +1,4 @@
+#include "headers.hpp"
 #include "util/file_recover.hpp"
 #include "util/play_queue.hpp"
 #include "system/libctru_wrapper.hpp"
@@ -20,7 +21,10 @@ static void save_queue() {
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
 	FILE *f = fopen(QUEUE_TMP_PATH, "w");
-	if (!f) return;
+	if (!f) {
+		logger.warning("queue", "could not write the queue file (SD card missing or full?)");
+		return;
+	}
 	for (auto &i : queue) {
 		std::string title = i.second;
 		for (auto &c : title) {

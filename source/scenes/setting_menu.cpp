@@ -277,8 +277,15 @@ std::string install_update(NetworkSessionList &session_list) {
 			remove(new_path.c_str());
 			return "the new .3dsx was not written completely";
 		}
-		remove(path_3dsx.c_str());
-		if (rename(new_path.c_str(), path_3dsx.c_str()) != 0) return "could not put the new .3dsx in place (it is saved as " + new_path + ")";
+		// the old file is moved aside, not deleted, until the new one is in place: a failure puts it back, and a cut in between leaves it as .bak
+		const std::string backup_path = path_3dsx + ".bak";
+		remove(backup_path.c_str());
+		const bool had_old = rename(path_3dsx.c_str(), backup_path.c_str()) == 0;
+		if (rename(new_path.c_str(), path_3dsx.c_str()) != 0) {
+			if (had_old) rename(backup_path.c_str(), path_3dsx.c_str());
+			return "could not put the new .3dsx in place (it is saved as " + new_path + ")";
+		}
+		if (had_old) remove(backup_path.c_str());
 	} else {
 		Handle am_handle = 0;
 		if ((libctru_result = AM_StartCiaInstall(MEDIATYPE_SD, &am_handle))) return "AM_StartCiaInstall() returned " + std::to_string(libctru_result);
