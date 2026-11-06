@@ -233,8 +233,10 @@ Result_with_string Draw_c2d_image_init(Image_data *c2d_image, int tex_size_x, in
 }
 
 void Draw_c2d_image_free(Image_data c2d_image) {
-	linearFree_concurrent(c2d_image.c2d.tex->data);
-	linearFree_concurrent(c2d_image.c2d.tex);
+	if (c2d_image.c2d.tex) { // (a failed Draw_c2d_image_init leaves it NULL)
+		linearFree_concurrent(c2d_image.c2d.tex->data);
+		linearFree_concurrent(c2d_image.c2d.tex);
+	}
 	linearFree_concurrent(c2d_image.subtex);
 	// (the Image_data is a copy: nothing to reset in it, and the texture was just freed)
 }

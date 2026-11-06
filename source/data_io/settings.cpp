@@ -55,7 +55,13 @@ void load_settings() {
 		static const char *aside[] = {"settings.txt", "pinned_channels.txt", "recent_channels.txt", "hidden_channels.txt", "last_version.txt", "feed_seen.txt", "feed_cache.txt", "caption_lang.txt", "audio_lang.txt"};
 		for (auto name : aside) {
 			std::string from = DEF_MAIN_DIR + name, to = DEF_MAIN_DIR + std::string(name) + ".crashed";
-			if (access(from.c_str(), F_OK) == 0 && access(to.c_str(), F_OK) != 0) { // (a copy that is already there is never overwritten)
+			if (access(from.c_str(), F_OK) == 0) {
+				// (an older *.crashed copy is kept as *.crashed.old: the file that crashes now must leave anyway, or a second crash loop would never end)
+				if (access(to.c_str(), F_OK) == 0) {
+					std::string old = to + ".old";
+					remove(old.c_str());
+					rename(to.c_str(), old.c_str());
+				}
 				rename(from.c_str(), to.c_str());
 			}
 		}
