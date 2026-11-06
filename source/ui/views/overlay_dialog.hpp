@@ -38,6 +38,10 @@ struct OverlayDialogView : public OverlayView {
 	template <typename T>
 	OverlayDialogView *set_buttons(const std::vector<T> &button_strs, CallBackFuncType on_button_pressed) {
 		this->on_button_pressed = on_button_pressed;
+		set_on_cancel([](OverlayView &view) { // (a dialog reused with new buttons must not keep the cancel action of its last use: B on it ran the sign-in cancel, which revokes the login)
+			view.set_is_visible(false);
+			var_need_refresh = true;
+		});
 
 		HorizontalListView *buttons_view = get_buttons_view();
 		buttons_view->recursive_delete_subviews();

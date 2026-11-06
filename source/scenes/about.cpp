@@ -15,11 +15,13 @@ bool already_init = false;
 bool exiting = false;
 
 const std::vector<std::string> app_description_lines = {"Iker's Tube"};
-const std::vector<std::string> story_lines = {
-    "Iker's Tube es un fork de FourthTube",
-    "(que viene de ThirdTube), con mejoras",
-    "de descarga, reintentos y nuevo diseno.",
-};
+static std::vector<std::string> story_lines_now() { // (built when the scene starts: the language is known by then)
+	return {
+	    tr("Iker's Tube is a fork of FourthTube", "Iker's Tube es un fork de FourthTube"),
+	    tr("(which comes from ThirdTube), with better", "(que viene de ThirdTube), con mejoras"),
+	    tr("downloads, retries and a new design.", "de descarga, reintentos y nuevo diseño."),
+	};
+}
 
 const std::vector<std::pair<std::string, std::vector<std::string>>> credits = {
     {"IkerPlays", {"Iker's Tube : new icon and banner,", "download retries, client fallback"}},
@@ -80,7 +82,7 @@ void About_init(void) {
 	                ->set_views({
 	                    // About section
 	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
-	                        ->set_text("About")
+	                        ->set_text(tr("About", "Acerca de"))
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
 	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
@@ -88,15 +90,15 @@ void About_init(void) {
 	                        ->set_x_alignment(TextView::XAlign::CENTER)
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-	                        ->set_text("Version " + DEF_CURRENT_APP_VER)
+	                        ->set_text(tr("Version ", "Versión ") + DEF_CURRENT_APP_VER)
 	                        ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
 	                        ->set_x_alignment(TextView::XAlign::CENTER),
 	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-	                        ->set_text("Compiled on " + std::string(DEF_BUILD_TIME))
+	                        ->set_text(tr("Compiled on ", "Compilado el ") + std::string(DEF_BUILD_TIME))
 	                        ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
 	                        ->set_x_alignment(TextView::XAlign::CENTER),
 	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
-	                        ->set_text((std::function<std::string ()>) []() { return std::string(var_is_new3ds ? "New 3DS family" : "Old 3DS family") + ", " + var_lang; })
+	                        ->set_text((std::function<std::string ()>) []() { return std::string(var_is_new3ds ? tr("New 3DS family", "Familia New 3DS") : tr("Old 3DS family", "Familia 3DS antigua")) + ", " + var_lang; })
 	                        ->set_get_text_color([]() { return LIGHT0_TEXT_COLOR; })
 	                        ->set_x_alignment(TextView::XAlign::CENTER),
 	                    (new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL))
@@ -125,16 +127,16 @@ void About_init(void) {
 
 	                    // Story section
 	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
-	                        ->set_text("The Story")
+	                        ->set_text(tr("The Story", "La historia"))
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
-	                    (new TextView(SMALL_MARGIN, 0, 320, DEFAULT_FONT_INTERVAL * story_lines.size()))
-	                        ->set_text_lines(story_lines),
+	                    (new TextView(SMALL_MARGIN, 0, 320, DEFAULT_FONT_INTERVAL * story_lines_now().size()))
+	                        ->set_text_lines(story_lines_now()),
 	                    (new EmptyView(0, 0, 320, SMALL_MARGIN * 2)),
 
 	                    // Credits section
 	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
-	                        ->set_text("Credits")
+	                        ->set_text(tr("Credits", "Créditos"))
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
 	                    credits_view,
@@ -142,7 +144,7 @@ void About_init(void) {
 
 	                    // License section
 	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
-	                        ->set_text("License")
+	                        ->set_text(tr("License", "Licencia"))
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
 	                    (new TextView(SMALL_MARGIN, 0, 320, DEFAULT_FONT_INTERVAL * license_lines.size()))
@@ -151,7 +153,7 @@ void About_init(void) {
 
 	                    // Thirdparty licenses section
 	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
-	                        ->set_text("Third-party Licenses")
+	                        ->set_text(tr("Third-party Licenses", "Licencias de terceros"))
 	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
 	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
 	                    third_party_licenses_view,

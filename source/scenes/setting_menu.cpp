@@ -2394,7 +2394,7 @@ void Sem_init(void) {
 									[] () { return LOCALIZED(OK); }
 								},
 								[] (OverlayDialogView &, int button_pressed) {
-									if (button_pressed == 1) update_state = UpdateState::INSTALLING;
+									if (button_pressed == 1 && (update_state == UpdateState::UPDATES_AVAILABLE || update_state == UpdateState::FAILED_INSTALLING)) update_state = UpdateState::INSTALLING; // (the state may have changed while the dialog was open)
 									return true; // close the dialog
 								});
 								popup_view->set_is_visible(true);
@@ -2546,8 +2546,10 @@ void Sem_init(void) {
 						})
 						->set_on_view_released([] (View &) {
 							// the network calls are done by the oauth thread (this runs inside the view update with the lock held)
-							if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATED) oauth_action_request = 1;
-							else if (OAuth::oauth_state == OAuth::OAuthState::ERROR) oauth_action_request = 2;
+							if (OAuth::oauth_state == OAuth::OAuthState::AUTHENTICATED) {
+								if (!confirm_tap(7, tr("Tap again to sign out", "Toca otra vez para cerrar sesión"))) return; // (one stray touch must not sign you out)
+								oauth_action_request = 1;
+							} else if (OAuth::oauth_state == OAuth::OAuthState::ERROR) oauth_action_request = 2;
 							else if (OAuth::oauth_state == OAuth::OAuthState::NOT_AUTHENTICATED) oauth_action_request = 3;
 							var_need_refresh = true;
 						}),
