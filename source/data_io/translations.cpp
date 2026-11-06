@@ -455,6 +455,8 @@ static const TrEntry kTrEntries[] = {
 	{"YouTube is busy, try later", {"YouTube est occupé, réessayez plus tard", "YouTube ist ausgelastet, später versuchen", "YouTube è occupato, riprova più tardi", "O YouTube está ocupado, tente depois", "YouTubeが混雑中です。後でお試しください"}},
 	{"YouTube refused it, sign in again", {"YouTube a refusé, reconnectez-vous", "YouTube hat abgelehnt, erneut anmelden", "YouTube ha rifiutato, accedi di nuovo", "O YouTube recusou, entre de novo", "YouTubeに拒否されました。再ログインしてください"}},
 	{"check the connection", {"vérifiez la connexion", "Verbindung prüfen", "controlla la connessione", "verifique a conexão", "接続を確認してください"}},
+	{"Mini player", {"Mini-lecteur", "Mini-Player", "Mini player", "Mini player", "ミニプレーヤー"}},
+	{"Normal", {"Normal", "Normal", "Normale", "Normal", "標準"}},
 	{"Already in that list, or the list is full", {"Déjà dans cette liste, ou la liste est pleine", "Bereits in dieser Liste, oder die Liste ist voll", "Già in questa lista, o la lista è piena", "Já está nessa lista, ou a lista está cheia", "すでにそのリストにあるか、リストがいっぱいです"}},
 	{"Could not refresh the channels", {"Impossible d'actualiser les chaînes", "Kanäle konnten nicht aktualisiert werden", "Impossibile aggiornare i canali", "Não foi possível atualizar os canais", "チャンネルを更新できませんでした"}},
 	{"Automatic theme turned off", {"Thème automatique désactivé", "Automatisches Design ausgeschaltet", "Tema automatico disattivato", "Tema automático desativado", "自動テーマをオフにしました"}},

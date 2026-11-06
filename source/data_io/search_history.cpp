@@ -1,5 +1,6 @@
 #include "util/file_recover.hpp"
 #include "headers.hpp"
+#include "util/utf8.hpp"
 #include "data_io/search_history.hpp"
 #include "system/libctru_wrapper.hpp"
 #include <cctype>
@@ -61,11 +62,12 @@ static bool equals_ignore_case(const std::string &a, const std::string &b) {
 	return true;
 }
 
-void search_history_add(const std::string &word) {
+void search_history_add(const std::string &full_word) {
 	if (var_incognito) return; // incognito : nothing is remembered
-	if (word.empty() || word.find('\n') != std::string::npos) {
+	if (full_word.empty() || full_word.find('\n') != std::string::npos) {
 		return;
 	}
+	const std::string word = utf8_prefix(full_word, 250); // (a line of the file is read back in 300 bytes: a longer one would come back as two entries)
 	history_lock.lock();
 	ensure_loaded_locked();
 	for (size_t i = 0; i < history.size(); i++) {

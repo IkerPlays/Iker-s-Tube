@@ -110,6 +110,9 @@ static void auto_backup_task(void *) {
 	}
 }
 
+// where the app opens (the welcome Settings, the Start screen setting): kept apart because Menu_main clears global_intent at every frame
+static Intent startup_intent;
+
 void Menu_init(void) {
 	backup_apply_pending(); // a backup imported in the last run is restored before anything is loaded
 	Result_with_string result;
@@ -259,14 +262,14 @@ void Menu_init(void) {
 			}
 		}
 		misc_tasks_request(TASK_SAVE_SETTINGS);
-		global_intent.next_scene = SceneType::SETTINGS;
+		startup_intent.next_scene = SceneType::SETTINGS;
 	} else if (var_start_scene == 3 && last_played_get(last_id, last_title)) { // continue the last video (it resumes where it stopped)
-		global_intent.next_scene = SceneType::VIDEO_PLAYER;
-		global_intent.arg = youtube_get_video_url_by_id(last_id);
+		startup_intent.next_scene = SceneType::VIDEO_PLAYER;
+		startup_intent.arg = youtube_get_video_url_by_id(last_id);
 	} else if (var_start_scene == 1) {
-		global_intent.next_scene = SceneType::LIBRARY;
+		startup_intent.next_scene = SceneType::LIBRARY;
 	} else if (var_start_scene == 2) {
-		global_intent.next_scene = SceneType::SEARCH;
+		startup_intent.next_scene = SceneType::SEARCH;
 	}
 
 	thumbnail_downloader_thread = threadCreate(thumbnail_downloader_thread_func, (void *)(""), DEF_STACKSIZE,
@@ -409,6 +412,10 @@ bool Menu_main(void) {
 
 	global_intent = Intent();
 	global_intent_is_nav = false;
+	if (startup_intent.next_scene != SceneType::NO_CHANGE) { // the first frame: the Start screen / welcome request
+		global_intent = startup_intent;
+		startup_intent = Intent();
+	}
 	if (global_current_scene == SceneType::VIDEO_PLAYER) {
 		VideoPlayer_draw();
 	} else if (global_current_scene == SceneType::SEARCH) {
@@ -428,7 +435,12 @@ bool Menu_main(void) {
 	}
 	// add here
 
-	if (global_intent.next_scene != SceneType::NO_CHANGE) {
+	// a request that will not change the scene (the tab of the scene already shown, the address on top of the stack) must not suspend it either: nothing would resume it
+	const bool will_switch = global_intent.next_scene == SceneType::EXIT ||
+	                         (global_intent.next_scene != SceneType::NO_CHANGE &&
+	                          (global_intent_is_nav ? (global_intent.next_scene != global_current_scene || global_intent.next_scene == SceneType::LIBRARY)
+	                                                : global_intent != scene_stack.back()));
+	if (will_switch) {
 		if (global_current_scene == SceneType::VIDEO_PLAYER) {
 			VideoPlayer_suspend();
 		} else if (global_current_scene == SceneType::SEARCH) {

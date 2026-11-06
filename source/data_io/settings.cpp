@@ -144,6 +144,7 @@ void load_settings() {
 	var_caption_color = std::max(0, std::min(3, load_int("caption_color", 0)));
 	var_auto_quality = std::min(1, std::max(0, load_int("auto_quality", 1))); // (a yes / no)
 	var_auto_quality_cap = load_int("auto_quality_cap", 0);
+	if (var_auto_quality_cap != 144 && var_auto_quality_cap != 240 && var_auto_quality_cap != 360) var_auto_quality_cap = 0; // (the player only knows these caps)
 	var_auto_dim = std::min(1, std::max(0, load_int("auto_dim", 0))); // (a yes / no : a damaged value is 0 or 1)
 	var_text_scale = std::max(0, std::min(2, load_int("text_scale", 1)));
 	var_start_scene = std::max(0, std::min(3, load_int("start_scene", 0)));

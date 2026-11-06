@@ -161,7 +161,7 @@ static std::string format_data_size(double bytes) {
 // a short message over the settings list
 static void settings_toast(const std::string &message, int frames = 150) {
 	toast_view
-		->set_text((std::function<std::string ()>) [message] () { return message; })
+		->set_text((std::function<std::string ()>) [message] () { return truncate_first_line(message, 304, 0.5); }) // (a long message would run past both sides of the screen)
 		->set_x_alignment(TextView::XAlign::CENTER)
 		->set_text_offset(0, -1)
 		->set_get_text_color([] () { return (u32) -1; })
@@ -291,6 +291,7 @@ std::string install_update(NetworkSessionList &session_list) {
 			u32 size_written;
 			libctru_result = FSFILE_Write(am_handle, &size_written, i, result.data.data() + i, size, FS_WRITE_FLUSH);
 			i += size_written;
+			if (!libctru_result && size_written == 0) libctru_result = -1; // (a write that accepts nothing would loop here for ever)
 			if (libctru_result) {
 				AM_CancelCIAInstall(am_handle); // (otherwise the install stays open and the next one fails)
 				return "FSFILE_Write() returned " + std::to_string(libctru_result);
@@ -851,7 +852,7 @@ void Sem_init(void) {
 					(new SelectorView(0, 0, 320, 35, true))
 						->set_texts({
 							(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
-							(std::function<std::string ()>) []() { return std::string("Normal"); },
+							(std::function<std::string ()>) []() { return tr("Normal", "Normal"); },
 							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
 						}, var_text_scale)
 						->set_title([](const SelectorView &) { return tr("Text size", "Tamaño de letra"); })
@@ -1193,7 +1194,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return std::string("+30 s"); },
 							(std::function<std::string ()>) []() { return tr("Next in queue", "Siguiente de la cola"); },
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
-							(std::function<std::string ()>) []() { return std::string("Mini player"); },
+							(std::function<std::string ()>) []() { return tr("Mini player", "Mini reproductor"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
 							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
@@ -1218,7 +1219,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return std::string("+30 s"); },
 							(std::function<std::string ()>) []() { return tr("Next in queue", "Siguiente de la cola"); },
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
-							(std::function<std::string ()>) []() { return std::string("Mini player"); },
+							(std::function<std::string ()>) []() { return tr("Mini player", "Mini reproductor"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
 							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
@@ -1243,7 +1244,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return std::string("+30 s"); },
 							(std::function<std::string ()>) []() { return tr("Next in queue", "Siguiente de la cola"); },
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
-							(std::function<std::string ()>) []() { return std::string("Mini player"); },
+							(std::function<std::string ()>) []() { return tr("Mini player", "Mini reproductor"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
 							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
@@ -1268,7 +1269,7 @@ void Sem_init(void) {
 							(std::function<std::string ()>) []() { return std::string("+30 s"); },
 							(std::function<std::string ()>) []() { return tr("Next in queue", "Siguiente de la cola"); },
 							(std::function<std::string ()>) []() { return tr("Restart", "Reiniciar"); },
-							(std::function<std::string ()>) []() { return std::string("Mini player"); },
+							(std::function<std::string ()>) []() { return tr("Mini player", "Mini reproductor"); },
 							(std::function<std::string ()>) []() { return tr("Bookmark", "Marcador"); },
 							(std::function<std::string ()>) []() { return tr("Stop after video", "Parar al acabar"); },
 							(std::function<std::string ()>) []() { return tr("Volume +", "Volumen +"); },
@@ -1453,7 +1454,7 @@ void Sem_init(void) {
 					(new SelectorView(0, 0, 320, 35, true))
 					->set_texts({
 					(std::function<std::string ()>) []() { return tr("Small", "Pequeño"); },
-							(std::function<std::string ()>) []() { return "Normal"; },
+							(std::function<std::string ()>) []() { return tr("Normal", "Normal"); },
 							(std::function<std::string ()>) []() { return tr("Large", "Grande"); }
 						}, var_caption_size)
 						->set_title([](const SelectorView &) { return tr("Subtitle size", "Tamaño de subtítulos"); })

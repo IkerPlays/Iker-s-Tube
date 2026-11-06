@@ -1,1 +1,1 @@
-Load more on channels (Videos, Streams, Shorts) and comments keeps its continue token after a 400/403 answer. Multi-part downloads clean up their parts when the final rename fails.
+Start screen and first-run welcome now take effect; tapping the current scene's tab no longer pauses it for good; long Settings toasts fit; Mini player/Normal translated; load-more error answers keep their tokens; small fixes.
