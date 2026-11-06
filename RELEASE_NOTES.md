@@ -1,1 +1,1 @@
-Playback data: a video loads when only its page data fails, formats without an address are not listed, DRC audio copies are skipped, no probe on unplayable answers. Subtitles format detection, comment actions with a stale token. Website: roadmap, partial release list, cache and security headers.
+Fixes: 480p automatic quality cap kept across restarts, Home first-load error kept, download part cleanup, live seek audio clock, CPU limit fallback, safe mode rotation, DSP cache flush, parser and web fixes.

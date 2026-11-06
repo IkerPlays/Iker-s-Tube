@@ -165,6 +165,7 @@ static void run_job(DownloadJob *job, NetworkSessionList &session) {
 		}
 		if (!ok) { // (the parts already in place have no list entry: they would be orphans on the card)
 			for (size_t k = 0; k < finished; k++) remove(job->parts[k].path.c_str());
+			for (size_t k = finished; k < job->parts.size(); k++) remove((job->parts[k].path + ".part").c_str()); // (the parts that were not reached stay unfinished files)
 		}
 	}
 	if (ok) {

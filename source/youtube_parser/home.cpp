@@ -129,7 +129,7 @@ void YouTubeHomeResult::load_more_results() {
 		return;
 	}
 
-	error = ""; // (an error of an earlier failed load-more must not block every later one)
+	if (!videos.empty()) error = ""; // (an error of an earlier failed load-more must not block every later one; the error of a failed first load stays)
 	if (continue_token == "") {
 		error = "[home] continue token not set";
 	} else if (visitor_data == "") {

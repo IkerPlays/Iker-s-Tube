@@ -11,6 +11,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 - **Sound.** The audio buffer is flushed from the CPU cache before it is queued to the DSP (fewer clicks and repeated fragments), and freeing a texture that failed to allocate no longer crashes.
 - **Playback threads.** The decode thread waits instead of spinning and logging when no packet type is available yet, the audio timestamp is stored before its buffer is queued (the clock could read the previous use's stamp right after a seek), and a second failed audio filter build is logged.
 - **Live streams.** Seeking inside a live stream restarts the audio clock at the new position (the video used to run ahead of, or freeze behind, the audio after a seek).
+- **Auto quality.** A saved automatic quality cap of 480p is kept again across restarts (1.3.9 reset it to no cap), and Home keeps the error of a failed first load.
 
 ## Installing
 
