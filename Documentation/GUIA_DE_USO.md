@@ -8,7 +8,7 @@ necesitan haber iniciado sesión en Ajustes; las de Studio, además, el login de
   y la pestaña Studio (se puede ocultar en Ajustes).
 - **Buscar:** búsqueda con filtros (el botón Filtro abre menús que se combinan: ordenar, fecha de subida, tipo, duración y características como HD, subtítulos CC, Creative Commons, en directo, 4K, HDR o 360 grados; mantenerlo pulsado lo quita). El teclado ofrece las sugerencias de YouTube mientras escribes,
   atajos de Explorar, búsquedas recientes y, arriba de los resultados, **Reproducir todo** y **Poner todo en cola**.
-- **Biblioteca:** Cola, Favoritos, Listas, Luego (Ver más tarde), Offline y **Me gusta**. La pestaña Me gusta tiene un
+- **Biblioteca:** Cola, Favoritos, Listas, Luego (Ver más tarde), Offline (es también el modo sin conexión) y **Me gusta**. La pestaña Me gusta tiene un
   botón que recorre tus Me gusta, el historial de YouTube y cada lista de tu cuenta. Con una de tus listas a la vista salen los botones para renombrarla o borrarla (tocar dos veces).
 - **Descargas:** lo guardado en la SD, con progreso, cola de descargas y botones para borrar.
 - **Más:** ajustes, historial, incógnito, acerca de y salir.
@@ -42,10 +42,12 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 ## Más herramientas del reproductor
 - **Subtítulos:** CC (idiomas y traducción), CC tamaño, CC color.
 - **Listas:** +Lista (añade el vídeo a una lista local) y Mezclar cola.
-- **Velocidad:** Más lento / Más rápido (de 5 en 5 %). **Auto:** cambia entre no, lista y todo.
+- **Velocidad:** el botón con el % cambia entre 50 y 200 % y recuerda la velocidad de cada canal; Más lento / Más rápido la ajustan de 5 en 5 % (de 25 a 200 %). **Auto:** cambia entre no, lista y todo.
 - **QR en este minuto**, **#Tags** (busca los hashtags del vídeo), **Guardar lista en YouTube**, **Recargar**, **Pantallas off** (SELECT + START las vuelve a encender) y **Estado** (hora y batería).
 - La cruceta izquierda/derecha salta 5, 10, 15 o 30 s (Ajustes). Abajo/Arriba: siguiente/anterior vídeo.
 - Ajustes nuevos: tiempo restante en la barra, parar tras N vídeos seguidos, recordatorio de descanso y subtítulos automáticos.
+
+- **Pantalla de inicio** (Ajustes > Apariencia): con qué pantalla abre la app: Inicio, Biblioteca, Búsqueda o Último vídeo.
 
 ## Otras novedades
 - **Historial:** "Canales más vistos" y, manteniendo pulsado el título de un día, "Borrar este día".
@@ -59,20 +61,20 @@ lista**, **Siguiente**, **Reiniciar**, **Silenciar**, **Temporizador** y **Enlac
 - **Buscar:** saludo según la hora, consejo del día, **Radio** (mezclas por estado de ánimo que siguen sonando solas: Tranquila, Concentración, Ejercicio, Dormir, Fiesta, Clásica, Música de juegos y Jazz) y "Sorpréndeme".
 - **Historial:** "Mi resumen" (vídeos, tiempo, canal top, hora favorita, días seguidos y lo reproducido hoy).
 - **Reproductor:** "Siguiente cap." (busca el título con el número de capítulo + 1), "Ahorro" (ahorro de datos), marcadores con QR del momento y el temporizador baja el volumen en los últimos 30 s.
-- **Ajustes:** límite diario de reproducción, botones redondeados (se pueden quitar).
+- **Ajustes:** límite diario de reproducción (Desactivado, 30, 60, 120 o 240 min; al llegar sale un aviso, no bloquea), botones redondeados (se pueden quitar).
 - **Modo seguro:** si la app se cierra al arrancar, el siguiente inicio renombra los ajustes a `*.crashed` y arranca sin extras. Si la app no abre: borra o renombra `3ds/IkersTube/settings.txt`.
 
 ## Después de la 1.0.7
 - **Feed al instante:** la pestaña Feed del Inicio enseña el último feed guardado mientras carga el nuevo (y lo conserva si no hay conexión).
 - **Historial:** "Mi resumen" (con este mes, mejor racha, vídeo más repetido y **13 logros**) y un recuerdo de hace una semana o un mes.
 - **Reproductor:** herramienta "No me gusta" (votos estimados con returnyoutubedislikeapi.com, solo se envía el id del vídeo),
-  "Estado" dice a qué hora termina el vídeo, Info cuenta cuántas veces lo has visto y el modo solo audio tiene un ecualizador animado.
+  "Estado" dice a qué hora termina el vídeo, Info cuenta cuántas veces lo has visto el modo solo audio tiene un ecualizador animado y el ecualizador tiene perfiles de un toque (Música, Película y Voz) que cambian la curva y el volumen.
 - **Más herramientas:** "Saltar intro" (cada vídeo de un canal empieza 5 a 60 s más tarde, se recuerda por canal), "Controles" (qué hace cada botón)
   y la barra de progreso marca los capítulos y, en verde, lo que salta SponsorBlock.
 - **Herramientas del reproductor:** las filas largas ahora se reparten en varias filas (antes los botones que no cabían en la pantalla no se podían tocar) y las menos usadas
   están plegadas tras "Más herramientas". Nuevas: "Ir al minuto" (escribes m:ss) y "Repetir capítulo".
 - **Pantalla de solo audio:** ecualizador animado y, con los subtítulos (CC) activados, la letra de la canción.
-- **Atajos del reproductor:** SELECT + cruceta arriba/abajo cambia el volumen y SELECT + izquierda/derecha el brillo. "Controles" lista todos los botones.
+- **Atajos del reproductor:** SELECT + cruceta arriba/abajo cambia el volumen y SELECT + izquierda/derecha el brillo. "Controles" lista todos los botones. Mantén X y pulsa B para parar el vídeo; por defecto L reinicia y R pasa al siguiente de la cola (se cambian en Ajustes).
 - **Feed:** botón "Ver los vídeos nuevos" (los reproduce seguidos) y "Sorpréndeme con mi feed". Los canales ocultos ya se ocultan también en el feed.
 - **Más fiable:** los cambios hechos justo antes de cerrar la app se guardan, una importación de copia de seguridad se aplica al arrancar de nuevo, una SD llena ya no estropea
   favoritos/listas/cola, las listas guardadas conservan los títulos completos, y las búsquedas o páginas que fallan se reintentan tocando el aviso.
@@ -123,5 +125,5 @@ Ajustes, Datos, "Crear un informe para enviar" escribe `sdmc:/3ds/IkersTube/repo
 
 ## Calidad de vídeo
 - **Mientras suena un vídeo:** pestaña Reproducción, fila "Vídeo" (Audio, 144p, 240p, 360p, 480p), o el botón "Calidad" de la pestaña General, que cambia de una a la siguiente con cada toque.
-- **Calidad con la que empiezan los vídeos:** Ajustes > Pantalla > "Calidad de vídeo". La "Calidad automática" puede bajarla si la reproducción se atasca; lo que eliges a mano no se baja solo.
+- **Calidad con la que empiezan los vídeos:** Ajustes > Reproducción > "Calidad de vídeo". La "Calidad automática" puede bajarla si la reproducción se atasca; lo que eliges a mano no se baja solo.
 - La familia 3DS antigua solo muestra las calidades bajas.

@@ -30,7 +30,8 @@ Your data lives in `sdmc:/3ds/IkersTube/`.
 - Search with filters, suggestions, Shorts, live streams and chat, subtitles, SponsorBlock.
 - Sign in to use your subscriptions, likes, playlists, history and comments.
 - Offline: save videos or audio, queue, favorites, watch later.
-- Handy extras: sleep timer, data saver, bookmarks, QR codes for links, themes, backups.
+- Handy extras: sleep timer, data saver, bookmarks, QR codes for links, themes, backups, per-channel speed and skip-intro, sound profiles with an equalizer, a Start screen of your choice.
+- Studio: upload videos and Shorts, edit titles, descriptions and tags.
 
 Full guide (Spanish): [`Documentation/GUIA_DE_USO.md`](Documentation/GUIA_DE_USO.md).
 
