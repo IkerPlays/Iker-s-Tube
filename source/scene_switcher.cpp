@@ -428,14 +428,6 @@ bool Menu_main(void) {
 		global_intent = startup_intent;
 		startup_intent = Intent();
 	}
-	{ // an address opened by a worker thread
-		LightLock_Lock(&posted_intent_lock);
-		if (posted_intent.next_scene != SceneType::NO_CHANGE && global_intent.next_scene == SceneType::NO_CHANGE) {
-			global_intent = posted_intent;
-			posted_intent = Intent();
-		}
-		LightLock_Unlock(&posted_intent_lock);
-	}
 	if (global_current_scene == SceneType::VIDEO_PLAYER) {
 		VideoPlayer_draw();
 	} else if (global_current_scene == SceneType::SEARCH) {
@@ -455,6 +447,14 @@ bool Menu_main(void) {
 	}
 	// add here
 
+	{ // an address opened by a worker thread: taken after the scene was drawn, and only when the scene asked for nothing itself (else it waits for the next frame)
+		LightLock_Lock(&posted_intent_lock);
+		if (posted_intent.next_scene != SceneType::NO_CHANGE && global_intent.next_scene == SceneType::NO_CHANGE) {
+			global_intent = posted_intent;
+			posted_intent = Intent();
+		}
+		LightLock_Unlock(&posted_intent_lock);
+	}
 	// a request that will not change the scene (the tab of the scene already shown, the address on top of the stack) must not suspend it either: nothing would resume it
 	const bool will_switch = global_intent.next_scene == SceneType::EXIT ||
 	                         (global_intent.next_scene != SceneType::NO_CHANGE &&
