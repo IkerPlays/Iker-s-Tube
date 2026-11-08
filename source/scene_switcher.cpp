@@ -110,6 +110,18 @@ static void auto_backup_task(void *) {
 	}
 }
 
+static LightLock posted_intent_lock;
+static Intent posted_intent;
+static struct PostedIntentLockInit {
+	PostedIntentLockInit() { LightLock_Init(&posted_intent_lock); }
+} posted_intent_lock_init;
+void Menu_post_intent(const Intent &intent) {
+	LightLock_Lock(&posted_intent_lock);
+	posted_intent = intent;
+	LightLock_Unlock(&posted_intent_lock);
+	var_need_refresh = true;
+}
+
 // where the app opens (the welcome Settings, the Start screen setting): kept apart because Menu_main clears global_intent at every frame
 static Intent startup_intent;
 
@@ -415,6 +427,14 @@ bool Menu_main(void) {
 	if (startup_intent.next_scene != SceneType::NO_CHANGE) { // the first frame: the Start screen / welcome request
 		global_intent = startup_intent;
 		startup_intent = Intent();
+	}
+	{ // an address opened by a worker thread
+		LightLock_Lock(&posted_intent_lock);
+		if (posted_intent.next_scene != SceneType::NO_CHANGE && global_intent.next_scene == SceneType::NO_CHANGE) {
+			global_intent = posted_intent;
+			posted_intent = Intent();
+		}
+		LightLock_Unlock(&posted_intent_lock);
 	}
 	if (global_current_scene == SceneType::VIDEO_PLAYER) {
 		VideoPlayer_draw();

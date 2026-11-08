@@ -28,6 +28,10 @@ extern Intent global_intent;
 // a step forward), and it is switched to even if the intent is the same as the one on top (the Library keeps its tab inside)
 extern bool global_intent_is_nav;
 
+// For worker threads (a pasted or scanned address): the intent is taken over by Menu_main on its next frame, so global_intent is
+// only ever written by the main thread
+void Menu_post_intent(const Intent &intent);
+
 void Menu_init(void);
 
 void Menu_exit(void);

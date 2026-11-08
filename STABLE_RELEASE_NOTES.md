@@ -3,7 +3,7 @@ Iker's Tube is a YouTube client for the Nintendo 3DS family, built on top of Fou
 ## What's new since 1.3.12
 
 ### Changes
-- Nothing yet.
+- **Links.** A pasted or scanned address is handed to the main thread instead of being written into the scene request from the worker thread, so it can no longer be lost or race with the frame that clears it.
 
 ## Installing
 

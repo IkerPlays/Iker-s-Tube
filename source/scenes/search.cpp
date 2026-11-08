@@ -1064,14 +1064,16 @@ static void access_input_url(void *) {
 		return;
 	}
 	if (page_type != YouTubePageType::INVALID) {
+		Intent opened; // (handed to the main thread: global_intent is cleared and read there every frame)
 		if (page_type == YouTubePageType::VIDEO) {
-			global_intent.next_scene = SceneType::VIDEO_PLAYER;
+			opened.next_scene = SceneType::VIDEO_PLAYER;
 		} else if (page_type == YouTubePageType::CHANNEL) {
-			global_intent.next_scene = SceneType::CHANNEL;
+			opened.next_scene = SceneType::CHANNEL;
 		} else if (page_type == YouTubePageType::SEARCH) {
-			global_intent.next_scene = SceneType::SEARCH;
+			opened.next_scene = SceneType::SEARCH;
 		}
-		global_intent.arg = url.compare(0, 4, "http") == 0 ? url : "https://" + url; // (the loaders take a text without a scheme for a channel id)
+		opened.arg = url.compare(0, 4, "http") == 0 ? url : "https://" + url; // (the loaders take a text without a scheme for a channel id)
+		Menu_post_intent(opened);
 	} else {
 		toast_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(NOT_A_YOUTUBE_URL); });
 		toast_view->set_is_visible(true);
