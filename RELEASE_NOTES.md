@@ -1,1 +1,1 @@
-Links: channel links with ?si= and addresses without https:// open correctly. Imported subscriptions survive a restart. CI release check refuses template notes and older versions. Docs updated.
+Sound: no more endless retry when there is no linear memory for an audio buffer; the frame is dropped after about 3 seconds.

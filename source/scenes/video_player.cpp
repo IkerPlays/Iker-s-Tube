@@ -4879,10 +4879,15 @@ static void autoplay_countdown_tick() {
 					    vid_audio_time = osTickCounterRead(&counter0);
 
 					    if (result.code == 0) {
+						    int no_memory_count = 0;
 						    while (true) {
 							    result = Util_speaker_add_buffer(0, ch, audio, audio_size, pos);
 							    if (result.code == 0 || !vid_play_request || vid_seek_request ||
 							        vid_change_video_request) {
+								    break;
+							    }
+							    if (result.code == DEF_ERR_OUT_OF_LINEAR_MEMORY && ++no_memory_count >= 300) { // (about 3 s without linear memory for the sound: the frame is dropped, the playback goes on)
+								    logger.error(DEF_SAPP0_DECODE_THREAD_STR, "no linear memory for the audio, frame dropped");
 								    break;
 							    }
 							    // Util_log_save(DEF_SAPP0_DECODE_THREAD_STR, "audio queue full");
