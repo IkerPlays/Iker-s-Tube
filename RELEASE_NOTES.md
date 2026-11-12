@@ -1,1 +1,1 @@
-Play time counts only real playback; autoplay countdown cancelled by X+B or a new choice; seeks stop one second before the end.
+Studio upload: pending upload address check, atomic state file, dead sessions clear the pending state, CRLF descriptions.
