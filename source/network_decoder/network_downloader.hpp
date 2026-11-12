@@ -36,6 +36,7 @@ struct NetworkStream {
 	volatile bool quit_request = false;
 	volatile bool error = false;
 	volatile int retry_cnt_left = RETRY_CNT_MAX;
+	volatile u64 retry_not_before_ms = 0; // after a failed block this stream waits (the others are served meanwhile: the downloader thread never sleeps for it)
 	volatile bool use_header_range = false; // alternate between '&range=' query and 'Range:' header on retries
 	volatile u64 read_head = 0;
 	const char *volatile network_waiting_status = NULL;

@@ -261,7 +261,7 @@ double NetworkStream::get_download_percentage() {
 			count++;
 		}
 	}
-	double res = len ? (double)count * BLOCK_SIZE / len * 100 : 0;
+	double res = len ? std::min(100.0, (double)count * BLOCK_SIZE / len * 100) : 0; // (the last block is shorter than BLOCK_SIZE)
 	downloaded_data_lock.unlock();
 	return res;
 }
@@ -328,7 +328,13 @@ static std::string remove_url_parameter(const std::string &url, const std::strin
 	for (size_t i = 0; i < url.size();) {
 		if (url[i] == '&' || url[i] == '?') {
 			if (url.substr(i + 1, param.size() + 1) == param + "=") {
-				i = std::find(url.begin() + i + 1, url.end(), '&') - url.begin();
+				size_t next = std::find(url.begin() + i + 1, url.end(), '&') - url.begin();
+				if (url[i] == '?') { // the first parameter goes: the "?" stays, and the "&" after it is dropped
+					res.push_back('?');
+					i = next < url.size() ? next + 1 : next;
+				} else {
+					i = next;
+				}
 			} else {
 				res.push_back(url[i++]);
 			}
@@ -351,9 +357,7 @@ void NetworkStreamDownloader::downloader_thread() {
 			stream->use_header_range = !stream->use_header_range;
 			int attempt = NetworkStream::RETRY_CNT_MAX - stream->retry_cnt_left; // 1, 2, 3, ...
 			int delay_ms = std::min(250 << std::min(attempt - 1, 4), 3000);
-			for (int waited = 0; waited < delay_ms && !thread_exit_requested && !stream->quit_request; waited += 50) {
-				usleep(50000);
-			}
+			stream->retry_not_before_ms = osGetTime() + delay_ms; // (not a sleep: a failing video stream used to stop the audio stream too)
 		} else {
 			stream->error = true;
 		}
@@ -386,6 +390,9 @@ void NetworkStreamDownloader::downloader_thread() {
 			}
 			if (streams[i]->suspend_request) {
 				continue;
+			}
+			if (streams[i]->retry_not_before_ms && osGetTime() < streams[i]->retry_not_before_ms) {
+				continue; // waiting after a failed block
 			}
 			if (!streams[i]->ready) {
 				cur_stream_index = i;
@@ -546,6 +553,7 @@ void NetworkStreamDownloader::downloader_thread() {
 					continue;
 				}
 				cur_stream->retry_cnt_left = NetworkStream::RETRY_CNT_MAX;
+				cur_stream->retry_not_before_ms = 0;
 				cur_stream->set_data(block_reading, std::move(local_data));
 				cur_stream->ready = true;
 				continue;
@@ -584,8 +592,10 @@ void NetworkStreamDownloader::downloader_thread() {
 						logger.error(LOG_THREAD_STR,
 						             "no slash in Content-Range response header : " + content_range_str);
 					}
-					if (!ok) {
+					if (!ok || cur_stream->len <= 0) { // (no usable length: the data must not mark the stream ready with a wrong size)
+						cur_stream->len = 0;
 						cur_stream->error = true;
+						continue;
 					}
 				}
 				if (cur_stream->ready && result.data.size() != expected_len) {
@@ -594,6 +604,7 @@ void NetworkStreamDownloader::downloader_thread() {
 					continue;
 				}
 				cur_stream->retry_cnt_left = NetworkStream::RETRY_CNT_MAX;
+				cur_stream->retry_not_before_ms = 0;
 				cur_stream->set_data(block_reading, std::move(result.data)); // data isn't accessed further down so we can move it
 				cur_stream->ready = true;
 			} else if (!result.fail) {
