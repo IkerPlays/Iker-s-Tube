@@ -664,7 +664,7 @@ void Menu_worker_thread(void *arg) {
 		}
 
 		settings_check_stable();
-		if (video_is_playing()) {
+		if (video_is_playing() && video_is_actually_playing()) { // (video_is_playing() also runs the timers; a paused video must not count as play time)
 			var_total_play_seconds += 0.05;
 			int today = local_day_number();
 			if (today != var_play_day) { // a new day (UTC): the count of today starts again

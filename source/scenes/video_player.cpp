@@ -3816,6 +3816,7 @@ debug_info_view =
 	    if (update_player) {
 		    if (cur_playing_url != url) {
 			    vid_play_request = false;
+			    autoplay_pending_url = ""; // (a choice made during the autoplay countdown replaces the pending next video)
 			    stop_after_video = false; // ("stop after this video" belongs to the video it was asked on)
 			    video_retry_left = MAX_RETRY_CNT; // (a new video starts with its own retries, whoever asked for it)
 			    cur_playing_url = url;
@@ -3890,6 +3891,11 @@ static void autoplay_countdown_tick() {
 	}
 	small_resource_lock.unlock();
 }
+
+    // real playback: not paused, not buffering, not stopped at the end (video_is_playing() stays true in those cases: the bars use it)
+    bool video_is_actually_playing() {
+	    return vid_play_request && !vid_pausing && !vid_pausing_seek && network_decoder.ready && !eof_reached;
+    }
 
     bool video_is_playing() {
 	    autoplay_countdown_tick();
@@ -5379,7 +5385,7 @@ static void autoplay_countdown_tick() {
 			    {
 				    static int limit_notified_day = -1; // the daily limit: one notice per day
 				    static const int limit_minutes[5] = {0, 30, 60, 120, 240};
-				    if (var_daily_limit && var_play_today >= limit_minutes[var_daily_limit] * 60 && limit_notified_day != var_play_day) {
+				    if (var_daily_limit && var_play_day == local_day_number() && var_play_today >= limit_minutes[var_daily_limit] * 60 && limit_notified_day != var_play_day) {
 					    limit_notified_day = var_play_day;
 					    notice_show(tr("Daily limit reached: ", "Límite diario alcanzado: ") + std::to_string(limit_minutes[var_daily_limit]) + " min");
 				    }
@@ -5673,6 +5679,9 @@ static void autoplay_countdown_tick() {
 			    run_button_action(key.p_d_right ? 9 : 10);
 		    } else if ((key.h_x && key.p_b) || (key.h_b && key.p_x)) {
 			    vid_play_request = false;
+			    small_resource_lock.lock();
+			    autoplay_pending_url = ""; // (stopped by hand: the autoplay countdown must not start the next video)
+			    small_resource_lock.unlock();
 		    } else if (key.p_x && var_button_x) {
 			    run_button_action(var_button_x);
 		    } else if (key.p_y && var_button_y) {
@@ -5684,7 +5693,7 @@ static void autoplay_countdown_tick() {
 				    double pos = vid_current_pos;
 				    { int step = seek_step_seconds(); pos += key.p_d_right ? step : -step; }
 				    pos = std::max<double>(0, pos);
-				    pos = std::min<double>(vid_duration, pos);
+				    pos = std::min<double>(std::max<double>(0, vid_duration - 1), pos); // (a second before the end: the very end would finish the video as watched)
 				    send_seek_request(pos);
 				    notice_show(std::string(key.p_d_right ? "+" : "-") + std::to_string(seek_step_seconds()) + " s   " + Util_convert_seconds_to_time(pos));
 				    }
@@ -5715,7 +5724,7 @@ static void autoplay_countdown_tick() {
 				    double pos = vid_current_pos;
 				    pos += key.p_zr ? steps_z_seconds() : -steps_z_seconds();
 				    pos = std::max<double>(0, pos);
-				    pos = std::min<double>(vid_duration, pos);
+				    pos = std::min<double>(std::max<double>(0, vid_duration - 1), pos); // (a second before the end: the very end would finish the video as watched)
 				    send_seek_request(pos);
 				    notice_show(std::string(key.p_zr ? "+" : "-") + std::to_string(steps_z_seconds()) + " s   " + Util_convert_seconds_to_time(pos));
 			    }

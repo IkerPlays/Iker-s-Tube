@@ -1,1 +1,1 @@
-Home: pin/unpin no longer freezes, hidden channels also hidden in the account feed; History by views has no repeated day headers; decoder audio start time guard.
+Play time counts only real playback; autoplay countdown cancelled by X+B or a new choice; seeks stop one second before the end.
