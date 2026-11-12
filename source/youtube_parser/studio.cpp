@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/file_recover.hpp"
 #include "util/json_text.hpp"
 #include "youtube_parser/studio.hpp"
 #include "youtube_parser/internal_common.hpp"
@@ -16,6 +17,10 @@ static std::string json_quote(const std::string &s) {
 			out += (char)c;
 		} else if (c == '\n') {
 			out += "\\n";
+		} else if (c == '\r') { // (a CRLF description keeps its line breaks, without the stray space)
+			continue;
+		} else if (c == '\t') {
+			out += "\\t";
 		} else if (c < 0x20) {
 			out += ' ';
 		} else {
@@ -199,20 +204,17 @@ bool youtube_studio_utc_now(long long &epoch) {
 static void save_pending_upload(const std::string &path, const std::string &title, const std::string &url) {
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
-	FILE *f = fopen(PENDING_UPLOAD_PATH, "w");
-	if (!f) return;
 	std::string clean_title = title;
 	for (auto &c : clean_title) {
 		if (c == '\n' || c == '\r') c = ' ';
 	}
-	fprintf(f, "%s\n%s\n%s\n", url.c_str(), path.c_str(), clean_title.c_str());
-	fclose(f);
+	save_text_atomic(PENDING_UPLOAD_PATH, url + "\n" + path + "\n" + clean_title + "\n"); // (through a .tmp: a cut write would lose the upload address)
 }
 
 void youtube_studio_clear_pending_upload() { remove(PENDING_UPLOAD_PATH); }
 
 bool youtube_studio_pending_upload(std::string &path, std::string &title, std::string &upload_url) {
-	FILE *f = fopen(PENDING_UPLOAD_PATH, "r");
+	FILE *f = fopen_or_recover(PENDING_UPLOAD_PATH, PENDING_UPLOAD_PATH ".tmp", "r");
 	if (!f) return false;
 	char a[1024] = {0}, b[1024] = {0}, c[512] = {0};
 	bool ok = fgets(a, sizeof a, f) && fgets(b, sizeof b, f);
@@ -223,6 +225,8 @@ bool youtube_studio_pending_upload(std::string &path, std::string &title, std::s
 	path = trim(b);
 	title = trim(c);
 	struct stat st;
+	// the address receives the login token: only an upload address of YouTube is accepted from the file
+	if (upload_url.compare(0, 41, "https://www.googleapis.com/upload/youtube") != 0) return false;
 	return ok && upload_url != "" && stat(path.c_str(), &st) == 0; // the file must still be there
 }
 
@@ -408,6 +412,12 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 			if (progress) progress(offset, total);
 			continue;
 		}
+		if (!r.fail && (r.status_code == 400 || r.status_code == 404 || r.status_code == 410)) { // a dead session or a changed file: retrying cannot help
+			error = "http " + std::to_string(r.status_code);
+			youtube_studio_clear_pending_upload();
+			fclose(file);
+			return false;
+		}
 		failures++;
 		std::string resp(r.data.begin(), r.data.end());
 		logger.warning("studio", "upload chunk failed at " + std::to_string(offset) + " : http " + std::to_string(r.status_code) +
@@ -432,6 +442,7 @@ bool youtube_studio_upload(const std::string &path, const std::string &title, co
 				if (p != std::string::npos && e != std::string::npos) video_id = resp.substr(p + 1, e - p - 1);
 			}
 			if (progress) progress(total, total);
+			youtube_studio_clear_pending_upload(); // (finished: no phantom "unfinished upload" stays on the dashboard)
 			fclose(file);
 			return true;
 		}
