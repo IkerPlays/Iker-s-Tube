@@ -209,7 +209,7 @@ static void update_watch_history(const std::vector<HistoryVideo> &new_watch_hist
 			if (hay.find(needle) == std::string::npos) continue;
 		}
 		long long day = (long long)i.last_watch_time / 86400;
-		if (day != last_day) { // a header for each day
+		if (cur_sort_type == 0 && day != last_day) { // a header for each day (only in time order: sorted by views the days are interleaved, and a header would repeat before almost every row)
 			last_day = day;
 			std::string title;
 			if (today - day == 0) title = tr("Today", "Hoy");

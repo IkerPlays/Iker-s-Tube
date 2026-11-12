@@ -430,14 +430,23 @@ void Home_rebuild_channels_tab(void) {
 	var_need_refresh = true;
 }
 
+// the channel name of a video renderer of the account feed (the hidden channels are matched by it)
+static std::string feed_renderer_author(RJson renderer) {
+	for (const char *key : {"longBylineText", "shortBylineText"}) {
+		auto runs = renderer[key]["runs"].array_items();
+		if (!runs.empty()) return runs[(size_t)0]["text"].string_value();
+	}
+	return "";
+}
+static volatile bool local_channels_update_request = false;
 void Home_update_local_channels(void) {
 	if (!already_init) {
 		return;
 	}
 
-	resource_lock.lock();
-	update_subscribed_channels(get_valid_subscribed_channels());
-	resource_lock.unlock();
+	// (not done here: a menu action calls this while Home_draw holds resource_lock, and the lock is not recursive: the
+	// rebuild is done by Home_draw at its next frame, outside the lock)
+	local_channels_update_request = true;
 	var_need_refresh = true;
 }
 
@@ -1152,7 +1161,7 @@ static void load_oauth_subscription_feed(void *) {
 					start_time = atoll(renderer["upcomingEventData"]["startTime"].string_value().c_str());
 				}
 
-				if (!video_id.empty() && !title.empty() && !result_video_hidden("https://m.youtube.com/watch?v=" + video_id)) {
+				if (!video_id.empty() && !title.empty() && !result_video_hidden("https://m.youtube.com/watch?v=" + video_id, feed_renderer_author(renderer))) {
 					SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 					if (is_live) {
 						duration_text = tr("LIVE", "DIRECTO");
@@ -1314,7 +1323,7 @@ static void load_oauth_subscription_feed_more(void *) {
 					}
 				}
 
-				if (!video_id.empty() && !title.empty() && !result_video_hidden("https://m.youtube.com/watch?v=" + video_id)) {
+				if (!video_id.empty() && !title.empty() && !result_video_hidden("https://m.youtube.com/watch?v=" + video_id, feed_renderer_author(renderer))) {
 					SuccinctVideoView *cur_view = (new SuccinctVideoView(0, 0, 320, VIDEO_LIST_THUMBNAIL_HEIGHT));
 
 					cur_view->set_title_lines(truncate_str(title, VIDEO_TITLE_MAX_WIDTH, 2, 0.5, 0.5));
@@ -1533,6 +1542,14 @@ void Home_draw(void) {
 		Draw_apply_draw();
 	} else {
 		gspWaitForVBlank();
+	}
+
+	if (local_channels_update_request) { // asked by a menu action (pin / unpin): rebuilt here, before the lock of the frame is taken
+		local_channels_update_request = false;
+		auto channels = get_valid_subscribed_channels();
+		resource_lock.lock();
+		update_subscribed_channels(channels);
+		resource_lock.unlock();
 	}
 
 	resource_lock.lock();

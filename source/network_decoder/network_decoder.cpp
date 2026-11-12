@@ -506,7 +506,9 @@ Result_with_string NetworkDecoderFilterData::process_audio_frame(AVFrame *input,
 	int ffmpeg_result = 0;
 
 	if (first_frame) {
-		first_frame = false, initial_timestamp = input->pts * input_time_base;
+		first_frame = false;
+		// (a frame without a pts, or a time base that was never set, would give a garbage start time and the video would run away from the audio clock)
+		initial_timestamp = (input->pts == AV_NOPTS_VALUE || !(input_time_base > 0)) ? 0 : input->pts * input_time_base;
 	}
 
 	ffmpeg_result = av_buffersrc_write_frame(audio_filter_src, input);
@@ -1289,7 +1291,7 @@ Result_with_string NetworkDecoder::seek(s64 microseconds) {
 		}
 
 		// decode and discard video frames until we reach the target timestamp
-		int width, height;
+		int width = 16, height = 16; // (set by decode_video; a safe size if it returns before writing them)
 		bool key_frame;
 		while (true) {
 			result = decode_video(&width, &height, &key_frame);
@@ -1416,7 +1418,7 @@ Result_with_string NetworkDecoder::seek(s64 microseconds) {
 
 	// now, try to decode frames until the current position reaches the required timestamp
 	if (!is_audio_only()) {
-		int width, height;
+		int width = 16, height = 16; // (set by decode_video; a safe size if it returns before writing them)
 		bool key_frame;
 		while (true) {
 			result = decode_video(&width, &height, &key_frame);

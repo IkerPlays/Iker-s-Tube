@@ -1,1 +1,1 @@
-What's new dialog shows once; sign-in handles empty/revoked tokens and restores the own-channel id after a restart; notice fade and QR address fixes.
+Home: pin/unpin no longer freezes, hidden channels also hidden in the account feed; History by views has no repeated day headers; decoder audio start time guard.
