@@ -57,6 +57,7 @@ void notice_draw(float bottom_y) {
 	double slide = shown < 150 ? 1.0 - shown / 150.0 : 0; // slides up when it appears
 	float y = bottom_y - h - 3 + (float)(slide * 8);
 	u32 a = (u32)(0xE0 * alpha);
+	if (a == 0) return; // (a colour of exactly 0 means "no tint" to the draw layer: a white box for one frame)
 	Draw_round_rect((int)x, (int)y, (int)w, (int)h, 9, (a << 24) | 0x000000);
 	Draw_xy_centered(line, x, x + w, y, y + h, 0.5, 0.5, (u32)(0xFF * alpha) << 24 | 0xFFFFFF);
 	var_need_refresh = true; // until it disappears

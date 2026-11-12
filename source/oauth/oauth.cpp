@@ -227,6 +227,16 @@ void check_device_flow() {
 		}
 	}
 
+	if (response_json["access_token"].string_value().empty() || response_json["refresh_token"].string_value().empty()) {
+		// (a 200 answer without tokens, as a captive portal gives: not a sign-in)
+		oauth_error_message = "OAuth error: no token in the answer";
+		oauth_state = OAuthState::ERROR;
+		device_code = "";
+		user_code = "";
+		verification_url = "";
+		return;
+	}
+
 	LightLock_Lock(&token_lock);
 	access_token = response_json["access_token"].string_value();
 	refresh_token = response_json["refresh_token"].string_value();
@@ -293,10 +303,24 @@ void refresh_access_token(bool force) {
 		if (kind == "invalid_grant" || kind == "unauthorized_client" || kind == "invalid_client" || previous_state != OAuthState::AUTHENTICATED) {
 			oauth_state = OAuthState::ERROR;
 		}
+		if (kind == "invalid_grant") { // the grant was revoked: the tokens are dead, they must not stay (in memory and on the card) to fail at every launch
+			LightLock_Lock(&token_lock);
+			access_token = "";
+			refresh_token = "";
+			LightLock_Unlock(&token_lock);
+			token_valid_until_ms = 0;
+			save_tokens();
+		}
 		return;
 	}
 	if (result.status_code != 200) {
 		oauth_error_message = "HTTP error: " + std::to_string(result.status_code);
+		if (previous_state != OAuthState::AUTHENTICATED) oauth_state = OAuthState::ERROR;
+		return;
+	}
+
+	if (response_json["access_token"].string_value().empty()) { // (a 200 answer without a token must not wipe the good one)
+		oauth_error_message = "OAuth error: no token in the answer";
 		if (previous_state != OAuthState::AUTHENTICATED) oauth_state = OAuthState::ERROR;
 		return;
 	}
@@ -315,7 +339,7 @@ void refresh_access_token(bool force) {
 
 	oauth_state = OAuthState::AUTHENTICATED;
 	save_tokens();
-	if (user_account_name.empty()) fetch_library_data(); // (the name and photo are asked once, not at every hourly renewal)
+	if (user_account_name.empty() || user_channel_id.empty()) fetch_library_data(); // (the name, photo and channel id are asked once, not at every hourly renewal; the channel id is not saved in the token file, so after a restart it is asked at the first renewal)
 }
 
 // The RJson that is returned points into its Document, and two threads can ask for browse data at the same time: every call

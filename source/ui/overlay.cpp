@@ -415,8 +415,9 @@ static std::string core_version() {
 	std::string v = DEF_CURRENT_APP_VER;
 	return v.substr(0, v.find('-'));
 }
+static bool whats_new_checked = false, whats_new_is_pending = false; // (file level: whats_new_done() has to be able to clear the cached answer)
 static bool whats_new_pending() {
-	static bool checked = false, pending = false;
+	bool &checked = whats_new_checked, &pending = whats_new_is_pending;
 	if (checked) return pending;
 	checked = true;
 	if (var_safe_mode) return pending = false; // (safe mode: no dialogs)
@@ -432,6 +433,8 @@ static bool whats_new_pending() {
 	return pending;
 }
 static void whats_new_done() {
+	whats_new_checked = true; // (answered: the dialog must not come back every 1.5 s until the next start, even if the file cannot be written)
+	whats_new_is_pending = false;
 	FILE *w = fopen("sdmc:/3ds/IkersTube/last_version.txt", "w");
 	if (w) {
 		fprintf(w, "%s\n", core_version().c_str());
