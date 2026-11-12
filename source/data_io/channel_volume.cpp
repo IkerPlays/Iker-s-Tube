@@ -42,11 +42,7 @@ void channel_volume_set(const std::string &channel_id, double volume) {
 	if (channel_id == "") return;
 	prefs_lock.lock();
 	load_locked();
-	if (volume > 0.99 && volume < 1.01) {
-		volumes.erase(channel_id);
-	} else {
-		volumes[channel_id] = volume;
-	}
+	volumes[channel_id] = volume; // (also 100%: with another default volume in Settings, it is a choice to remember for this channel)
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
 	FILE *f = fopen(VOLUME_TMP_PATH, "w");

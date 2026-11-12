@@ -42,11 +42,7 @@ void channel_speed_set(const std::string &channel_id, double speed) {
 	if (channel_id == "") return;
 	prefs_lock.lock();
 	load_locked();
-	if (speed > 0.99 && speed < 1.01) {
-		speeds.erase(channel_id);
-	} else {
-		speeds[channel_id] = speed;
-	}
+	speeds[channel_id] = speed; // (also 1.0: with another default speed in Settings, "normal" is a choice to remember for this channel)
 	mkdir("sdmc:/3ds", 0777);
 	mkdir("sdmc:/3ds/IkersTube", 0777);
 	FILE *f = fopen(SPEED_TMP_PATH, "w");

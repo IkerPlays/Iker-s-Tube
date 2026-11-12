@@ -1,1 +1,1 @@
-Sound: no more endless retry when there is no linear memory for an audio buffer; the frame is dropped after about 3 seconds.
+Per-channel speed/volume 100% remembered; Slower/Faster remember per channel; volume cap on the bar; speed bar to 200%; auto quality steps down to 480p first; Audio language and data saver act on the playing video; Shuffle queue keeps repeat.

@@ -455,6 +455,8 @@ static const TrEntry kTrEntries[] = {
 	{"YouTube is busy, try later", {"YouTube est occupé, réessayez plus tard", "YouTube ist ausgelastet, später versuchen", "YouTube è occupato, riprova più tardi", "O YouTube está ocupado, tente depois", "YouTubeが混雑中です。後でお試しください"}},
 	{"YouTube refused it, sign in again", {"YouTube a refusé, reconnectez-vous", "YouTube hat abgelehnt, erneut anmelden", "YouTube ha rifiutato, accedi di nuovo", "O YouTube recusou, entre de novo", "YouTubeに拒否されました。再ログインしてください"}},
 	{"check the connection", {"vérifiez la connexion", "Verbindung prüfen", "controlla la connessione", "verifique a conexão", "接続を確認してください"}},
+	{"Sleep timer : ", {"Minuterie : ", "Schlaftimer : ", "Timer : ", "Temporizador : ", "スリープタイマー : "}},
+	{"Sleep timer : off", {"Minuterie : désactivée", "Schlaftimer : aus", "Timer : spento", "Temporizador : desligado", "スリープタイマー : オフ"}},
 	{"About", {"À propos", "Über", "Informazioni", "Sobre", "このアプリについて"}},
 	{"Version ", {"Version ", "Version ", "Versione ", "Versão ", "バージョン "}},
 	{"Compiled on ", {"Compilé le ", "Kompiliert am ", "Compilato il ", "Compilado em ", "ビルド日 "}},

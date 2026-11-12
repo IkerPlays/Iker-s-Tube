@@ -1,4 +1,5 @@
 #include "headers.hpp"
+#include "util/utf8.hpp"
 #include "data_io/settings.hpp"
 #include "data_io/history.hpp"
 #include "util/badges.hpp"
@@ -302,7 +303,10 @@ static void auto_quality_tick() {
 		for (int i = 0; i < 4; i++) {
 			if (steps[i] <= cur) idx = i;
 		}
-		if (idx > 0) {
+		if (cur > steps[3]) { // above 480p with no cap yet: the first step is 480p, not the one below it
+			var_auto_quality_cap = steps[3];
+			misc_tasks_request(TASK_SAVE_SETTINGS);
+		} else if (idx > 0) {
 			var_auto_quality_cap = steps[idx - 1];
 			misc_tasks_request(TASK_SAVE_SETTINGS);
 		}
@@ -475,7 +479,7 @@ static void channel_speed_tick() {
 	if (speed != quick_speed) {
 		quick_speed = speed;
 		network_decoder.set_tempo(quick_speed);
-		if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+		if (speed_bar_view) speed_bar_view->set_value(std::min(2.0, quick_speed));
 		var_need_refresh = true;
 	}
 }
@@ -1361,7 +1365,7 @@ debug_info_view =
 	// volume change needs a reconstruction of the filter graph, so don't update volume too often
 	static int cnt = 0;
 	if (++cnt >= 15) {
-		cnt = 0, mini_volume_apply(volume); // (the same volume the Mute button and the sleep timer fade use)
+		cnt = 0, mini_volume_apply(std::min(volume, volume_cap())); // (the Settings cap holds here too; the same volume the Mute button and the sleep timer fade use)
 	}
 	                 })
 	                 ->set_on_release([](BarView &view) {
@@ -1369,10 +1373,10 @@ debug_info_view =
 	if (volume >= 0.95 && volume <= 1.05) {
 		volume = 1.0, view.set_value(0);
 	}
-	mini_volume_apply(volume);
+	mini_volume_apply(std::min(volume, volume_cap()));
 	                 }),
 	             (speed_bar_view = new BarView(0, 0, 260, 30)) // speed
-	                 ->set_values(0.25, 1.5, 1.0)
+	                 ->set_values(0.25, 2.0, 1.0)
 	                 ->set_title([](const BarView &view) {
 	return LOCALIZED(SPEED) + " : " + std::to_string((int)std::round(view.get_value() * 100)) + "%";
 	                 })
@@ -1409,9 +1413,9 @@ debug_info_view =
 	                 ->set_title([](const BarView &view) {
 	u64 now = osGetTime();
 	if (var_sleep_timer_end > now) {
-		return std::string("Sleep timer : ") + std::to_string((var_sleep_timer_end - now) / 60000 + 1) + " min";
+		return tr("Sleep timer : ", "Temporizador : ") + std::to_string((var_sleep_timer_end - now) / 60000 + 1) + " min";
 	}
-	return std::string("Sleep timer : off");
+	return tr("Sleep timer : off", "Temporizador : apagado");
 	                 })
 	                 ->set_on_release([](BarView &view) {
 	int minutes = (int)std::round(view.get_value());
@@ -2274,7 +2278,7 @@ debug_info_view =
 					                           quick_speed = steps[(i + 1) % 7];
 					                           network_decoder.set_tempo(quick_speed);
 					                           channel_speed_set(playing_video_info.author.id, quick_speed); // remembered for this channel
-					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+					                           if (speed_bar_view) speed_bar_view->set_value(std::min(2.0, quick_speed));
 					                           var_need_refresh = true;
 				                           }),
 				                 make_tool(
@@ -2379,7 +2383,8 @@ debug_info_view =
 				                           []() {
 					                           quick_speed = std::max(0.25, std::round((quick_speed - 0.05) * 100) / 100);
 					                           network_decoder.set_tempo(quick_speed);
-					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+					                           if (speed_bar_view) speed_bar_view->set_value(std::min(2.0, quick_speed));
+					                           channel_speed_set(playing_video_info.author.id, quick_speed); // remembered for this channel, like the % button
 					                           notice_show(std::to_string((int)std::round(quick_speed * 100)) + "%");
 					                           var_need_refresh = true;
 				                           }),
@@ -2387,7 +2392,8 @@ debug_info_view =
 				                           []() {
 					                           quick_speed = std::min(2.0, std::round((quick_speed + 0.05) * 100) / 100);
 					                           network_decoder.set_tempo(quick_speed);
-					                           if (speed_bar_view) speed_bar_view->set_value(std::min(1.5, quick_speed));
+					                           if (speed_bar_view) speed_bar_view->set_value(std::min(2.0, quick_speed));
+					                           channel_speed_set(playing_video_info.author.id, quick_speed); // remembered for this channel, like the % button
 					                           notice_show(std::to_string((int)std::round(quick_speed * 100)) + "%");
 					                           var_need_refresh = true;
 				                           }),
@@ -2439,7 +2445,7 @@ debug_info_view =
 						                           if (chapter.first < vid_current_pos - 3) target = chapter.first, name = chapter.second;
 					                           }
 					                           send_seek_request_wo_lock(target);
-					                           if (name != "") notice_show(name.substr(0, 40));
+					                           if (name != "") notice_show(utf8_prefix(name, 40));
 				                           }),
 				                 make_tool([]() { return tr("Chap >>", "Cap >>"); }, 60,
 				                           [is_current]() {
@@ -2447,7 +2453,7 @@ debug_info_view =
 					                           for (auto &chapter : current_chapters) {
 						                           if (chapter.first > vid_current_pos + 1) {
 							                           send_seek_request_wo_lock(chapter.first);
-							                           if (chapter.second != "") notice_show(chapter.second.substr(0, 40));
+							                           if (chapter.second != "") notice_show(utf8_prefix(chapter.second, 40));
 							                           break;
 						                           }
 					                           }
@@ -2556,11 +2562,15 @@ debug_info_view =
 				                                   }),
 				                         make_tool([]() {
 					                                   for (auto &t : cur_video_info.audio_tracks) {
-						                                   if (t.selected) return tr("Audio: ", "Audio: ") + t.name.substr(0, 16);
+						                                   if (t.selected) return tr("Audio: ", "Audio: ") + utf8_prefix(t.name, 16);
 					                                   }
 					                                   return tr("Audio language", "Idioma del audio");
 				                                   }, 150,
 				                                   []() {
+					                                   if (cur_video_info.id != playing_video_info.id) { // (the page on screen is not the video that plays: its tracks are not the ones to pick from)
+						                                   notice_show(tr("Open the page of the playing video first", "Abre primero la página del vídeo que suena"));
+						                                   return;
+					                                   }
 					                                   auto &tracks = cur_video_info.audio_tracks;
 					                                   if (tracks.size() < 2) { // the video page found one : look for the others (the next load asks the ANDROID client)
 						                                   if (youtube_audio_probe_count == 0 || youtube_audio_probe_count == 1) {
@@ -3405,7 +3415,7 @@ debug_info_view =
 		    }
 	    }
 	    var_video_quality = audio_only_mode ? 0 : video_p_value;
-	    quality_chosen_video = cur_video_info.id; // a quality picked here is not lowered by the data saver (the automatic quality may still lower the next videos if playback stalls)
+	    quality_chosen_video = playing_video_info.id; // (the change applies to the playing video) a quality picked here is not lowered by the data saver (the automatic quality may still lower the next videos if playback stalls)
 	    var_auto_quality_cap = 0;
 	    if (changed) notice_show(audio_only_mode ? tr("Audio only", "Solo audio") : tr("Quality: ", "Calidad: ") + std::to_string((int)video_p_value) + "p");
 	    misc_tasks_request(TASK_SAVE_SETTINGS);
@@ -4317,7 +4327,7 @@ static void autoplay_countdown_tick() {
 	    		if (chapter.first < vid_current_pos - 3) target = chapter.first, name = chapter.second;
 	    	}
 	    	send_seek_request(target);
-	    	if (name != "") notice_show(name.substr(0, 40));
+	    	if (name != "") notice_show(utf8_prefix(name, 40));
 	    	break;
 	    }
 	    case 14: { // next chapter
@@ -4325,7 +4335,7 @@ static void autoplay_countdown_tick() {
 	    	for (auto &chapter : current_chapters) {
 	    		if (chapter.first > vid_current_pos + 1) {
 	    			send_seek_request(chapter.first);
-	    			if (chapter.second != "") notice_show(chapter.second.substr(0, 40));
+	    			if (chapter.second != "") notice_show(utf8_prefix(chapter.second, 40));
 	    			break;
 	    		}
 	    	}

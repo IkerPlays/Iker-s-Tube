@@ -444,14 +444,7 @@ static void build_queue(VerticalListView *list) {
 		                   }));
 		list->views.insert(list->views.begin(), (new HorizontalListView(0, 0, 22))
 		                                             ->set_views({make_button(tr("Shuffle queue", "Mezclar cola"), 160, []() {
-			                                                          std::vector<std::pair<std::string, std::string>> items;
-			                                                          for (int i = 0; i < play_queue_size(); i++) {
-				                                                          std::string url, title;
-				                                                          if (play_queue_get(i, url, title)) items.push_back({url, title});
-			                                                          }
-			                                                          for (size_t i = items.size(); i > 1; i--) std::swap(items[i - 1], items[rand() % i]);
-			                                                          play_queue_clear();
-			                                                          for (auto &item : items) play_queue_toggle(item.first, item.second);
+			                                                          play_queue_shuffle(); // (under the queue lock, one save; the old way cleared the queue, which also turned the repeat list off)
 			                                                          rebuild_request = true;
 		                                                          }),
 		                                                          make_button(tr("Save all audio", "Guardar todo el audio"), 160, []() {
