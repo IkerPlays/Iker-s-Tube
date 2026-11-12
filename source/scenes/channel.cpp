@@ -611,8 +611,7 @@ void Channel_init(void) {
 		    new_info.name = result.name;
 		    new_info.icon_url = result.icon_url;
 		    new_info.subscriber_count_str = result.subscriber_count_str;
-		    subscription_unsubscribe(result.id);
-		    subscription_subscribe(new_info);
+		    subscription_subscribe(new_info); // (it replaces the entry by id: the channel is never missing from the saved list)
 
 		    misc_tasks_request(TASK_SAVE_SUBSCRIPTION);
 		    var_need_refresh = true;
@@ -959,6 +958,10 @@ void Channel_init(void) {
 		    stream_load_more_view->set_text((std::function<std::string()>)[]() {
 			    return channel_info.error != "" ? friendly_error(channel_info.error) : streams_tab_error != "" ? streams_tab_error : loading_text();
 		    });
+	    } else if (channel_info.streams.empty()) { // (nothing to show: a blank tab says nothing)
+		    stream_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
+		    stream_load_more_view->set_is_visible(true);
+		    stream_load_more_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(EMPTY); });
 	    } else {
 		    stream_load_more_view->update_y_range(0, 0);
 		    stream_load_more_view->set_is_visible(false);
@@ -1062,6 +1065,10 @@ void Channel_init(void) {
 		    shorts_load_more_view->set_text((std::function<std::string()>)[]() {
 			    return channel_info.error != "" ? friendly_error(channel_info.error) : shorts_tab_error != "" ? shorts_tab_error : loading_text();
 		    });
+	    } else if (channel_info.shorts.empty()) { // (nothing to show: a blank tab says nothing)
+		    shorts_load_more_view->update_y_range(0, DEFAULT_FONT_INTERVAL * 2);
+		    shorts_load_more_view->set_is_visible(true);
+		    shorts_load_more_view->set_text((std::function<std::string()>)[]() { return LOCALIZED(EMPTY); });
 	    } else {
 		    shorts_load_more_view->update_y_range(0, 0);
 		    shorts_load_more_view->set_is_visible(false);
@@ -1259,8 +1266,8 @@ void Channel_init(void) {
 			    main_view->update(key);
 		    }
 
-		    // community post thumbnail requests update
-		    if (channel_info.community_posts.size()) {
+		    // community post thumbnail requests update (only while the Community tab is shown: its position is only known then)
+		    if (channel_info.community_posts.size() && tab_view && tab_view->selected_tab == 4) {
 			    std::vector<std::pair<float, PostView *>> should_be_loaded;
 			    {
 				    constexpr int LOW = -1000;

@@ -1,1 +1,1 @@
-Streaming: a failing stream no longer stalls the others while it waits to retry; Content-Range length checks; URL parameter removal keeps the ?; download percentage capped.
+Streaming: failing streams no longer stall the others; Content-Range checks. Channel page: empty Streams/Shorts tabs say Empty, Community thumbnails only on that tab, subscription refresh is atomic.
