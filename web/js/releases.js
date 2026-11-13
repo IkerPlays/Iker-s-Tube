@@ -32,7 +32,7 @@
       if (/^---+$/.test(line) || !line) { ul = null; return; }
       if ((m = /^#{1,2}\s+(.*)$/.exec(line))) { ul = null; return; } // the title repeats the release name
       if ((m = /^#{3,6}\s+(.*)$/.exec(line))) { ul = null; box.appendChild(el("h4", "", m[1])); return; }
-      if ((m = /^[-*]\s+(.*)$/.exec(line))) {
+      if ((m = /^\s*[-*]\s+(.*)$/.exec(line))) {
         if (!ul) { ul = el("ul"); box.appendChild(ul); }
         var li = el("li"); inline(li, m[1]); ul.appendChild(li); return;
       }
@@ -301,7 +301,7 @@
     qrTitle.textContent = t("qr_for") + (r.name || r.tag) + " (" + (cia ? ".cia" : ".3dsx") + ")";
     qrUrl.textContent = a.url;
     qrCopy.textContent = t("qr_copy");
-    drawQr(a.url);
+    try { drawQr(a.url); } catch (e) { qrUrl.textContent = a.url; } // (the QR library may be blocked: the address is still shown and can be copied)
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
   }
   function restoreFocus() {
@@ -336,7 +336,16 @@
   }
   function ready(list, at) {
     all = list.filter(function (r) { return !r.draft; });
-    var stable = all.filter(function (r) { return !r.pre; }).sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+    function ver(r) { return (String(r.tag).match(/\d+/g) || []).map(Number); }
+    var stable = all.filter(function (r) { return !r.pre; }).sort(function (a, b) {
+      // the highest version is the latest (a re-published older stable has a newer date): the date only breaks ties
+      var x = ver(a), y = ver(b);
+      for (var i = 0; i < Math.max(x.length, y.length); i++) {
+        var d = (y[i] || 0) - (x[i] || 0);
+        if (d) return d;
+      }
+      return new Date(b.date) - new Date(a.date);
+    });
     latestRel = stable.length ? stable[0] : null;
     latestTag = latestRel ? latestRel.tag : "";
     loaded = true; failed = false; cachedAt = at || 0;
@@ -352,7 +361,7 @@
       return arr.length === 100 && p < 5 ? fetchPage(p + 1, acc) : acc;
     }).catch(function (err) {
       // a later page that fails (the API limit of 60 requests per hour) must not throw away the pages already loaded
-      if (p > 1 && acc.length) return acc;
+      if (p > 1 && acc.length) { acc.partial = true; return acc; } // (kept for this view only: see load())
       throw err;
     });
   }
@@ -367,7 +376,7 @@
     var c = readCache();
     if (!force && c && Date.now() - c.at < CACHE_MS) { ready(c.data, 0); return; }
     fetchPage(1, []).then(function (list) {
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data: list })); } catch (e) {}
+      if (!list.partial) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data: list })); } catch (e) {} } // (a partial list is not cached as complete)
       ready(list, 0);
     }).catch(function () {
       // Network or API failure: fall back to the last saved list, even if it has expired.
