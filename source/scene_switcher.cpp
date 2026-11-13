@@ -19,6 +19,7 @@
 #include "data_io/backup.hpp"
 #include "ui/notice.hpp"
 #include <sys/stat.h>
+#include <curl/curl.h>
 #include <ctime>
 #include "util/misc_tasks.hpp"
 #include "ui/ui.hpp"
@@ -154,6 +155,7 @@ void Menu_init(void) {
 	}
 	LOG_IF_ERROR(sslcInit(0));
 	LOG_IF_ERROR(httpcInit(0x200000));
+	curl_global_init(CURL_GLOBAL_DEFAULT); // (once, before any thread starts: curl would initialise itself on its first use, which is not thread-safe)
 	LOG_IF_ERROR(romfsInit());
 	LOG_IF_ERROR(cfguInit());
 	LOG_IF_ERROR(amInit());
@@ -316,6 +318,7 @@ void Menu_exit(void) {
 	Result_with_string result;
 
 	menu_thread_run = false;
+	NetworkSessionList::exit_request(); // (first: the requests that are still running stop now, so the scene exits below do not wait for the network; it was done after them)
 
 	VideoPlayer_exit();
 	Channel_exit();

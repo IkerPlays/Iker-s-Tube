@@ -1,1 +1,1 @@
-Emoji kept in comments and posts; timestamp overflow guard; URL host case and scheme handling.
+Faster, safer exit (network stops first), curl initialised once at start, website release list fixes.

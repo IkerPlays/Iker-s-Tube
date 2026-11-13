@@ -228,7 +228,7 @@ CURLMcode NetworkSessionList::curl_perform_requests() {
 			return res;
 		}
 		if (running_request_num) {
-			curl_multi_poll(curl_multi, NULL, 0, 10000, NULL);
+			curl_multi_poll(curl_multi, NULL, 0, 500, NULL); // (short: the exit flag is looked at after each wait, a 10 s wait made the app close slowly)
 		}
 		if (exiting) {
 			for (auto &i : curl_requests) {
