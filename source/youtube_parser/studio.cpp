@@ -9,6 +9,28 @@
 #include <algorithm>
 #include <cstring>
 
+// the JSON array that starts at the first '[' after `from` (a "]" inside a quoted tag, as in "top [10]", does not end it)
+static std::string json_array_at(const std::string &body, size_t from) {
+	size_t open = body.find('[', from);
+	if (open == std::string::npos) return "";
+	int depth = 0;
+	bool in_string = false;
+	for (size_t i = open; i < body.size(); i++) {
+		char c = body[i];
+		if (in_string) {
+			if (c == '\\') i++;
+			else if (c == '"') in_string = false;
+		} else if (c == '"') {
+			in_string = true;
+		} else if (c == '[') {
+			depth++;
+		} else if (c == ']' && --depth == 0) {
+			return body.substr(open, i - open + 1);
+		}
+	}
+	return "";
+}
+
 static std::string json_quote(const std::string &s) {
 	std::string out = "\"";
 	for (unsigned char c : s) {
@@ -575,8 +597,7 @@ bool youtube_studio_set_title(const std::string &video_id, const std::string &ti
 	std::string tags;
 	size_t tp = body.find("\"tags\"", snippet);
 	if (tp != std::string::npos) {
-		size_t open = body.find('[', tp), close = body.find(']', tp);
-		if (open != std::string::npos && close != std::string::npos && close > open) tags = body.substr(open, close - open + 1);
+		tags = json_array_at(body, tp);
 	}
 	std::string snippet_json = "{\"title\": " + json_quote(title) + ", \"description\": \"" + description + "\", \"categoryId\": \"" +
 	                           (category == "" ? "22" : category) + "\"" + (tags != "" ? ", \"tags\": " + tags : "") +
@@ -664,8 +685,7 @@ bool youtube_studio_set_description(const std::string &video_id, const std::stri
 	std::string tags;
 	size_t tp = body.find("\"tags\"", snippet);
 	if (tp != std::string::npos) {
-		size_t open = body.find('[', tp), close = body.find(']', tp);
-		if (open != std::string::npos && close != std::string::npos && close > open) tags = body.substr(open, close - open + 1);
+		tags = json_array_at(body, tp);
 	}
 	std::string snippet_json = "{\"title\": \"" + title + "\", \"description\": " + json_quote(description) + ", \"categoryId\": \"" +
 	                           (category == "" ? "22" : category) + "\"" + (tags != "" ? ", \"tags\": " + tags : "") +
