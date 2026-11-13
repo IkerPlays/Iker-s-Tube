@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 #include "headers.hpp"
 #include "util/utf8.hpp"
 #include "data_io/settings.hpp"
@@ -618,6 +619,15 @@ static YouTubeVideoDetail offline_video_info(const std::string &id) {
 	if (!offline_get(id, item)) {
 		info.error = "offline item not found";
 		return info;
+	}
+	{ // the files the entry needs must be on the card (an entry whose file was deleted by hand would fail later with a network message)
+		struct stat st;
+		bool video_ok = item.quality > 0 ? stat(offline_video_path(id).c_str(), &st) == 0 : true;
+		bool audio_ok = (item.quality > 0 && item.combined) ? true : stat(offline_file_path(id).c_str(), &st) == 0;
+		if (!video_ok || !audio_ok) {
+			info.error = "saved file missing";
+			return info;
+		}
 	}
 	info.title = item.title;
 	info.author.name = item.author;
@@ -1931,7 +1941,7 @@ debug_info_view =
 	    }
 	    YouTubeVideoDetail tmp_video_info;
 	    bool need_loading = false;
-	    if (video_info_cache.count(url)) {
+	    if (video_info_cache.count(url) && url.compare(0, 8, "offline:") != 0) { // (a saved copy is read from the index each time: a re-save or a delete must show at once)
 		    tmp_video_info = video_info_cache[url];
 	    } else {
 		    need_loading = true;
@@ -3891,6 +3901,13 @@ static void autoplay_countdown_tick() {
 	}
 	small_resource_lock.unlock();
 }
+
+    bool video_is_playing_id(const std::string &id) {
+	    small_resource_lock.lock();
+	    bool res = vid_play_request && playing_video_info.id == id;
+	    small_resource_lock.unlock();
+	    return res;
+    }
 
     // real playback: not paused, not buffering, not stopped at the end (video_is_playing() stays true in those cases: the bars use it)
     bool video_is_actually_playing() {

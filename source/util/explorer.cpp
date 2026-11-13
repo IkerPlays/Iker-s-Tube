@@ -293,7 +293,7 @@ void Util_expl_read_dir_thread(void *arg) {
 				if (!(expl_current_patch == "/")) {
 					num_offset = 1;
 					expl_num_of_file += 1;
-					if (var_lang == "jp") {
+					if (var_lang == "ja") {
 						expl_files[0] = "親ディレクトリへ移動";
 					} else {
 						expl_files[0] = "Move to parent directory";

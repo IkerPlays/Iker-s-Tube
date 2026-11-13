@@ -947,7 +947,7 @@ static void build_offline(VerticalListView *list) {
 		    	global_intent.arg = "q:" + author;
 		    }),
 		    make_option(tr("QR code", "Código QR"), [id]() { qr_popup_show(share_url(id)); }),
-			                 make_option(tr("Delete from the SD card", "Borrar de la SD"), [id]() { if (!offline_remove(id)) notice_show(tr("Could not delete it (in use?)", "No se pudo borrar (¿en uso?)")); rebuild_request = true; })});
+			                 make_option(tr("Delete from the SD card", "Borrar de la SD"), [id]() { if (video_is_playing_id(id)) { notice_show(tr("It is playing now: stop it first", "Se está reproduciendo: páralo antes")); return; } if (!offline_remove(id)) notice_show(tr("Could not delete it (in use?)", "No se pudo borrar (¿en uso?)")); rebuild_request = true; })});
 		    });
 		list->views.push_back(view);
 	}

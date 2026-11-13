@@ -1,1 +1,1 @@
-Studio upload: pending upload address check, atomic state file, dead sessions clear the pending state, CRLF descriptions.
+Saved videos: missing files detected, no stale info after re-save, delete refused while playing. Languages: explorer Japanese label, Japanese skip-intro text, shorter French/German buttons.

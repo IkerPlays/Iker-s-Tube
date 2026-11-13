@@ -8,6 +8,7 @@ void VideoPlayer_resume(std::string arg);
 
 #define VIDEO_PLAYING_BAR_HEIGHT 20
 bool video_is_playing(void);
+bool video_is_playing_id(const std::string &id); // this video is the one loaded in the player (playing or paused)
 bool video_is_actually_playing(void); // playing for real (not paused, buffering or stopped at the end): what the daily limit and the play time count
 bool video_is_audio_only_playing(void); // audio-only mode and not paused
 float lcd_off_timeout_seconds(void);    // idle time before the screens turn off (0 : never), shorter in audio-only playback
