@@ -5,6 +5,7 @@ double Util_convert_time_to_seconds(const std::string &timestamp_str) {
 		return -1.0;
 	}
 
+	if (timestamp_str.size() > 10) return -1.0; // (no real timestamp is longer than "999:59:59": a long run of digits would overflow the %d below)
 	int colon_count = 0;
 	for (char c : timestamp_str) {
 		if (c == ':') {

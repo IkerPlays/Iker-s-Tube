@@ -1,1 +1,1 @@
-Saved videos: missing files detected, no stale info after re-save, delete refused while playing. Languages: explorer Japanese label, Japanese skip-intro text, shorter French/German buttons.
+Emoji kept in comments and posts; timestamp overflow guard; URL host case and scheme handling.

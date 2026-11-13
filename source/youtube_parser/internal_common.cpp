@@ -144,7 +144,16 @@ std::string get_text_from_object(RJson json) {
 	if (json["runs"].is_valid()) {
 		std::string res;
 		for (auto i : json["runs"].array_items()) {
-			res += i["text"].string_value();
+			std::string text = i["text"].string_value();
+			if (text.empty() && i["emoji"].is_valid()) { // (an emoji run has no "text": a real emoji, else its first shortcut)
+				std::string emoji = i["emoji"]["emojiId"].string_value();
+				if (!emoji.empty() && (unsigned char)emoji[0] >= 0x80) text = emoji;
+				else {
+					auto shortcuts = i["emoji"]["shortcuts"].array_items();
+					if (!shortcuts.empty()) text = shortcuts[(size_t)0].string_value();
+				}
+			}
+			res += text;
 		}
 		return res;
 	}
@@ -352,27 +361,27 @@ RJson get_succeeding_json_regexes(Document &json_root, const std::string &html, 
 	return RJson();
 }
 
-std::string convert_url_to_mobile(std::string url) {
-	// strip out of http:// or https://
-	{
-		auto pos = url.find("://");
-		if (pos != std::string::npos) {
-			url = url.substr(pos + 3, url.size());
-		}
+// the scheme ("http://", only before the first "/") is dropped and the host (up to / ? #) is lowercased: "HTTPS://WWW.YouTube.com/..." is a YouTube address too
+static std::string strip_scheme_and_lowercase_host(std::string url) {
+	size_t pos = url.find("://");
+	size_t first_slash = url.find('/');
+	if (pos != std::string::npos && (first_slash == std::string::npos || pos < first_slash)) {
+		url = url.substr(pos + 3, url.size());
 	}
+	size_t host_end = url.find_first_of("/?#");
+	if (host_end == std::string::npos) host_end = url.size();
+	for (size_t i = 0; i < host_end; i++) url[i] = (char)tolower((unsigned char)url[i]);
+	return url;
+}
+std::string convert_url_to_mobile(std::string url) {
+	url = strip_scheme_and_lowercase_host(url);
 	if (url.substr(0, 4) == "www.") {
 		url = "m." + url.substr(4, url.size());
 	}
 	return "https://" + url;
 }
 std::string convert_url_to_desktop(std::string url) {
-	// strip out of http:// or https://
-	{
-		auto pos = url.find("://");
-		if (pos != std::string::npos) {
-			url = url.substr(pos + 3, url.size());
-		}
-	}
+	url = strip_scheme_and_lowercase_host(url);
 	if (url.substr(0, 2) == "m.") {
 		url = "www." + url.substr(2, url.size());
 	}
