@@ -3955,7 +3955,7 @@ static void autoplay_countdown_tick() {
 			    autoplay_pending_url = "";
 			    slept = true;
 		    }
-		    stop_after_video = true; // (and a video that is still loading does not start playing all night)
+		    if (vid_play_request || autoplay_pending_url != "" || is_async_task_running(load_video_page)) stop_after_video = true; // (a video that plays or is loading does not go on to the next one all night; nothing is armed when nothing plays)
 		    if (vid_play_request && !vid_pausing) {
 		    if (!vid_pausing_seek) {
 		    Util_speaker_pause(0);
