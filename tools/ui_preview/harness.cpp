@@ -58,6 +58,18 @@ static void scene_dialog(const char *path, bool night) {
 	d->draw();
 	rec_end();
 }
+static void scene_farewell(const char *path, bool night, bool spanish) {
+	var_night_mode = night;
+	rec_begin(path, 320, 240);
+	Draw_texture(var_square_image[0], DEFAULT_BACK_COLOR, 0, 0, 320, 240);
+	OverlayDialogView *d = new OverlayDialogView(0, 0, 320, 240);
+	std::vector<std::string> en = {"Iker's Tube 2.0.0 - final version", "Thank you for using the app!", "This is the last update:", "the project is finished.", "You watched: 12 h 5 min", "New: farewell in About.", "Better sleep timer, exit and saves."};
+	std::vector<std::string> es = {"Iker's Tube 2.0.0 - versión final", "¡Gracias por usar la app!", "Es la última actualización:", "el proyecto está terminado.", "Has visto: 12 h 5 min", "Nuevo: despedida en Acerca de.", "Mejor temporizador, salida y guardado."};
+	d->get_message_view()->set_text_lines(spanish ? es : en)->update_y_range(0, DEFAULT_FONT_INTERVAL * 7 + 6);
+	d->set_buttons<std::string>({"OK"}, [](OverlayDialogView &, int) { return true; });
+	d->draw();
+	rec_end();
+}
 static void scene_menu(const char *path, bool night) {
 	var_night_mode = night;
 	rec_begin(path, 320, 240);
@@ -159,6 +171,8 @@ int main() {
 	scene_settings("out/set_light.json", false);
 	var_theme = 4; scene_home("out/home_amber.json", true); scene_settings("out/set_amber.json", true); var_theme = 0;
 	scene_dialog("out/dialog_dark.json", true);
+	scene_farewell("out/farewell_en.json", true, false);
+	scene_farewell("out/farewell_es.json", true, true);
 	scene_menu("out/menu_dark.json", true);
 	scene_player_info("out/info_dark.json", true);
 	scene_channels("out/chan_dark.json", true);

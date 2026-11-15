@@ -1,4 +1,5 @@
 #include "ui/overlay.hpp"
+#include "util/farewell.hpp"
 #include "ui/nav_draw.hpp"
 #include "variables.hpp"
 #include "headers.hpp"
@@ -443,13 +444,7 @@ static void whats_new_done() {
 }
 static void show_whats_new() {
 	dialog_view->get_message_view()
-	    ->set_text_lines(std::vector<std::string>{tr("What's new in ", "Novedades de ") + core_version(),
-	                                              tr("Feed: instant start, NEW badges, play the new ones", "Feed: arranque al instante, etiquetas NEW, ver los nuevos"),
-	                                              tr("Player: all tools reachable, skip intro, go to time", "Reproductor: todas las herramientas, saltar intro, ir al minuto"),
-	                                              tr("My Wrapped: badges, weekly chart, share as QR", "Mi resumen: logros, gráfico semanal, compartir en QR"),
-	                                              tr("Equalizer and lyrics on the audio-only screen", "Ecualizador y letras en la pantalla de solo audio"),
-	                                              tr("Safe mode if the app fails to start", "Modo seguro si la app falla al arrancar"),
-	                                              tr("Details: Documentation/GUIA_DE_USO.md", "Detalles: Documentation/GUIA_DE_USO.md")})
+	    ->set_text_lines(farewell_dialog_lines(core_version()))
 	    ->update_y_range(0, DEFAULT_FONT_INTERVAL * 7 + 6);
 	dialog_view->set_buttons<std::function<std::string()>>({[]() { return LOCALIZED(OK); }}, [](OverlayDialogView &, int) {
 		menu_status = CLOSED;

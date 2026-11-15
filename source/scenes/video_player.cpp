@@ -3951,6 +3951,11 @@ static void autoplay_countdown_tick() {
 		    var_sleep_timer_end = 0;
 		    small_resource_lock.lock();
 		    bool slept = false;
+		    if (autoplay_pending_url != "") { // the timer ran out during the autoplay countdown (or between videos): nothing plays next
+			    autoplay_pending_url = "";
+			    slept = true;
+		    }
+		    stop_after_video = true; // (and a video that is still loading does not start playing all night)
 		    if (vid_play_request && !vid_pausing) {
 		    if (!vid_pausing_seek) {
 		    Util_speaker_pause(0);
@@ -5318,7 +5323,7 @@ static void autoplay_countdown_tick() {
 			    thumbnail_set_priorities(priority_list);
 		    }
 
-		    if (text_popup_view->is_visible || comment_dialog->is_visible || account_pl_popup_view->is_visible || equalizer_popup_view->is_visible) {
+		    if (text_popup_view->is_visible || comment_dialog->is_visible || account_pl_popup_view->is_visible || equalizer_popup_view->is_visible || mini_visible) {
 			    // a popup covers the corner of the menu icon: a tap there is the popup's, so the menu gets a copy without the touch
 			    Hid_info menu_key = key;
 			    menu_key.p_touch = menu_key.h_touch = false;

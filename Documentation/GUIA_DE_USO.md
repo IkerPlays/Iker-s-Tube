@@ -127,3 +127,14 @@ Ajustes, Datos, "Crear un informe para enviar" escribe `sdmc:/3ds/IkersTube/repo
 - **Mientras suena un vídeo:** pestaña Reproducción, fila "Vídeo" (Audio, 144p, 240p, 360p, 480p), o el botón "Calidad" de la pestaña General, que cambia de una a la siguiente con cada toque.
 - **Calidad con la que empiezan los vídeos:** Ajustes > Reproducción > "Calidad de vídeo". La "Calidad automática" puede bajarla si la reproducción se atasca; lo que eliges a mano no se baja solo.
 - La familia 3DS antigua solo muestra las calidades bajas.
+
+## Versión final (2.0)
+
+La 2.0 es la última versión de Iker's Tube: la app está completa y seguirá funcionando mientras YouTube lo permita. No habrá más
+actualizaciones, pero el código sigue abierto (GPLv3) para que cualquiera pueda bifurcarlo y mantenerlo vivo.
+
+- **Despedida:** al abrir la 2.0 por primera vez sale un diálogo de despedida con el tiempo que has pasado viendo vídeos con la app.
+  Vuelve a verlo en Ajustes > Avanzado > "Ver las novedades otra vez (al reiniciar)", y el mensaje largo está en Más > Acerca de > Despedida.
+- **Temporizador de sueño:** ahora también para el autoplay (la cuenta atrás y el siguiente vídeo), no solo el vídeo que suena.
+- **Cierre más rápido:** al salir, las peticiones de red se cancelan primero y la app cierra sin quedarse esperando.
+- **Pestaña Actualización:** indica que es la versión final.

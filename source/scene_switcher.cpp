@@ -342,15 +342,14 @@ void Menu_exit(void) {
 
 	remove_apt_callback();
 
-	logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(menu_worker_thread, time_out));
-	logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(thumbnail_downloader_thread, time_out));
-	logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(async_task_thread, time_out));
-	logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(misc_tasks_thread, time_out));
+	for (Thread *thread : {&menu_worker_thread, &thumbnail_downloader_thread, &async_task_thread, &misc_tasks_thread}) {
+		if (!*thread) continue; // (threadCreate can fail: a NULL thread is never joined or freed)
+		logger.info(DEF_MENU_EXIT_STR, "threadJoin()...", threadJoin(*thread, time_out));
+	}
 	// (a thread that did not stop within the time limit is not freed under its own feet)
-	if (R_SUCCEEDED(threadJoin(menu_worker_thread, 0))) threadFree(menu_worker_thread);
-	if (R_SUCCEEDED(threadJoin(thumbnail_downloader_thread, 0))) threadFree(thumbnail_downloader_thread);
-	if (R_SUCCEEDED(threadJoin(async_task_thread, 0))) threadFree(async_task_thread);
-	if (R_SUCCEEDED(threadJoin(misc_tasks_thread, 0))) threadFree(misc_tasks_thread);
+	for (Thread *thread : {&menu_worker_thread, &thumbnail_downloader_thread, &async_task_thread, &misc_tasks_thread}) {
+		if (*thread && R_SUCCEEDED(threadJoin(*thread, 0))) threadFree(*thread);
+	}
 
 	NetworkSessionList::at_exit();
 

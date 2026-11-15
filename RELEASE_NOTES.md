@@ -1,1 +1,1 @@
-Faster, safer exit (network stops first), curl initialised once at start, website release list fixes.
+Final version 2.0.0: farewell dialog and About section, sleep timer stops autoplay, mini player touch fix, safer exit, website farewell.

@@ -3,6 +3,12 @@
 A YouTube client for the Nintendo 3DS / 2DS family (homebrew, needs custom firmware).
 Based on [FourthTube](https://github.com/erievs/FourthTube) / ThirdTube, licensed under **GPLv3**.
 
+## Final version
+
+**Iker's Tube 2.0 is the last version of the app.** It is complete and keeps working as long as YouTube allows it. There will be no more
+updates from me, but the source stays open (GPLv3): anyone can fork it, fix it and keep it alive. Thank you for every video, every bug
+report and every idea.
+
 ## Download
 
 <p align="center">

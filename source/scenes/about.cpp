@@ -3,6 +3,7 @@
 #include "headers.hpp"
 
 #include "scenes/about.hpp"
+#include "util/farewell.hpp"
 #include "scenes/video_player.hpp"
 #include "ui/overlay.hpp"
 #include "ui/qr_popup.hpp"
@@ -132,6 +133,16 @@ void About_init(void) {
 	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
 	                    (new TextView(SMALL_MARGIN, 0, 320, DEFAULT_FONT_INTERVAL * story_lines_now().size()))
 	                        ->set_text_lines(story_lines_now()),
+	                    (new EmptyView(0, 0, 320, SMALL_MARGIN * 2)),
+
+	                    // Farewell section (the final version)
+	                    (new TextView(0, 0, 320, MIDDLE_FONT_INTERVAL))
+	                        ->set_text(tr("Farewell", "Despedida"))
+	                        ->set_font_size(MIDDLE_FONT_SIZE, MIDDLE_FONT_INTERVAL),
+	                    (new RuleView(0, 0, 320, SMALL_MARGIN * 2)),
+	                    (new TextView(SMALL_MARGIN, 0, 320, DEFAULT_FONT_INTERVAL * farewell_about_lines().size()))
+	                        ->set_text_lines(farewell_about_lines())
+	                        ->set_font_size(0.46, DEFAULT_FONT_INTERVAL),
 	                    (new EmptyView(0, 0, 320, SMALL_MARGIN * 2)),
 
 	                    // Credits section

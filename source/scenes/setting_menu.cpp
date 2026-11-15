@@ -2360,7 +2360,7 @@ void Sem_init(void) {
 						->set_text((std::function<std::string ()>) [] () -> std::string {
 							if (update_state == UpdateState::CHECKING_UPDATES) return LOCALIZED(CHECKING_FOR_UPDATES);
 							if (update_state == UpdateState::FAILED_CHECKING) return LOCALIZED(FAILED_CHECKING_UPDATES) + " : " + update_error_message;
-							if (update_state == UpdateState::UP_TO_DATE) return LOCALIZED(APP_UP_TO_DATE);
+							if (update_state == UpdateState::UP_TO_DATE) return LOCALIZED(APP_UP_TO_DATE) + tr(" (final version)", " (versión final)");
 							if (update_state == UpdateState::UPDATES_AVAILABLE) return LOCALIZED(UPDATES_AVAILABLE) + " : " + next_version_str;
 							if (update_state == UpdateState::INSTALLING) return install_progress_str;
 							if (update_state == UpdateState::FAILED_INSTALLING) return LOCALIZED(UPDATE_FAIL) + " : " + update_error_message;
