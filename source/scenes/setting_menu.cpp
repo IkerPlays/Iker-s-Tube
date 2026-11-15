@@ -19,6 +19,7 @@
 #include "data_io/history.hpp"
 #include "util/misc_tasks.hpp"
 #include "scenes/setting_menu.hpp"
+#include "data_io/export_lists.hpp"
 #include "system/report.hpp"
 #include "util/app_version.hpp"
 #include "scenes/home.hpp"
@@ -1986,6 +1987,18 @@ void Sem_init(void) {
 								->set_is_visible(true);
 							toast_frames_left = 150;
 							var_need_refresh = true;
+						}),
+					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
+						->set_text((std::function<std::string ()>) [] () { return tr("Export my lists (3ds/IkersTube/export)", "Exportar mis listas (3ds/IkersTube/export)"); })
+						->set_x_alignment(TextView::XAlign::CENTER)
+						->set_text_offset(0, -2)
+						->set_get_background_color(View::STANDARD_BACKGROUND)
+						->set_on_view_released([] (View &) {
+							// subscriptions.csv, favorites.txt, watch_later.txt and history.txt on the SD card (the data goes with you)
+							int subscriptions = 0, favorites = 0, watch_later = 0, history = 0;
+							bool ok = export_my_lists(subscriptions, favorites, watch_later, history);
+							settings_toast(ok ? tr("Exported: ", "Exportado: ") + std::to_string(subscriptions) + " / " + std::to_string(favorites) + " / " + std::to_string(watch_later) + " / " + std::to_string(history)
+							                  : tr("Could not write the files (SD card full?)", "No se pudieron escribir los archivos (¿SD llena?)"));
 						}),
 					(new TextView(0, 0, 320, DEFAULT_FONT_INTERVAL + SMALL_MARGIN * 2))
 						->set_text((std::function<std::string ()>) [] () { return tr("Import subscriptions (import_subscriptions.csv)", "Importar suscripciones (import_subscriptions.csv)"); })

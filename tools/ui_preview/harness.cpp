@@ -63,8 +63,8 @@ static void scene_farewell(const char *path, bool night, bool spanish) {
 	rec_begin(path, 320, 240);
 	Draw_texture(var_square_image[0], DEFAULT_BACK_COLOR, 0, 0, 320, 240);
 	OverlayDialogView *d = new OverlayDialogView(0, 0, 320, 240);
-	std::vector<std::string> en = {"Iker's Tube 2.0.0 - final version", "Thank you for using the app!", "This is the last update:", "the project is finished.", "You watched: 12 h 5 min", "New: farewell in About.", "Better sleep timer, exit and saves."};
-	std::vector<std::string> es = {"Iker's Tube 2.0.0 - versión final", "¡Gracias por usar la app!", "Es la última actualización:", "el proyecto está terminado.", "Has visto: 12 h 5 min", "Nuevo: despedida en Acerca de.", "Mejor temporizador, salida y guardado."};
+	std::vector<std::string> en = {"Iker's Tube 2.0.0 - final version", "Thank you for using the app!", "This is the last update:", "the project is finished.", "You watched: 12 h 5 min", "New: farewell and list export.", "Better sleep timer, exit and saves."};
+	std::vector<std::string> es = {"Iker's Tube 2.0.0 - versión final", "¡Gracias por usar la app!", "Es la última actualización:", "el proyecto está terminado.", "Has visto: 12 h 5 min", "Nuevo: despedida y exportar listas.", "Mejor temporizador, salida y guardado."};
 	d->get_message_view()->set_text_lines(spanish ? es : en)->update_y_range(0, DEFAULT_FONT_INTERVAL * 7 + 6);
 	d->set_buttons<std::string>({"OK"}, [](OverlayDialogView &, int) { return true; });
 	d->draw();

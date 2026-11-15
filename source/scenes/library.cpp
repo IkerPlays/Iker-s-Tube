@@ -23,6 +23,7 @@
 #include "data_io/favorites.hpp"
 #include "data_io/user_playlists.hpp"
 #include "util/play_queue.hpp"
+#include "util/utf8.hpp"
 
 #define MAX_THUMBNAIL_LOAD_REQUEST 12
 
@@ -983,7 +984,7 @@ static void build_playlists(VerticalListView *list) {
 				                show_dialog({make_option(tr("Play", "Reproducir"), [pl]() { start_playlist(pl, false); }),
 				                             make_option(tr("Shuffle", "Aleatorio"), [pl]() { start_playlist(pl, true); }),
 				                             make_option(tr("Duplicate", "Duplicar"), [pl]() {
-					                             std::string name = pl.name + " 2";
+					                             std::string name = utf8_prefix(pl.name, 36) + " 2"; // (a name of 40 bytes would come back unchanged from the 40-byte limit and fail as a duplicate)
 					                             if (!playlist_create(name)) {
 						                             notice_show(tr("That name is not valid or already exists", "Ese nombre no vale o ya existe"));
 						                             return;

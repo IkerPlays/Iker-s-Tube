@@ -138,3 +138,6 @@ actualizaciones, pero el código sigue abierto (GPLv3) para que cualquiera pueda
 - **Temporizador de sueño:** ahora también para el autoplay (la cuenta atrás y el siguiente vídeo), no solo el vídeo que suena.
 - **Cierre más rápido:** al salir, las peticiones de red se cancelan primero y la app cierra sin quedarse esperando.
 - **Pestaña Actualización:** indica que es la versión final.
+- **Exportar mis listas (Ajustes > Datos):** guarda tus suscripciones (`subscriptions.csv`, formato de Google Takeout), favoritos, Ver más
+  tarde e historial (`favorites.txt`, `watch_later.txt`, `history.txt`) en `sdmc:/3ds/IkersTube/export/`, para abrirlos en un ordenador o
+  llevártelos a otra app. Las suscripciones se pueden volver a importar con "Importar suscripciones".

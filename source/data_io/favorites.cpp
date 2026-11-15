@@ -1,3 +1,4 @@
+#include "util/utf8.hpp"
 #include "util/file_recover.hpp"
 #include "data_io/favorites.hpp"
 #include "system/libctru_wrapper.hpp"
@@ -18,9 +19,7 @@ static std::string clean_field(std::string s) {
 		}
 	}
 	if (s.size() > 200) { // a line of the file must fit the 1023 bytes read back by fgets : a long title is cut (on a letter boundary)
-		s.resize(200);
-		while (!s.empty() && ((unsigned char)s.back() & 0xC0) == 0x80) s.pop_back(); // (a cut in the middle of a letter)
-		if (!s.empty() && ((unsigned char)s.back() & 0x80)) s.pop_back();
+		s = utf8_prefix(s, 200); // (cut on a letter boundary, without losing a whole valid letter at the end)
 	}
 	return s;
 }

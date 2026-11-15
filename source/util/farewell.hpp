@@ -45,7 +45,7 @@ inline std::vector<std::string> farewell_dialog_lines(const std::string &version
 	    tr("This is the last update:", "Es la última actualización:"),
 	    tr("the project is finished.", "el proyecto está terminado."),
 	    time != "" ? tr("You watched: ", "Has visto: ") + time : tr("Enjoy it, and share it!", "¡Disfrútala y compártela!"),
-	    tr("New: farewell in About.", "Nuevo: despedida en Acerca de."),
+	    tr("New: farewell and list export.", "Nuevo: despedida y exportar listas."),
 	    tr("Better sleep timer, exit and saves.", "Mejor temporizador, salida y guardado."),
 	};
 }
